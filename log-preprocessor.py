@@ -29,14 +29,24 @@ def appendPeriodIfAbsent(line):
 
 
 def replaceStringResourcesNames(line):
-    return re.sub('^([0-9a-zA-Z]+\\.)+[0-9a-zA-Z]+$', '<STRING_RESOURCE>', line)
+    changed = re.sub('^([0-9a-zA-Z]+\\.)+[0-9a-zA-Z]+$', '<STRING_RESOURCE>', line)
+    if changed != line:
+        print(line + "  ----->  " + changed)
+    return changed
+
+
+def replaceVariablePlaceHolders(line):
+    changed = re.sub('\\{\\}', '<VAR>', line)
+    changed = re.sub('%[0-9]*[a-z]', '<VAR>', changed)
+    if changed != line:
+        print(line + "  ----->  " + changed)
+    return changed
+
 
 def postprocess_extracted_text(line):
     line = line.strip()
-    changed = replaceStringResourcesNames(line)
-    if changed != line:
-        print(line + "  ----->  " + changed)
-    line = changed
+    line = replaceStringResourcesNames(line)
+    line = replaceVariablePlaceHolders(line)
     line = appendPeriodIfAbsent(line)
     return line
 
