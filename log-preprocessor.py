@@ -1,3 +1,5 @@
+import re
+
 __author__ = 'hlib'
 
 
@@ -19,12 +21,23 @@ def extract_text(line):
 def contains_text(line):
     return line.find("\"") >= 0
 
-
-def postprocess_extracted_text(line):
-    line = line.strip()
+def appendPeriodIfAbsent(line):
     if len(line) > 0:
         if line[-1] not in ['.', '!', '?']:
             line += "."
+    return line
+
+
+def replaceStringResourcesNames(line):
+    return re.sub('^([0-9a-zA-Z]+\\.)+[0-9a-zA-Z]+$', '<STRING_RESOURCE>', line)
+
+def postprocess_extracted_text(line):
+    line = line.strip()
+    changed = replaceStringResourcesNames(line)
+    if changed != line:
+        print(line + "  ----->  " + changed)
+    line = changed
+    line = appendPeriodIfAbsent(line)
     return line
 
 
