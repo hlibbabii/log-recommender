@@ -20,12 +20,20 @@ def contains_text(line):
     return line.find("\"") >= 0
 
 
+def postprocess_extracted_text(line):
+    line = line.strip()
+    if len(line) > 0:
+        if line[-1] not in ['.', '!', '?']:
+            line += "."
+    return line
+
+
 def preprocess(filename):
     with open(filename, 'r') as f:
         for line in f:
             if contains_text(line):
                 try:
-                    yield extract_text(line)
+                    yield postprocess_extracted_text(extract_text(line))
                 except ValueError as err:
                     print(err)
 
@@ -38,4 +46,4 @@ def output(input_filename, output_filename):
 
 if __name__ == "__main__":
     in_file = "../grepped_logs.20180301-002126"
-    output(in_file, in_file + ".preprocessed")
+    output(in_file, '../gengram/corpus.txt')
