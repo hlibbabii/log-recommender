@@ -61,12 +61,13 @@ def preprocess(filename):
                     print(err)
 
 
-def output(input_filename, output_filename):
+def output(preprocessed_logs, output_filename):
     with open(output_filename, 'w') as f:
-        for preprocessed_line in preprocess(input_filename):
+        for preprocessed_line in preprocessed_logs:
             f.write(preprocessed_line + "\n")
 
 
 if __name__ == "__main__":
-    in_file = "../grepped_logs.20180301-002126"
-    output(in_file, '../gengram/corpus.txt')
+    in_file = "grepped_logs.20180305-075743"
+    preprocessed_logs = preprocess(in_file)
+    output(preprocessed_logs, '../gengram/corpus.txt')
