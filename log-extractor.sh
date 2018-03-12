@@ -19,7 +19,7 @@ for dir in *; do
 
 	echo grepping logs from ${APACHE_PROJECT_NAME} ...
 	grep -rn ${REGEX} | while read -r line ; do
-		FILE="$(echo $line | sed -n "s/^\(\S*\.\(java\|scala\|groovy\|py\|js\|c\|rb\|adoc\)\).*$/\1/p")"
+		FILE="$(echo $line | sed -n "s/^\(\S*\.\(java\|scala\|groovy\|py\|js\|c\|rb\|adoc\|md\)\).*$/\1/p")"
 		if [ -n "${FILE}" ]; then
 			LINE_NUMBER="$(echo $line | sed -n "s/^.*:\([1-9][0-9]*\):.*$/\1/p")"
 
