@@ -64,6 +64,11 @@ def preprocess_context(context):
     context = split_to_key_words_and_identifiers(context)
     return [item for identifier in context for item in camel_case_split(identifier)]
 
+STOP_REGEX = re.compile(".*is(Trace|Debug|Info|Warn)Enabled.*")
+
+def filter_bad_context_line(new_context_line):
+    return re.match(STOP_REGEX, new_context_line) is None
+
 
 def preprocess(filename):
     with open(filename, 'r') as f:
@@ -75,7 +80,9 @@ def preprocess(filename):
                 break
             context = ""
             for i in range(n_lines_of_context):
-                context += f.readline()
+                new_context_line = f.readline()
+                if filter_bad_context_line(new_context_line):
+                    context += new_context_line
                         #reading log statement
             log_statement_line = f.readline()
             #reading 2 empty lines
