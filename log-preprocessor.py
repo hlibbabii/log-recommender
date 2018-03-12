@@ -53,21 +53,34 @@ def postprocess_extracted_text(line):
 
 def preprocess(filename):
     with open(filename, 'r') as f:
-        for line in f:
-            if contains_text(line):
+        n_lines_of_context = int(f.readline())
+        while True:
+            #reading log statement
+            log_statement_line = f.readline()
+            if not log_statement_line:
+                break
+            #reading link to github
+            line = f.readline()
+            context = ""
+            for i in range(n_lines_of_context):
+                context += f.readline()
+            #reading empty line
+            f.readline()
+            if contains_text(log_statement_line):
                 try:
-                    yield postprocess_extracted_text(extract_text(line))
+                    yield postprocess_extracted_text(extract_text(log_statement_line)), context
                 except ValueError as err:
                     print(err)
 
 
 def output(preprocessed_logs, output_filename):
     with open(output_filename, 'w') as f:
-        for preprocessed_line in preprocessed_logs:
+        for preprocessed_line, context in preprocessed_logs:
             f.write(preprocessed_line + "\n")
+            f.write("[" + context + "]" + "\n\n")
 
 
 if __name__ == "__main__":
-    in_file = "grepped_logs.20180305-075743"
+    in_file = "grepped_logs.20180312-005735"
     preprocessed_logs = preprocess(in_file)
     output(preprocessed_logs, '../gengram/corpus.txt')
