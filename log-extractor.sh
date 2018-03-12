@@ -20,9 +20,10 @@ for dir in *; do
 	grep -rn ${REGEX} | while read -r line ; do
 		FILE="$(echo $line | sed -n "s/^\(\S*\.\(java\|py\|js\|c\|rb\)\).*$/\1/p")"
 		LINE_NUMBER="$(echo $line | sed -n "s/^.*:\([0-9]*\):.*$/\1/p")"
-		LOG_STATEMENT="$(echo $line | sed -n "s/^.*:[0-9]*:\(.*\)$/\1/p")"
+		LOG_STATEMENT="$(echo "$line" | sed -n "s/^.*:[0-9]*:\(.*\)$/\1/p")"
 
-		echo -e "${LOG_STATEMENT}\n${BASE_URL}${APACHE_PROJECT_NAME}/blob/${COMMIT_HASH}/${FILE}${LINE_PREFIX}${LINE_NUMBER}" >> ${FILE_FOR_OUTPUT}
+		echo "${LOG_STATEMENT}" >> ${FILE_FOR_OUTPUT}
+		echo "${BASE_URL}${APACHE_PROJECT_NAME}/blob/${COMMIT_HASH}/${FILE}${LINE_PREFIX}${LINE_NUMBER}" >> ${FILE_FOR_OUTPUT}
 		LINES_BEFORE_RANGE_START=$((LINE_NUMBER-LINES_BEFORE_TO_EXTRACT))
 		while [ ${LINES_BEFORE_RANGE_START} -lt "1" ]; do
 			echo "" >> ${FILE_FOR_OUTPUT}
