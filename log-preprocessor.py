@@ -51,6 +51,10 @@ def postprocess_extracted_text(line):
     return line
 
 
+def preprocess_context(context):
+    return list(filter(None, re.split("[\[\] ,.\-!?:\n\t(){};=+*/\"&|<>]+", context)))
+
+
 def preprocess(filename):
     with open(filename, 'r') as f:
         n_lines_of_context = int(f.readline())
@@ -59,16 +63,17 @@ def preprocess(filename):
             log_statement_line = f.readline()
             if not log_statement_line:
                 break
-            #reading link to github
+            #reading github link
             line = f.readline()
             context = ""
             for i in range(n_lines_of_context):
                 context += f.readline()
-            #reading empty line
+            #reading 2 empty lines
+            f.readline()
             f.readline()
             if contains_text(log_statement_line):
                 try:
-                    yield postprocess_extracted_text(extract_text(log_statement_line)), context
+                    yield postprocess_extracted_text(extract_text(log_statement_line)), preprocess_context(context)
                 except ValueError as err:
                     print(err)
 
@@ -77,7 +82,7 @@ def output(preprocessed_logs, output_filename):
     with open(output_filename, 'w') as f:
         for preprocessed_line, context in preprocessed_logs:
             f.write(preprocessed_line + "\n")
-            f.write("[" + context + "]" + "\n\n")
+            f.write(str(context) + "\n\n")
 
 
 if __name__ == "__main__":
