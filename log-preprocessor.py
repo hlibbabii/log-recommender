@@ -51,8 +51,18 @@ def postprocess_extracted_text(line):
     return line
 
 
+def camel_case_split(identifier):
+    matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
+    return [m.group(0) for m in matches]
+
+
+def split_to_key_words_and_identifiers(line):
+    return list(filter(None, re.split("[\[\] ,.\-!?:\n\t(){};=+*/\"&|<>]+", line)))
+
+
 def preprocess_context(context):
-    return list(filter(None, re.split("[\[\] ,.\-!?:\n\t(){};=+*/\"&|<>]+", context)))
+    context = split_to_key_words_and_identifiers(context)
+    return [item for identifier in context for item in camel_case_split(identifier)]
 
 
 def preprocess(filename):
