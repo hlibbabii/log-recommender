@@ -59,15 +59,15 @@ def preprocess(filename):
     with open(filename, 'r') as f:
         n_lines_of_context = int(f.readline())
         while True:
-            #reading log statement
-            log_statement_line = f.readline()
-            if not log_statement_line:
-                break
             #reading github link
             line = f.readline()
+            if not line:
+                break
             context = ""
             for i in range(n_lines_of_context):
                 context += f.readline()
+                        #reading log statement
+            log_statement_line = f.readline()
             #reading 2 empty lines
             f.readline()
             f.readline()
@@ -86,6 +86,6 @@ def output(preprocessed_logs, output_filename):
 
 
 if __name__ == "__main__":
-    in_file = "grepped_logs.20180312-005735"
+    in_file = "grepped_logs.20180312-180403"
     preprocessed_logs = preprocess(in_file)
     output(preprocessed_logs, '../gengram/corpus.txt')
