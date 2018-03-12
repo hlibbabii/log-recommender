@@ -1,4 +1,6 @@
+import operator
 import re
+from math import log
 
 __author__ = 'hlib'
 
@@ -72,6 +74,7 @@ def filter_bad_context_line(new_context_line):
 
 
 def preprocess(filename):
+    list= []
     with open(filename, 'r') as f:
         n_lines_of_context = int(f.readline())
         while True:
@@ -91,16 +94,33 @@ def preprocess(filename):
             f.readline()
             if contains_text(log_statement_line):
                 try:
-                    yield postprocess_extracted_text(extract_text(log_statement_line)), preprocess_context(context)
+                    list.append((postprocess_extracted_text(extract_text(log_statement_line)), preprocess_context(context)))
                 except ValueError as err:
                     print(err)
+    return list
+
+
+def get_idfs(preprocessed_logs):
+    sum = dict()
+    vector_number = float(len(preprocessed_logs))
+    for preprocessed_log, context_vector in preprocessed_logs:
+        for context_string in context_vector:
+            if context_string in sum:
+                sum[context_string] += 1
+            else:
+                sum[context_string] = 1
+    idfs = {key: log(vector_number / value, 2) for key, value in sum.items()}
+    return sorted(idfs.items(), key=operator.itemgetter(1), reverse=True)
+
 
 
 def output(preprocessed_logs, output_filename):
+    idfs = get_idfs(preprocessed_logs)
     with open(output_filename, 'w') as f:
         for preprocessed_line, context in preprocessed_logs:
             f.write(preprocessed_line + "\n")
             f.write(str(context) + "\n\n")
+        f.write(str(idfs))
 
 
 if __name__ == "__main__":
