@@ -62,7 +62,8 @@ def split_to_key_words_and_identifiers(line):
 
 def preprocess_context(context):
     context = split_to_key_words_and_identifiers(context)
-    return [item for identifier in context for item in camel_case_split(identifier)]
+    context = [item.lower() for identifier in context for item in camel_case_split(identifier)]
+    return context
 
 STOP_REGEX = re.compile(".*is(Trace|Debug|Info|Warn)Enabled.*")
 
