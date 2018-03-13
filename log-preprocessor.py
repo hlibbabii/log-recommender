@@ -1,6 +1,7 @@
 import operator
 import re
 from math import log
+from sortedcontainers import SortedList
 
 __author__ = 'hlib'
 
@@ -110,12 +111,11 @@ def get_idfs(preprocessed_logs):
             else:
                 sum[context_string] = 1
     idfs = {key: log(vector_number / value, 2) for key, value in sum.items()}
-    return sorted(idfs.items(), key=operator.itemgetter(1), reverse=True)
+    return sorted(idfs.items(), key=operator.itemgetter(1), reverse=True), idfs
 
 
 
-def output(preprocessed_logs, output_filename):
-    idfs = get_idfs(preprocessed_logs)
+def output(preprocessed_logs, idfs, output_filename):
     with open(output_filename, 'w') as f:
         for preprocessed_line, context in preprocessed_logs:
             f.write(preprocessed_line + "\n")
@@ -123,7 +123,51 @@ def output(preprocessed_logs, output_filename):
         f.write(str(idfs))
 
 
+def without_duplicates(list):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in list if not (x in seen or seen_add(x))]
+
+
+def get_score(context, current_context, idfs):
+    current_score = 0.0
+    for word1 in without_duplicates(context):
+        for word2 in without_duplicates(current_context):
+            if word1 == word2:
+                current_score += idfs.get(word1)
+    return current_score
+
+
+def get_most_suitable_log_statements(corpus, idfs, current_context, how_many):
+    print("Looking for the most suitable log statement for context: " + str(current_context))
+    scores = SortedList(key=operator.itemgetter(1))
+    for log_statement, context in corpus:
+        score = get_score(context, current_context, idfs)
+        scores.add(((log_statement, context), score))
+    return reversed(scores[-how_many:])
+
+
+def output_to_file(preprocessed_logs, sorted_idf_tuples):
+    output(preprocessed_logs, sorted_idf_tuples, '../gengram/corpus.txt')
+
+
+def test(preprocessed_logs, idfs):
+    print("\n===============Testing=====================\n")
+    log_statement_plus_context_to_test = preprocessed_logs[5700]
+    most_suitable_log_statements = get_most_suitable_log_statements(preprocessed_logs, idfs, log_statement_plus_context_to_test[1], 10)
+    for log_statement_with_context in most_suitable_log_statements:
+        print(str(log_statement_with_context[0][0]))
+        print(str(log_statement_with_context[0][1]))
+        print(str(log_statement_with_context[1]) + "\n")
+
+    print("Real log statement: " + str(log_statement_plus_context_to_test[0]))
+    print("Current context: " + str(log_statement_plus_context_to_test[1]))
+
 if __name__ == "__main__":
-    in_file = "grepped_logs.20180312-180403"
+    in_file = "grepped_logs.20180313-005759"
     preprocessed_logs = preprocess(in_file)
-    output(preprocessed_logs, '../gengram/corpus.txt')
+    sorted_idf_tuples, idfs = get_idfs(preprocessed_logs)
+
+    output_to_file(preprocessed_logs, sorted_idf_tuples)
+    test(preprocessed_logs, idfs)
+
