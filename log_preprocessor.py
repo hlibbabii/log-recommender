@@ -2,6 +2,7 @@ import operator
 import re
 from math import log
 from log_picker import test_pick_log
+from log_statement import LogStatement
 
 __author__ = 'hlib'
 
@@ -102,18 +103,19 @@ def read_grepped_log_file(filename):
 
 
 def preprocess_grepped_logs(logs):
-    return list(map(lambda l: {
-        'log_text': postprocess_extracted_text(extract_text(l['log_statement'])),
-        'context': preprocess_context(l['context']),
-        'github_link': l['github_link']
-    }, logs))
+    return list(
+        map(lambda l: LogStatement(
+            log_text=postprocess_extracted_text(extract_text(l['log_statement'])),
+            context=preprocess_context(l['context']),
+            link=l['github_link']), logs)
+    )
 
 
 def get_idfs(preprocessed_logs):
     sum = dict()
     vector_number = float(len(preprocessed_logs))
     for l in preprocessed_logs:
-        for context_string in l['context']:
+        for context_string in l.context:
             if context_string in sum:
                 sum[context_string] += 1
             else:
@@ -126,8 +128,8 @@ def get_idfs(preprocessed_logs):
 def output(preprocessed_logs, idfs, output_filename):
     with open(output_filename, 'w') as f:
         for l in preprocessed_logs:
-            f.write(str(l['log_text']) + "\n")
-            f.write(str(l['context']) + "\n\n")
+            f.write(str(l.log_text) + "\n")
+            f.write(str(l.context) + "\n\n")
         f.write(str(idfs))
 
 
