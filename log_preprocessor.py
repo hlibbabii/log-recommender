@@ -15,20 +15,30 @@ def extract_log_level(line):
     else:
         raise ValueError("Log level couldn't be extracted from log statement: " + line)
 
-def extract_text(line):
+def extract_text_and_variables(line):
     full_line = line
     text = ""
+    text_parts = 0
     opening_quote_index = line.find("\"")
     while opening_quote_index >= 0:
         line = line[opening_quote_index + 1:]
         closing_quote_index = line.find("\"")
         if closing_quote_index < 0:
             print("No closing quote found for the opening quote in string: " + full_line)
-            return None
+            return None, 0
         text += line[:closing_quote_index]
+        text_parts += 1
         line = line[closing_quote_index+1:]
         opening_quote_index = line.find("\"")
-    return text
+    if line.find("+") >= 0:
+        text_parts += 1
+    if text_parts > 1:
+        n_variables = text_parts - 1
+    else:
+        n_variables = text.count("{}")
+        if n_variables == 0:
+            n_variables = text.count("%")
+    return text, n_variables
 
 
 def contains_text(line):
@@ -112,12 +122,18 @@ def read_grepped_log_file(filename):
 
 def preprocess_grepped_logs(logs):
     return list(
-        map(lambda l: LogStatement(
-            log_text=postprocess_extracted_text(extract_text(l['log_statement'])),
-            log_level=extract_log_level(l['log_statement']),
-            context=preprocess_context(l['context']),
-            link=l['github_link']), logs)
+        map(lambda l: process_log_statement(l), logs)
     )
+
+
+def process_log_statement(log_entry):
+    text, n_variables = extract_text_and_variables(log_entry['log_statement'])
+    return LogStatement(
+            log_text=postprocess_extracted_text(text),
+            log_level=extract_log_level(log_entry['log_statement']),
+            n_variables=n_variables,
+            context=preprocess_context(log_entry['context']),
+            link=log_entry['github_link'])
 
 
 def get_idfs(preprocessed_logs):
@@ -138,7 +154,10 @@ def output(preprocessed_logs, idfs, output_filename):
     with open(output_filename, 'w') as f:
         for l in preprocessed_logs:
             f.write(str(l.log_text) + "\n")
-            f.write(str(l.context) + "\n\n")
+            f.write(l.log_level + " " + str(l.n_variables) + "\n")
+            f.write(str(l.context) + "\n")
+            f.write(l.link + "\n")
+            f.write("\n")
         f.write(str(idfs))
 
 
