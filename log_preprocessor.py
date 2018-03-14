@@ -14,7 +14,8 @@ def extract_text(line):
         line = line[opening_quote_index + 1:]
         closing_quote_index = line.find("\"")
         if closing_quote_index < 0:
-            raise ValueError("No closing quote found for the opening quote in string: " + full_line)
+            print("No closing quote found for the opening quote in string: " + full_line)
+            return None
         text += line[:closing_quote_index]
         line = line[closing_quote_index+1:]
         opening_quote_index = line.find("\"")
@@ -47,6 +48,8 @@ def replace_variable_place_holders(line):
 
 
 def postprocess_extracted_text(line):
+    if line is None:
+        return None
     line = line.strip()
     line = replace_string_resources_names(line)
     line = replace_variable_place_holders(line)
@@ -74,14 +77,14 @@ def filter_bad_context_line(new_context_line):
     return re.match(STOP_REGEX, new_context_line) is None
 
 
-def preprocess(filename):
+def read_grepped_log_file(filename):
     list= []
     with open(filename, 'r') as f:
         n_lines_of_context = int(f.readline())
         while True:
             #reading github link
-            line = f.readline()
-            if not line:
+            github_link = f.readline()
+            if not github_link:
                 break
             context = ""
             for i in range(n_lines_of_context):
@@ -94,18 +97,23 @@ def preprocess(filename):
             f.readline()
             f.readline()
             if contains_text(log_statement_line):
-                try:
-                    list.append((postprocess_extracted_text(extract_text(log_statement_line)), preprocess_context(context)))
-                except ValueError as err:
-                    print(err)
+                list.append({'log_statement': log_statement_line, 'context': context, 'github_link': github_link})
     return list
+
+
+def preprocess_grepped_logs(logs):
+    return list(map(lambda l: {
+        'log_text': postprocess_extracted_text(extract_text(l['log_statement'])),
+        'context': preprocess_context(l['context']),
+        'github_link': l['github_link']
+    }, logs))
 
 
 def get_idfs(preprocessed_logs):
     sum = dict()
     vector_number = float(len(preprocessed_logs))
-    for preprocessed_log, context_vector in preprocessed_logs:
-        for context_string in context_vector:
+    for l in preprocessed_logs:
+        for context_string in l['context']:
             if context_string in sum:
                 sum[context_string] += 1
             else:
@@ -117,9 +125,9 @@ def get_idfs(preprocessed_logs):
 
 def output(preprocessed_logs, idfs, output_filename):
     with open(output_filename, 'w') as f:
-        for preprocessed_line, context in preprocessed_logs:
-            f.write(preprocessed_line + "\n")
-            f.write(str(context) + "\n\n")
+        for l in preprocessed_logs:
+            f.write(str(l['log_text']) + "\n")
+            f.write(str(l['context']) + "\n\n")
         f.write(str(idfs))
 
 
@@ -129,7 +137,8 @@ def output_to_file(preprocessed_logs, sorted_idf_tuples):
 
 if __name__ == "__main__":
     in_file = "grepped_logs.20180313-005759"
-    preprocessed_logs = preprocess(in_file)
+    grepped_logs = read_grepped_log_file(in_file)
+    preprocessed_logs = preprocess_grepped_logs(grepped_logs)
     sorted_idf_tuples, idfs = get_idfs(preprocessed_logs)
 
     output_to_file(preprocessed_logs, sorted_idf_tuples)
