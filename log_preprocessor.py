@@ -6,6 +6,14 @@ from log_statement import LogStatement
 
 __author__ = 'hlib'
 
+LOG_LEVEL_REGEX = re.compile(".*([Ll]og|LOG)\.([Tt]race|[Dd]ebug|[Ii]nfo|[Ww]arn|[Ee]rror|[Ff]atal)\(.*\).*")
+
+def extract_log_level(line):
+    matcher = re.match(LOG_LEVEL_REGEX, line)
+    if matcher is not None:
+        return matcher.group(2).lower()
+    else:
+        raise ValueError("Log level couldn't be extracted from log statement: " + line)
 
 def extract_text(line):
     full_line = line
@@ -106,6 +114,7 @@ def preprocess_grepped_logs(logs):
     return list(
         map(lambda l: LogStatement(
             log_text=postprocess_extracted_text(extract_text(l['log_statement'])),
+            log_level=extract_log_level(l['log_statement']),
             context=preprocess_context(l['context']),
             link=l['github_link']), logs)
     )
