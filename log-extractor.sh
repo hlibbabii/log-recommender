@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 BASE_URL="https://github.com/apache/"
 LINE_PREFIX="#L"
 
