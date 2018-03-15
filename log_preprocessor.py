@@ -1,4 +1,5 @@
 import operator
+from pprint import pprint
 import re
 from math import log
 from log_picker import test_pick_log
@@ -7,6 +8,9 @@ from log_statement import LogStatement
 __author__ = 'hlib'
 
 LOG_LEVEL_REGEX = re.compile(".*([Ll]og|LOG)\.([Tt]race|[Dd]ebug|[Ii]nfo|[Ww]arn|[Ee]rror|[Ff]atal)\(.*\).*")
+
+VAR_PLACEHOLDER = "<VAR>"
+STRING_RESOURCE_PLACEHOLDER = "<STRING_RESOURCE>"
 
 def extract_log_level(line):
     matcher = re.match(LOG_LEVEL_REGEX, line)
@@ -25,7 +29,7 @@ def extract_text_and_variables(line):
         closing_quote_index = line.find("\"")
         if closing_quote_index < 0:
             print("No closing quote found for the opening quote in string: " + full_line)
-            return None, 0
+            return "", 0
         text += line[:closing_quote_index]
         text_parts += 1
         line = line[closing_quote_index+1:]
@@ -52,23 +56,21 @@ def append_period_if_absent(line):
 
 
 def replace_string_resources_names(line):
-    changed = re.sub('^([0-9a-zA-Z]+\\.)+[0-9a-zA-Z]+$', '<STRING_RESOURCE>', line)
+    changed = re.sub('^([0-9a-zA-Z]+\\.)+[0-9a-zA-Z]+$', STRING_RESOURCE_PLACEHOLDER, line)
     if changed != line:
         print(line + "  ----->  " + changed)
     return changed
 
 
 def replace_variable_place_holders(line):
-    changed = re.sub('\\{\\}', '<VAR>', line)
-    changed = re.sub('%[0-9]*[a-z]', '<VAR>', changed)
+    changed = re.sub('\\{\\}', VAR_PLACEHOLDER, line)
+    changed = re.sub('%[0-9]*[a-z]', VAR_PLACEHOLDER, changed)
     if changed != line:
         print(line + "  ----->  " + changed)
     return changed
 
 
 def postprocess_extracted_text(line):
-    if line is None:
-        return None
     line = line.strip()
     line = replace_string_resources_names(line)
     line = replace_variable_place_holders(line)
@@ -82,7 +84,7 @@ def camel_case_split(identifier):
 
 
 def split_to_key_words_and_identifiers(line):
-    return list(filter(None, re.split("[\[\] ,.\-!?:\n\t(){};=+*/\"&|<>_]+", line)))
+    return list(filter(None, re.split("[\[\] ,.\-!?:\n\t(){};=+*/\"&|<>_#\\\@]+", line)))
 
 
 def preprocess_context(context):
@@ -126,21 +128,41 @@ def preprocess_grepped_logs(logs):
     )
 
 
+def remove_placeholders(log_text):
+    log_text = re.sub(VAR_PLACEHOLDER, r'', log_text)
+    log_text = re.sub(STRING_RESOURCE_PLACEHOLDER, r'', log_text)
+    return log_text
+
+def get_words_from_log_text(log_text):
+    #Consider different splitting for log statement than for the context
+    log_text = remove_placeholders(log_text)
+    log_text = log_text.lower()
+    return split_to_key_words_and_identifiers(log_text)
+
+
+def filter_out_stop_words(words_from_log_text):
+    return list(filter(lambda w: w not in STOP_WORDS, words_from_log_text))
+
+
 def process_log_statement(log_entry):
     text, n_variables = extract_text_and_variables(log_entry['log_statement'])
+    log_text = postprocess_extracted_text(text)
+    words_from_log_text = get_words_from_log_text(log_text)
+    words_from_log_text = filter_out_stop_words(words_from_log_text)
     return LogStatement(
-            log_text=postprocess_extracted_text(text),
+            log_text=log_text,
+            log_text_words=words_from_log_text,
             log_level=extract_log_level(log_entry['log_statement']),
             n_variables=n_variables,
             context=preprocess_context(log_entry['context']),
             link=log_entry['github_link'])
 
 
-def get_idfs(preprocessed_logs):
+def get_idfs(context_list):
     sum = dict()
-    vector_number = float(len(preprocessed_logs))
-    for l in preprocessed_logs:
-        for context_string in l.context:
+    vector_number = float(len(context_list))
+    for l in context_list:
+        for context_string in l:
             if context_string in sum:
                 sum[context_string] += 1
             else:
@@ -164,12 +186,28 @@ def output(preprocessed_logs, idfs, output_filename):
 def output_to_file(preprocessed_logs, sorted_idf_tuples):
     output(preprocessed_logs, sorted_idf_tuples, '../gengram/corpus.txt')
 
+STOP_WORDS=["a", "an", "and", "are", "as", "at", "be", "for", "has", "in", "is", "it", "its", "of", "on", "that",
+            "the", "to", "was", "were", "with"]
+#the following words are normally stop words but we might want not to consider as stop words:  by, from, he, will
+
+def get_frequencies_for_log_texts(logs):
+    dict = {}
+    for l in logs:
+        for w in l.log_text_words:
+            if w in dict:
+                dict[w] += 1
+            else:
+                dict[w] = 1
+    return dict
+
 
 if __name__ == "__main__":
     in_file = "grepped_logs.20180313-005759"
     grepped_logs = read_grepped_log_file(in_file)
     preprocessed_logs = preprocess_grepped_logs(grepped_logs)
-    sorted_idf_tuples, idfs = get_idfs(preprocessed_logs)
+    frequencies = get_frequencies_for_log_texts(preprocessed_logs)
+    pprint(sorted(frequencies.items(), key=operator.itemgetter(1), reverse=True))
+    sorted_idf_tuples, idfs = get_idfs(list(map(lambda l: l.context, preprocessed_logs)))
 
     output_to_file(preprocessed_logs, sorted_idf_tuples)
     test_pick_log(preprocessed_logs, idfs)
