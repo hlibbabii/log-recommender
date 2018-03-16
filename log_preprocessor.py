@@ -84,7 +84,7 @@ def camel_case_split(identifier):
 
 
 def split_to_key_words_and_identifiers(line):
-    return list(filter(None, re.split("[\[\] ,.\-!?:\n\t(){};=+*/\"&|<>_#\\\@]+", line)))
+    return list(filter(None, re.split("[\[\] ,.\-!?:\n\t(){};=+*/\"&|<>_#\\\@$]+", line)))
 
 
 def preprocess_context(context):
