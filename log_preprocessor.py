@@ -144,17 +144,34 @@ def filter_out_stop_words(words_from_log_text):
     return list(filter(lambda w: w not in STOP_WORDS, words_from_log_text))
 
 
+FIRST_WORDS = ["received", "failed", "sending", "starting", "got", "created", "caught", "stopping",
+               "creating", "waiting", "exception", "message", "error", "attempting", "removing", "finished",
+               "testing", "adding", "started", "ignoring", "unexpected", "using", "no", "found", "start",
+               "processing", "adding", "expected", "cannot", "running", "setting", "closing", "unable", "deleting",
+               "skipping", "executing", "added", "connecting", "testing", "shutting", "initializing", "successfully",
+               "restarting", "updating"]
+
+
 def process_log_statement(log_entry):
     text, n_variables = extract_text_and_variables(log_entry['log_statement'])
     log_text = postprocess_extracted_text(text)
     words_from_log_text = get_words_from_log_text(log_text)
+    first_word = ""
+    if len(words_from_log_text) > 0:
+        first_word=words_from_log_text[0]
+    first_word_cathegory = "OTHER__"
+    if first_word in FIRST_WORDS:
+        first_word_cathegory = first_word
     words_from_log_text = filter_out_stop_words(words_from_log_text)
     return LogStatement(
             log_text=log_text,
+            log_first_word=first_word,
+            first_word_cathegory=first_word_cathegory,
             log_text_words=words_from_log_text,
             log_level=extract_log_level(log_entry['log_statement']),
             n_variables=n_variables,
-            context=preprocess_context(log_entry['context']),
+            context=log_entry['context'],
+            context_words=preprocess_context(log_entry['context']),
             link=log_entry['github_link'])
 
 
@@ -201,14 +218,28 @@ def get_frequencies_for_log_texts(logs):
     return dict
 
 
+def get_first_word_frequencies(logs):
+    dict = {}
+    for l in logs:
+        w = l.log_first_word
+        if w in dict:
+            dict[w] += 1
+        else:
+            dict[w] = 1
+    return dict
+
+
 if __name__ == "__main__":
-    in_file = "grepped_logs.20180313-005759"
+    in_file = "grepped_logs.20180320-021054"
     grepped_logs = read_grepped_log_file(in_file)
     preprocessed_logs = preprocess_grepped_logs(grepped_logs)
     frequencies = get_frequencies_for_log_texts(preprocessed_logs)
-    pprint(sorted(frequencies.items(), key=operator.itemgetter(1), reverse=True))
-    sorted_idf_tuples, idfs = get_idfs(list(map(lambda l: l.context, preprocessed_logs)))
+    first_word_frequencies = get_first_word_frequencies(preprocessed_logs)
+    pprint(sorted(first_word_frequencies.items(), key=operator.itemgetter(1), reverse=True))
+    sorted_idf_tuples, idfs = get_idfs(list(map(lambda l: l.context_words, preprocessed_logs)))
 
     output_to_file(preprocessed_logs, sorted_idf_tuples)
     test_pick_log(preprocessed_logs, idfs)
+    from csv_io import write
+    write(preprocessed_logs)
 
