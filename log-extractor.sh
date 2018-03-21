@@ -1,5 +1,25 @@
 #!/usr/bin/env bash
-BASE_URL="https://github.com/apache/"
+
+#https://stackoverflow.com/questions/3915040/bash-fish-command-to-print-absolute-path-to-a-file#answer-23002317
+function abspath() {
+    # generate absolute path from relative path
+    # $1     : relative filename
+    # return : absolute path
+    if [ -d "$1" ]; then
+        # dir
+        (cd "$1"; pwd)
+    elif [ -f "$1" ]; then
+        # file
+        if [[ $1 = /* ]]; then
+            echo "$1"
+        elif [[ $1 == */* ]]; then
+            echo "$(cd "${1%/*}"; pwd)/${1##*/}"
+        else
+            echo "$(pwd)/$1"
+        fi
+    fi
+}
+
 LINE_PREFIX="#L"
 
 LINES_BEFORE_TO_EXTRACT=4
@@ -10,11 +30,23 @@ FILE_FOR_OUTPUT=`pwd`/grepped_logs.`date "+%Y%m%d-%H%M%S"`
 echo "Extracting logs to ${FILE_FOR_OUTPUT}"
 echo ${LINES_BEFORE_TO_EXTRACT} >> ${FILE_FOR_OUTPUT}
 
-CSV_FILE=$1
+CSV_FILE=$( abspath "$1" )
 echo "Getting projects from $CSV_FILE"
 
-#BASE_DIR=$2
-#cd ${BASE_DIR}
+DEFAULT_PROJECT_DIR=".Projects"
+if [ -z "$2" ]; then
+    PROJECT_DIR=${DEFAULT_PROJECT_DIR}
+else
+    PROJECT_DIR=$2
+fi
+
+if [ -d "$PROJECT_DIR" ]; then
+    echo "Project directory ${PROJECT_DIR} found"
+else
+    echo "Project directory ${PROJECT_DIR} NOT found. Creating it..."
+    mkdir "${PROJECT_DIR}"
+fi
+cd ${PROJECT_DIR}
 
 while IFS=, read -r PROJECT_NAME PROJECT_LINK
 do
