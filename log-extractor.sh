@@ -26,7 +26,7 @@ LINES_BEFORE_TO_EXTRACT=4
 
 REGEX='\([Ll]og\|LOG\)\.\([Tt]race\|[Dd]ebug\|[Ii]nfo\|[Ww]arn\|[Ee]rror\\[Ff]atal\)(.*)'
 
-FILE_FOR_OUTPUT=`pwd`/grepped_logs.`date "+%Y%m%d-%H%M%S"`
+FILE_FOR_OUTPUT=$(pwd)/grepped_logs.$(date "+%Y%m%d-%H%M%S")
 echo "Extracting logs to ${FILE_FOR_OUTPUT}"
 echo ${LINES_BEFORE_TO_EXTRACT} >> ${FILE_FOR_OUTPUT}
 
@@ -57,7 +57,7 @@ do
         git clone ${PROJECT_LINK} ${PROJECT_NAME}
     fi
     cd ${PROJECT_NAME}
-    COMMIT_HASH=`git log -n 1 --pretty=format:"%H"`
+    COMMIT_HASH=$(git log -n 1 --pretty=format:"%H")
 
     echo grepping logs from ${PROJECT_NAME} ...
     grep -rn ${REGEX} | while read -r line ; do
