@@ -2,4 +2,5 @@
 .idea/workspace.xml
 grepped_logs.*
 /.Projects/
+/.Logs/
 logs.csv
