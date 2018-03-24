@@ -31,7 +31,7 @@ def extract_text_and_variables(line):
         closing_quote_index = line.find("\"")
         if closing_quote_index < 0:
             print("No closing quote found for the opening quote in string: " + full_line)
-            return "", 0
+            return full_line, "", 0
         text += line[:closing_quote_index]
         text_parts += 1
         line = line[closing_quote_index+1:]
@@ -44,7 +44,7 @@ def extract_text_and_variables(line):
         n_variables = text.count("{}")
         if n_variables == 0:
             n_variables = text.count("%")
-    return text, n_variables
+    return full_line, text, n_variables
 
 
 def contains_text(line):
@@ -156,7 +156,7 @@ FIRST_WORDS = ["received", "failed", "sending", "starting", "got", "created", "c
 
 
 def process_log_statement(log_entry):
-    text, n_variables = extract_text_and_variables(log_entry['log_statement'])
+    log_text_line, text, n_variables = extract_text_and_variables(log_entry['log_statement'])
     log_text = postprocess_extracted_text(text)
     words_from_log_text = get_words_from_log_text(log_text)
     first_word = ""
@@ -167,6 +167,7 @@ def process_log_statement(log_entry):
         first_word_cathegory = first_word
     words_from_log_text = filter_out_stop_words(words_from_log_text)
     return LogStatement(
+            log_text_line=log_text_line,
             log_text=log_text,
             log_first_word=first_word,
             first_word_cathegory=first_word_cathegory,
