@@ -121,7 +121,8 @@ def read_grepped_log_file(directory):
                 f.readline()
                 f.readline()
                 if contains_text(log_statement_line):
-                    list.append({'log_statement': log_statement_line, 'context': context, 'github_link': github_link})
+                    list.append({'log_statement': log_statement_line, 'context': context,
+                                 'github_link': github_link, 'project': filename})
     return list
 
 
@@ -176,6 +177,7 @@ def process_log_statement(log_entry):
             n_variables=n_variables,
             context=log_entry['context'],
             context_words=preprocess_context(log_entry['context']),
+            project = log_entry['project'],
             link=log_entry['github_link'])
 
 
