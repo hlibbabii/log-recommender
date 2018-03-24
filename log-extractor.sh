@@ -26,10 +26,6 @@ LINES_BEFORE_TO_EXTRACT=4
 
 REGEX='\([Ll]og\|LOG\)\.\([Tt]race\|[Dd]ebug\|[Ii]nfo\|[Ww]arn\|[Ee]rror\\[Ff]atal\)(.*)'
 
-FILE_FOR_OUTPUT=$(pwd)/grepped_logs.$(date "+%Y%m%d-%H%M%S")
-echo "Extracting logs to ${FILE_FOR_OUTPUT}"
-echo ${LINES_BEFORE_TO_EXTRACT} >> ${FILE_FOR_OUTPUT}
-
 CSV_FILE=$( abspath "$1" )
 echo "Getting projects from $CSV_FILE"
 
@@ -46,10 +42,32 @@ else
     echo "Project directory ${PROJECT_DIR} NOT found. Creating it..."
     mkdir "${PROJECT_DIR}"
 fi
+
+DEFAULT_GREPPED_LOGS_DIR=".Logs"
+if [ -z "$3" ]; then
+    GREPPED_LOGS_DIR=${DEFAULT_GREPPED_LOGS_DIR}
+else
+    GREPPED_LOGS_DIR=$3
+fi
+
+echo "Extracting logs to ${GREPPED_LOGS_DIR}"
+if [ -d "$GREPPED_LOGS_DIR" ]; then
+    echo "Logs directory ${GREPPED_LOGS_DIR} found"
+else
+    echo "Logs directory ${GREPPED_LOGS_DIR} NOT found. Creating it..."
+    mkdir "${GREPPED_LOGS_DIR}"
+fi
+GREPPED_LOGS_DIR_ABSPATH=$(abspath "$GREPPED_LOGS_DIR")
+
 cd ${PROJECT_DIR}
 
 while IFS=, read -r PROJECT_NAME PROJECT_LINK
 do
+    FILE_FOR_OUTPUT="$GREPPED_LOGS_DIR_ABSPATH"/"${PROJECT_NAME}".grepped_logs
+    if [ -f "$FILE_FOR_OUTPUT" ]; then
+        echo "file ${FILE_FOR_OUTPUT} already exists. Logs have already been extracted"
+        continue
+    fi
     if [ -d "${PROJECT_NAME}" ]; then
          echo "${PROJECT_NAME} already exists"
     else
@@ -60,6 +78,8 @@ do
     COMMIT_HASH=$(git log -n 1 --pretty=format:"%H")
 
     echo grepping logs from ${PROJECT_NAME} ...
+
+    echo ${LINES_BEFORE_TO_EXTRACT} >> ${FILE_FOR_OUTPUT}
     grep -rn ${REGEX} | while read -r line ; do
         FILE="$(echo $line | sed -n "s/^\(\S*\.\(java\|scala\|groovy\|py\|js\|c\|rb\|adoc\|md\|vm\)\).*$/\1/p")"
         if [ -n "${FILE}" ]; then
