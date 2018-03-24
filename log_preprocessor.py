@@ -4,6 +4,7 @@ import re
 from math import log
 from log_picker import test_pick_log
 from log_statement import LogStatement
+import os
 
 __author__ = 'hlib'
 
@@ -17,7 +18,8 @@ def extract_log_level(line):
     if matcher is not None:
         return matcher.group(2).lower()
     else:
-        raise ValueError("Log level couldn't be extracted from log statement: " + line)
+        print("Log level couldn't be extracted from log statement: " + line)
+        return "Unknown"
 
 def extract_text_and_variables(line):
     full_line = line
@@ -74,7 +76,7 @@ def postprocess_extracted_text(line):
     line = line.strip()
     line = replace_string_resources_names(line)
     line = replace_variable_place_holders(line)
-    line = append_period_if_absent(line)
+    # line = append_period_if_absent(line)
     return line
 
 
@@ -98,27 +100,28 @@ def filter_bad_context_line(new_context_line):
     return re.match(STOP_REGEX, new_context_line) is None
 
 
-def read_grepped_log_file(filename):
+def read_grepped_log_file(directory):
     list= []
-    with open(filename, 'r') as f:
-        n_lines_of_context = int(f.readline())
-        while True:
-            #reading github link
-            github_link = f.readline()
-            if not github_link:
-                break
-            context = ""
-            for i in range(n_lines_of_context):
-                new_context_line = f.readline()
-                if filter_bad_context_line(new_context_line):
-                    context += new_context_line
-                        #reading log statement
-            log_statement_line = f.readline()
-            #reading 2 empty lines
-            f.readline()
-            f.readline()
-            if contains_text(log_statement_line):
-                list.append({'log_statement': log_statement_line, 'context': context, 'github_link': github_link})
+    for filename in os.listdir(directory):
+        with open(os.path.join(directory, filename), 'r') as f:
+            n_lines_of_context = int(f.readline())
+            while True:
+                #reading github link
+                github_link = f.readline()
+                if not github_link:
+                    break
+                context = ""
+                for i in range(n_lines_of_context):
+                    new_context_line = f.readline()
+                    if filter_bad_context_line(new_context_line):
+                        context += new_context_line
+                            #reading log statement
+                log_statement_line = f.readline()
+                #reading 2 empty lines
+                f.readline()
+                f.readline()
+                if contains_text(log_statement_line):
+                    list.append({'log_statement': log_statement_line, 'context': context, 'github_link': github_link})
     return list
 
 
@@ -230,7 +233,7 @@ def get_first_word_frequencies(logs):
 
 
 if __name__ == "__main__":
-    in_file = "grepped_logs.20180320-021054"
+    in_file = "../.Logs"
     grepped_logs = read_grepped_log_file(in_file)
     preprocessed_logs = preprocess_grepped_logs(grepped_logs)
     frequencies = get_frequencies_for_log_texts(preprocessed_logs)
