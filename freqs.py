@@ -1,4 +1,10 @@
 import operator
+import pickle
+from pprint import pprint
+from math import log
+from csv_io import output_frequencies, write
+from log_picker import test_pick_log
+from log_preprocessor import output_to_file, THRESHOLD
 
 __author__ = 'hlib'
 
@@ -72,3 +78,45 @@ def get_first_word_frequencies(logs):
         else:
             dict[w] = 1
     return dict
+
+
+def get_idfs(context_list):
+    sum = dict()
+    vector_number = float(len(context_list))
+    for l in context_list:
+        for context_string in l:
+            if context_string in sum:
+                sum[context_string] += 1
+            else:
+                sum[context_string] = 1
+    idfs = {key: log(vector_number / value, 2) for key, value in sum.items()}
+    return sorted(idfs.items(), key=operator.itemgetter(1), reverse=True), idfs
+
+def get_top_projects(project_stats):
+    return list(map(lambda x : x[0],
+              sorted(filter(lambda x: x[1] >= THRESHOLD, project_stats.items()), key=lambda x: x[1], reverse=True)
+              ))
+
+
+if __name__ == '__main__':
+    with open('pplogs.pkl', 'rb') as i:
+        preprocessed_logs = pickle.load(i)
+    project_stats = {}
+    with open('project_stats1.csv', 'r') as i:
+        for line in i:
+            split = line.split(",")
+            project_stats[split[0]] = int(split[1])
+    top_projects = get_top_projects(project_stats)
+    frequencies = get_frequencies_for_log_texts(preprocessed_logs)
+    output_frequencies(
+        sorted(calc_frequency_stats(frequencies).items(), key=lambda x: x[1]['__median__'], reverse=True),
+        top_projects
+    )
+    pprint(project_stats)
+    first_word_frequencies = get_first_word_frequencies(preprocessed_logs)
+    # pprint(sorted(first_word_frequencies.items(), key=operator.itemgetter(1), reverse=True))
+    sorted_idf_tuples, idfs = get_idfs(list(map(lambda l: l.context_words, preprocessed_logs)))
+
+    output_to_file(preprocessed_logs, sorted_idf_tuples)
+    test_pick_log(preprocessed_logs, idfs)
+    write(preprocessed_logs)

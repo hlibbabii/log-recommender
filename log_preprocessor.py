@@ -1,12 +1,7 @@
-import operator
-from pprint import pprint
 import re
-from math import log
-from freqs import get_first_word_frequencies, calc_frequency_stats, get_frequencies_for_log_texts
-from log_picker import test_pick_log
 from log_statement import LogStatement
 import os
-from csv_io import write, output_frequencies
+import pickle
 
 __author__ = 'hlib'
 
@@ -193,20 +188,6 @@ def process_log_statement(log_entry):
             link=log_entry['github_link'])
 
 
-def get_idfs(context_list):
-    sum = dict()
-    vector_number = float(len(context_list))
-    for l in context_list:
-        for context_string in l:
-            if context_string in sum:
-                sum[context_string] += 1
-            else:
-                sum[context_string] = 1
-    idfs = {key: log(vector_number / value, 2) for key, value in sum.items()}
-    return sorted(idfs.items(), key=operator.itemgetter(1), reverse=True), idfs
-
-
-
 def output(preprocessed_logs, idfs, output_filename):
     with open(output_filename, 'w') as f:
         for l in preprocessed_logs:
@@ -226,28 +207,13 @@ STOP_WORDS=["a", "an", "and", "are", "as", "at", "be", "for", "has", "in", "is",
 #the following words are normally stop words but we might want not to consider as stop words:  by, from, he, will
 
 
-def get_top_projects(project_stats):
-    return list(map(lambda x : x[0],
-              sorted(filter(lambda x: x[1] >= THRESHOLD, project_stats.items()), key=lambda x: x[1], reverse=True)
-              ))
-
-
 if __name__ == "__main__":
     in_file = "../.Logs"
     grepped_logs, project_stats = read_grepped_log_file(in_file)
-    top_projects = get_top_projects(project_stats)
-    preprocessed_logs = preprocess_grepped_logs(grepped_logs)
-    frequencies = get_frequencies_for_log_texts(preprocessed_logs)
-    output_frequencies(
-        sorted(calc_frequency_stats(frequencies).items(), key=lambda x: x[1]['__median__'], reverse=True),
-        top_projects
-    )
-    pprint(project_stats)
-    first_word_frequencies = get_first_word_frequencies(preprocessed_logs)
-    # pprint(sorted(first_word_frequencies.items(), key=operator.itemgetter(1), reverse=True))
-    sorted_idf_tuples, idfs = get_idfs(list(map(lambda l: l.context_words, preprocessed_logs)))
-
-    output_to_file(preprocessed_logs, sorted_idf_tuples)
-    test_pick_log(preprocessed_logs, idfs)
-    write(preprocessed_logs)
+    pp_logs = preprocess_grepped_logs(grepped_logs)
+    with open('pplogs.pkl', 'wb') as  o:
+        pickle.dump(pp_logs, o, pickle.HIGHEST_PROTOCOL)
+    with open('project_stats.csv', 'w') as o:
+        for project in project_stats.items():
+            o.write(project[0] + ',' + str(project[1]) + '\n')
 
