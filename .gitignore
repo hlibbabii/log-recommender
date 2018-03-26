@@ -4,3 +4,4 @@ grepped_logs.*
 /.Projects/
 /.Logs/
 logs.csv
+*.pkl
