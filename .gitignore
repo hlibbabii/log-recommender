@@ -5,3 +5,5 @@ grepped_logs.*
 /.Logs/
 logs.csv
 *.pkl
+/frequencies.csv
+/frequencies_first_word.csv
