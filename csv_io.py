@@ -2,7 +2,7 @@ __author__ = 'hlib'
 
 import csv
 
-def write(logs):
+def write_to_classification_spreadsheet(logs):
     with open('logs.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         for log in logs:

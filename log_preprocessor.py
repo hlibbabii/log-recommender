@@ -155,14 +155,6 @@ def filter_out_stop_words(words_from_log_text):
     return list(filter(lambda w: w not in STOP_WORDS, words_from_log_text))
 
 
-FIRST_WORDS = ["received", "failed", "sending", "starting", "got", "created", "caught", "stopping",
-               "creating", "waiting", "exception", "message", "error", "attempting", "removing", "finished",
-               "testing", "adding", "started", "ignoring", "unexpected", "using", "no", "found", "start",
-               "processing", "adding", "expected", "cannot", "running", "setting", "closing", "unable", "deleting",
-               "skipping", "executing", "added", "connecting", "testing", "shutting", "initializing", "successfully",
-               "restarting", "updating"]
-
-
 def process_log_statement(log_entry):
     log_text_line, text, n_variables = extract_text_and_variables(log_entry['log_statement'])
     log_text = postprocess_extracted_text(text)
@@ -170,15 +162,11 @@ def process_log_statement(log_entry):
     first_word = ""
     if len(words_from_log_text) > 0:
         first_word=words_from_log_text[0]
-    first_word_cathegory = "OTHER__"
-    if first_word in FIRST_WORDS:
-        first_word_cathegory = first_word
     words_from_log_text = filter_out_stop_words(words_from_log_text)
     return LogStatement(
             log_text_line=log_text_line,
             log_text=log_text,
             log_first_word=first_word,
-            first_word_cathegory=first_word_cathegory,
             log_text_words=words_from_log_text,
             log_level=extract_log_level(log_entry['log_statement']),
             n_variables=n_variables,

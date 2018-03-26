@@ -2,7 +2,7 @@ import operator
 import pickle
 from pprint import pprint
 from math import log
-from csv_io import output_frequencies, write
+from csv_io import output_frequencies, write_to_classification_spreadsheet
 from log_picker import test_pick_log
 from log_preprocessor import output_to_file, THRESHOLD
 
@@ -100,11 +100,21 @@ def get_top_projects(project_stats):
               ))
 
 
+def classify_logs_by_first_word(preprocessed_logs, first_word_freq_stats):
+    most_freq_words=list(map(lambda x:x[0], filter(lambda x:x[1]['__median__'], first_word_freq_stats.items())))
+    pprint(most_freq_words)
+    for log in preprocessed_logs:
+        first_word = log.log_text_words[0] if len(log.log_text_words) > 0 else ""
+        log.first_word_cathegory = first_word if first_word in most_freq_words else "OTHER__"
+    return preprocessed_logs
+
+
+
 if __name__ == '__main__':
     with open('pplogs.pkl', 'rb') as i:
         preprocessed_logs = pickle.load(i)
     project_stats = {}
-    with open('project_stats1.csv', 'r') as i:
+    with open('project_stats.csv', 'r') as i:
         for line in i:
             split = line.split(",")
             project_stats[split[0]] = int(split[1])
@@ -118,17 +128,18 @@ if __name__ == '__main__':
     )
 
     first_word_frequencies = get_first_word_frequencies(preprocessed_logs)
+    first_word_freq_stats = calc_frequency_stats(first_word_frequencies)
     output_frequencies(
         'frequencies_first_word.csv',
-        sorted(calc_frequency_stats(first_word_frequencies).items(), key=lambda x: x[1]['__median__'], reverse=True),
+        sorted(first_word_freq_stats.items(), key=lambda x: x[1]['__median__'], reverse=True),
         top_projects
     )
 
     pprint(project_stats)
-    first_word_frequencies = get_first_word_frequencies(preprocessed_logs)
-    # pprint(sorted(first_word_frequencies.items(), key=operator.itemgetter(1), reverse=True))
-    sorted_idf_tuples, idfs = get_idfs(list(map(lambda l: l.context_words, preprocessed_logs)))
+    
+    classified_logs = classify_logs_by_first_word(preprocessed_logs, first_word_freq_stats)
+    write_to_classification_spreadsheet(classified_logs)
 
+    sorted_idf_tuples, idfs = get_idfs(list(map(lambda l: l.context_words, preprocessed_logs)))
     output_to_file(preprocessed_logs, sorted_idf_tuples)
     test_pick_log(preprocessed_logs, idfs)
-    write(preprocessed_logs)
