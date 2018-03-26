@@ -73,10 +73,12 @@ def get_first_word_frequencies(logs):
     dict = {}
     for l in logs:
         w = l.log_first_word
-        if w in dict:
-            dict[w] += 1
+        if l.project not in dict:
+            dict[l.project] = {}
+        if w in dict[l.project]:
+            dict[l.project][w] += 1
         else:
-            dict[w] = 1
+            dict[l.project][w] = 1
     return dict
 
 
@@ -107,11 +109,21 @@ if __name__ == '__main__':
             split = line.split(",")
             project_stats[split[0]] = int(split[1])
     top_projects = get_top_projects(project_stats)
+
     frequencies = get_frequencies_for_log_texts(preprocessed_logs)
     output_frequencies(
+        'frequencies.csv',
         sorted(calc_frequency_stats(frequencies).items(), key=lambda x: x[1]['__median__'], reverse=True),
         top_projects
     )
+
+    first_word_frequencies = get_first_word_frequencies(preprocessed_logs)
+    output_frequencies(
+        'frequencies_first_word.csv',
+        sorted(calc_frequency_stats(first_word_frequencies).items(), key=lambda x: x[1]['__median__'], reverse=True),
+        top_projects
+    )
+
     pprint(project_stats)
     first_word_frequencies = get_first_word_frequencies(preprocessed_logs)
     # pprint(sorted(first_word_frequencies.items(), key=operator.itemgetter(1), reverse=True))

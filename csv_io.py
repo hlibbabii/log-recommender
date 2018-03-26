@@ -10,8 +10,8 @@ def write(logs):
                              log.first_word_cathegory, log.context + log.log_text_line, len(log.log_text), log.link])
 
 
-def output_frequencies(frequencies, sorted_project_list):
-    with open('frequencies.csv', 'w', newline='') as csvfile:
+def output_frequencies(filename, frequencies, sorted_project_list):
+    with open(filename, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         header = ['word', 'median', 'avg', 'found in projects']
         header.extend(sorted_project_list)
