@@ -13,7 +13,7 @@ def write_to_classification_spreadsheet(logs):
 def output_frequencies(filename, frequencies, sorted_project_list):
     with open(filename, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        header = ['word', 'median', 'avg', 'found in projects']
+        header = ['word', 'median', 'mean', 'found in projects']
         header.extend(sorted_project_list)
         writer.writerow(header)
         for word in frequencies:
