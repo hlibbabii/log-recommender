@@ -24,7 +24,7 @@ LINE_PREFIX="#L"
 
 LINES_BEFORE_TO_EXTRACT=4
 
-REGEX='\([Ll]og\|LOG\)\.\([Tt]race\|[Dd]ebug\|[Ii]nfo\|[Ww]arn\|[Ee]rror\\[Ff]atal\)(.*)'
+REGEX='\([Ll]og\|LOG\|[Ll]ogger\|LOGGER\)\.\([Tt]race\|[Dd]ebug\|[Ii]nfo\|[Ww]arn\|[Ee]rror\\[Ff]atal\)(.*)'
 
 CSV_FILE=$( abspath "$1" )
 echo "Getting projects from $CSV_FILE"
@@ -81,7 +81,7 @@ do
 
     echo ${LINES_BEFORE_TO_EXTRACT} >> ${FILE_FOR_OUTPUT}
     grep -rn ${REGEX} | while read -r line ; do
-        FILE="$(echo $line | sed -n "s/^\(\S*\.\(java\|scala\|groovy\|py\|js\|c\|rb\|adoc\|md\|vm\)\).*$/\1/p")"
+        FILE="$(echo $line | sed -n "s/^\(\S*\.\(java\|scala\|groovy\|aj\|kt\|py\|js\|c\|rb\|adoc\|md\|vm\|patch\|R\)\).*$/\1/p")"
         if [ -n "${FILE}" ]; then
             LINE_NUMBER="$(echo $line | sed -n "s/^.*:\([1-9][0-9]*\):.*$/\1/p")"
             BASE_PROJECT_URL="$(echo $PROJECT_LINK | sed -n "s/^\(git\)\(.*\)\.git$/https\2/p")"
