@@ -5,10 +5,13 @@ from math import log
 from log_picker import test_pick_log
 from log_statement import LogStatement
 import os
+from csv_io import write, output_frequencies
 
 __author__ = 'hlib'
 
 LOG_LEVEL_REGEX = re.compile(".*([Ll]og|LOG)\.([Tt]race|[Dd]ebug|[Ii]nfo|[Ww]arn|[Ee]rror|[Ff]atal)\(.*\).*")
+
+THRESHOLD = 100
 
 VAR_PLACEHOLDER = "<VAR>"
 STRING_RESOURCE_PLACEHOLDER = "<STRING_RESOURCE>"
@@ -102,7 +105,11 @@ def filter_bad_context_line(new_context_line):
 
 def read_grepped_log_file(directory):
     list= []
+    project_stats = {}
+    print("returning logs from projects with more than " + str(THRESHOLD) + " logs extracted")
     for filename in os.listdir(directory):
+        log_counter = 0
+        current_proj_list = []
         with open(os.path.join(directory, filename), 'r') as f:
             n_lines_of_context = int(f.readline())
             while True:
@@ -121,9 +128,13 @@ def read_grepped_log_file(directory):
                 f.readline()
                 f.readline()
                 if contains_text(log_statement_line):
-                    list.append({'log_statement': log_statement_line, 'context': context,
+                    current_proj_list.append({'log_statement': log_statement_line, 'context': context,
                                  'github_link': github_link, 'project': filename})
-    return list
+                    log_counter += 1
+        project_stats[filename] = log_counter
+        if log_counter >= THRESHOLD:
+            list.extend(current_proj_list)
+    return list, project_stats
 
 
 def preprocess_grepped_logs(logs):
@@ -217,11 +228,61 @@ def get_frequencies_for_log_texts(logs):
     dict = {}
     for l in logs:
         for w in l.log_text_words:
-            if w in dict:
-                dict[w] += 1
+            if l.project not in dict:
+                dict[l.project] = {}
+            if w in dict[l.project]:
+                dict[l.project][w] += 1
             else:
-                dict[w] = 1
+                dict[l.project][w] = 1
     return dict
+
+def calc_frequency_stats(occurences):
+    project_sums = {}
+    for project_name, project_occurences in occurences.items():
+        project_sums[project_name] = sum(project_occurences.values())
+    total_sum = sum(project_sums.values())
+    frequencies = {}
+    all_occurences = {}
+    for project_name, project_occurences in occurences.items():
+        for word, word_occurences in project_occurences.items():
+            if word not in frequencies:
+                frequencies[word] = {}
+            frequencies[word][project_name] = float(word_occurences) / project_sums[project_name]
+            if word in all_occurences:
+                all_occurences[word] += word_occurences
+            else:
+                all_occurences[word] = word_occurences
+    n_projects = len(occurences)
+    for word in frequencies:
+        frequencies[word]['__median__'] = median(
+            sorted(frequencies[word].items(), key=operator.itemgetter(1), reverse=True),
+            n_projects
+        )
+    for word in frequencies:
+        frequencies[word]['__all__'] = float(all_occurences[word]) / total_sum
+        frequencies[word]['__found_in_projects__'] = len(frequencies[word]) - 2
+    return frequencies
+
+def avg(sorted_list, full_list_length):
+    if full_list_length // 2 >= len(sorted_list):
+        first = 0.0
+    else:
+        first = sorted_list[full_list_length // 2][1]
+    if full_list_length // 2 > len(sorted_list):
+        second = 0.0
+    else:
+        second = sorted_list[full_list_length // 2 - 1][1]
+    return (first + second) / 2
+
+
+def central(sorted_list, full_list_length):
+    if full_list_length // 2 >= len(sorted_list):
+        return 0.0
+    return sorted_list[full_list_length // 2][1]
+
+def median(sorted_list, full_list_length):
+    func = avg if full_list_length % 2 == 0 else central
+    return func(sorted_list, full_list_length)
 
 
 def get_first_word_frequencies(logs):
@@ -235,17 +296,28 @@ def get_first_word_frequencies(logs):
     return dict
 
 
+def get_top_projects(project_stats):
+    return list(map(lambda x : x[0],
+              sorted(filter(lambda x: x[1] >= THRESHOLD, project_stats.items()), key=lambda x: x[1], reverse=True)
+              ))
+
+
 if __name__ == "__main__":
     in_file = "../.Logs"
-    grepped_logs = read_grepped_log_file(in_file)
+    grepped_logs, project_stats = read_grepped_log_file(in_file)
+    top_projects = get_top_projects(project_stats)
     preprocessed_logs = preprocess_grepped_logs(grepped_logs)
     frequencies = get_frequencies_for_log_texts(preprocessed_logs)
+    output_frequencies(
+        sorted(calc_frequency_stats(frequencies).items(), key=lambda x: x[1]['__median__'], reverse=True),
+        top_projects
+    )
+    pprint(project_stats)
     first_word_frequencies = get_first_word_frequencies(preprocessed_logs)
-    pprint(sorted(first_word_frequencies.items(), key=operator.itemgetter(1), reverse=True))
+    # pprint(sorted(first_word_frequencies.items(), key=operator.itemgetter(1), reverse=True))
     sorted_idf_tuples, idfs = get_idfs(list(map(lambda l: l.context_words, preprocessed_logs)))
 
     output_to_file(preprocessed_logs, sorted_idf_tuples)
     test_pick_log(preprocessed_logs, idfs)
-    from csv_io import write
     write(preprocessed_logs)
 
