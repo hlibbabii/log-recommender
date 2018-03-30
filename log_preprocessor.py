@@ -113,18 +113,29 @@ def read_grepped_log_file(directory):
                 github_link = f.readline()
                 if not github_link:
                     break
-                context = ""
+                #reading empty line
+                f.readline()
+
+                context_before = ""
                 for i in range(n_lines_of_context):
                     new_context_line = f.readline()
                     if filter_bad_context_line(new_context_line):
-                        context += new_context_line
-                            #reading log statement
+                        context_before += new_context_line
+                #reading log statement
                 log_statement_line = f.readline()
+                context_after = ""
+                for i in range(n_lines_of_context):
+                    new_context_line = f.readline()
+                    if filter_bad_context_line(new_context_line):
+                        context_after += new_context_line
+
                 #reading 2 empty lines
                 f.readline()
                 f.readline()
                 if contains_text(log_statement_line):
-                    current_proj_list.append({'log_statement': log_statement_line, 'context': context,
+                    current_proj_list.append({'log_statement': log_statement_line,
+                                              'context_before': context_before,
+                                              'context_after': context_after,
                                  'github_link': github_link, 'project': filename})
                     log_counter += 1
         project_stats[filename] = log_counter
@@ -170,8 +181,9 @@ def process_log_statement(log_entry):
             log_text_words=words_from_log_text,
             log_level=extract_log_level(log_entry['log_statement']),
             n_variables=n_variables,
-            context=log_entry['context'],
-            context_words=preprocess_context(log_entry['context']),
+            context_before=log_entry['context_before'],
+            context_after=log_entry['context_after'],
+            context_words=preprocess_context(log_entry['context_before']),
             project = log_entry['project'],
             link=log_entry['github_link'])
 
@@ -181,7 +193,7 @@ def output(preprocessed_logs, idfs, output_filename):
         for l in preprocessed_logs:
             f.write(str(l.log_text) + "\n")
             f.write(l.log_level + " " + str(l.n_variables) + "\n")
-            f.write(str(l.context) + "\n")
+            f.write(str(l.context_before) + "\n")
             f.write(l.link + "\n")
             f.write("\n")
         f.write(str(idfs))

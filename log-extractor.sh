@@ -93,9 +93,12 @@ do
             BASE_PROJECT_URL="$(echo $PROJECT_LINK | sed -n "s/^\(git\)\(.*\)\.git$/https\2/p")"
 
             echo "${BASE_PROJECT_URL}/blob/${COMMIT_HASH}/${FILE}${LINE_PREFIX}${LINE_NUMBER}" >> ${FILE_FOR_OUTPUT}
+
+            LINES_BEFORE="\n"$(sed -n "${LINE_NUMBER}p" ${FILE})
+
+            #extracting context before
             LINES_LEFT_TO_EXTRACT=${LINES_BEFORE_TO_EXTRACT}
             CURRENT_LINE_NUMBER=$((LINE_NUMBER-1))
-            LINES_BEFORE="\n"$(sed -n "${LINE_NUMBER}p" ${FILE})
             while [ ${LINES_LEFT_TO_EXTRACT} -gt "0" ] && [ ${CURRENT_LINE_NUMBER} -gt "0" ]; do
                 CURRENT_LINE=$(sed -n "${CURRENT_LINE_NUMBER}p" ${FILE})
                 CURRENT_LINE_NUMBER=$((CURRENT_LINE_NUMBER-1))
@@ -107,7 +110,26 @@ do
                 fi
             done
             while [ ${LINES_LEFT_TO_EXTRACT} -gt "0" ]; do
-                LINES_BEFORE=$(echo -e "\n${LINES_BEFORE}")
+                LINES_BEFORE="\n${LINES_BEFORE}"
+                LINES_LEFT_TO_EXTRACT=$((LINES_LEFT_TO_EXTRACT-1 ))
+            done
+
+            #extrcating context after
+            LINES_LEFT_TO_EXTRACT=${LINES_BEFORE_TO_EXTRACT}
+            CURRENT_LINE_NUMBER=$((LINE_NUMBER+1))
+            LINES_IN_FILE=$(wc -l < "${FILE}")
+            while [ ${LINES_LEFT_TO_EXTRACT} -gt "0" ] && [ ${CURRENT_LINE_NUMBER} -le "$LINES_IN_FILE" ]; do
+                CURRENT_LINE=$(sed -n "${CURRENT_LINE_NUMBER}p" ${FILE})
+                CURRENT_LINE_NUMBER=$((CURRENT_LINE_NUMBER+1))
+                if [[ "$CURRENT_LINE" =~ ^[[:space:]]*}?[[:space:]]*$ ]]; then
+                    LINES_BEFORE="${LINES_BEFORE}${CURRENT_LINE}"
+                else
+                    LINES_BEFORE="${LINES_BEFORE}\n${CURRENT_LINE}"
+                    LINES_LEFT_TO_EXTRACT=$((LINES_LEFT_TO_EXTRACT-1))
+                fi
+            done
+            while [ ${LINES_LEFT_TO_EXTRACT} -gt "0" ]; do
+                LINES_BEFORE="${LINES_BEFORE}\n"
                 LINES_LEFT_TO_EXTRACT=$((LINES_LEFT_TO_EXTRACT-1 ))
             done
 

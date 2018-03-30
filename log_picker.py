@@ -25,12 +25,12 @@ def get_score(context, current_context, idfs):
 
 def test_pick_log(preprocessed_logs, idfs):
     print("\n===============Testing=====================\n")
-    log_entry_for_testing = preprocessed_logs[5700]
+    log_entry_for_testing = preprocessed_logs[57]
     most_suitable_log_statements = get_most_suitable_log_statements(preprocessed_logs, idfs, log_entry_for_testing.context_words, 10)
     for log_entry, score in most_suitable_log_statements:
         print(str(log_entry.log_text))
-        print(str(log_entry.context))
+        print(str(log_entry.context_before))
         print(str(score) + "\n")
 
     print("Real log statement: " + str(log_entry_for_testing.log_text))
-    print("Current context: " + str(log_entry_for_testing.context))
+    print("Current context: " + str(log_entry_for_testing.context_before))
