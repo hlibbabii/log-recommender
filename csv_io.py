@@ -3,12 +3,16 @@ __author__ = 'hlib'
 import csv
 
 def write_to_classification_spreadsheet(logs):
-    with open('logs.csv', 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        for log in logs:
-            writer.writerow([log.log_text, log.log_level, log.n_variables,
-                             log.first_word_cathegory, log.context_before + log.log_text_line + log.context_after,
-                             len(log.log_text), log.link])
+    n_chunks = len(logs) // 50000 + 1
+    print("There are " + str(len(logs)) + " logs. Writing them into " + str(n_chunks) + " files")
+    log_sets = [logs[i::n_chunks] for i in range(n_chunks)]
+    for index, log_set in enumerate(log_sets):
+        with open('logs' + str(index) + '.csv', 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            for log in log_set:
+                writer.writerow([log.log_text, log.log_level, log.n_variables,
+                                 log.first_word_cathegory, log.context_before + log.log_text_line + log.context_after,
+                                 len(log.log_text), log.link])
 
 
 def output_frequencies(filename, frequencies, sorted_project_list):
