@@ -94,46 +94,47 @@ do
 
             echo "${BASE_PROJECT_URL}/blob/${COMMIT_HASH}/${FILE}${LINE_PREFIX}${LINE_NUMBER}" >> ${FILE_FOR_OUTPUT}
 
-            LINES_BEFORE="\n"$(sed -n "${LINE_NUMBER}p" ${FILE})
+            LOG_LINE=$(sed -n "${LINE_NUMBER}p" ${FILE})
 
             #extracting context before
             LINES_LEFT_TO_EXTRACT=${LINES_BEFORE_TO_EXTRACT}
             CURRENT_LINE_NUMBER=$((LINE_NUMBER-1))
+            for (( i=1; i<=${LINES_BEFORE_TO_EXTRACT}; i++ )); do
+                LOG_CONTEXT_BEFORE[${i}]=""
+            done
             while [ ${LINES_LEFT_TO_EXTRACT} -gt "0" ] && [ ${CURRENT_LINE_NUMBER} -gt "0" ]; do
                 CURRENT_LINE=$(sed -n "${CURRENT_LINE_NUMBER}p" ${FILE})
                 CURRENT_LINE_NUMBER=$((CURRENT_LINE_NUMBER-1))
-                if [[ "$CURRENT_LINE" =~ ^[[:space:]]*}?[[:space:]]*$ ]]; then
-                    LINES_BEFORE="${CURRENT_LINE}$LINES_BEFORE"
-                else
-                    LINES_BEFORE="\n${CURRENT_LINE}$LINES_BEFORE"
+                LOG_CONTEXT_BEFORE[${LINES_LEFT_TO_EXTRACT}]="${CURRENT_LINE}${LOG_CONTEXT_BEFORE[${LINES_LEFT_TO_EXTRACT}]}"
+                if ! [[ "$CURRENT_LINE" =~ ^[[:space:]]*}?[[:space:]]*$ ]]; then
                     LINES_LEFT_TO_EXTRACT=$((LINES_LEFT_TO_EXTRACT-1))
                 fi
             done
-            while [ ${LINES_LEFT_TO_EXTRACT} -gt "0" ]; do
-                LINES_BEFORE="\n${LINES_BEFORE}"
-                LINES_LEFT_TO_EXTRACT=$((LINES_LEFT_TO_EXTRACT-1 ))
-            done
 
-            #extrcating context after
+            #extracting context after
             LINES_LEFT_TO_EXTRACT=${LINES_BEFORE_TO_EXTRACT}
             CURRENT_LINE_NUMBER=$((LINE_NUMBER+1))
             LINES_IN_FILE=$(wc -l < "${FILE}")
+            for (( i=1; i<=${LINES_BEFORE_TO_EXTRACT}; i++ )); do
+                LOG_CONTEXT_AFTER[${i}]=""
+            done
             while [ ${LINES_LEFT_TO_EXTRACT} -gt "0" ] && [ ${CURRENT_LINE_NUMBER} -le "$LINES_IN_FILE" ]; do
                 CURRENT_LINE=$(sed -n "${CURRENT_LINE_NUMBER}p" ${FILE})
                 CURRENT_LINE_NUMBER=$((CURRENT_LINE_NUMBER+1))
-                if [[ "$CURRENT_LINE" =~ ^[[:space:]]*}?[[:space:]]*$ ]]; then
-                    LINES_BEFORE="${LINES_BEFORE}${CURRENT_LINE}"
-                else
-                    LINES_BEFORE="${LINES_BEFORE}\n${CURRENT_LINE}"
+                CURRENT_INDEX=$((LINES_BEFORE_TO_EXTRACT-LINES_LEFT_TO_EXTRACT + 1))
+                LOG_CONTEXT_AFTER[${CURRENT_INDEX}]="${LOG_CONTEXT_AFTER[${CURRENT_INDEX}]}${CURRENT_LINE}"
+                if ! [[ "$CURRENT_LINE" =~ ^[[:space:]]*}?[[:space:]]*$ ]]; then
                     LINES_LEFT_TO_EXTRACT=$((LINES_LEFT_TO_EXTRACT-1))
                 fi
             done
-            while [ ${LINES_LEFT_TO_EXTRACT} -gt "0" ]; do
-                LINES_BEFORE="${LINES_BEFORE}\n"
-                LINES_LEFT_TO_EXTRACT=$((LINES_LEFT_TO_EXTRACT-1 ))
+            for (( i=1; i<=${LINES_BEFORE_TO_EXTRACT}; i++ )); do
+                echo "${LOG_CONTEXT_BEFORE[${i}]}" >> ${FILE_FOR_OUTPUT}
+            done
+            echo "${LOG_LINE}" >> ${FILE_FOR_OUTPUT}
+            for (( i=1; i<=${LINES_BEFORE_TO_EXTRACT}; i++ )); do
+                echo "${LOG_CONTEXT_AFTER[${i}]}" >> ${FILE_FOR_OUTPUT}
             done
 
-            echo -e "${LINES_BEFORE}" >> ${FILE_FOR_OUTPUT}
             echo "" >> ${FILE_FOR_OUTPUT}
             echo "" >> ${FILE_FOR_OUTPUT}
         else

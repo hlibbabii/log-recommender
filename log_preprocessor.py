@@ -113,8 +113,6 @@ def read_grepped_log_file(directory):
                 github_link = f.readline()
                 if not github_link:
                     break
-                #reading empty line
-                f.readline()
 
                 context_before = ""
                 for i in range(n_lines_of_context):
