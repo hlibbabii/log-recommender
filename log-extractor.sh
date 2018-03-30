@@ -26,6 +26,12 @@ LINES_BEFORE_TO_EXTRACT=4
 
 REGEX='\([Ll]og\|LOG\|[Ll]ogger\|LOGGER\)\.\([Tt]race\|[Dd]ebug\|[Ii]nfo\|[Ww]arn\|[Ee]rror\\[Ff]atal\)(.*)'
 
+#log statements that are not covered:
+#
+#log.log(Level.WARNING, "Error parsing ObjectDescriptor", e);
+#
+# if only a few log statements are found in the project it means that the same pattern is not followed throughout the project
+
 CSV_FILE=$( abspath "$1" )
 echo "Getting projects from $CSV_FILE"
 
