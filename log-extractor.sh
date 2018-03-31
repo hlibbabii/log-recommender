@@ -138,7 +138,7 @@ do
             echo "" >> ${FILE_FOR_OUTPUT}
             echo "" >> ${FILE_FOR_OUTPUT}
         else
-            echo "Can't extract file name: $line"
+            (>&2 echo "Can't extract file name: $line")
         fi
     done
     cd ..
