@@ -87,8 +87,8 @@ do
 
     echo ${LINES_BEFORE_TO_EXTRACT} >> ${FILE_FOR_OUTPUT}
     grep -rn ${REGEX} | while read -r line ; do
-        FILE="$(echo $line | sed -n "s/^\(\S*\.\(java\|scala\|groovy\|aj\|kt\|py\|js\|c\|rb\|adoc\|md\|vm\|patch\|R\)\).*$/\1/p")"
-        if [ -n "${FILE}" ]; then
+        FILE="$(echo $line | sed -n "s/^\(\S*\.\(java\|scala\|groovy\|aj\|kt\|py\|js\|c\|cs\|rb\|adoc\|md\|vm\|patch\|R\)\):.*$/\1/p")"
+        if [ -f "${FILE}" ]; then
             LINE_NUMBER="$(echo $line | sed -n "s/^.*:\([1-9][0-9]*\):.*$/\1/p")"
             BASE_PROJECT_URL="$(echo $PROJECT_LINK | sed -n "s/^\(git\)\(.*\)\.git$/https\2/p")"
 
@@ -102,12 +102,14 @@ do
             for (( i=1; i<=${LINES_BEFORE_TO_EXTRACT}; i++ )); do
                 LOG_CONTEXT_BEFORE[${i}]=""
             done
-            while [ ${LINES_LEFT_TO_EXTRACT} -gt "0" ] && [ ${CURRENT_LINE_NUMBER} -gt "0" ]; do
-                CURRENT_LINE=$(sed -n "${CURRENT_LINE_NUMBER}p" ${FILE})
+            while [ "${LINES_LEFT_TO_EXTRACT}" -gt "0" ] && [ "${CURRENT_LINE_NUMBER}" -gt "0" ]; do
+                CURRENT_LINE=$(sed -n "${CURRENT_LINE_NUMBER}p" ${FILE} | tr -d '\n\r')
                 CURRENT_LINE_NUMBER=$((CURRENT_LINE_NUMBER-1))
-                LOG_CONTEXT_BEFORE[${LINES_LEFT_TO_EXTRACT}]="${CURRENT_LINE}${LOG_CONTEXT_BEFORE[${LINES_LEFT_TO_EXTRACT}]}"
                 if ! [[ "$CURRENT_LINE" =~ ^[[:space:]]*}?[[:space:]]*$ ]]; then
+                    LOG_CONTEXT_BEFORE[${LINES_LEFT_TO_EXTRACT}]="${CURRENT_LINE}${LOG_CONTEXT_BEFORE[${LINES_LEFT_TO_EXTRACT}]}"
                     LINES_LEFT_TO_EXTRACT=$((LINES_LEFT_TO_EXTRACT-1))
+                elif [[ "$CURRENT_LINE" =~ ^[[:space:]]*}[[:space:]]*$ ]]; then
+                    LOG_CONTEXT_BEFORE[${LINES_LEFT_TO_EXTRACT}]="}""${LOG_CONTEXT_BEFORE[${LINES_LEFT_TO_EXTRACT}]}"
                 fi
             done
 
@@ -118,27 +120,31 @@ do
             for (( i=1; i<=${LINES_BEFORE_TO_EXTRACT}; i++ )); do
                 LOG_CONTEXT_AFTER[${i}]=""
             done
-            while [ ${LINES_LEFT_TO_EXTRACT} -gt "0" ] && [ ${CURRENT_LINE_NUMBER} -le "$LINES_IN_FILE" ]; do
-                CURRENT_LINE=$(sed -n "${CURRENT_LINE_NUMBER}p" ${FILE})
+            while [ "${LINES_LEFT_TO_EXTRACT}" -gt "0" ] && [ "${CURRENT_LINE_NUMBER}" -le "$LINES_IN_FILE" ]; do
+                CURRENT_LINE=$(sed -n "${CURRENT_LINE_NUMBER}p" ${FILE} | tr -d '\n\r')
                 CURRENT_LINE_NUMBER=$((CURRENT_LINE_NUMBER+1))
                 CURRENT_INDEX=$((LINES_BEFORE_TO_EXTRACT-LINES_LEFT_TO_EXTRACT + 1))
-                LOG_CONTEXT_AFTER[${CURRENT_INDEX}]="${LOG_CONTEXT_AFTER[${CURRENT_INDEX}]}${CURRENT_LINE}"
                 if ! [[ "$CURRENT_LINE" =~ ^[[:space:]]*}?[[:space:]]*$ ]]; then
                     LINES_LEFT_TO_EXTRACT=$((LINES_LEFT_TO_EXTRACT-1))
+                    LOG_CONTEXT_AFTER[${CURRENT_INDEX}]="${LOG_CONTEXT_AFTER[${CURRENT_INDEX}]}${CURRENT_LINE}"
+                elif [[ "$CURRENT_LINE" =~ ^[[:space:]]*}[[:space:]]*$ ]]; then
+                    LOG_CONTEXT_AFTER[${CURRENT_INDEX}]="${LOG_CONTEXT_AFTER[${CURRENT_INDEX}]}""}"
                 fi
             done
             for (( i=1; i<=${LINES_BEFORE_TO_EXTRACT}; i++ )); do
-                echo "${LOG_CONTEXT_BEFORE[${i}]}" >> ${FILE_FOR_OUTPUT}
+                printf '%s\n' "${LOG_CONTEXT_BEFORE[${i}]}" >> ${FILE_FOR_OUTPUT}
             done
-            echo "${LOG_LINE}" >> ${FILE_FOR_OUTPUT}
+            printf '%s\n'  "${LOG_LINE}" >> ${FILE_FOR_OUTPUT}
             for (( i=1; i<=${LINES_BEFORE_TO_EXTRACT}; i++ )); do
-                echo "${LOG_CONTEXT_AFTER[${i}]}" >> ${FILE_FOR_OUTPUT}
+                printf '%s\n'  "${LOG_CONTEXT_AFTER[${i}]}" >> ${FILE_FOR_OUTPUT}
             done
 
             echo "" >> ${FILE_FOR_OUTPUT}
             echo "" >> ${FILE_FOR_OUTPUT}
-        else
+        elif ! [ -n "${FILE}" ]; then
             (>&2 echo "Can't extract file name: $line")
+        else
+            (>&2 echo "File name was probably extracted incorrectly: $line")
         fi
     done
     cd ..
