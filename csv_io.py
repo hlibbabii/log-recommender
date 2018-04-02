@@ -53,6 +53,3 @@ def uploadToGoogle(dir):
                                 mimetype='text/csv',
                                 resumable=True)
         files.create(body=file_metadata, media_body=media).execute()
-
-
-uploadToGoogle("logs2.csv")
