@@ -2,7 +2,8 @@ import operator
 import pickle
 from pprint import pprint
 from math import log
-from csv_io import output_frequencies, write_to_classification_spreadsheet, upload_to_google
+from csv_io import output_frequencies, write_to_classification_spreadsheet, upload_to_google, \
+    output_log_level_freqs_by_first_word, output_variable_freqs_by_first_word
 from log_picker import test_pick_log
 from log_preprocessor import output_to_file, THRESHOLD
 
@@ -109,6 +110,49 @@ def classify_logs_by_first_word(preprocessed_logs, first_word_freq_stats):
     return preprocessed_logs
 
 
+def calculate_log_level_freqs_by_first_word(classified_logs, keys):
+    occurences = {}
+    levels = list(keys.keys())
+    for log in classified_logs:
+        if log.first_word_cathegory not in occurences:
+            occurences[log.first_word_cathegory] = dict((level, 0) for level in levels)
+            occurences[log.first_word_cathegory]['__all__'] = 0
+        occurences[log.first_word_cathegory][log.log_level] += 1
+        occurences[log.first_word_cathegory]['__all__'] += 1
+    frequencies = {}
+    for first_word in occurences:
+        frequencies[first_word] = {}
+        frequencies[first_word]['__weighted_avg__'] = 0.0
+        for level in levels:
+            frequencies[first_word][level] = occurences[first_word][level] / occurences[first_word]['__all__']
+            frequencies[first_word]['__weighted_avg__'] += frequencies[first_word][level] * keys[level]
+        frequencies[first_word]['__all__'] = occurences[first_word]['__all__']
+
+    return frequencies, levels
+
+
+def calculate_variable_freqs_by_first_word(classified_logs, keys):
+    occurences = {}
+    for log in classified_logs:
+        if log.first_word_cathegory not in occurences:
+            occurences[log.first_word_cathegory] = dict((key, 0) for key in keys)
+            occurences[log.first_word_cathegory]['__more_vars__'] = 0
+            occurences[log.first_word_cathegory]['__all__'] = 0
+        if log.n_variables in occurences[log.first_word_cathegory]:
+            occurences[log.first_word_cathegory][log.n_variables] += 1
+        else:
+            occurences[log.first_word_cathegory]['__more_vars__'] += 1
+        occurences[log.first_word_cathegory]['__all__'] += 1
+    frequencies = {}
+    for first_word in occurences:
+        frequencies[first_word] = {}
+        for key in keys:
+            frequencies[first_word][key] = occurences[first_word][key] / occurences[first_word]['__all__']
+        frequencies[first_word]['__more_vars__'] \
+                = occurences[first_word]['__more_vars__'] / occurences[first_word]['__all__']
+        frequencies[first_word]['__all__'] = occurences[first_word]['__all__']
+
+    return frequencies, keys
 
 if __name__ == '__main__':
     with open('pplogs.pkl', 'rb') as i:
@@ -134,10 +178,25 @@ if __name__ == '__main__':
         sorted(first_word_freq_stats.items(), key=lambda x: x[1]['__median__'], reverse=True),
         top_projects
     )
-
-    pprint(project_stats)
     
     classified_logs = classify_logs_by_first_word(preprocessed_logs, first_word_freq_stats)
+    keys = {"trace": 0.0,
+            "debug": 0.1,
+           "info": 0.3,
+            "warn": 0.7,
+            "error": 0.9,
+            "fatal": 1.0}
+    levels_distribution, levels = calculate_log_level_freqs_by_first_word(classified_logs, keys)
+    output_log_level_freqs_by_first_word("level_distribution.csv",
+                                         sorted(levels_distribution.items(), key=lambda x: x[1]['__weighted_avg__']),
+                                         levels)
+
+    keys = [0, 1, 2, 3, 4]
+    levels_distribution, levels = calculate_variable_freqs_by_first_word(classified_logs, keys)
+    output_variable_freqs_by_first_word("n_vars_distribution.csv",
+                                         levels_distribution.items(),
+                                         levels)
+    
     dir_name = 'logs'
     write_to_classification_spreadsheet(dir_name, classified_logs)
     upload_to_google(dir_name)

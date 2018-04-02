@@ -37,6 +37,34 @@ def output_frequencies(filename, frequencies, sorted_project_list):
             writer.writerow(line)
 
 
+def output_log_level_freqs_by_first_word(filename, frequencies, levels):
+    with open(filename, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        header = ['word', 'weighted avg', 'all']
+        header.extend(levels)
+        writer.writerow(header)
+        for word in frequencies:
+            proj_freqs = map(lambda x: word[1][x] if x in word[1] else 0.0, levels)
+            line = [word[0], word[1]['__weighted_avg__'], word[1]['__all__']]
+            line.extend(proj_freqs)
+            writer.writerow(line)
+
+
+def output_variable_freqs_by_first_word(filename, frequencies, keys):
+    with open(filename, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        header = ['word', 'all']
+        header.extend(keys)
+        header.extend(['more vars'])
+        writer.writerow(header)
+        for word in frequencies:
+            proj_freqs = map(lambda x: word[1][x] if x in word[1] else 0.0, keys)
+            line = [word[0], word[1]['__all__']]
+            line.extend(proj_freqs)
+            line.extend([word[1]['__more_vars__']])
+            writer.writerow(line)
+
+
 def upload_to_google(dir):
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
