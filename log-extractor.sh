@@ -24,7 +24,7 @@ LINE_PREFIX="#L"
 
 LINES_BEFORE_TO_EXTRACT=4
 
-REGEX='\([Ll]og\|LOG\|[Ll]ogger\|LOGGER\)\.\([Tt]race\|[Dd]ebug\|[Ii]nfo\|[Ww]arn\|[Ee]rror\\[Ff]atal\)(.*)'
+REGEX='\([Ll]og\|LOG\|[Ll]ogger\|LOGGER\)\.\([Tt]race\|[Dd]ebug\|[Ii]nfo\|[Ww]arn\|[Ee]rror\|[Ff]atal\)(.*)'
 
 #log statements that are not covered:
 #
