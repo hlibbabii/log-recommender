@@ -2,7 +2,7 @@ import operator
 import pickle
 from pprint import pprint
 from math import log
-from csv_io import output_frequencies, write_to_classification_spreadsheet
+from csv_io import output_frequencies, write_to_classification_spreadsheet, upload_to_google
 from log_picker import test_pick_log
 from log_preprocessor import output_to_file, THRESHOLD
 
@@ -138,7 +138,9 @@ if __name__ == '__main__':
     pprint(project_stats)
     
     classified_logs = classify_logs_by_first_word(preprocessed_logs, first_word_freq_stats)
-    write_to_classification_spreadsheet(classified_logs)
+    dir_name = 'logs'
+    write_to_classification_spreadsheet(dir_name, classified_logs)
+    upload_to_google(dir_name)
 
     sorted_idf_tuples, idfs = get_idfs(list(map(lambda l: l.context_words, preprocessed_logs)))
     output_to_file(preprocessed_logs, sorted_idf_tuples)
