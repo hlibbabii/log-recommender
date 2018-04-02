@@ -1,3 +1,9 @@
+import os
+from googleapiclient import discovery
+from googleapiclient.http import MediaFileUpload
+import httplib2
+from google_drive_api_utils import get_credentials
+
 __author__ = 'hlib'
 
 import csv
@@ -29,3 +35,24 @@ def output_frequencies(filename, frequencies, sorted_project_list):
                              word[1]['__found_in_projects__']]
             line.extend(proj_freqs)
             writer.writerow(line)
+
+
+def uploadToGoogle(dir):
+    credentials = get_credentials()
+    http = credentials.authorize(httplib2.Http())
+    drive_service = discovery.build('drive', 'v3', http=http)
+    files = drive_service.files()
+    file_counter = 0
+    for filename in os.listdir(dir):
+        print("Uploading file " + file_counter + " to Google drive")
+        file_metadata = {
+            'name': filename,
+            'mimeType': 'application/vnd.google-apps.spreadsheet'
+        }
+        media = MediaFileUpload(filename,
+                                mimetype='text/csv',
+                                resumable=True)
+        files.create(body=file_metadata, media_body=media).execute()
+
+
+uploadToGoogle("logs2.csv")
