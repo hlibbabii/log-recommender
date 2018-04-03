@@ -197,7 +197,7 @@ if __name__ == "__main__":
     pp_logs = preprocess_grepped_logs(grepped_logs)
     with open('pplogs.pkl', 'wb') as  o:
         pickle.dump(pp_logs, o, pickle.HIGHEST_PROTOCOL)
-    with open('project_stats.csv', 'w') as o:
+    with open('generated_stats/project_stats.csv', 'w') as o:
         for project in project_stats.items():
             o.write(project[0] + ',' + str(project[1]) + '\n')
 
