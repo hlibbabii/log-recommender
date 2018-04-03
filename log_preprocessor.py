@@ -190,11 +190,17 @@ STOP_WORDS=["a", "an", "and", "are", "as", "at", "be", "for", "has", "in", "is",
             "the", "to", "was", "were", "with"]
 #the following words are normally stop words but we might want not to consider as stop words:  by, from, he, will
 
+def output_to_corpus_file(preprocessed_logs, output_filename):
+    with open(output_filename, 'w') as f:
+        for l in preprocessed_logs:
+            f.write(str(l.log_text) + "\n")
+
 
 if __name__ == "__main__":
     in_file = "../.Logs"
     grepped_logs, project_stats = read_grepped_log_file(in_file)
     pp_logs = preprocess_grepped_logs(grepped_logs)
+    output_to_corpus_file(pp_logs, '../gengram/corpus.txt')
     with open('pplogs.pkl', 'wb') as  o:
         pickle.dump(pp_logs, o, pickle.HIGHEST_PROTOCOL)
     with open('generated_stats/project_stats.csv', 'w') as o:

@@ -1,10 +1,8 @@
 import operator
 import pickle
 from pprint import pprint
-from math import log
 from csv_io import output_frequencies, write_to_classification_spreadsheet, upload_to_google, \
     output_log_level_freqs_by_first_word, output_variable_freqs_by_first_word
-from log_picker import test_pick_log
 from log_preprocessor import THRESHOLD
 
 __author__ = 'hlib'
@@ -83,18 +81,6 @@ def get_first_word_frequencies(logs):
     return dict
 
 
-def get_idfs(context_list):
-    sum = dict()
-    vector_number = float(len(context_list))
-    for l in context_list:
-        for context_string in l:
-            if context_string in sum:
-                sum[context_string] += 1
-            else:
-                sum[context_string] = 1
-    idfs = {key: log(vector_number / value, 2) for key, value in sum.items()}
-    return sorted(idfs.items(), key=operator.itemgetter(1), reverse=True), idfs
-
 def get_top_projects(project_stats):
     return list(map(lambda x : x[0],
               sorted(filter(lambda x: x[1] >= THRESHOLD, project_stats.items()), key=lambda x: x[1], reverse=True)
@@ -155,11 +141,6 @@ def calculate_variable_freqs_by_first_word(classified_logs, keys):
     return frequencies, keys
 
 
-def output_to_corpus_file(preprocessed_logs, output_filename):
-    with open(output_filename, 'w') as f:
-        for l in preprocessed_logs:
-            f.write(str(l.log_text) + "\n")
-
 UPLOAD_TO_GOOGLE = False
 
 if __name__ == '__main__':
@@ -209,7 +190,3 @@ if __name__ == '__main__':
     write_to_classification_spreadsheet(dir_name, classified_logs)
     if UPLOAD_TO_GOOGLE:
         upload_to_google(dir_name)
-
-    sorted_idf_tuples, idfs = get_idfs(list(map(lambda l: l.context_words, preprocessed_logs)))
-    output_to_corpus_file(preprocessed_logs, '../gengram/corpus.txt')
-    test_pick_log(preprocessed_logs, idfs)
