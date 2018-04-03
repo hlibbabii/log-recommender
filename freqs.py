@@ -5,7 +5,7 @@ from math import log
 from csv_io import output_frequencies, write_to_classification_spreadsheet, upload_to_google, \
     output_log_level_freqs_by_first_word, output_variable_freqs_by_first_word
 from log_picker import test_pick_log
-from log_preprocessor import output_to_file, THRESHOLD
+from log_preprocessor import THRESHOLD
 
 __author__ = 'hlib'
 
@@ -154,6 +154,13 @@ def calculate_variable_freqs_by_first_word(classified_logs, keys):
 
     return frequencies, keys
 
+
+def output_to_corpus_file(preprocessed_logs, output_filename):
+    with open(output_filename, 'w') as f:
+        for l in preprocessed_logs:
+            f.write(str(l.log_text) + "\n")
+
+
 if __name__ == '__main__':
     with open('pplogs.pkl', 'rb') as i:
         preprocessed_logs = pickle.load(i)
@@ -202,5 +209,5 @@ if __name__ == '__main__':
     upload_to_google(dir_name)
 
     sorted_idf_tuples, idfs = get_idfs(list(map(lambda l: l.context_words, preprocessed_logs)))
-    output_to_file(preprocessed_logs, sorted_idf_tuples)
+    output_to_corpus_file(preprocessed_logs, '../gengram/corpus.txt')
     test_pick_log(preprocessed_logs, idfs)

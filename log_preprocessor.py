@@ -186,20 +186,6 @@ def process_log_statement(log_entry):
             link=log_entry['github_link'])
 
 
-def output(preprocessed_logs, idfs, output_filename):
-    with open(output_filename, 'w') as f:
-        for l in preprocessed_logs:
-            f.write(str(l.log_text) + "\n")
-            f.write(l.log_level + " " + str(l.n_variables) + "\n")
-            f.write(str(l.context_before) + "\n")
-            f.write(l.link + "\n")
-            f.write("\n")
-        f.write(str(idfs))
-
-
-def output_to_file(preprocessed_logs, sorted_idf_tuples):
-    output(preprocessed_logs, sorted_idf_tuples, '../gengram/corpus.txt')
-
 STOP_WORDS=["a", "an", "and", "are", "as", "at", "be", "for", "has", "in", "is", "it", "its", "of", "on", "that",
             "the", "to", "was", "were", "with"]
 #the following words are normally stop words but we might want not to consider as stop words:  by, from, he, will
