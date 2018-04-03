@@ -5,7 +5,6 @@ grepped_logs.*
 /.Logs/
 logs.csv
 *.pkl
-/frequencies.csv
-/frequencies_first_word.csv
 /project_stats.csv
 /client_secret.json
+/generated_stats/

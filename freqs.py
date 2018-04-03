@@ -173,7 +173,7 @@ if __name__ == '__main__':
 
     frequencies = get_frequencies_for_log_texts(preprocessed_logs)
     output_frequencies(
-        'frequencies.csv',
+        'generated_stats/frequencies.csv',
         sorted(calc_frequency_stats(frequencies).items(), key=lambda x: x[1]['__median__'], reverse=True),
         top_projects
     )
@@ -181,7 +181,7 @@ if __name__ == '__main__':
     first_word_frequencies = get_first_word_frequencies(preprocessed_logs)
     first_word_freq_stats = calc_frequency_stats(first_word_frequencies)
     output_frequencies(
-        'frequencies_first_word.csv',
+        'generated_stats/frequencies_first_word.csv',
         sorted(first_word_freq_stats.items(), key=lambda x: x[1]['__median__'], reverse=True),
         top_projects
     )
@@ -194,13 +194,13 @@ if __name__ == '__main__':
             "error": 0.9,
             "fatal": 1.0}
     levels_distribution, levels = calculate_log_level_freqs_by_first_word(classified_logs, keys)
-    output_log_level_freqs_by_first_word("level_distribution.csv",
+    output_log_level_freqs_by_first_word("generated_stats/level_distribution.csv",
                                          sorted(levels_distribution.items(), key=lambda x: x[1]['__weighted_avg__']),
                                          levels)
 
     keys = [0, 1, 2, 3, 4]
     levels_distribution, levels = calculate_variable_freqs_by_first_word(classified_logs, keys)
-    output_variable_freqs_by_first_word("n_vars_distribution.csv",
+    output_variable_freqs_by_first_word("generated_stats/n_vars_distribution.csv",
                                          levels_distribution.items(),
                                          levels)
     
