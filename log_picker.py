@@ -14,13 +14,21 @@ def get_most_suitable_log_statements(corpus, idfs, current_context, how_many):
     return reversed(scores[-how_many:])
 
 
-def get_score(context, current_context, idfs):
-    current_score = 0.0
-    for word1 in without_duplicates(context):
-        for word2 in without_duplicates(current_context):
+def get_score(context1, context2, idfs):
+    common_score = 0.0
+    context1_nodup = without_duplicates(context1)
+    context2_nodup = without_duplicates(context2)
+    for word1 in context1_nodup:
+        for word2 in context2_nodup:
             if word1 == word2:
-                current_score += idfs.get(word1)
-    return current_score
+                common_score += idfs.get(word1)
+                break
+    all_score = 0.0
+    for word1 in context1_nodup:
+        all_score += idfs.get(word1)
+    for word1 in context2_nodup:
+        all_score += idfs.get(word1)
+    return common_score / (all_score - common_score)
 
 
 def test_pick_log(preprocessed_logs, idfs):
