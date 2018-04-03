@@ -160,6 +160,7 @@ def output_to_corpus_file(preprocessed_logs, output_filename):
         for l in preprocessed_logs:
             f.write(str(l.log_text) + "\n")
 
+UPLOAD_TO_GOOGLE = False
 
 if __name__ == '__main__':
     with open('pplogs.pkl', 'rb') as i:
@@ -206,7 +207,8 @@ if __name__ == '__main__':
     
     dir_name = 'logs'
     write_to_classification_spreadsheet(dir_name, classified_logs)
-    upload_to_google(dir_name)
+    if UPLOAD_TO_GOOGLE:
+        upload_to_google(dir_name)
 
     sorted_idf_tuples, idfs = get_idfs(list(map(lambda l: l.context_words, preprocessed_logs)))
     output_to_corpus_file(preprocessed_logs, '../gengram/corpus.txt')
