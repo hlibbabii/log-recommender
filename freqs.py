@@ -77,6 +77,7 @@ def get_most_freq_first_words(first_word_freq_stats):
 def classify_logs_by_first_word(preprocessed_logs, is_not_other):
     for log in preprocessed_logs:
         first_word = log.get_first_word()
+        print(first_word + " " + str(is_not_other(first_word)))
         log.first_word_cathegory = first_word if is_not_other(first_word) else "OTHER__"
     return preprocessed_logs
 
@@ -155,7 +156,9 @@ if __name__ == '__main__':
     )
 
     classified_logs = classify_logs_by_first_word(preprocessed_logs,
-            is_not_other=lambda w, stats=first_word_freq_stats: stats[w]['__found_in_projects__'] > 20)
+            is_not_other=lambda w, stats=first_word_freq_stats, n_projects=len(first_word_frequencies):
+                stats[w]['__found_in_projects__'] / n_projects > 0.5
+            )
     keys = {"trace": 0.0,
             "debug": 0.1,
            "info": 0.3,
