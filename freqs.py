@@ -10,10 +10,10 @@ from log_preprocessor import LOG_NUMBER_THRESHOLD
 
 __author__ = 'hlib'
 
-def get_frequencies_for_log_texts(logs):
+def get_word_frequences(logs, words_from_log_func):
     dict = {}
     for key, group in itertools.groupby(logs, key=lambda x: x.project):
-        dict[key] = Counter(itertools.chain.from_iterable(map(lambda x: x.log_text_words, group)))
+        dict[key] = Counter(itertools.chain.from_iterable(map(words_from_log_func, group)))
     return dict
 
 def calc_frequency_stats(occurences):
@@ -63,19 +63,6 @@ def central(sorted_list, full_list_length):
 def median(sorted_list, full_list_length):
     func = avg if full_list_length % 2 == 0 else central
     return func(sorted_list, full_list_length)
-
-
-def get_first_word_frequencies(logs):
-    dict = {}
-    for l in logs:
-        w = l.log_first_word
-        if l.project not in dict:
-            dict[l.project] = {}
-        if w in dict[l.project]:
-            dict[l.project][w] += 1
-        else:
-            dict[l.project][w] = 1
-    return dict
 
 
 def get_top_projects_by_log_number(project_stats, log_number_threshold):
@@ -152,14 +139,15 @@ if __name__ == '__main__':
             project_stats[split[0]] = int(split[1])
     top_projects = get_top_projects_by_log_number(project_stats, LOG_NUMBER_THRESHOLD)
 
-    frequencies = get_frequencies_for_log_texts(preprocessed_logs)
+    frequencies = get_word_frequences(preprocessed_logs, lambda x: x.log_text_words)
+    freq_stats = calc_frequency_stats(frequencies)
     output_frequencies(
         'generated_stats/frequencies.csv',
-        sorted(calc_frequency_stats(frequencies).items(), key=lambda x: x[1]['__median__'], reverse=True),
+        sorted(freq_stats.items(), key=lambda x: x[1]['__median__'], reverse=True),
         top_projects
     )
 
-    first_word_frequencies = get_first_word_frequencies(preprocessed_logs)
+    first_word_frequencies = get_word_frequences(preprocessed_logs, lambda x: [x.log_first_word])
     first_word_freq_stats = calc_frequency_stats(first_word_frequencies)
     output_frequencies(
         'generated_stats/frequencies_first_word.csv',

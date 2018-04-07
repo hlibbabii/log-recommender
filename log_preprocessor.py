@@ -7,7 +7,7 @@ __author__ = 'hlib'
 
 LOG_LEVEL_REGEX = re.compile(".*([Ll]og|LOG|[Ll]ogger|LOGGER)\.([Tt]race|[Dd]ebug|[Ii]nfo|[Ww]arn|[Ee]rror|[Ff]atal)\(.*")
 
-THRESHOLD = 100
+LOG_NUMBER_THRESHOLD = 100
 
 VAR_PLACEHOLDER = "<VAR>"
 STRING_RESOURCE_PLACEHOLDER = "<STRING_RESOURCE>"
@@ -102,7 +102,7 @@ def filter_bad_context_line(new_context_line):
 def read_grepped_log_file(directory):
     list= []
     project_stats = {}
-    print("returning logs from projects with more than " + str(THRESHOLD) + " logs extracted")
+    print("returning logs from projects with more than " + str(LOG_NUMBER_THRESHOLD) + " logs extracted")
     for filename in os.listdir(directory):
         log_counter = 0
         current_proj_list = []
@@ -137,7 +137,7 @@ def read_grepped_log_file(directory):
                                  'github_link': github_link, 'project': filename})
                     log_counter += 1
         project_stats[filename] = log_counter
-        if log_counter >= THRESHOLD:
+        if log_counter >= LOG_NUMBER_THRESHOLD:
             list.extend(current_proj_list)
     return list, project_stats
 
