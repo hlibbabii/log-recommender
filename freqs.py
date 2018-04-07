@@ -1,22 +1,19 @@
+from collections import Counter
 import operator
 import pickle
 from pprint import pprint
+import itertools
+import nltk
 from csv_io import output_frequencies, write_to_classification_spreadsheet, upload_to_google, \
     output_log_level_freqs_by_first_word, output_variable_freqs_by_first_word
-from log_preprocessor import THRESHOLD
+from log_preprocessor import LOG_NUMBER_THRESHOLD
 
 __author__ = 'hlib'
 
 def get_frequencies_for_log_texts(logs):
     dict = {}
-    for l in logs:
-        for w in l.log_text_words:
-            if l.project not in dict:
-                dict[l.project] = {}
-            if w in dict[l.project]:
-                dict[l.project][w] += 1
-            else:
-                dict[l.project][w] = 1
+    for key, group in itertools.groupby(logs, key=lambda x: x.project):
+        dict[key] = Counter(itertools.chain.from_iterable(map(lambda x: x.log_text_words, group)))
     return dict
 
 def calc_frequency_stats(occurences):
@@ -81,14 +78,16 @@ def get_first_word_frequencies(logs):
     return dict
 
 
-def get_top_projects(project_stats):
+def get_top_projects_by_log_number(project_stats, log_number_threshold):
     return list(map(lambda x : x[0],
-              sorted(filter(lambda x: x[1] >= THRESHOLD, project_stats.items()), key=lambda x: x[1], reverse=True)
+              sorted(filter(lambda x: x[1] >= log_number_threshold, project_stats.items()), key=lambda x: x[1], reverse=True)
               ))
 
 
-def classify_logs_by_first_word(preprocessed_logs, first_word_freq_stats):
-    most_freq_words=list(map(lambda x:x[0], filter(lambda x:x[1]['__median__'], first_word_freq_stats.items())))
+def get_most_freq_first_words(first_word_freq_stats):
+    return list(map(lambda x:x[0], filter(lambda x:x[1]['__median__'], first_word_freq_stats.items())))
+
+def classify_logs_by_first_word(preprocessed_logs, most_freq_words):
     pprint(most_freq_words)
     for log in preprocessed_logs:
         first_word = log.log_text_words[0] if len(log.log_text_words) > 0 else ""
@@ -151,7 +150,7 @@ if __name__ == '__main__':
         for line in i:
             split = line.split(",")
             project_stats[split[0]] = int(split[1])
-    top_projects = get_top_projects(project_stats)
+    top_projects = get_top_projects_by_log_number(project_stats, LOG_NUMBER_THRESHOLD)
 
     frequencies = get_frequencies_for_log_texts(preprocessed_logs)
     output_frequencies(
