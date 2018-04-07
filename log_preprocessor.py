@@ -168,14 +168,10 @@ def process_log_statement(log_entry):
     log_text_line, text, n_variables = extract_text_and_variables(log_entry['log_statement'])
     log_text = postprocess_extracted_text(text)
     words_from_log_text = get_words_from_log_text(log_text)
-    first_word = ""
-    if len(words_from_log_text) > 0:
-        first_word=words_from_log_text[0]
     words_from_log_text = filter_out_stop_words(words_from_log_text)
     return LogStatement(
             log_text_line=log_text_line,
             log_text=log_text,
-            log_first_word=first_word,
             log_text_words=words_from_log_text,
             log_level=extract_log_level(log_entry['log_statement']),
             n_variables=n_variables,

@@ -74,15 +74,14 @@ def get_top_projects_by_log_number(project_stats, log_number_threshold):
 def get_most_freq_first_words(first_word_freq_stats):
     return list(map(lambda x:x[0], filter(lambda x:x[1]['__median__'], first_word_freq_stats.items())))
 
-def classify_logs_by_first_word(preprocessed_logs, most_freq_words):
-    pprint(most_freq_words)
+def classify_logs_by_first_word(preprocessed_logs, is_not_other):
     for log in preprocessed_logs:
-        first_word = log.log_text_words[0] if len(log.log_text_words) > 0 else ""
-        log.first_word_cathegory = first_word if first_word in most_freq_words else "OTHER__"
+        first_word = log.get_first_word()
+        log.first_word_cathegory = first_word if is_not_other(first_word) else "OTHER__"
     return preprocessed_logs
 
 
-def calculate_log_level_freqs_by_first_word(classified_logs, keys):
+def calculate_log_level_freqs_by_first_word_cathegory(classified_logs, keys):
     occurences = {}
     levels = list(keys.keys())
     for log in classified_logs:
@@ -92,13 +91,13 @@ def calculate_log_level_freqs_by_first_word(classified_logs, keys):
         occurences[log.first_word_cathegory][log.log_level] += 1
         occurences[log.first_word_cathegory]['__all__'] += 1
     frequencies = {}
-    for first_word in occurences:
-        frequencies[first_word] = {}
-        frequencies[first_word]['__weighted_avg__'] = 0.0
+    for first_word_cathegory in occurences:
+        frequencies[first_word_cathegory] = {}
+        frequencies[first_word_cathegory]['__weighted_avg__'] = 0.0
         for level in levels:
-            frequencies[first_word][level] = occurences[first_word][level] / occurences[first_word]['__all__']
-            frequencies[first_word]['__weighted_avg__'] += frequencies[first_word][level] * keys[level]
-        frequencies[first_word]['__all__'] = occurences[first_word]['__all__']
+            frequencies[first_word_cathegory][level] = occurences[first_word_cathegory][level] / occurences[first_word_cathegory]['__all__']
+            frequencies[first_word_cathegory]['__weighted_avg__'] += frequencies[first_word_cathegory][level] * keys[level]
+        frequencies[first_word_cathegory]['__all__'] = occurences[first_word_cathegory]['__all__']
 
     return frequencies, levels
 
@@ -147,22 +146,23 @@ if __name__ == '__main__':
         top_projects
     )
 
-    first_word_frequencies = get_word_frequences(preprocessed_logs, lambda x: [x.log_first_word])
+    first_word_frequencies = get_word_frequences(preprocessed_logs, lambda x: [x.get_first_word()])
     first_word_freq_stats = calc_frequency_stats(first_word_frequencies)
     output_frequencies(
         'generated_stats/frequencies_first_word.csv',
         sorted(first_word_freq_stats.items(), key=lambda x: x[1]['__median__'], reverse=True),
         top_projects
     )
-    
-    classified_logs = classify_logs_by_first_word(preprocessed_logs, first_word_freq_stats)
+
+    classified_logs = classify_logs_by_first_word(preprocessed_logs,
+            is_not_other=lambda w, stats=first_word_freq_stats: stats[w]['__found_in_projects__'] > 20)
     keys = {"trace": 0.0,
             "debug": 0.1,
            "info": 0.3,
             "warn": 0.7,
             "error": 0.9,
             "fatal": 1.0}
-    levels_distribution, levels = calculate_log_level_freqs_by_first_word(classified_logs, keys)
+    levels_distribution, levels = calculate_log_level_freqs_by_first_word_cathegory(classified_logs, keys)
     output_log_level_freqs_by_first_word("generated_stats/level_distribution.csv",
                                          sorted(levels_distribution.items(), key=lambda x: x[1]['__weighted_avg__']),
                                          levels)
