@@ -1,5 +1,5 @@
 import re
-from log_statement import LogStatement
+from log_statement import LogStatement, split_to_key_words_and_identifiers
 import os
 import pickle
 
@@ -78,20 +78,6 @@ def postprocess_extracted_text(line):
     # line = append_period_if_absent(line)
     return line
 
-
-def camel_case_split(identifier):
-    matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
-    return [m.group(0) for m in matches]
-
-
-def split_to_key_words_and_identifiers(line):
-    return list(filter(None, re.split("[\[\] ,.\-!?:\n\t(){};=+*/\"&|<>_#\\\@$]+", line)))
-
-
-def preprocess_context(context):
-    context = split_to_key_words_and_identifiers(context)
-    context = [item.lower() for identifier in context for item in camel_case_split(identifier)]
-    return context
 
 STOP_REGEX = re.compile(".*is(Trace|Debug|Info|Warn)Enabled.*")
 
@@ -177,7 +163,6 @@ def process_log_statement(log_entry):
             n_variables=n_variables,
             context_before=log_entry['context_before'],
             context_after=log_entry['context_after'],
-            context_words=preprocess_context(log_entry['context_before']),
             project = log_entry['project'],
             link=log_entry['github_link'])
 

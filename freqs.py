@@ -1,9 +1,7 @@
 from collections import Counter
 import operator
 import pickle
-from pprint import pprint
 import itertools
-import nltk
 from csv_io import output_frequencies, write_to_classification_spreadsheet, upload_to_google, \
     output_log_level_freqs_by_first_word, output_variable_freqs_by_first_word
 from log_preprocessor import LOG_NUMBER_THRESHOLD
@@ -40,7 +38,8 @@ def calc_frequency_stats(occurences):
         )
     for word in frequencies:
         frequencies[word]['__all__'] = float(all_occurences[word]) / total_sum
-        frequencies[word]['__found_in_projects__'] = len(frequencies[word]) - 2
+        frequencies[word]['__all_abs__'] = all_occurences[word]
+        frequencies[word]['__found_in_projects__'] = len(frequencies[word]) - 3
     return frequencies
 
 def avg(sorted_list, full_list_length):
@@ -74,11 +73,10 @@ def get_top_projects_by_log_number(project_stats, log_number_threshold):
 def get_most_freq_first_words(first_word_freq_stats):
     return list(map(lambda x:x[0], filter(lambda x:x[1]['__median__'], first_word_freq_stats.items())))
 
-def classify_logs_by_first_word(preprocessed_logs, is_not_other):
+def classify_logs_by_first_word(preprocessed_logs, significant_words):
     for log in preprocessed_logs:
         first_word = log.get_first_word()
-        print(first_word + " " + str(is_not_other(first_word)))
-        log.first_word_cathegory = first_word if is_not_other(first_word) else "OTHER__"
+        log.first_word_cathegory = first_word if first_word in significant_words else "OTHER__"
     return preprocessed_logs
 
 
@@ -129,6 +127,11 @@ def calculate_variable_freqs_by_first_word(classified_logs, keys):
 
 UPLOAD_TO_GOOGLE = False
 
+
+def get_significant_words(word_list, func):
+    return list(filter(func, word_list))
+
+
 if __name__ == '__main__':
     with open('pplogs.pkl', 'rb') as i:
         preprocessed_logs = pickle.load(i)
@@ -155,10 +158,16 @@ if __name__ == '__main__':
         top_projects
     )
 
-    classified_logs = classify_logs_by_first_word(preprocessed_logs,
-            is_not_other=lambda w, stats=first_word_freq_stats, n_projects=len(first_word_frequencies):
-                stats[w]['__found_in_projects__'] / n_projects > 0.5
-            )
+    is_not_other_by_found_in_projects = lambda w, stats=first_word_freq_stats, n_projects=len(first_word_frequencies):\
+        stats[w]['__found_in_projects__'] / n_projects > 0.5
+
+    is_not_other_by_word_frequency = lambda w, stats=first_word_freq_stats: stats[w]['__all__'] > 0.0002
+
+    is_not_other_by_word_occurrences = lambda w, stats=first_word_freq_stats: stats[w]['__all_abs__'] > 700
+
+    significant_first_words = get_significant_words(first_word_freq_stats.keys(), is_not_other_by_word_occurrences)
+
+    classified_logs = classify_logs_by_first_word(preprocessed_logs, significant_first_words)
     keys = {"trace": 0.0,
             "debug": 0.1,
            "info": 0.3,
