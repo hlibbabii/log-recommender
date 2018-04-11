@@ -1,5 +1,5 @@
 import re
-from log_statement import LogStatement, split_to_key_words_and_identifiers
+from log_statement import LogStatement
 import os
 import pickle
 
@@ -139,11 +139,15 @@ def remove_placeholders(log_text):
     log_text = re.sub(STRING_RESOURCE_PLACEHOLDER, r'', log_text)
     return log_text
 
+def split_log_text_to_keywords_and_identifiers(line):
+    return list(filter(None, re.split("[\[\] ,.\-!?:\n\t(){};=+*/\"&|<>_#\\\@$]+", line)))
+
+
 def get_words_from_log_text(log_text):
     #Consider different splitting for log statement than for the context
     log_text = remove_placeholders(log_text)
     log_text = log_text.lower()
-    return split_to_key_words_and_identifiers(log_text)
+    return split_log_text_to_keywords_and_identifiers(log_text)
 
 
 def filter_out_stop_words(words_from_log_text):
