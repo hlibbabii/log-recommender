@@ -20,77 +20,12 @@ def write_to_classification_spreadsheet(dir_name, logs):
                                  log.first_word_cathegory, log.context_before + log.log_text_line + log.context_after,
                                  len(log.log_text), log.link])
 
-
-def output_frequencies(filename, frequencies, sorted_project_list):
+def output_to_csv(filename, header, lambda1, dim1, dim2):
     with open(filename, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        header = ['word', 'median', 'mean', 'found times', 'found in projects']
-        header.extend(sorted_project_list)
         writer.writerow(header)
-        for word in frequencies:
-            proj_freqs = map(lambda x: word[1][x] if x in word[1] else 0.0, sorted_project_list)
-            line = [word[0],
-                             word[1]['__median__'],
-                             word[1]['__all__'],
-                             word[1]['__all_abs__'],
-                             word[1]['__found_in_projects__']]
-            line.extend(proj_freqs)
-            writer.writerow(line)
-
-
-def output_log_level_freqs_by_first_word(filename, frequencies, levels):
-    with open(filename, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        header = ['word', 'weighted avg', 'all']
-        header.extend(levels)
-        writer.writerow(header)
-        for word in frequencies:
-            proj_freqs = map(lambda x: word[1][x] if x in word[1] else 0.0, levels)
-            line = [word[0], word[1]['__weighted_avg__'], word[1]['__all__']]
-            line.extend(proj_freqs)
-            writer.writerow(line)
-
-
-def output_variable_freqs_by_first_word(filename, frequencies, keys):
-    with open(filename, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        header = ['word', 'all']
-        header.extend(keys)
-        header.extend(['more vars'])
-        writer.writerow(header)
-        for word in frequencies:
-            proj_freqs = map(lambda x: word[1][x] if x in word[1] else 0.0, keys)
-            line = [word[0], word[1]['__all__']]
-            line.extend(proj_freqs)
-            line.extend([word[1]['__more_vars__']])
-            writer.writerow(line)
-
-
-def output_clustering_stats(filename, clustering_stats, word_count, gini, gini_total, classes):
-    with open(filename, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        header = ['word']
-        header.extend(range(len(clustering_stats)))
-        header.extend(['total', 'gini'])
-        writer.writerow(header)
-        for clazz in classes:
-            line = [clazz]
-            line.extend(list(map(lambda x: x[clazz] if clazz in x else 0, clustering_stats)))
-            line.extend([word_count[clazz], gini[clazz]])
-            writer.writerow(line)
-        writer.writerow(['gini total:', gini_total])
-
-def output_pearsons(filename, pearsons, classes):
-        with open(filename, 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            header = ['word']
-            header.extend(classes)
-            writer.writerow(header)
-            for i, clazz in enumerate(classes):
-                line = [clazz]
-                line.extend(pearsons[i])
-                writer.writerow(line)
-
+        for row in dim1:
+            writer.writerow(lambda1(row, dim2))
 
 
 def upload_to_google(dir):

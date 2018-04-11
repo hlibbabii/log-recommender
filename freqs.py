@@ -2,8 +2,7 @@ from collections import Counter
 import operator
 import pickle
 import itertools
-from csv_io import output_frequencies, write_to_classification_spreadsheet, upload_to_google, \
-    output_log_level_freqs_by_first_word, output_variable_freqs_by_first_word
+from csv_io import write_to_classification_spreadsheet, upload_to_google, output_to_csv
 from log_preprocessor import LOG_NUMBER_THRESHOLD
 
 __author__ = 'hlib'
@@ -128,6 +127,20 @@ def calculate_variable_freqs_by_first_word(classified_logs, keys):
 UPLOAD_TO_GOOGLE = False
 
 
+def output_frequencies(filename, frequencies, sorted_project_list):
+    output_to_csv(
+        filename,
+        ['word', 'median', 'mean', 'found times', 'found in projects'] + sorted_project_list,
+        lambda d1, d2: [d1[0], d1[1]['__median__'],
+                             d1[1]['__all__'],
+                             d1[1]['__all_abs__'],
+                             d1[1]['__found_in_projects__']] +
+            list(map(lambda x: d1[1][x] if x in d1[1] else 0.0, d2)),
+        frequencies,
+        sorted_project_list
+    )
+
+
 def get_significant_words(word_list, func):
     return list(filter(func, word_list))
 
@@ -175,15 +188,24 @@ if __name__ == '__main__':
             "error": 0.9,
             "fatal": 1.0}
     levels_distribution, levels = calculate_log_level_freqs_by_first_word_cathegory(classified_logs, keys)
-    output_log_level_freqs_by_first_word("generated_stats/level_distribution.csv",
-                                         sorted(levels_distribution.items(), key=lambda x: x[1]['__weighted_avg__']),
-                                         levels)
+    output_to_csv("generated_stats/level_distribution.csv",
+        ['word', 'weighted avg', 'all'] + levels,
+        lambda freqs,levels: [freqs[0], freqs[1]['__weighted_avg__'], freqs[1]['__all__']] +
+            list(map(lambda x: freqs[1][x] if x in freqs[1] else 0.0, levels)),
+        sorted(levels_distribution.items(), key=lambda x: x[1]['__weighted_avg__']),
+        levels
+    )
 
     keys = [0, 1, 2, 3, 4]
     levels_distribution, levels = calculate_variable_freqs_by_first_word(classified_logs, keys)
-    output_variable_freqs_by_first_word("generated_stats/n_vars_distribution.csv",
-                                         levels_distribution.items(),
-                                         levels)
+    output_to_csv(
+        "generated_stats/n_vars_distribution.csv",
+        ['word', 'all'] + keys + ['more vars'],
+        lambda dist,levels: [dist[0], dist[1]['__all__']]
+                            + list(map(lambda x: dist[1][x] if x in dist[1] else 0.0, levels)),
+        levels_distribution.items(),
+        levels
+    )
     
     dir_name = 'logs'
     write_to_classification_spreadsheet(dir_name, classified_logs)

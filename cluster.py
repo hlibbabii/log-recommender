@@ -1,10 +1,8 @@
 from math import sqrt
 import pickle
-from functools import reduce
-from pprint import pprint
 from sklearn import cluster
 from sklearn.cluster import KMeans
-from csv_io import output_clustering_stats, output_pearsons
+from csv_io import output_to_csv
 from first_word_picker import get_interesting_words_from_logs, build_vector, get_interesting_words_from_context, \
     select_logs_for_nn, get_classes_list, MIN_OCCURRENCES
 from freqs import classify_logs_by_first_word
@@ -72,14 +70,25 @@ if __name__ == "__main__":
             pearsons[i][j] = pearson(list(map(lambda x: x[clazz] if clazz in x else 0, clustering_stats)),
                                          list(map(lambda x: x[clazz1] if clazz1 in x else 0, clustering_stats)))
 
-    output_pearsons('generated_stats/output_pearsons.csv', pearsons, classes)
+    output_to_csv(
+        'generated_stats/output_pearsons.csv',
+        ['word'] + classes,
+        lambda d1,d2: [d1[1]] + d2[d1[0]],
+        enumerate(classes),
+        pearsons
+    )
 
     for p in pearsons:
         print(p)
 
-    output_clustering_stats('generated_stats/clustering_stats.csv',
-                            clustering_stats, word_count, gini, gini_total,
-                            classes)
+    output_to_csv('generated_stats/clustering_stats.csv',
+        ['word'] + list(range(len(clustering_stats))) + ['total', 'gini'],
+        lambda stats,classes,wc=word_count,gi=gini:
+            [stats] + list(map(lambda x: x[stats] if stats in x else 0, classes)) + [wc[stats], gi[stats]],
+        classes,
+        clustering_stats
+    )
+    # Ignoring total gini for now
 
 
 
