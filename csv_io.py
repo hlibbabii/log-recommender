@@ -66,6 +66,33 @@ def output_variable_freqs_by_first_word(filename, frequencies, keys):
             writer.writerow(line)
 
 
+def output_clustering_stats(filename, clustering_stats, word_count, gini, gini_total, classes):
+    with open(filename, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        header = ['word']
+        header.extend(range(len(clustering_stats)))
+        header.extend(['total', 'gini'])
+        writer.writerow(header)
+        for clazz in classes:
+            line = [clazz]
+            line.extend(list(map(lambda x: x[clazz] if clazz in x else 0, clustering_stats)))
+            line.extend([word_count[clazz], gini[clazz]])
+            writer.writerow(line)
+        writer.writerow(['gini total:', gini_total])
+
+def output_pearsons(filename, pearsons, classes):
+        with open(filename, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            header = ['word']
+            header.extend(classes)
+            writer.writerow(header)
+            for i, clazz in enumerate(classes):
+                line = [clazz]
+                line.extend(pearsons[i])
+                writer.writerow(line)
+
+
+
 def upload_to_google(dir):
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
