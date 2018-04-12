@@ -1,3 +1,4 @@
+import argparse
 import re
 from log_statement import LogStatement
 import os
@@ -6,8 +7,6 @@ import pickle
 __author__ = 'hlib'
 
 LOG_LEVEL_REGEX = re.compile(".*([Ll]og|LOG|[Ll]ogger|LOGGER)\.([Tt]race|[Dd]ebug|[Ii]nfo|[Ww]arn|[Ee]rror|[Ff]atal)\(.*")
-
-LOG_NUMBER_THRESHOLD = 100
 
 VAR_PLACEHOLDER = "<VAR>"
 STRING_RESOURCE_PLACEHOLDER = "<STRING_RESOURCE>"
@@ -85,10 +84,10 @@ def filter_bad_context_line(new_context_line):
     return re.match(STOP_REGEX, new_context_line) is None
 
 
-def read_grepped_log_file(directory):
+def read_grepped_log_file(directory, min_log_number_per_project):
     list= []
     project_stats = {}
-    print("returning logs from projects with more than " + str(LOG_NUMBER_THRESHOLD) + " logs extracted")
+    print("returning logs from projects with more than " + str(min_log_number_per_project) + " logs extracted")
     for filename in os.listdir(directory):
         log_counter = 0
         current_proj_list = []
@@ -123,7 +122,7 @@ def read_grepped_log_file(directory):
                                  'github_link': github_link, 'project': filename})
                     log_counter += 1
         project_stats[filename] = log_counter
-        if log_counter >= LOG_NUMBER_THRESHOLD:
+        if log_counter >= min_log_number_per_project:
             list.extend(current_proj_list)
     return list, project_stats
 
@@ -182,8 +181,12 @@ def output_to_corpus_file(preprocessed_logs, output_filename):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--min-log-number-per-project', action='store', type=int, default=100)
+    args = parser.parse_args()
+
     in_file = "../.Logs"
-    grepped_logs, project_stats = read_grepped_log_file(in_file)
+    grepped_logs, project_stats = read_grepped_log_file(in_file, args.min_log_number_per_project)
     pp_logs = preprocess_grepped_logs(grepped_logs)
     output_to_corpus_file(pp_logs, '../gengram/corpus.txt')
     with open('pplogs.pkl', 'wb') as  o:

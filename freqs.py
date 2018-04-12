@@ -1,9 +1,9 @@
+import argparse
 from collections import Counter
 import operator
 import pickle
 import itertools
 from csv_io import write_to_classification_spreadsheet, upload_to_google, output_to_csv
-from log_preprocessor import LOG_NUMBER_THRESHOLD
 
 __author__ = 'hlib'
 
@@ -124,9 +124,6 @@ def calculate_variable_freqs_by_first_word(classified_logs, keys):
     return frequencies, keys
 
 
-UPLOAD_TO_GOOGLE = False
-
-
 def output_frequencies(filename, frequencies, sorted_project_list):
     output_to_csv(
         filename,
@@ -145,7 +142,26 @@ def get_significant_words(word_list, func):
     return list(filter(func, word_list))
 
 
+def is_not_other_by_found_in_projects(min_found_in_projects_frequency):
+    return lambda w, stats=first_word_freq_stats, n_projects=len(first_word_frequencies):\
+        stats[w]['__found_in_projects__'] / n_projects > min_found_in_projects_frequency
+
+def is_not_other_by_word_frequency(min_word_frequency):
+    return lambda w, stats=first_word_freq_stats: stats[w]['__all__'] > min_word_frequency
+
+def is_not_other_by_word_occurrences(min_word_occurencies):
+    return lambda w, stats=first_word_freq_stats: stats[w]['__all_abs__'] > min_word_occurencies
+
+
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--min-log-number-per-project', action='store', type=int, default=100)
+    parser.add_argument('--upload-to-google', action='store', type=bool, default=False)
+    parser.add_argument('--min-word-occurencies', action='store', type=int, default=700)
+    parser.add_argument('--min-word-frequency', action='store', type=float, default=0.0002)
+    parser.add_argument('--min-found-in-projects-frequency', action='store', type=float, default=0.5)
+    args = parser.parse_args()
+
     with open('pplogs.pkl', 'rb') as i:
         preprocessed_logs = pickle.load(i)
     project_stats = {}
@@ -153,7 +169,7 @@ if __name__ == '__main__':
         for line in i:
             split = line.split(",")
             project_stats[split[0]] = int(split[1])
-    top_projects = get_top_projects_by_log_number(project_stats, LOG_NUMBER_THRESHOLD)
+    top_projects = get_top_projects_by_log_number(project_stats, args.min_log_number_per_project)
 
     frequencies = get_word_frequences(preprocessed_logs, lambda x: x.log_text_words)
     freq_stats = calc_frequency_stats(frequencies)
@@ -171,14 +187,8 @@ if __name__ == '__main__':
         top_projects
     )
 
-    is_not_other_by_found_in_projects = lambda w, stats=first_word_freq_stats, n_projects=len(first_word_frequencies):\
-        stats[w]['__found_in_projects__'] / n_projects > 0.5
-
-    is_not_other_by_word_frequency = lambda w, stats=first_word_freq_stats: stats[w]['__all__'] > 0.0002
-
-    is_not_other_by_word_occurrences = lambda w, stats=first_word_freq_stats: stats[w]['__all_abs__'] > 700
-
-    significant_first_words = get_significant_words(first_word_freq_stats.keys(), is_not_other_by_word_occurrences)
+    significant_first_words = get_significant_words(first_word_freq_stats.keys(),
+                                                    is_not_other_by_word_occurrences(args.min_word_occurencies))
 
     classified_logs = classify_logs_by_first_word(preprocessed_logs, significant_first_words)
     keys = {"trace": 0.0,
@@ -209,5 +219,5 @@ if __name__ == '__main__':
     
     dir_name = 'logs'
     write_to_classification_spreadsheet(dir_name, classified_logs)
-    if UPLOAD_TO_GOOGLE:
+    if args.upload_to_google:
         upload_to_google(dir_name)
