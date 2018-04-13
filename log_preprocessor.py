@@ -183,15 +183,18 @@ def output_to_corpus_file(preprocessed_logs, output_filename):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--min-log-number-per-project', action='store', type=int, default=100)
+    parser.add_argument('--output-corpus-file', action='store', default='../gengram/corpus.txt')
+    parser.add_argument('--output-preprocessed-log-file', action='store', default='pplogs.pkl')
+    parser.add_argument('--output-project-stats-file', action='store', default='generated_stats/project_stats.csv')
     args = parser.parse_args()
 
     in_file = "../.Logs"
     grepped_logs, project_stats = read_grepped_log_file(in_file, args.min_log_number_per_project)
     pp_logs = preprocess_grepped_logs(grepped_logs)
-    output_to_corpus_file(pp_logs, '../gengram/corpus.txt')
-    with open('pplogs.pkl', 'wb') as  o:
+    output_to_corpus_file(pp_logs, args.output_corpus_file)
+    with open(args.output_preprocessed_log_file, 'wb') as o:
         pickle.dump(pp_logs, o, pickle.HIGHEST_PROTOCOL)
-    with open('generated_stats/project_stats.csv', 'w') as o:
+    with open(args.output_project_stats_file, 'w') as o:
         for project in project_stats.items():
             o.write(project[0] + ',' + str(project[1]) + '\n')
 

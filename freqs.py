@@ -3,7 +3,7 @@ from collections import Counter
 import operator
 import pickle
 import itertools
-from csv_io import write_to_classification_spreadsheet, upload_to_google, output_to_csv
+from csv_io import write_to_classification_spreadsheet, output_to_csv
 
 __author__ = 'hlib'
 
@@ -156,16 +156,22 @@ def is_not_other_by_word_occurrences(min_word_occurencies):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--min-log-number-per-project', action='store', type=int, default=100)
-    parser.add_argument('--upload-to-google', action='store', type=bool, default=False)
     parser.add_argument('--min-word-occurencies', action='store', type=int, default=700)
     parser.add_argument('--min-word-frequency', action='store', type=float, default=0.0002)
     parser.add_argument('--min-found-in-projects-frequency', action='store', type=float, default=0.5)
+
+    parser.add_argument('--input-preprocessed-log-file', action='store', default='pplogs.pkl')
+    parser.add_argument('--input-project-stats-file', action='store', default='generated_stats/project_stats.csv')
+    parser.add_argument('--output-frequencies-file', action='store', default='generated_stats/frequencies.csv')
+    parser.add_argument('--output-first-word-frequencies-file', action='store', default='generated_stats/frequencies_first_word.csv')
+    parser.add_argument('--output-distribution-by-levels-file', action='store', default='generated_stats/level_distribution.csv')
+    parser.add_argument('--output-distribution-by-n_vars-file', action='store', default='generated_stats/n_vars_distribution.csv')
     args = parser.parse_args()
 
-    with open('pplogs.pkl', 'rb') as i:
+    with open(args.input_preprocessed_log_file, 'rb') as i:
         preprocessed_logs = pickle.load(i)
     project_stats = {}
-    with open('project_stats.csv', 'r') as i:
+    with open(args.input_project_stats_file, 'r') as i:
         for line in i:
             split = line.split(",")
             project_stats[split[0]] = int(split[1])
@@ -174,7 +180,7 @@ if __name__ == '__main__':
     frequencies = get_word_frequences(preprocessed_logs, lambda x: x.log_text_words)
     freq_stats = calc_frequency_stats(frequencies)
     output_frequencies(
-        'generated_stats/frequencies.csv',
+        args.output_frequencies_file,
         sorted(freq_stats.items(), key=lambda x: x[1]['__median__'], reverse=True),
         top_projects
     )
@@ -182,7 +188,7 @@ if __name__ == '__main__':
     first_word_frequencies = get_word_frequences(preprocessed_logs, lambda x: [x.get_first_word()])
     first_word_freq_stats = calc_frequency_stats(first_word_frequencies)
     output_frequencies(
-        'generated_stats/frequencies_first_word.csv',
+        args.output_first_word_frequencies_file,
         sorted(first_word_freq_stats.items(), key=lambda x: x[1]['__median__'], reverse=True),
         top_projects
     )
@@ -198,7 +204,7 @@ if __name__ == '__main__':
             "error": 0.9,
             "fatal": 1.0}
     levels_distribution, levels = calculate_log_level_freqs_by_first_word_cathegory(classified_logs, keys)
-    output_to_csv("generated_stats/level_distribution.csv",
+    output_to_csv(args.output_distribution_by_levels_file,
         ['word', 'weighted avg', 'all'] + levels,
         lambda freqs,levels: [freqs[0], freqs[1]['__weighted_avg__'], freqs[1]['__all__']] +
             list(map(lambda x: freqs[1][x] if x in freqs[1] else 0.0, levels)),
@@ -209,15 +215,12 @@ if __name__ == '__main__':
     keys = [0, 1, 2, 3, 4]
     levels_distribution, levels = calculate_variable_freqs_by_first_word(classified_logs, keys)
     output_to_csv(
-        "generated_stats/n_vars_distribution.csv",
+        args.output_distribution_by_n_vars_file,
         ['word', 'all'] + keys + ['more vars'],
         lambda dist,levels: [dist[0], dist[1]['__all__']]
                             + list(map(lambda x: dist[1][x] if x in dist[1] else 0.0, levels)),
         levels_distribution.items(),
         levels
     )
-    
-    dir_name = 'logs'
-    write_to_classification_spreadsheet(dir_name, classified_logs)
-    if args.upload_to_google:
-        upload_to_google(dir_name)
+
+    write_to_classification_spreadsheet(args.spreadsheet_output_dir_name, classified_logs)

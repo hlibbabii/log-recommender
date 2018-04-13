@@ -1,3 +1,4 @@
+import argparse
 import pickle
 from random import shuffle
 from pybrain import SoftmaxLayer
@@ -7,53 +8,6 @@ from pybrain.tools.shortcuts import buildNetwork
 from pybrain.utilities import percentError
 from freqs import calc_frequency_stats, \
     classify_logs_by_first_word, get_word_frequences, get_significant_words
-
-# interesting_words = [
-#     "push",
-#     "set",
-#     "add",
-#     "put",
-#     "can",
-#     "check",
-#     "is",
-#
-#     "new",
-#     "build",
-#     "create",
-#
-#     "equals"
-#     "starts",
-#     "with",
-#     "ends",
-#     "matches",
-#     "resolve",
-#     "fins",
-#     "size",
-#
-#     "valid",
-#     "check",
-#     "verify",
-#     "illegal",
-#
-#     "ignore",
-#
-#     "initialize",
-#     "initialized",
-#
-#     "try",
-#     "catch"
-# ]
-#
-#
-# classes = [
-#     ["added"],
-#     ["cannot", "could", "couldn't", "failed"],
-#     ["created"],
-#     ["error", "exception"],
-#     ["found"],
-#     ["invalid"],
-#     ["deleting"]
-# ]
 
 
 def get_interesting_words_from_logs(log, interesting_words_from_context):
@@ -122,7 +76,11 @@ def select_logs_for_nn(preprocessed_logs, classes, MIN_OCCURRENCES):
 
 
 if __name__ == "__main__":
-    with open('pplogs.pkl', 'rb') as i:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--input-preprocessed-log-file', action='store', default='pplogs.pkl')
+    args = parser.parse_args()
+
+    with open(args.input_preprocessed_log_file, 'rb') as i:
         preprocessed_logs = pickle.load(i)
     classes = get_classes_list(preprocessed_logs)
     interesting_words_from_context = get_interesting_words_from_context(preprocessed_logs)

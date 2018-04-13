@@ -1,9 +1,3 @@
-import os
-from googleapiclient import discovery
-from googleapiclient.http import MediaFileUpload
-import httplib2
-from google_drive_api_utils import get_credentials
-
 __author__ = 'hlib'
 
 import csv
@@ -26,22 +20,3 @@ def output_to_csv(filename, header, lambda1, dim1, dim2):
         writer.writerow(header)
         for row in dim1:
             writer.writerow(lambda1(row, dim2))
-
-
-def upload_to_google(dir):
-    credentials = get_credentials()
-    http = credentials.authorize(httplib2.Http())
-    drive_service = discovery.build('drive', 'v3', http=http)
-    files = drive_service.files()
-    file_counter = 0
-    for filename in os.listdir(dir):
-        file_counter += 1
-        print("Uploading file " + str(file_counter) + " to Google drive...")
-        file_metadata = {
-            'name': filename,
-            'mimeType': 'application/vnd.google-apps.spreadsheet'
-        }
-        media = MediaFileUpload(os.path.join(dir, filename),
-                                mimetype='text/csv',
-                                resumable=True)
-        files.create(body=file_metadata, media_body=media).execute()
