@@ -158,7 +158,7 @@ if __name__ == '__main__':
     parser.add_argument('--min-log-number-per-project', action='store', type=int, default=100)
     parser.add_argument('--min-word-occurencies', action='store', type=int, default=700)
     parser.add_argument('--min-word-frequency', action='store', type=float, default=0.0002)
-    parser.add_argument('--min-found-in-projects-frequency', action='store', type=float, default=0.5)
+    parser.add_argument('--min-found-in-projects-frequency', action='store', type=float, default=0.5) #not used for now
 
     parser.add_argument('--input-preprocessed-log-file', action='store', default='pplogs.pkl')
     parser.add_argument('--input-project-stats-file', action='store', default='generated_stats/project_stats.csv')
@@ -166,6 +166,7 @@ if __name__ == '__main__':
     parser.add_argument('--output-first-word-frequencies-file', action='store', default='generated_stats/frequencies_first_word.csv')
     parser.add_argument('--output-distribution-by-levels-file', action='store', default='generated_stats/level_distribution.csv')
     parser.add_argument('--output-distribution-by-n_vars-file', action='store', default='generated_stats/n_vars_distribution.csv')
+    parser.add_argument('--spreadsheet-output-dir-name', action='store', default='logs')
     args = parser.parse_args()
 
     with open(args.input_preprocessed_log_file, 'rb') as i:
