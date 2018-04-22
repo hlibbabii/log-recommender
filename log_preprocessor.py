@@ -165,10 +165,10 @@ def process_log_statement(log_entry):
     words_from_log_text = get_words_from_log_text(log_text)
     words_from_log_text = filter_out_stop_words(words_from_log_text)
     return LogStatement(
-            log_text_line=log_text_line,
-            log_text=log_text,
-            log_text_words=words_from_log_text,
-            log_level=extract_log_level(log_entry['log_statement']),
+            text_line=log_text_line,
+            text=log_text,
+            text_words=words_from_log_text,
+            level=extract_log_level(log_entry['log_statement']),
             n_variables=n_variables,
             context_before=log_entry['context_before'],
             context_after=log_entry['context_after'],
@@ -183,7 +183,7 @@ STOP_WORDS=["a", "an", "and", "are", "as", "at", "be", "for", "has", "in", "is",
 def output_to_corpus_file(preprocessed_logs, output_filename):
     with open(output_filename, 'w') as f:
         for l in preprocessed_logs:
-            f.write(str(l.log_text) + "\n")
+            f.write(str(l.text) + "\n")
 
 
 def output_to_context_corpus_file(preprocessed_logs, output_filename):

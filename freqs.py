@@ -86,7 +86,7 @@ def calculate_log_level_freqs_by_first_word_cathegory(classified_logs, keys):
         if log.first_word_cathegory not in occurences:
             occurences[log.first_word_cathegory] = dict((level, 0) for level in levels)
             occurences[log.first_word_cathegory]['__all__'] = 0
-        occurences[log.first_word_cathegory][log.log_level] += 1
+        occurences[log.first_word_cathegory][log.level] += 1
         occurences[log.first_word_cathegory]['__all__'] += 1
     frequencies = {}
     for first_word_cathegory in occurences:
@@ -178,7 +178,7 @@ if __name__ == '__main__':
             project_stats[split[0]] = int(split[1])
     top_projects = get_top_projects_by_log_number(project_stats, args.min_log_number_per_project)
 
-    frequencies = get_word_frequences(preprocessed_logs, lambda x: x.log_text_words)
+    frequencies = get_word_frequences(preprocessed_logs, lambda x: x.text_words)
     freq_stats = calc_frequency_stats(frequencies)
     output_frequencies(
         args.output_frequencies_file,

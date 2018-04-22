@@ -10,9 +10,9 @@ def write_to_classification_spreadsheet(dir_name, logs):
         with open(dir_name + '/logs' + str(index) + '.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             for log in log_set:
-                writer.writerow([log.log_text, log.log_level, log.n_variables,
-                                 log.first_word_cathegory, log.context_before + log.log_text_line + log.context_after,
-                                 len(log.log_text), log.link])
+                writer.writerow([log.text, log.level, log.n_variables,
+                                 log.first_word_cathegory, log.context_before + log.text_line + log.context_after,
+                                 len(log.text), log.link])
 
 def output_to_csv(filename, header, lambda1, dim1, dim2):
     with open(filename, 'w', newline='') as csvfile:
