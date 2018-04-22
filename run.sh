@@ -11,18 +11,19 @@ MAX_ITER_RAE=3
 MAX_SENTENCE_LENGTH_RAE=50
 
 # Non tunable params
+GENERATED_STATS_FOLDER="generated_stats"
 OUTPUT_CORPUS_FILE='../gengram/corpus.txt'
 PREPROCESSED_LOG_FILE='pplogs.pkl'
-PROJECT_STATS_FILE='generated_stats/project_stats.csv'
-OUTPUT_FREQUENCIES_FILE='generated_stats/frequencies.csv'
-OUTPUT_FIRST_WORD_FREQUENCIES_FILE='generated_stats/frequencies_first_word.csv'
-OUTPUT_DISTRIBUTION_BY_LEVELS_FILE='generated_stats/level_distribution.csv'
-OUTPUT_DISTRIBUTION_BY_N_VARS_FILE='generated_stats/n_vars_distribution.csv'
+PROJECT_STATS_FILE="${GENERATED_STATS_FOLDER}/project_stats.csv"
+OUTPUT_FREQUENCIES_FILE="${GENERATED_STATS_FOLDER}/frequencies.csv"
+OUTPUT_FIRST_WORD_FREQUENCIES_FILE="${GENERATED_STATS_FOLDER}/frequencies_first_word.csv"
+OUTPUT_DISTRIBUTION_BY_LEVELS_FILE="${GENERATED_STATS_FOLDER}/level_distribution.csv"
+OUTPUT_DISTRIBUTION_BY_N_VARS_FILE="${GENERATED_STATS_FOLDER}/n_vars_distribution.csv"
 PATH_TO_PYTHON='/home/hlib/dev/bz-hackathon/env/bin/python'
 PATH_TO_CACHED_PROJECTS='../.Projects'
 SPREADSHEET_OUTPUT_DIR_NAME='logs'
 AUTOENCODE_LOCATION='../AutoenCODE'
-OUTPUT_CONTEXT_CORPUS_FILE='${AUTOENCODE_LOCATION}/data/corpus.src'
+OUTPUT_CONTEXT_CORPUS_FILE="${AUTOENCODE_LOCATION}/data/corpus.src"
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -46,6 +47,10 @@ esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
+if ! [ -d $GENERATED_STATS_FOLDER ]; then
+    mkdir $GENERATED_STATS_FOLDER
+fi
+
 if [ -n "$PROJECT_LIST_FILE" ]; then
     mv ../.Logs .
     SCRIPT="$(pwd)/log-extractor.sh ${PROJECT_LIST_FILE}"
@@ -68,6 +73,10 @@ LOG_PREPROCESSOR_SCRIPT="$LOG_PREPROCESSOR_SCRIPT --output-project-stats-file $P
 
 echo "Running $LOG_PREPROCESSOR_SCRIPT"
 eval "$LOG_PREPROCESSOR_SCRIPT"
+ERR_CODE=$?
+if [ $ERR_CODE -ne 0 ]; then
+    exit 1
+fi
 
 if ! [ -d "$SPREADSHEET_OUTPUT_DIR_NAME" ]; then
     mkdir "$SPREADSHEET_OUTPUT_DIR_NAME"
@@ -90,25 +99,49 @@ if [ "$UPLOAD_TO_GOOGLE" -eq "1" ]; then
     echo "Uploading csvs to google..."
     UPLOAD_TO_GOOGLE_SCRIPT="$PATH_TO_PYTHON upload_to_google.py $SPREADSHEET_OUTPUT_DIR_NAME"
     eval "$UPLOAD_TO_GOOGLE_SCRIPT"
+    ERR_CODE=$?
+    if [ $ERR_CODE -ne 0 ]; then
+        exit 1
+    fi
 fi
 
 echo "Running $FREQ_SCRIPT"
 eval "$FREQ_SCRIPT"
+ERR_CODE=$?
+if [ $ERR_CODE -ne 0 ]; then
+    exit 1
+fi
 
 FIRST_WORD_PICKER_SCRIPT="$PATH_TO_PYTHON first_word_picker.py --input-preprocessed-log-file $PREPROCESSED_LOG_FILE"
 FIRST_WORD_PICKER_SCRIPT="$FIRST_WORD_PICKER_SCRIPT --min-word-occurencies $MIN_WORD_OCCURENCIES"
 echo "Running $FIRST_WORD_PICKER_SCRIPT"
 eval "$FIRST_WORD_PICKER_SCRIPT"
+ERR_CODE=$?
+if [ $ERR_CODE -ne 0 ]; then
+    exit 1
+fi
 
 cd "${AUTOENCODE_LOCATION}/bin"
 CMD="./run_word2vec.sh ../data ../out/word2vec/ $WORD_TO_VEC_N_VECTOR_DIMENSIONS"
 echo "Running $CMD"
 eval "$CMD"
+ERR_CODE=$?
+if [ $ERR_CODE -ne 0 ]; then
+    exit 1
+fi
 
 CMD="./run_postprocess.py --w2v ../out/word2vec/word2vec.out --src ../data"
 echo "Running $CMD"
 eval "$CMD"
+ERR_CODE=$?
+if [ $ERR_CODE -ne 0 ]; then
+    exit 1
+fi
 
 CMD="rae/run_rae.sh ../out ../out $MAX_SENTENCE_LENGTH_RAE $MAX_ITER_RAE"
 echo "Running $CMD"
 eval "$CMD"
+ERR_CODE=$?
+if [ $ERR_CODE -ne 0 ]; then
+    exit 1
+fi
