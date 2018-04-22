@@ -12,7 +12,6 @@ MAX_SENTENCE_LENGTH_RAE=50
 
 # Non tunable params
 OUTPUT_CORPUS_FILE='../gengram/corpus.txt'
-OUTPUT_CONTEXT_CORPUS_FILE='../AutoenCODE/data/corpus.src'
 PREPROCESSED_LOG_FILE='pplogs.pkl'
 PROJECT_STATS_FILE='generated_stats/project_stats.csv'
 OUTPUT_FREQUENCIES_FILE='generated_stats/frequencies.csv'
@@ -23,6 +22,7 @@ PATH_TO_PYTHON='/home/hlib/dev/bz-hackathon/env/bin/python'
 PATH_TO_CACHED_PROJECTS='../.Projects'
 SPREADSHEET_OUTPUT_DIR_NAME='logs'
 AUTOENCODE_LOCATION='../AutoenCODE'
+OUTPUT_CONTEXT_CORPUS_FILE='${AUTOENCODE_LOCATION}/data/corpus.src'
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
