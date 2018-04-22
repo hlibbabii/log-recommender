@@ -6,9 +6,13 @@ MIN_WORD_OCCURENCIES=1500
 MIN_WORD_FREQUNCY=0.0002
 MIN_FOUND_IN_PROJECTS_FREQUENCY=0.5
 MIN_LOG_NUMBER_PER_PROJECT=100
+WORD_TO_VEC_N_VECTOR_DIMENSIONS=150
+MAX_ITER_RAE=3
+MAX_SENTENCE_LENGTH_RAE=50
 
 # Non tunable params
 OUTPUT_CORPUS_FILE='../gengram/corpus.txt'
+OUTPUT_CONTEXT_CORPUS_FILE='../AutoenCODE/data/corpus.src'
 PREPROCESSED_LOG_FILE='pplogs.pkl'
 PROJECT_STATS_FILE='generated_stats/project_stats.csv'
 OUTPUT_FREQUENCIES_FILE='generated_stats/frequencies.csv'
@@ -18,6 +22,7 @@ OUTPUT_DISTRIBUTION_BY_N_VARS_FILE='generated_stats/n_vars_distribution.csv'
 PATH_TO_PYTHON='/home/hlib/dev/bz-hackathon/env/bin/python'
 PATH_TO_CACHED_PROJECTS='../.Projects'
 SPREADSHEET_OUTPUT_DIR_NAME='logs'
+AUTOENCODE_LOCATION='../AutoenCODE'
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -57,6 +62,7 @@ fi
 LOG_PREPROCESSOR_SCRIPT="$PATH_TO_PYTHON log_preprocessor.py"
 LOG_PREPROCESSOR_SCRIPT="$LOG_PREPROCESSOR_SCRIPT --min-log-number-per-project $MIN_LOG_NUMBER_PER_PROJECT"
 LOG_PREPROCESSOR_SCRIPT="$LOG_PREPROCESSOR_SCRIPT --output-corpus-file $OUTPUT_CORPUS_FILE"
+LOG_PREPROCESSOR_SCRIPT="$LOG_PREPROCESSOR_SCRIPT --output-context-corpus-file $OUTPUT_CONTEXT_CORPUS_FILE"
 LOG_PREPROCESSOR_SCRIPT="$LOG_PREPROCESSOR_SCRIPT --output-preprocessed-log-file $PREPROCESSED_LOG_FILE"
 LOG_PREPROCESSOR_SCRIPT="$LOG_PREPROCESSOR_SCRIPT --output-project-stats-file $PROJECT_STATS_FILE"
 
@@ -93,3 +99,16 @@ FIRST_WORD_PICKER_SCRIPT="$PATH_TO_PYTHON first_word_picker.py --input-preproces
 FIRST_WORD_PICKER_SCRIPT="$FIRST_WORD_PICKER_SCRIPT --min-word-occurencies $MIN_WORD_OCCURENCIES"
 echo "Running $FIRST_WORD_PICKER_SCRIPT"
 eval "$FIRST_WORD_PICKER_SCRIPT"
+
+cd "${AUTOENCODE_LOCATION}/bin"
+CMD="./run_word2vec.sh ../data ../out/word2vec/ $WORD_TO_VEC_N_VECTOR_DIMENSIONS"
+echo "Running $CMD"
+eval "$CMD"
+
+CMD="./run_postprocess.py --w2v ../out/word2vec/word2vec.out --src ../data"
+echo "Running $CMD"
+eval "$CMD"
+
+CMD="rae/run_rae.sh ../out ../out $MAX_SENTENCE_LENGTH_RAE $MAX_ITER_RAE"
+echo "Running $CMD"
+eval "$CMD"
