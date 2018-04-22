@@ -57,16 +57,16 @@ def append_period_if_absent(line):
 
 def replace_string_resources_names(line):
     changed = re.sub('^([0-9a-zA-Z]+\\.)+[0-9a-zA-Z]+$', STRING_RESOURCE_PLACEHOLDER, line)
-    if changed != line:
-        print(line + "  ----->  " + changed)
+    # if changed != line:
+    #     print(line + "  ----->  " + changed)
     return changed
 
 
 def replace_variable_place_holders(line):
     changed = re.sub('\\{\\}', VAR_PLACEHOLDER, line)
     changed = re.sub('%[0-9]*[a-z]', VAR_PLACEHOLDER, changed)
-    if changed != line:
-        print(line + "  ----->  " + changed)
+    # if changed != line:
+    #     print(line + "  ----->  " + changed)
     return changed
 
 
@@ -91,36 +91,42 @@ def read_grepped_log_file(directory, min_log_number_per_project):
     for filename in os.listdir(directory):
         log_counter = 0
         current_proj_list = []
-        with open(os.path.join(directory, filename), 'r') as f:
-            n_lines_of_context = int(f.readline())
-            while True:
-                #reading github link
-                github_link = f.readline()
-                if not github_link:
-                    break
+        try:
+            with open(os.path.join(directory, filename), 'r') as f:
+                n_lines_of_context = int(f.readline())
+                while True:
+                    #reading github link
+                    github_link = f.readline()
+                    if not github_link:
+                        break
 
-                context_before = ""
-                for i in range(n_lines_of_context):
-                    new_context_line = f.readline()
-                    if filter_bad_context_line(new_context_line):
-                        context_before += new_context_line
-                #reading log statement
-                log_statement_line = f.readline()
-                context_after = ""
-                for i in range(n_lines_of_context):
-                    new_context_line = f.readline()
-                    if filter_bad_context_line(new_context_line):
-                        context_after += new_context_line
+                    context_before = ""
+                    for i in range(n_lines_of_context):
+                        new_context_line = f.readline()
+                        if filter_bad_context_line(new_context_line):
+                            context_before += new_context_line
+                    #reading log statement
+                    log_statement_line = f.readline()
+                    context_after = ""
+                    for i in range(n_lines_of_context):
+                        new_context_line = f.readline()
+                        if filter_bad_context_line(new_context_line):
+                            context_after += new_context_line
 
-                #reading 2 empty lines
-                f.readline()
-                f.readline()
-                if contains_text(log_statement_line):
-                    current_proj_list.append({'log_statement': log_statement_line,
-                                              'context_before': context_before,
-                                              'context_after': context_after,
-                                 'github_link': github_link, 'project': filename})
-                    log_counter += 1
+                    #reading 2 empty lines
+                    f.readline()
+                    f.readline()
+                    if contains_text(log_statement_line):
+                        current_proj_list.append({'log_statement': log_statement_line,
+                                                  'context_before': context_before,
+                                                  'context_after': context_after,
+                                     'github_link': github_link, 'project': filename})
+                        log_counter += 1
+        except UnicodeDecodeError as er:
+            print(er)
+            print('Error in file: ' + filename + ". Skipping it.")
+            print('The problem occured with log number ' + str(log_counter))
+
         project_stats[filename] = log_counter
         if log_counter >= min_log_number_per_project:
             list.extend(current_proj_list)
