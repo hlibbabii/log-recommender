@@ -155,10 +155,6 @@ def get_words_from_log_text(log_text):
     return split_log_text_to_keywords_and_identifiers(log_text)
 
 
-def filter_out_stop_words(words_from_log_text):
-    return list(filter(lambda w: w not in STOP_WORDS, words_from_log_text))
-
-
 def process_log_statement(log_entry):
     log_text_line, text, n_variables = extract_text_and_variables(log_entry['log_statement'])
     log_text = postprocess_extracted_text(text)
@@ -175,10 +171,13 @@ def process_log_statement(log_entry):
             project = log_entry['project'],
             link=log_entry['github_link'])
 
-
 STOP_WORDS=["a", "an", "and", "are", "as", "at", "be", "for", "has", "in", "is", "it", "its", "of", "on", "that",
             "the", "to", "was", "were", "with"]
 #the following words are normally stop words but we might want not to consider as stop words:  by, from, he, will
+
+def filter_out_stop_words(words_from_log_text):
+    return list(filter(lambda w: w not in STOP_WORDS, words_from_log_text))
+
 
 def output_to_corpus_file(preprocessed_logs, output_filename):
     with open(output_filename, 'w') as f:
@@ -190,6 +189,11 @@ def output_to_context_corpus_file(preprocessed_logs, output_filename):
     with open(output_filename, 'w') as f:
         for l in preprocessed_logs:
             f.write(" ".join(l.context_words) + "\n")
+
+
+def filter_logs(pp_logs):
+    return list(filter(lambda l: len(l.text_words) > 0 and len(l.context_words) > 0
+                ,pp_logs))
 
 
 if __name__ == "__main__":
@@ -204,6 +208,7 @@ if __name__ == "__main__":
     in_file = "../.Logs"
     grepped_logs, project_stats = read_grepped_log_file(in_file, args.min_log_number_per_project)
     pp_logs = preprocess_grepped_logs(grepped_logs)
+    pp_logs = filter_logs(pp_logs)
     output_to_corpus_file(pp_logs, args.output_corpus_file)
     output_to_context_corpus_file(pp_logs, args.output_context_corpus_file)
     with open(args.output_preprocessed_log_file, 'wb') as o:

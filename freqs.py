@@ -224,4 +224,4 @@ if __name__ == '__main__':
         levels
     )
 
-    write_to_classification_spreadsheet(args.spreadsheet_output_dir_name, classified_logs)
+    #write_to_classification_spreadsheet(args.spreadsheet_output_dir_name, classified_logs)

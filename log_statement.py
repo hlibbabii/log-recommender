@@ -80,7 +80,7 @@ def split_to_key_words_and_identifiers(line):
             ))))
     return result
 
-FILTER_OUT_1_AND_2_CHAR_TOKENS = True
+FILTER_OUT_1_AND_2_CHAR_TOKENS = False
 
 
 def filter_out_1_and_2_char_tokens(context):

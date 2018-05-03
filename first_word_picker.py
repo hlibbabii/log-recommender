@@ -7,11 +7,10 @@ from pybrain.supervised import BackpropTrainer
 from pybrain.tools.shortcuts import buildNetwork
 from pybrain.utilities import percentError
 import time
-from freqs import calc_frequency_stats, \
-    classify_logs_by_first_word, get_word_frequences, get_significant_words
+from freqs import calc_frequency_stats, classify_logs_by_first_word, get_word_frequences, get_significant_words
 
 
-def get_interesting_words_from_logs(log, interesting_words_from_context):
+def get_interesting_words_from_current_log_context(log, interesting_words_from_context):
     return [value for value in log.context_words if value in interesting_words_from_context]
 
 
@@ -45,7 +44,7 @@ def test_nn(logs_for_testing, classes, verbose=False):
     top_3_count= 0
     top_5_count= 0
     for log in logs_for_testing:
-        words = get_interesting_words_from_logs(log, interesting_words_from_context)
+        words = get_interesting_words_from_current_log_context(log, interesting_words_from_context)
         vector = build_vector(words, interesting_words_from_context)
         result = net.activate(vector)
         sorted_result = sorted(enumerate(result),key=lambda x: x[1], reverse=True)
@@ -89,7 +88,7 @@ def createDataSet(interesting_words_from_context, classes, n_hidden_layers, logs
     n_output_nodes = len(classes)
     dataset = ClassificationDataSet(n_input_nodes, n_hidden_layers, nb_classes=n_output_nodes)
     for log in logs:
-        words = get_interesting_words_from_logs(log, interesting_words_from_context)
+        words = get_interesting_words_from_current_log_context(log, interesting_words_from_context)
         vector = build_vector(words, interesting_words_from_context)
 
         expected_class_label = get_label_by_class(log.first_word_cathegory, classes)
@@ -156,8 +155,5 @@ if __name__ == "__main__":
 # after that stemmed word,
 # do clustering to identify 'similar' first words
 # group 'similar' first words and rerun classification
-# table of freqs of words in context depending on freqs THRESHOLD
-# table of classes depending on threshold of OTHER (presenc in proj or just freq)
-# consider ++ == = alone with tokens
 # same amount of test data for different classes
 
