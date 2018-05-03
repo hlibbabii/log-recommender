@@ -7,7 +7,7 @@ def upload_to_google(dir):
     import httplib2
     from googleapiclient import discovery
     from googleapiclient.http import MediaFileUpload
-    from google_drive_api_utils import get_credentials
+    from log_recommender.google_drive_api_utils import get_credentials
 
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())

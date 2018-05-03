@@ -46,13 +46,28 @@ def get_contexts(preprocessed_logs):
 
 
 class ClusteringTree(object):
-    def __init__(self, payload):
+    def __init__(self, payload, left_tree, right_tree):
         self.payload = payload
-
-    def __int__(self, payload, left_tree, right_tree):
         self.left_tree = left_tree
         self.right_tree = right_tree
 
+    @classmethod
+    def leaf(cls, payload):
+        return cls(payload, None, None)
+
+    @classmethod
+    def node(cls, payload, left_tree, right_tree):
+        return cls(payload, left_tree, right_tree)
+
+
+def tree_from_dendrogram(dendrogram):
+    n_leaves = len(dendrogram) + 1
+    created_trees = []
+    for ind, entry in enumerate(dendrogram):
+        left_tree = ClusteringTree.leaf(entry[0]) if entry[0] < n_leaves else created_trees[entry[0] - n_leaves]
+        right_tree = ClusteringTree.leaf(entry[1]) if entry[1] < n_leaves else created_trees[entry[1] - n_leaves]
+        created_trees.append(ClusteringTree.node(n_leaves + ind, left_tree, right_tree))
+    return created_trees[-1]
 
 
 

@@ -3,7 +3,8 @@ from collections import Counter
 import operator
 import pickle
 import itertools
-from csv_io import write_to_classification_spreadsheet, output_to_csv
+from csv_io import output_to_csv
+
 
 __author__ = 'hlib'
 
