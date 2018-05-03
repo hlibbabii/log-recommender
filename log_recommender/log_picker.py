@@ -5,7 +5,7 @@ from random import randint
 
 from sortedcontainers import SortedList
 
-from log_recommender.util import without_duplicates
+from util import without_duplicates
 
 
 __author__ = 'hlib'

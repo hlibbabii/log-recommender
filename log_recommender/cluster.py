@@ -6,7 +6,7 @@ from random import shuffle
 from sklearn import cluster
 from sklearn.cluster import KMeans
 
-from log_recommender.csv_io import output_to_csv
+from csv_io import output_to_csv
 from first_word_picker import get_interesting_words_from_current_log_context, get_interesting_words_from_context, \
     select_logs_for_training_and_testing, get_classes_list
 from freqs import classify_logs_by_first_word

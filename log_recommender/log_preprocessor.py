@@ -3,7 +3,7 @@ import re
 import os
 import pickle
 
-from log_recommender.log_statement import LogStatement
+from log_statement import LogStatement
 
 
 __author__ = 'hlib'

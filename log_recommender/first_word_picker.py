@@ -9,7 +9,7 @@ from pybrain.supervised import BackpropTrainer
 from pybrain.tools.shortcuts import buildNetwork
 from pybrain.utilities import percentError
 
-from log_recommender.freqs import calc_frequency_stats, classify_logs_by_first_word, get_word_frequences, get_significant_words
+from freqs import calc_frequency_stats, classify_logs_by_first_word, get_word_frequences, get_significant_words
 
 
 def get_interesting_words_from_current_log_context(log, interesting_words_from_context):
