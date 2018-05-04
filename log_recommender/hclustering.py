@@ -8,7 +8,7 @@ from numpy import genfromtxt
 def run_hierarchical_clustering(log_vectors, first_words_vector, contexts):
     import fastcluster
 
-    linkage = fastcluster.linkage(log_vectors, method='single', metric=lambda x, y: dist_matrix[x, y])
+    linkage = fastcluster.linkage(log_vectors, method='complete', metric=lambda x, y: dist_matrix[x, y])
     for i, linkage_row in enumerate(linkage):
         f1 = ""
         node_index1 = linkage_row[0].astype(int)
