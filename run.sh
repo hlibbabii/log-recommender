@@ -178,6 +178,10 @@ if [ $ERR_CODE -ne 0 ]; then
     exit 1
 fi
 
+END=$(date +%s.%N)
+DIFF=$(echo "$END - $START" | bc)
+echo "Execution took $DIFF"
+
 VISUALIZE_SCRIPT="$PATH_TO_PYTHON log_recommender/visual.py --autoencode-dist-file $WORD_TO_VEC_OUT_FILE"
 echo "Running $VISUALIZE_SCRIPT"
 eval "$VISUALIZE_SCRIPT"
@@ -185,7 +189,3 @@ ERR_CODE=$?
 if [ $ERR_CODE -ne 0 ]; then
     exit 1
 fi
-
-END=$(date +%s.%N)
-DIFF=$(echo "$END - $START" | bc)
-echo "Execution took $DIFF"
