@@ -13,23 +13,28 @@ MAX_ITER_RAE=10
 MAX_SENTENCE_LENGTH_RAE=50
 
 # Non tunable params
-GENERATED_STATS_FOLDER="generated_stats"
-OUTPUT_CORPUS_FILE='../gengram/corpus.txt'
-PREPROCESSED_LOG_FILE='pplogs.pkl'
-LOGS_FOR_TRAINING_FILE='logs_for_training.pkl'
+PATH_TO_PYTHON='/home/hlib/dev/bz-hackathon/env/bin/python'
+PATH_TO_PROJECT="/home/hlib/thesis/log-recommender"
+
+GENERATED_STATS_FOLDER="$PATH_TO_PROJECT/generated_stats"
+PATH_TO_CACHED_PROJECTS="$PATH_TO_PROJECT/.Projects"
+SPREADSHEET_OUTPUT_DIR_NAME="$PATH_TO_PROJECT/logs"
+
+OUTPUT_CORPUS_FILE="$PATH_TO_PROJECT/../gengram/corpus.txt"
+PREPROCESSED_LOG_FILE="$PATH_TO_PROJECT/pplogs.pkl"
+LOGS_FOR_TRAINING_FILE="$PATH_TO_PROJECT/logs_for_training.pkl"
+
 PROJECT_STATS_FILE="${GENERATED_STATS_FOLDER}/project_stats.csv"
 OUTPUT_FREQUENCIES_FILE="${GENERATED_STATS_FOLDER}/frequencies.csv"
 OUTPUT_FIRST_WORD_FREQUENCIES_FILE="${GENERATED_STATS_FOLDER}/frequencies_first_word.csv"
 OUTPUT_DISTRIBUTION_BY_LEVELS_FILE="${GENERATED_STATS_FOLDER}/level_distribution.csv"
 OUTPUT_DISTRIBUTION_BY_N_VARS_FILE="${GENERATED_STATS_FOLDER}/n_vars_distribution.csv"
-PATH_TO_PYTHON='/home/hlib/dev/bz-hackathon/env/bin/python'
-PATH_TO_PROJECT='/home/hlib/thesis/log-recommender'
-PATH_TO_CACHED_PROJECTS='../.Projects'
-SPREADSHEET_OUTPUT_DIR_NAME='logs'
-AUTOENCODE_LOCATION='../AutoenCODE'
+
+AUTOENCODE_LOCATION="$PATH_TO_PROJECT/../AutoenCODE"
+
 OUTPUT_CONTEXT_CORPUS_FILE="${AUTOENCODE_LOCATION}/data/corpus.src"
 AUTOENCODE_DIST_FILE="${AUTOENCODE_LOCATION}/out/rae/corpus.dist.matrix.csv"
-WORD_TO_VEC_OUT_FILE="${PATH_TO_PROJECT}/../AutoenCODE/out/word2vec/word2vec.out"
+WORD_TO_VEC_OUT_FILE="${AUTOENCODE_LOCATION}/out/word2vec/word2vec.out"
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -76,7 +81,7 @@ else
 fi
 
 if [ ! -z "$PREPROCESS" ]; then
-    LOG_PREPROCESSOR_SCRIPT="$PATH_TO_PYTHON log_preprocessor.py"
+    LOG_PREPROCESSOR_SCRIPT="$PATH_TO_PYTHON log_recommender/log_preprocessor.py"
     LOG_PREPROCESSOR_SCRIPT="$LOG_PREPROCESSOR_SCRIPT --min-log-number-per-project $MIN_LOG_NUMBER_PER_PROJECT"
     LOG_PREPROCESSOR_SCRIPT="$LOG_PREPROCESSOR_SCRIPT --output-corpus-file $OUTPUT_CORPUS_FILE"
     LOG_PREPROCESSOR_SCRIPT="$LOG_PREPROCESSOR_SCRIPT --output-context-corpus-file $OUTPUT_CONTEXT_CORPUS_FILE"
@@ -96,7 +101,7 @@ fi
 if ! [ -d "$SPREADSHEET_OUTPUT_DIR_NAME" ]; then
     mkdir "$SPREADSHEET_OUTPUT_DIR_NAME"
 fi
-FREQ_SCRIPT="$PATH_TO_PYTHON /home/hlib/thesis/log-recommender/freqs.py"
+FREQ_SCRIPT="$PATH_TO_PYTHON $PATH_TO_PROJECT/log_recommender/freqs.py"
 FREQ_SCRIPT="$FREQ_SCRIPT --min-log-number-per-project $MIN_LOG_NUMBER_PER_PROJECT"
 FREQ_SCRIPT="$FREQ_SCRIPT --min-word-occurencies $MIN_WORD_OCCURENCIES"
 FREQ_SCRIPT="$FREQ_SCRIPT --min-word-frequency $MIN_WORD_FREQUNCY"
@@ -127,7 +132,7 @@ if [ $ERR_CODE -ne 0 ]; then
     exit 1
 fi
 
-CLUSTER_PREP_SCRIPT="$PATH_TO_PYTHON cluster.py --log-contexts-for-training-file $OUTPUT_CONTEXT_CORPUS_FILE"
+CLUSTER_PREP_SCRIPT="$PATH_TO_PYTHON log_recommender/cluster.py --log-contexts-for-training-file $OUTPUT_CONTEXT_CORPUS_FILE"
 CLUSTER_PREP_SCRIPT="$CLUSTER_PREP_SCRIPT --min-word-occurencies $MIN_WORD_OCCURENCIES"
 CLUSTER_PREP_SCRIPT="$CLUSTER_PREP_SCRIPT --args-logs-for-training-file $LOGS_FOR_TRAINING_FILE"
 echo "Running $CLUSTER_PREP_SCRIPT"
@@ -163,7 +168,7 @@ if [ $ERR_CODE -ne 0 ]; then
     exit 1
 fi
 
-HCLUSTERING_SCRIPT="$PATH_TO_PYTHON hclustering.py --autoencode-dist-file $AUTOENCODE_DIST_FILE"
+HCLUSTERING_SCRIPT="$PATH_TO_PYTHON log_recommender/hclustering.py --autoencode-dist-file $AUTOENCODE_DIST_FILE"
 HCLUSTERING_SCRIPT="$HCLUSTERING_SCRIPT --input-preprocessed-logfile $LOGS_FOR_TRAINING_FILE > dendrogram.txt"
 cd "$PATH_TO_PROJECT"
 echo "Running $HCLUSTERING_SCRIPT"
@@ -173,7 +178,7 @@ if [ $ERR_CODE -ne 0 ]; then
     exit 1
 fi
 
-VISUALIZE_SCRIPT="$PATH_TO_PYTHON visual.py --autoencode-dist-file $WORD_TO_VEC_OUT_FILE"
+VISUALIZE_SCRIPT="$PATH_TO_PYTHON log_recommender/visual.py --autoencode-dist-file $WORD_TO_VEC_OUT_FILE"
 echo "Running $VISUALIZE_SCRIPT"
 eval "$VISUALIZE_SCRIPT"
 ERR_CODE=$?
