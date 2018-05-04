@@ -5,10 +5,10 @@ from pprint import pprint
 from numpy import genfromtxt
 
 
-def run_hierarchical_clustering(log_vectors, first_words_vector, contexts):
+def run_hierarchical_clustering(log_vectors, first_words_vector, contexts, metric_function):
     import fastcluster
 
-    linkage = fastcluster.linkage(log_vectors, method='complete', metric=lambda x, y: dist_matrix[x, y])
+    linkage = fastcluster.linkage(log_vectors, method='complete', metric=metric_function)
     for i, linkage_row in enumerate(linkage):
         f1 = ""
         node_index1 = linkage_row[0].astype(int)
@@ -101,17 +101,26 @@ def break_into_multiple_trees_by_wfs(tree, how_many):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--autoencode-dist-file', action='store', default='../../AutoenCODE/out/rae/corpus.dist.matrix.csv')
-    parser.add_argument('--input-preprocessed-logfile', action='store', default='../logs_for_training.pkl')
+    parser.add_argument('--logs-from-major-classes-file', action='store', default='../major_classes_logs.pkl')
+    parser.add_argument('--distance-metric', action='store', default='word2vec')
     args = parser.parse_args()
 
-    dist_matrix = genfromtxt(args.autoencode_dist_file, delimiter=',')
+    if args.distance_metric == 'word2vec':
+        dist_matrix = genfromtxt(args.autoencode_dist_file, delimiter=',')
+        metric_function = lambda x, y, m=dist_matrix: m[x, y]
+        vector = [[i] for i in range(dist_matrix.shape[0])]
+    # elif args.distance_metric == 'jaccard':
+    #     metric_function =
+    #     vector =
+    else:
+        raise ValueError("Invalid metric name: " + args.distance_metric)
 
-    with open(args.input_preprocessed_logfile, 'rb') as i:
-        preprocessed_logs = pickle.load(i)
+    with open(args.logs_from_major_classes_file, 'rb') as i:
+        logs = pickle.load(i)
     logging.basicConfig(level=logging.DEBUG)
-    logging.debug("Number of pplogs: " + str(len(preprocessed_logs)))
+    logging.debug("Number of pplogs: " + str(len(logs)))
 
-    first_words = get_first_words(preprocessed_logs, 2)
-    contexts = get_contexts(preprocessed_logs)
+    first_words = get_first_words(logs, 2)
+    contexts = get_contexts(logs)
 
-    run_hierarchical_clustering([[i] for i in range(dist_matrix.shape[0])], first_words, contexts)
+    run_hierarchical_clustering(vector, first_words, contexts, metric_function)

@@ -17,6 +17,7 @@ def write_to_classification_spreadsheet(dir_name, logs):
 def output_to_csv(filename, header, lambda1, dim1, dim2):
     with open(filename, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(header)
+        if header is not None:
+            writer.writerow(header)
         for row in dim1:
             writer.writerow(lambda1(row, dim2))

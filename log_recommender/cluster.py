@@ -1,15 +1,12 @@
 import argparse
+import csv
 from math import sqrt
 import pickle
-from random import shuffle
 
 from sklearn import cluster
 from sklearn.cluster import KMeans
 
 from csv_io import output_to_csv
-from first_word_picker import get_interesting_words_from_current_log_context, get_interesting_words_from_context, \
-    select_logs_for_training_and_testing, get_classes_list
-from freqs import classify_logs_by_first_word
 
 
 def gini_impurity(clazz, clustering_stats, word_count):
@@ -61,14 +58,14 @@ def run_k_means(logs_for_training, log_vectors, classes, n_clusters):
                                          list(map(lambda x: x[clazz1] if clazz1 in x else 0, clustering_stats)))
 
     output_to_csv(
-        'generated_stats/output_pearsons.csv',
+        args.output_pearson_file,
         ['word'] + classes,
         lambda d1,d2: [d1[1]] + d2[d1[0]],
         enumerate(classes),
         pearsons
     )
 
-    output_to_csv('generated_stats/k_means_clustering_stats.csv',
+    output_to_csv(args.k_means_clustering_stats_file,
         ['word'] + list(range(len(clustering_stats))) + ['total', 'gini'],
         lambda stats,classes,wc=word_count,gi=gini:
             [stats] + list(map(lambda x: x[stats] if stats in x else 0, classes)) + [wc[stats], gi[stats]],
@@ -78,41 +75,27 @@ def run_k_means(logs_for_training, log_vectors, classes, n_clusters):
     # Ignoring total gini for now
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--min-word-occurencies', action='store', type=int, default=20)
-    parser.add_argument('--log-contexts-for-training-file', action='store', default='generated_stats/log_contexts_for_training.csv')
-    parser.add_argument('--args-logs-for-training-file', action='store', default='logs_for_training.pkl')
+    parser.add_argument('--logs-from-major-classes-file', action='store', default='../major_classes_logs.pkl')
+    parser.add_argument('--classes-file', action='store', default='../classes.csv')
+    parser.add_argument('--binary-context-vector-file', action='store', default='../binary_context_vectors.dat')
+    parser.add_argument('--output-pearson-file', action='store', default='../generated_stats/output_pearsons.csv')
+    parser.add_argument('--k-means-clustering-stats-file', action='store', default='../generated_stats/k_means_clustering_stats.csv')
     args = parser.parse_args()
 
-    with open('pplogs.pkl', 'rb') as i:
-        preprocessed_logs = pickle.load(i)
-    classes = get_classes_list(preprocessed_logs, args.min_word_occurencies)
-    interesting_words_from_context = get_interesting_words_from_context(preprocessed_logs)
-    preprocessed_logs = classify_logs_by_first_word(preprocessed_logs, classes)
-    logs_for_training, logs_for_testing = select_logs_for_training_and_testing(preprocessed_logs, classes, args.min_word_occurencies)
-    shuffle(logs_for_training)
-    logs_for_training = logs_for_training[::15]
+    with open(args.classes_file, 'r', newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for row in reader:
+            classes = row
 
-    logs_for_training.sort(key=lambda x: x.first_word_cathegory)
+    with open(args.logs_from_major_classes_file, 'rb') as f:
+        logs_from_major_classes = pickle.load(f)
 
-    # log_vectors = [build_vector(get_interesting_words_from_current_log_context(log, interesting_words_from_context),
-    #                             interesting_words_from_context) for log in logs_for_training]
-    #run_k_means(logs_for_training, log_vectors, classes, 10)
+    with open(args.binary_context_vector_file, 'r') as f:
+        binary_context_vectors = [row.split() for row in f]
 
-    logs_for_training_without_empty_contexts = []
-    log_context_vector = []
-    for log in logs_for_training:
-        log_context = get_interesting_words_from_current_log_context(log, interesting_words_from_context)
-        if len(log_context) > 0:
-            log_context_vector.append(log_context)
-            logs_for_training_without_empty_contexts.append(log)
-    with open(args.log_contexts_for_training_file, 'w') as f:
-        for log_vector in log_context_vector:
-            f.write(" ".join(log_vector) + "\n")
-    with open(args.args_logs_for_training_file, "wb") as f:
-        pickle.dump(logs_for_training_without_empty_contexts, f)
+    run_k_means(logs_from_major_classes, binary_context_vectors, classes, 10)
 
 
 # test data - use a separate proj for testing
@@ -130,3 +113,4 @@ if __name__ == "__main__":
 # plot everything.
 # extract seconds words and see
 
+# too many zeros in vectors. change the way we store them
