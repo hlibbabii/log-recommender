@@ -27,6 +27,13 @@ def run_hierarchical_clustering(log_vectors, first_words_vector, contexts):
         print("===")
         if node_index2 < len(first_words_vector):
             print(contexts[node_index2])
+    clusters = break_into_multiple_trees_by_wfs(tree_from_dendrogram(linkage[:, [0, 1]].astype(int)), 20)
+    list_of_payload_lists = list(map(lambda cl: cl.get_all_leaf_payloads(), clusters))
+    print("Cluster sizes are:")
+    print(list(map(lambda l: len(l), list_of_payload_lists)))
+    for list_of_payloads in list_of_payload_lists:
+        print("===============")
+        print(list(map(lambda p: first_words_vector[p], list_of_payloads)))
 
     # The output of linkage is stepwise dendrogram, which is represented as an (N − 1) ×
     # 4 NumPy array with floating point entries (dtype=numpy.double). The first two
@@ -59,6 +66,15 @@ class ClusteringTree(object):
     def node(cls, payload, left_tree, right_tree):
         return cls(payload, left_tree, right_tree)
 
+    def is_leaf(self):
+        return self.left_tree is None
+
+    def get_all_leaf_payloads(self):
+        if self.is_leaf():
+            return [self.payload]
+        else:
+            return self.left_tree.get_all_leaf_payloads() + self.right_tree.get_all_leaf_payloads()
+
 
 def tree_from_dendrogram(dendrogram):
     n_leaves = len(dendrogram) + 1
@@ -70,11 +86,22 @@ def tree_from_dendrogram(dendrogram):
     return created_trees[-1]
 
 
+def break_into_multiple_trees_by_wfs(tree, how_many):
+    trees = [tree]
+    while how_many > 1:
+        how_many -= 1
+        current_tree = trees.pop(0)
+        while current_tree.is_leaf():
+            #TODO check if there is non-leaf tree
+            trees.append(current_tree)
+            current_tree = trees.pop(0)
+        trees.extend([current_tree.left_tree, current_tree.right_tree])
+    return trees
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--autoencode-dist-file', action='store', default='../AutoenCODE/out/rae/corpus.dist.matrix.csv')
-    parser.add_argument('--input-preprocessed-logfile', action='store', default='logs_for_training.pkl')
+    parser.add_argument('--autoencode-dist-file', action='store', default='../../AutoenCODE/out/rae/corpus.dist.matrix.csv')
+    parser.add_argument('--input-preprocessed-logfile', action='store', default='../logs_for_training.pkl')
     args = parser.parse_args()
 
     dist_matrix = genfromtxt(args.autoencode_dist_file, delimiter=',')
