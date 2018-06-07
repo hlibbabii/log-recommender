@@ -9,17 +9,19 @@ from pybrain.datasets import ClassificationDataSet
 from pybrain.supervised import BackpropTrainer
 from pybrain.tools.shortcuts import buildNetwork
 from pybrain.utilities import percentError
+from io_utils import load_classes
+import io_utils
 
 
 def get_label_by_class(cl, classes):
     return classes.index(cl)
 
-def test_nn(logs_for_testing, classes, verbose=False):
+def test_nn(logs_for_testing, classes, context_lines_to_consider, verbose=False):
     ranks = []
     top_3_count= 0
     top_5_count= 0
     for log in logs_for_testing:
-        vector = [w in log.context_words for w in interesting_words_from_context]
+        vector = [w in log.get_context_words(context_lines_to_consider) for w in interesting_words_from_context]
         result = net.activate(vector)
         sorted_result = sorted(enumerate(result),key=lambda x: x[1], reverse=True)
         class_label = get_label_by_class(log.first_word_cathegory, classes)
@@ -29,7 +31,7 @@ def test_nn(logs_for_testing, classes, verbose=False):
         if rank_of_guess <= 4:
             top_5_count += 1
         if verbose:
-            print(log.context_words)
+            print(log.get_context_words(context_lines_to_consider))
             print("Chosen " + str(sorted_result[0][0]) + " " + str(classes[sorted_result[0][0]]) + " with probability " + str(sorted_result[0][1]))
             print("Chosen " + str(sorted_result[1][0]) + " " + str(classes[sorted_result[1][0]]) + " with probability " + str(sorted_result[1][1]))
             # print("Chosen " + str(sorted_result[2][0]) + " " + str(classes[sorted_result[2][0]]) + " with probability " + str(sorted_result[2][1]))
@@ -40,12 +42,12 @@ def test_nn(logs_for_testing, classes, verbose=False):
     return sum(ranks) / len(ranks), top_3_count / len(ranks), top_5_count / len(ranks)
 
 
-def createDataSet(interesting_words_from_context, classes, n_hidden_layers, logs):
+def createDataSet(interesting_words_from_context, classes, n_hidden_layers, logs, context_lines_to_consider):
     n_input_nodes = len(interesting_words_from_context)
     n_output_nodes = len(classes)
     dataset = ClassificationDataSet(n_input_nodes, n_hidden_layers, nb_classes=n_output_nodes)
     for log in logs:
-        vector = [w in log.context_words for w in interesting_words_from_context]
+        vector = [w in log.get_context_words(context_lines_to_consider) for w in interesting_words_from_context]
 
         expected_class_label = get_label_by_class(log.first_word_cathegory, classes)
         dataset.addSample(vector, [expected_class_label])
@@ -61,27 +63,17 @@ def split_into_two(lst, part):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--logs-from-major-classes-file', action='store', default='../major_classes_logs.pkl')
     parser.add_argument('--min-word-occurencies', action='store', type=int, default=2000)
-    parser.add_argument('--classes-file', action='store', default='../classes.csv')
-    parser.add_argument('--interesting-context-words-file', action='store', default='../context_words.csv')
     args = parser.parse_args()
 
-    with open(args.logs_from_major_classes, "rb") as f:
-        logs_from_major_classes = pickle.load(f)
+    major_classes_logs = io_utils.load_major_classes_logs()
 
     # preprocessed_logs = preprocessed_logs[:2000]
-    with open(args.classes_file, 'r', newline='') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        for row in reader:
-            classes = row
+    classes = load_classes()
 
-    with open(args.interesting_context_words_file, 'r', newline='') as csvfile:
-        reader = csv.reader(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        for row in reader:
-            interesting_words_from_context = row
+    interesting_words_from_context = io_utils.load_interesting_words()
 
-    logs_for_testing, logs_for_training = split_into_two(logs_from_major_classes, 0.25)
+    logs_for_testing, logs_for_training = split_into_two(major_classes_logs, 0.25)
 
     n_input_nodes = len(interesting_words_from_context)
     n_output_nodes = len(classes)

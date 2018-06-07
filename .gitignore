@@ -1,10 +1,19 @@
 # Created by .ignore support plugin (hsz.mobi)
 .idea/workspace.xml
 grepped_logs.*
+*.pyc
 /.Projects/
 /.Logs/
 logs.csv
+interesting_context_words.csv
+**/logs*.csv
 *.pkl
+*.dat
+dendrogram.txt
+marked_up_contexts.html
+marked_up_contexts.txt
+classes.csv
+*.index
 /project_stats.csv
 /client_secret.json
 /generated_stats/

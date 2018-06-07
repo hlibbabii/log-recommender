@@ -1,8 +1,8 @@
 import argparse
 import logging
 import pickle
-from pprint import pprint
 from numpy import genfromtxt
+import io_utils
 
 
 def run_hierarchical_clustering(log_vectors, first_words_vector, contexts, metric_function):
@@ -27,7 +27,7 @@ def run_hierarchical_clustering(log_vectors, first_words_vector, contexts, metri
         print("===")
         if node_index2 < len(first_words_vector):
             print(contexts[node_index2])
-    clusters = break_into_multiple_trees_by_wfs(tree_from_dendrogram(linkage[:, [0, 1]].astype(int)), 20)
+    clusters = break_into_multiple_trees_by_wfs(tree_from_dendrogram(linkage[:, [0, 1]].astype(int)), 50)
     list_of_payload_lists = list(map(lambda cl: cl.get_all_leaf_payloads(), clusters))
     print("Cluster sizes are:")
     print(list(map(lambda l: len(l), list_of_payload_lists)))
@@ -45,11 +45,11 @@ def run_hierarchical_clustering(log_vectors, first_words_vector, contexts, metri
 
 
 def get_first_words(preprocessed_logs, how_many_words):
-    return list(map(lambda x: x.text_words[:how_many_words], preprocessed_logs))
+    return list(map(lambda x: x.get_first_words(how_many_words), preprocessed_logs))
 
 
 def get_contexts(preprocessed_logs):
-    return list(map(lambda x: x.context_before, preprocessed_logs))
+    return list(map(lambda x: x.context.context_before, preprocessed_logs))
 
 
 class ClusteringTree(object):
@@ -98,29 +98,38 @@ def break_into_multiple_trees_by_wfs(tree, how_many):
         trees.extend([current_tree.left_tree, current_tree.right_tree])
     return trees
 
+def jaccard(vector1, vector2):
+    num = 0
+    denum = 0
+    for x, y in zip(vector1, vector2):
+        if x or y:
+            denum += 1
+            if x and y:
+                num +=1
+    return (1 - num / denum) if denum != 0 else 1
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--autoencode-dist-file', action='store', default='../../AutoenCODE/out/rae/corpus.dist.matrix.csv')
-    parser.add_argument('--logs-from-major-classes-file', action='store', default='../major_classes_logs.pkl')
-    parser.add_argument('--distance-metric', action='store', default='word2vec')
+    parser.add_argument('--distance-metric', action='store', default='jaccard')
+    parser.add_argument('--binary-context-vector-file', action='store', default='../ ')
     args = parser.parse_args()
 
     if args.distance_metric == 'word2vec':
         dist_matrix = genfromtxt(args.autoencode_dist_file, delimiter=',')
         metric_function = lambda x, y, m=dist_matrix: m[x, y]
         vector = [[i] for i in range(dist_matrix.shape[0])]
-    # elif args.distance_metric == 'jaccard':
-    #     metric_function =
-    #     vector =
+    elif args.distance_metric == 'jaccard':
+        metric_function = jaccard
+        vector = io_utils.load_binary_context_vectors()[:1000]
     else:
         raise ValueError("Invalid metric name: " + args.distance_metric)
 
-    with open(args.logs_from_major_classes_file, 'rb') as i:
-        logs = pickle.load(i)
+    major_classes_logs = io_utils.load_major_classes_logs()
     logging.basicConfig(level=logging.DEBUG)
-    logging.debug("Number of pplogs: " + str(len(logs)))
+    logging.debug("Number of pplogs: " + str(len(major_classes_logs)))
 
-    first_words = get_first_words(logs, 2)
-    contexts = get_contexts(logs)
+    first_words = get_first_words(major_classes_logs, 2)
+    contexts = get_contexts(major_classes_logs)
 
     run_hierarchical_clustering(vector, first_words, contexts, metric_function)

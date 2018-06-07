@@ -1,5 +1,5 @@
 from deepdiff import DeepDiff
-from log_recommender.hclustering import ClusteringTree, tree_from_dendrogram, break_into_multiple_trees_by_wfs
+from log_recommender.hclustering import ClusteringTree, tree_from_dendrogram, break_into_multiple_trees_by_wfs, jaccard
 
 __author__ = 'hlib'
 
@@ -129,7 +129,11 @@ class HClusteringTest(unittest.TestCase):
 
         self.assertEqual(DeepDiff(expected, actual), {})
 
+    def test_jaccard_simple(self):
+        v1 = [0, 0, 1, 1, 1]
+        v2 = [1, 0, 1, 0, 0]
 
+        self.assertEqual(0.75, jaccard(v1, v2))
 
 if __name__ == '__main__':
     unittest.main()

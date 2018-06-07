@@ -1,7 +1,9 @@
 import argparse
+import logging
 import re
 import os
 import pickle
+import io_utils
 
 from log_statement import LogStatement
 
@@ -102,18 +104,18 @@ def read_grepped_log_file(directory, min_log_number_per_project):
                     if not github_link:
                         break
 
-                    context_before = ""
+                    context_before = []
                     for i in range(n_lines_of_context):
                         new_context_line = f.readline()
                         if filter_bad_context_line(new_context_line):
-                            context_before += new_context_line
+                            context_before.append(new_context_line)
                     #reading log statement
                     log_statement_line = f.readline()
-                    context_after = ""
+                    context_after = []
                     for i in range(n_lines_of_context):
                         new_context_line = f.readline()
                         if filter_bad_context_line(new_context_line):
-                            context_after += new_context_line
+                            context_after.append(new_context_line)
 
                     #reading 2 empty lines
                     f.readline()
@@ -122,7 +124,7 @@ def read_grepped_log_file(directory, min_log_number_per_project):
                         current_proj_list.append({'log_statement': log_statement_line,
                                                   'context_before': context_before,
                                                   'context_after': context_after,
-                                     'github_link': github_link, 'project': filename})
+                                     'github_link': github_link, 'project': filename[:filename.index('.')]})
                         log_counter += 1
         except UnicodeDecodeError as er:
             print(er)
@@ -133,13 +135,6 @@ def read_grepped_log_file(directory, min_log_number_per_project):
         if log_counter >= min_log_number_per_project:
             list.extend(current_proj_list)
     return list, project_stats
-
-
-def preprocess_grepped_logs(logs):
-    return list(
-        map(lambda l: process_log_statement(l), logs)
-    )
-
 
 def remove_placeholders(log_text):
     log_text = re.sub(VAR_PLACEHOLDER, r'', log_text)
@@ -180,42 +175,26 @@ STOP_WORDS=["a", "an", "and", "are", "as", "at", "be", "for", "has", "in", "is",
 def filter_out_stop_words(words_from_log_text):
     return list(filter(lambda w: w not in STOP_WORDS, words_from_log_text))
 
-
-def output_to_corpus_file(preprocessed_logs, output_filename):
-    with open(output_filename, 'w') as f:
-        for l in preprocessed_logs:
-            f.write(str(l.text) + "\n")
-
-
-def output_to_context_corpus_file(preprocessed_logs, output_filename):
-    with open(output_filename, 'w') as f:
-        for l in preprocessed_logs:
-            f.write(" ".join(l.context_words) + "\n")
-
-
-def filter_logs(pp_logs):
-    return list(filter(lambda l: len(l.text_words) > 0 and len(l.context_words) > 0
+def filter_empty_logs(pp_logs):
+    return list(filter(lambda l: len(l.text_words) > 0 and len(l.context.context_before) > 0
                 ,pp_logs))
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     parser = argparse.ArgumentParser()
     parser.add_argument('--min-log-number-per-project', action='store', type=int, default=100)
-    parser.add_argument('--output-corpus-file', action='store', default='../gengram/corpus.txt')
-    parser.add_argument('--output-context-corpus-file', action='store', default='../AutoenCODE/data/corpus.src')
-    parser.add_argument('--output-preprocessed-log-file', action='store', default='pplogs.pkl')
-    parser.add_argument('--output-project-stats-file', action='store', default='generated_stats/project_stats.csv')
     args = parser.parse_args()
 
     in_file = "../.Logs"
     grepped_logs, project_stats = read_grepped_log_file(in_file, args.min_log_number_per_project)
-    pp_logs = preprocess_grepped_logs(grepped_logs)
-    pp_logs = filter_logs(pp_logs)
-    output_to_corpus_file(pp_logs, args.output_corpus_file)
-    output_to_context_corpus_file(pp_logs, args.output_context_corpus_file)
-    with open(args.output_preprocessed_log_file, 'wb') as o:
-        pickle.dump(pp_logs, o, pickle.HIGHEST_PROTOCOL)
-    with open(args.output_project_stats_file, 'w') as o:
-        for project in project_stats.items():
-            o.write(project[0] + ',' + str(project[1]) + '\n')
+    pp_logs = []
+    logs_total = len(grepped_logs)
+    for ind, grepped_log in enumerate(grepped_logs):
+        pp_logs.append(process_log_statement(grepped_log))
+        logging.info(f"Processing {ind} log out of {logs_total} ({ind * 100.0 / logs_total:.4}%)")
+    pp_logs = filter_empty_logs(pp_logs)
+
+    io_utils.dump_preprocessed_logs(pp_logs)
+    io_utils.dump_project_stats(project_stats)
 

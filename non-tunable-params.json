@@ -1,0 +1,25 @@
+{
+  "PATH_TO_PYTHON": "/home/hlib/miniconda3/envs/fastai-cpu/bin/python3.6",
+  "PATH_TO_PROJECT": "/home/hlib/thesis/log-recommender",
+
+  "GENERATED_STATS_FOLDER": "{PATH_TO_PROJECT}/generated_stats",
+  "PATH_TO_CACHED_PROJECTS": "{PATH_TO_PROJECT}/../.Projects",
+  "SPREADSHEET_OUTPUT_DIR_NAME": "{PATH_TO_PROJECT}/logs",
+
+  "OUTPUT_CORPUS_FILE": "{PATH_TO_PROJECT}/../gengram/corpus.txt",
+  "LOGS_FOR_TRAINING_FILE": "{PATH_TO_PROJECT}/logs_for_training.pkl",
+
+  "AUTOENCODE_LOCATION": "{PATH_TO_PROJECT}/../AutoenCODE",
+
+  "CONTEXT_INDEX_FILE": "{PATH_TO_PROJECT}/context.index",
+  "OUTPUT_CONTEXT_CORPUS_FILE": "{AUTOENCODE_LOCATION}/data/corpus.src",
+  "AUTOENCODE_DIST_FILE":"{AUTOENCODE_LOCATION}/out/rae/corpus.dist.matrix.csv",
+  "WORD_TO_VEC_OUT_FILE": "{AUTOENCODE_LOCATION}/out/word2vec/word2vec.out",
+
+  "BINARY_CONTEXT_VECTOR_FILE": "{PATH_TO_PROJECT}/binary_context_vectors.dat",
+  "MARKED_UP_CONTEXTS_FILE": "{PATH_TO_PROJECT}/marked_up_contexts.txt",
+
+  "CLASSES_FILE": "{PATH_TO_PROJECT}/classes.csv",
+
+  "FASTAI_INPUT_FILE": "{PATH_TO_PROJECT}/../fastai-sample/data/no_replaced_identifier_split/"
+}

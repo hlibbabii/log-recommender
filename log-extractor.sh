@@ -22,7 +22,7 @@ function abspath() {
 
 LINE_PREFIX="#L"
 
-LINES_BEFORE_TO_EXTRACT=4
+LINES_BEFORE_TO_EXTRACT=1
 
 REGEX='\([Ll]og\|LOG\|[Ll]ogger\|LOGGER\)\.\([Tt]race\|[Dd]ebug\|[Ii]nfo\|[Ww]arn\|[Ee]rror\|[Ff]atal\)(.*)'
 
@@ -74,7 +74,7 @@ do
         echo "file ${FILE_FOR_OUTPUT} already exists. Logs have already been extracted"
         continue
     fi
-    if [ -d "${PROJECT_NAME}" ]; then
+    if [ -d "${PROJECT_DIR}/${PROJECT_NAME}" ]; then
          echo "${PROJECT_NAME} already exists"
     else
         echo "Getting ${PROJECT_NAME}"
