@@ -5,7 +5,7 @@ import torch
 from context_datasets import ContextsDataset
 
 from fastai.lm_rnn import seq2seq_reg
-from fastai.metrics import accuracy, accuracy_np, accuracy_tensors, accuracy_gen
+from fastai.metrics import accuracy
 from fastai.nlp import LanguageModelData, TextData
 
 from params import TEXT, LEVEL_LABEL, bptt, bs, PATH, em_sz, nh, nl, pretrained_lang_model_name
@@ -63,12 +63,12 @@ def get_text_classifier_model(text_field, level_label, model_name, pretrained_la
         base_lr / factor,
         base_lr])
 
-    # rnn_learner.freeze_to(-1)
-    # rnn_learner.fit(lrs, metrics=[accuracy_tensors], cycle_len=1, n_cycle=1)
+    rnn_learner.freeze_to(-1)
+    rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=1, n_cycle=1)
     # rnn_learner.freeze_to(-2)
-    # rnn_learner.fit(lrs, metrics=[accuracy_tensors], cycle_len=1, n_cycle=1)
+    # rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=1, n_cycle=1)
     # rnn_learner.unfreeze()
-    # rnn_learner.fit(lrs, metrics=[accuracy_tensors], cycle_len=1, n_cycle=1)
+    # rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=1, n_cycle=1)
 
     # logging.info(f'Current accuracy is ...')
     # logging.info(f'                    ... {accuracy_gen(*rnn_learner.predict_with_targs())}')

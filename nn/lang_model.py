@@ -73,7 +73,7 @@ def get_language_model(text_field, model_name):
     # rnn_learner.lr_find()
     # rnn_learner.sched.plot()
 
-    # rnn_learner.fit(1e-3, n_cycle=2, wds=1e-6, cycle_len=1, cycle_mult=2, metrics=[accuracy, f2])
+    rnn_learner.fit(1e-3, n_cycle=2, wds=1e-6, cycle_len=1, cycle_mult=2, metrics=[accuracy, f2])
 
     logging.info(f'Saving model: {model_name}')
     # rnn_learner.save(model_name)
