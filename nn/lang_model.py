@@ -4,6 +4,7 @@ import pandas
 import torch
 from functools import partial
 
+from fastai.core import USE_GPU
 from fastai.metrics import accuracy, top_k
 from fastai.nlp import LanguageModelData, seq2seq_reg
 from params import em_sz, nh, nl, PATH, bs, bptt, TEXT, pretrained_lang_model_name
@@ -81,6 +82,7 @@ def get_language_model(text_field, model_name):
 
     return rnn_learner
 
+print("Using GPU: " + USE_GPU)
 
 rnn_learner = get_language_model(text_field=TEXT, model_name=pretrained_lang_model_name)
 m=rnn_learner.model
