@@ -82,7 +82,7 @@ def get_language_model(text_field, model_name):
 
     return rnn_learner
 
-print("Using GPU: " + USE_GPU)
+print("Using GPU: " + str(USE_GPU))
 
 rnn_learner = get_language_model(text_field=TEXT, model_name=pretrained_lang_model_name)
 m=rnn_learner.model
