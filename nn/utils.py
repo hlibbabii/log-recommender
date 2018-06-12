@@ -3,7 +3,7 @@ import warnings
 
 from sklearn.metrics import fbeta_score
 
-from fastai.core import to_np
+from fastai.core import to_np, to_gpu
 
 
 def f2(preds, targs):
@@ -15,7 +15,7 @@ def f2(preds, targs):
 
 def output_predictions(m, input_field, output_field, starting_text, how_many):
     words = [starting_text.split()]
-    t=input_field.numericalize(words, -1)
+    t=to_gpu(input_field.numericalize(words, -1))
 
     res,*_ = m(t)
 
@@ -30,7 +30,7 @@ def output_predictions(m, input_field, output_field, starting_text, how_many):
 
 def gen_text(m, text_field, starting_words, how_many_to_gen):
     text = ''
-    t = text_field.numericalize([starting_words.split()], -1)
+    t = to_gpu(text_field.numericalize([starting_words.split()], -1))
     res, *_ = m(t)
     for i in range(how_many_to_gen):
         n = torch.multinomial(res[-1].exp(), 1)
