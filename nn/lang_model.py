@@ -1,11 +1,13 @@
 import logging
+import os
+
 import pandas
 
 import torch
 from functools import partial
 
 from fastai.core import USE_GPU
-from fastai.metrics import accuracy, top_k
+from fastai.metrics import accuracy, top_k, MRR, mrr_non_interactive
 from fastai.nlp import LanguageModelData, seq2seq_reg
 from params import em_sz, nh, nl, PATH, bs, bptt, TEXT, pretrained_lang_model_name
 from utils import to_test_mode, output_predictions, gen_text, back_to_train_mode, f2, beautify_text
@@ -13,7 +15,7 @@ import dill as pickle
 
 logging.basicConfig(level=logging.DEBUG)
 
-def get_language_model(text_field, model_name):
+def get_language_model(text_field, model_name, learning_rate_finding_mode = False):
     PATH_TO_MODEL=f'{PATH}/{model_name}'
 
     TRAIN_CONTEXTS = f'{PATH_TO_MODEL}/train/contexts.src'
@@ -47,7 +49,9 @@ def get_language_model(text_field, model_name):
 
     try:
         rnn_learner.load(model_name)
+
         accuracies, examples = top_k(*rnn_learner.predict_with_targs(True), [1,10,100], 2)
+
         exs = []
         for input, num, preds, target in examples:
             exs.append((
@@ -67,24 +71,31 @@ def get_language_model(text_field, model_name):
             logging.info(f'                    ... {ex[2]}')
             logging.info(f'                    ... {ex[3]}')
             logging.info(f'===============================================')
+        mrr = MRR(*rnn_learner.predict_with_targs(True))
+        print(f"mrr: {mrr}")
 
     except FileNotFoundError:
         logging.warning(f"Model {model_name} not found. Training from scratch")
 
-    # rnn_learner.lr_find()
-    # rnn_learner.sched.plot()
+    if learning_rate_finding_mode:
+        rnn_learner.lr_find()
 
-    rnn_learner.fit(1e-3, n_cycle=2, wds=1e-6, cycle_len=1, cycle_mult=2, metrics=[accuracy, f2])
+        dir = os.path.dirname(os.path.realpath(__file__))
+        path = os.path.join(dir, '..', 'plot.png')
+        rnn_learner.sched.plot(path)
+        logging.info(f"Plot is saved to {path}")
+    else:
+        rnn_learner.fit(1e-3, n_cycle=3, wds=1e-6, cycle_len=1, cycle_mult=2, metrics=[accuracy, f2, mrr_non_interactive])
 
-    logging.info(f'Saving model: {model_name}')
-    # rnn_learner.save(model_name)
-    # rnn_learner.save_encoder(model_name + "_encoder")
+        logging.info(f'Saving model: {model_name}')
+        rnn_learner.save(model_name)
+        rnn_learner.save_encoder(model_name + "_encoder")
 
     return rnn_learner
 
 print("Using GPU: " + str(USE_GPU))
 
-rnn_learner = get_language_model(text_field=TEXT, model_name=pretrained_lang_model_name)
+rnn_learner = get_language_model(text_field=TEXT, model_name=pretrained_lang_model_name, learning_rate_finding_mode=True)
 m=rnn_learner.model
 
 to_test_mode(m)
