@@ -21,6 +21,7 @@ from torchtext import data
 logging.basicConfig(level=logging.DEBUG)
 
 nn_arch = nn_params['arch']
+nn_testing = nn_params['testing']
 
 def display_not_guessed_examples(examples, vocab):
     exs = []
@@ -134,7 +135,7 @@ def run_and_display_tests(m, text_field):
     to_test_mode(m)
     print("==============        TESTS       ====================")
 
-    text = gen_text(m, text_field, "public <identifier> ( ) throws", 500)
+    text = gen_text(m, text_field, nn_testing["starting_words"], nn_testing["how_many_words"])
     print(text)
     print(beautify_text(text))
 
@@ -142,6 +143,9 @@ def run_and_display_tests(m, text_field):
 
 if __name__ =='__main__':
     logging.info("Using GPU: " + str(USE_GPU))
+    logging.info("Using the following parameters:")
+    logging.info(nn_arch)
+
     rnn_learner, text_field = get_language_model()
     m=rnn_learner.model
     run_and_display_tests(m, text_field)

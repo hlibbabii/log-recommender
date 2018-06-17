@@ -30,7 +30,8 @@ nn_params = {
     },
     'metrics': ['topk_1_10_100_cat_2', 'mrr'],
     'testing': {
-
+        'how_many_words': 1000,
+        'starting_words': "public <identifier> ( ) throws"
     },
     'mode': Mode.TRAINING
 }
