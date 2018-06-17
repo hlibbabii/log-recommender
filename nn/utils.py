@@ -1,16 +1,6 @@
 import torch
-import warnings
-
-from sklearn.metrics import fbeta_score
 
 from fastai.core import to_np, to_gpu
-
-
-def f2(preds, targs):
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        preds = torch.max(preds, dim=1)[1]
-        return fbeta_score(targs.data, preds, 2, average='weighted')
 
 
 def output_predictions(m, input_field, output_field, starting_text, how_many):

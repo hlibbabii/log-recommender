@@ -10,11 +10,12 @@ import torch
 from functools import partial
 
 from fastai.core import USE_GPU
-from fastai.metrics import accuracy, top_k, MRR, mrr_non_interactive
+from fastai.metrics import top_k, MRR
 from fastai.nlp import LanguageModelData, seq2seq_reg
 from params import TEXT, Mode, nn_params
-from utils import to_test_mode, gen_text, back_to_train_mode, f2, beautify_text
+from utils import to_test_mode, gen_text, back_to_train_mode, beautify_text
 import dill as pickle
+from fastai import metrics
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -117,7 +118,7 @@ def get_language_model(text_field):
     elif nn_params['mode'] is Mode.TRAINING:
         rnn_learner.fit(nn_arch['lr'], n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
                         cycle_len=nn_arch['cycle']['len'], cycle_mult=nn_arch['cycle']['mult'],
-                        metrics=[accuracy, f2, mrr_non_interactive])
+                        metrics=list(map(lambda x: getattr(metrics, x), nn_arch['training_metrics'])))
 
         logging.info(f'Saving model: {model_name}')
         rnn_learner.save(model_name)

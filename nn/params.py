@@ -25,9 +25,10 @@ nn_params = {
         'reg_fn': {'alpha': 2, 'beta': 1},
         'drop': {'outi': 0.05, 'out': 0.05, 'w':0.1, 'oute': 0.02, 'outh': 0.05},
         'lr': 1e-3, 'wds': 1e-6,
-        'cycle': {'n': 1, 'len': 1, 'mult': 2}
+        'cycle': {'n': 1, 'len': 1, 'mult': 2},
+        'training_metrics': ['accuracy', 'f2', 'mrr_non_interactive']
     },
-    'metrics': ['topk_1_10_100_cat_2_show', 'mrr'],
+    'metrics': ['topk_1_10_100_cat_2', 'mrr'],
     'testing': {
 
     },
