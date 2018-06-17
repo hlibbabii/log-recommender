@@ -12,7 +12,7 @@ from functools import partial
 from fastai.core import USE_GPU
 from fastai.metrics import accuracy, top_k, MRR, mrr_non_interactive
 from fastai.nlp import LanguageModelData, seq2seq_reg
-from params import TEXT, nn_params
+from params import TEXT, nn_params, Mode
 from utils import to_test_mode, gen_text, back_to_train_mode, f2, beautify_text
 import dill as pickle
 
@@ -87,7 +87,7 @@ def get_language_model(text_field, learning_mode=True, learning_rate_finding_mod
     except FileNotFoundError:
         logging.warning(f"Model {model_name} not found. Training from scratch")
 
-    if learning_rate_finding_mode:
+    if nn_params['mode'] is Mode.LEARNING_RATE_FINDING:
         logging.info("Looking for the best learning rate...")
         rnn_learner.lr_find()
 
@@ -95,7 +95,7 @@ def get_language_model(text_field, learning_mode=True, learning_rate_finding_mod
         path = os.path.join(dir, '..', 'plot.png')
         rnn_learner.sched.plot(path)
         logging.info(f"Plot is saved to {path}")
-    elif learning_mode:
+    elif nn_params['mode'] is Mode.TRAINING:
         rnn_learner.fit(nn_params['lr'], n_cycle=nn_params['cycle']['n'], wds=nn_params['wds'],
                         cycle_len=nn_params['cycle']['len'], cycle_mult=nn_params['cycle']['mult'],
                         metrics=[accuracy, f2, mrr_non_interactive])
@@ -120,7 +120,6 @@ def run_and_display_tests(m):
 
 if __name__ =='__main__':
     logging.info("Using GPU: " + str(USE_GPU))
-    rnn_learner = get_language_model(text_field=TEXT,
-                                     learning_mode=True, learning_rate_finding_mode=False)
+    rnn_learner = get_language_model(text_field=TEXT)
     m=rnn_learner.model
     run_and_display_tests(m)

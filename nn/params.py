@@ -1,4 +1,13 @@
+from enum import Enum, auto
+
 from torchtext import data
+
+
+class Mode(Enum):
+    TRAINING = auto()
+    LEARNING_RATE_FINDING = auto()
+    ONLY_TESTING = auto()
+
 
 nn_params = {
     'path_to_data': '../nn-data',
@@ -16,6 +25,7 @@ nn_params = {
     'drop': {'outi': 0.05, 'out': 0.05, 'w':0.1, 'oute': 0.02, 'outh': 0.05},
     'lr': 1e-3, 'wds': 1e-6,
     'cycle': {'n': 1, 'len': 1, 'mult': 2},
+    'mode': Mode.TRAINING
 }
 
 TEXT = data.Field()
