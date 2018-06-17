@@ -67,18 +67,26 @@ def calculate_and_display_metrics(rnn_learner, metrics, vocab):
             logging.info(f"mrr: {mrr}")
 
 
+def create_df(basic_path):
+    counter = 0
+    lines = []
+    file = f'{basic_path}/contexts.{counter}.src'
+    while os.path.exists(file):
+        with open(file, 'r') as f:
+            lines.extend([line for line in f])
+        counter += 1
+        file = f'{basic_path}/contexts.{counter}.src'
+    if not lines:
+        raise ValueError(f"No data available: {basic_path}")
+    return pandas.DataFrame(lines)
+
+
 def get_language_model():
     model_name = nn_arch["model_name"]
     PATH_TO_MODEL= f'{nn_arch["path_to_data"]}/{model_name}'
 
-    TRAIN_CONTEXTS = f'{PATH_TO_MODEL}/train/contexts.src'
-    TEST_CONTEXTS = f'{PATH_TO_MODEL}/test/contexts.src'
-
-    with open(TRAIN_CONTEXTS, 'r') as f:
-        train_df = pandas.DataFrame([line for line in f])
-
-    with open(TEST_CONTEXTS, 'r') as f:
-        test_df = pandas.DataFrame([line for line in f])
+    train_df = create_df(f'{PATH_TO_MODEL}/train/')
+    test_df = create_df(f'{PATH_TO_MODEL}/test/')
 
     text_field = data.Field()
     languageModelData = LanguageModelData.from_dataframes(nn_arch["path_to_data"], text_field, 0, train_df, test_df, test_df,
