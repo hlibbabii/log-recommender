@@ -12,10 +12,11 @@ from functools import partial
 from fastai.core import USE_GPU
 from fastai.metrics import top_k, MRR
 from fastai.nlp import LanguageModelData, seq2seq_reg
-from params import TEXT, Mode, nn_params
+from params import Mode, nn_params
 from utils import to_test_mode, gen_text, back_to_train_mode, beautify_text
 import dill as pickle
 from fastai import metrics
+from torchtext import data
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -65,7 +66,7 @@ def calculate_and_display_metrics(rnn_learner, metrics, vocab):
             logging.info(f"mrr: {mrr}")
 
 
-def get_language_model(text_field):
+def get_language_model():
     model_name = nn_arch["model_name"]
     PATH_TO_MODEL= f'{nn_arch["path_to_data"]}/{model_name}'
 
@@ -78,6 +79,7 @@ def get_language_model(text_field):
     with open(TEST_CONTEXTS, 'r') as f:
         test_df = pandas.DataFrame([line for line in f])
 
+    text_field = data.Field()
     languageModelData = LanguageModelData.from_dataframes(nn_arch["path_to_data"], text_field, 0, train_df, test_df, test_df,
                                                           bs=nn_arch["bs"],
                                                           bptt=nn_arch["bptt"],
@@ -126,13 +128,13 @@ def get_language_model(text_field):
     else:
         logging.warning('No training...learning mode is off')
 
-    return rnn_learner
+    return rnn_learner, text_field
 
-def run_and_display_tests(m):
+def run_and_display_tests(m, text_field):
     to_test_mode(m)
     print("==============        TESTS       ====================")
 
-    text = gen_text(m, TEXT, "public <identifier> ( ) throws", 500)
+    text = gen_text(m, text_field, "public <identifier> ( ) throws", 500)
     print(text)
     print(beautify_text(text))
 
@@ -140,6 +142,6 @@ def run_and_display_tests(m):
 
 if __name__ =='__main__':
     logging.info("Using GPU: " + str(USE_GPU))
-    rnn_learner = get_language_model(text_field=TEXT)
+    rnn_learner, text_field = get_language_model()
     m=rnn_learner.model
-    run_and_display_tests(m)
+    run_and_display_tests(m, text_field)

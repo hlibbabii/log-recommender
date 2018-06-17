@@ -35,5 +35,4 @@ nn_params = {
     'mode': Mode.TRAINING
 }
 
-TEXT = data.Field()
 LEVEL_LABEL = data.Field(sequential=False)
