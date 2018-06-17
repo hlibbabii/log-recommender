@@ -8,7 +8,7 @@ from fastai.lm_rnn import seq2seq_reg
 from fastai.metrics import accuracy
 from fastai.nlp import LanguageModelData, TextData
 
-from params import TEXT, LEVEL_LABEL, bptt, bs, PATH, em_sz, nh, nl, pretrained_lang_model_name
+from params import TEXT, LEVEL_LABEL, bptt, bs, path_to_data, em_sz, nh, nl, pretrained_lang_model_name
 from utils import to_test_mode, back_to_train_mode, output_predictions
 import dill as pickle
 import numpy as np
@@ -19,9 +19,9 @@ logging.basicConfig(level=logging.DEBUG)
 
 def get_text_classifier_model(text_field, level_label, model_name, pretrained_lang_model_name=None):
 
-    splits = ContextsDataset.splits(text_field, level_label, path=f'{PATH}/{pretrained_lang_model_name}/')
+    splits = ContextsDataset.splits(text_field, level_label, path=f'{path_to_data}/{pretrained_lang_model_name}/')
 
-    text_data = TextData.from_splits(PATH, splits, bs)
+    text_data = TextData.from_splits(path_to_data, splits, bs)
     # text_data.classes
 
     opt_fn = partial(torch.optim.Adam, betas=(0.7, 0.99))
@@ -80,7 +80,7 @@ def get_text_classifier_model(text_field, level_label, model_name, pretrained_la
     return rnn_learner
 
 
-text_field = pickle.load(open(f'{PATH}/{pretrained_lang_model_name}/TEXT.pkl', 'rb'))
+text_field = pickle.load(open(f'{path_to_data}/{pretrained_lang_model_name}/TEXT.pkl', 'rb'))
 learner = get_text_classifier_model(text_field, LEVEL_LABEL,
                                     model_name=pretrained_lang_model_name + '_classifier',
                                     pretrained_lang_model_name=pretrained_lang_model_name)
@@ -90,7 +90,7 @@ to_test_mode(m)
 
 # logging.info(f'Accuracy is {accuracy_np(*learner.predict_with_targs())}')
 
-with open(f'{PATH}/{pretrained_lang_model_name}/test/contexts.src', 'r') as f:
+with open(f'{path_to_data}/{pretrained_lang_model_name}/test/contexts.src', 'r') as f:
     counter = 0
     for line in f:
         if counter > 30:
