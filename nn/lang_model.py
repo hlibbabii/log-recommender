@@ -1,3 +1,7 @@
+import json
+from collections import defaultdict
+
+import deepdiff
 import matplotlib
 matplotlib.use('Agg')
 
@@ -81,21 +85,23 @@ def create_df(basic_path):
     return pandas.DataFrame(lines)
 
 
-def get_language_model():
-    model_name = nn_arch["model_name"]
-    PATH_TO_MODEL= f'{nn_arch["path_to_data"]}/{model_name}'
+def get_language_model(name, run_training=True):
+    dataset_name = nn_params["dataset_name"]
+    path_to_dataset = f'{nn_params["path_to_data"]}/{dataset_name}'
+    path_to_model = f'{path_to_dataset}/{name}'
 
-    train_df = create_df(f'{PATH_TO_MODEL}/train/')
-    test_df = create_df(f'{PATH_TO_MODEL}/test/')
+    train_df = create_df(f'{path_to_dataset}/train/')
+    test_df = create_df(f'{path_to_dataset}/test/')
 
     text_field = data.Field()
-    languageModelData = LanguageModelData.from_dataframes(nn_arch["path_to_data"], text_field, 0, train_df, test_df, test_df,
+    languageModelData = LanguageModelData.from_dataframes(path_to_model,
+                                                          text_field, 0, train_df, test_df, test_df,
                                                           bs=nn_arch["bs"],
                                                           bptt=nn_arch["bptt"],
                                                           min_freq=nn_arch["min_freq"]
                                                           # not important since we remove rare tokens during preprocessing
                                                           )
-    pickle.dump(text_field, open(f'{PATH_TO_MODEL}/TEXT.pkl', 'wb'))
+    pickle.dump(text_field, open(f'{path_to_dataset}/TEXT.pkl', 'wb'))
 
     logging.info(f'Dictionary size is: {len(text_field.vocab.itos)}')
 
@@ -113,12 +119,12 @@ def get_language_model():
     logging.info(rnn_learner)
 
     try:
-        rnn_learner.load(model_name)
+        rnn_learner.load(dataset_name)
         calculate_and_display_metrics(rnn_learner, nn_params['metrics'], text_field.vocab)
     except FileNotFoundError:
-        logging.warning(f"Model {model_name} not found. Training from scratch")
+        logging.warning(f"Model {dataset_name} not found. Training from scratch")
 
-    if nn_params['mode'] is Mode.LEARNING_RATE_FINDING:
+    if nn_params['mode'] is Mode.LEARNING_RATE_FINDING and run_training:
         logging.info("Looking for the best learning rate...")
         rnn_learner.lr_find()
 
@@ -126,34 +132,105 @@ def get_language_model():
         path = os.path.join(dir, '..', 'plot.png')
         rnn_learner.sched.plot(path)
         logging.info(f"Plot is saved to {path}")
-    elif nn_params['mode'] is Mode.TRAINING:
-        rnn_learner.fit(nn_arch['lr'], n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
+    elif nn_params['mode'] is Mode.TRAINING and run_training:
+        vals, ep_vals = rnn_learner.fit(nn_arch['lr'], n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
                         cycle_len=nn_arch['cycle']['len'], cycle_mult=nn_arch['cycle']['mult'],
-                        metrics=list(map(lambda x: getattr(metrics, x), nn_arch['training_metrics'])))
+                        metrics=list(map(lambda x: getattr(metrics, x), nn_arch['training_metrics'])),
+                        cycle_save_name=dataset_name, get_ep_vals=True)
+        with open(f'{path_to_model}/results.out', 'w') as f:
+            for _, vals in ep_vals.items():
+                f.write(" ".join(map(lambda x:str(x), vals)) + "\n")
 
-        logging.info(f'Saving model: {model_name}')
-        rnn_learner.save(model_name)
-        rnn_learner.save_encoder(model_name + "_encoder")
+        logging.info(f'Saving model: {dataset_name}')
+        rnn_learner.save(dataset_name)
+        rnn_learner.save_encoder(dataset_name + "_encoder")
     else:
         logging.warning('No training...learning mode is off')
 
     return rnn_learner, text_field
 
-def run_and_display_tests(m, text_field):
+def run_and_display_tests(m, text_field, path_to_save):
     to_test_mode(m)
     print("==============        TESTS       ====================")
 
     text = gen_text(m, text_field, nn_testing["starting_words"], nn_testing["how_many_words"])
-    print(text)
-    print(beautify_text(text))
+
+    beautified_text = beautify_text(text)
+    print(beautified_text)
+    with open(path_to_save, 'w') as f:
+        f.write(beautified_text)
 
     back_to_train_mode(m, nn_arch['bs'])
+
+PARAM_FILE_NAME = 'params.json'
+DEEPDIFF_ADDED = 'dictionary_item_added'
+DEEPDIFF_REMOVED = 'dictionary_item_removed'
+DEEPDIFF_CHANGED = 'values_changed'
+
+def find_most_similar_config(path_to_dataset, current_config):
+    config_dict = defaultdict(list)
+    for (dirpath, dirnames, filenames) in os.walk(path_to_dataset):
+        for dirname in dirnames:
+            file_path = os.path.join(dirpath, dirname, PARAM_FILE_NAME)
+            if os.path.exists(file_path):
+                with open(file_path, 'r') as f:
+                    config = json.load(f)
+                dd = deepdiff.DeepDiff(config, current_config)
+                if dd == {}:
+                    return dirname, {}
+                else:
+                    n_changed_params=(len(dd[DEEPDIFF_ADDED]) if DEEPDIFF_ADDED in dd else 0) \
+                                     + (len(dd[DEEPDIFF_CHANGED]) if DEEPDIFF_CHANGED in dd else 0) \
+                                     + (len(dd[DEEPDIFF_REMOVED]) if DEEPDIFF_REMOVED in dd else 0)
+                    config_dict[n_changed_params].append((dirname, dd))
+    if not config_dict:
+        return None, deepdiff.DeepDiff({}, current_config)
+    else:
+        return config_dict[min(config_dict)][-1]
+
+def extract_last_key(keys):
+    return keys[keys[:-2].rindex('\'') + 1:-2]
+
+
+def find_name_for_new_config(config_diff):
+    name = ""
+    if DEEPDIFF_CHANGED in config_diff:
+        for key, val in config_diff[DEEPDIFF_CHANGED].items():
+            name += extract_last_key(key)
+            name += "_"
+            name += str(val['new_value'])
+            name += "_"
+    if DEEPDIFF_ADDED in config_diff:
+        for key in config_diff[DEEPDIFF_ADDED]:
+            name += extract_last_key(key)
+            name += "_"
+    if DEEPDIFF_REMOVED in config_diff:
+        for key in config_diff[DEEPDIFF_REMOVED]:
+            name += extract_last_key(key)
+            name += "_"
+    if name:
+        name = name[:-1]
+    return name
+
 
 if __name__ =='__main__':
     logging.info("Using GPU: " + str(USE_GPU))
     logging.info("Using the following parameters:")
     logging.info(nn_arch)
-
-    rnn_learner, text_field = get_language_model()
+    path_to_dataset = f'{nn_params["path_to_data"]}/{nn_params["dataset_name"]}'
+    run_if_already_run = True
+    folder, config_diff = find_most_similar_config(path_to_dataset, nn_arch)
+    if config_diff != {}: #nn wasn't run with this config yet
+        name = find_name_for_new_config(config_diff) if folder is not None else "baseline"
+        path_to_model = f'{path_to_dataset}/{name}'
+        os.mkdir(path_to_model)
+        with open(f'{path_to_model}/{PARAM_FILE_NAME}', 'w') as f:
+            json.dump(nn_arch, f)
+        # with open(f'{path_to_dataset}/{name}/config_diff.json', 'w') as f:
+        #     json.dump(config_diff, f)
+        rnn_learner, text_field = get_language_model(name)
+    else:
+        path_to_model = f'{path_to_dataset}/{folder}'
+        rnn_learner, text_field = get_language_model(folder, run_if_already_run)
     m=rnn_learner.model
-    run_and_display_tests(m, text_field)
+    run_and_display_tests(m, text_field, f'{path_to_model}/gen_text.out')
