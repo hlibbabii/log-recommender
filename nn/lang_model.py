@@ -129,7 +129,7 @@ def get_language_model(name, run_training=True):
         rnn_learner.lr_find()
 
         dir = os.path.dirname(os.path.realpath(__file__))
-        path = os.path.join(dir, '..', 'plot.png')
+        path = os.path.join(dir, path_to_model, 'lr_finder_plot.png')
         rnn_learner.sched.plot(path)
         logging.info(f"Plot is saved to {path}")
     elif nn_params['mode'] is Mode.TRAINING and run_training:
