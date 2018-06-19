@@ -1,5 +1,6 @@
 import json
 from collections import defaultdict
+from time import time
 
 import deepdiff
 import matplotlib
@@ -85,10 +86,10 @@ def create_df(basic_path):
     return pandas.DataFrame(lines)
 
 
-def get_language_model(name, run_training=True):
+def get_language_model(model_name, run_training=True):
     dataset_name = nn_params["dataset_name"]
     path_to_dataset = f'{nn_params["path_to_data"]}/{dataset_name}'
-    path_to_model = f'{path_to_dataset}/{name}'
+    path_to_model = f'{path_to_dataset}/{model_name}'
 
     train_df = create_df(f'{path_to_dataset}/train/')
     test_df = create_df(f'{path_to_dataset}/test/')
@@ -133,15 +134,18 @@ def get_language_model(name, run_training=True):
         rnn_learner.sched.plot(path)
         logging.info(f"Plot is saved to {path}")
     elif nn_params['mode'] is Mode.TRAINING and run_training:
+        training_start_time = time()
         vals, ep_vals = rnn_learner.fit(nn_arch['lr'], n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
                         cycle_len=nn_arch['cycle']['len'], cycle_mult=nn_arch['cycle']['mult'],
                         metrics=list(map(lambda x: getattr(metrics, x), nn_arch['training_metrics'])),
                         cycle_save_name=dataset_name, get_ep_vals=True)
+        training_time_mins = int(time() - training_start_time) // 60
         with open(f'{path_to_model}/results.out', 'w') as f:
+            f.write(str(training_time_mins) + "\n")
             for _, vals in ep_vals.items():
                 f.write(" ".join(map(lambda x:str(x), vals)) + "\n")
 
-        logging.info(f'Saving model: {dataset_name}')
+        logging.info(f'Saving model: {dataset_name}/{model_name}')
         rnn_learner.save(dataset_name)
         rnn_learner.save_encoder(dataset_name + "_encoder")
     else:
