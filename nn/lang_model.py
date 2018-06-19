@@ -75,12 +75,12 @@ def calculate_and_display_metrics(rnn_learner, metrics, vocab):
 def create_df(basic_path):
     counter = 0
     lines = []
-    file = f'{basic_path}/contexts.{counter}.src'
+    file = f'{basic_path}/context.{counter}.src'
     while os.path.exists(file):
         with open(file, 'r') as f:
             lines.extend([line for line in f])
         counter += 1
-        file = f'{basic_path}/contexts.{counter}.src'
+        file = f'{basic_path}/context.{counter}.src'
     if not lines:
         raise ValueError(f"No data available: {basic_path}")
     return pandas.DataFrame(lines)
