@@ -3,13 +3,10 @@ import logging
 import os
 from operator import attrgetter
 
-from bokeh.util.logconfig import level
-
 from classify_and_select_major_logs import select_logs_from_major_classes
 import io_utils
-from java_parser import JavaParser, EOF
-from log_statement import preprocess_ctx, replace_4whitespaces_with_tabs, spl_verbose, merge_tabs, camel_case_split, \
-    underscore_split
+from preprocess_params import pp_params
+from preprocessors import process_full_identifiers
 
 
 def write_log_text_to_corpus_file(preprocessed_logs, output_filename):
@@ -23,40 +20,6 @@ def write_log_context_to_corpus_file(preprocessed_logs, output_filename, context
         for l in preprocessed_logs:
             f.write(" ".join(l.get_context_words(context_lines_to_consider)) + "\n")
 
-split_line_canel_case = lambda context_line: [item.lower() for identifier in context_line for item in camel_case_split(identifier, add_separator=True)]
-split_line_underscore = lambda context_line: [item for identifier in context_line for item in underscore_split(identifier, add_separator=True)]
-
-def process(context, interesting_context_words):
-    processed = [w for line in list(map(lambda x: preprocess_ctx(x, func_list=[
-        replace_4whitespaces_with_tabs,
-        spl_verbose,
-        split_line_canel_case,
-        split_line_underscore,
-        merge_tabs
-    ]), context)) for w in (line + [EOF])]
-    java_parser = JavaParser()
-    processed = java_parser.strip_off_string_literals(processed)
-    processed = java_parser.strip_off_multiline_comments(processed)
-    processed = java_parser.strip_off_one_line_comments(processed)
-    processed = java_parser.strip_off_number_literals(processed)
-    processed = java_parser.strip_off_identifiers(processed, interesting_context_words)
-    return processed
-
-def process_full_identifiers(context, interesting_context_words):
-    processed = [w for line in list(map(lambda x: preprocess_ctx(x, func_list=[
-        replace_4whitespaces_with_tabs,
-        spl_verbose,
-        split_line_canel_case,
-        split_line_underscore,
-        merge_tabs
-    ]), context)) for w in (line + [EOF])]
-    java_parser = JavaParser()
-    processed = java_parser.strip_off_string_literals(processed)
-    processed = java_parser.strip_off_multiline_comments(processed)
-    processed = java_parser.strip_off_one_line_comments(processed)
-    processed = java_parser.strip_off_number_literals(processed)
-    processed = java_parser.strip_off_identifiers(processed, interesting_context_words)
-    return processed
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -68,7 +31,7 @@ def write_log_context_to_fastai_input(train_logs, output_dir, interesting_contex
         for ind, log in enumerate(train_logs):
             if ind % 10 == 0:
                 logging.info(f'Processing log {ind} out of {logs_n_total} ({ind * 100.0 / logs_n_total:.4}%)')
-            c_file.write(repr(" ".join(process_full_identifiers(log.context.context_before, interesting_context_words)))[1:-1] + " <ect>\n")
+            c_file.write(process_full_identifiers(pp_params, log.context.context_before, interesting_context_words))
             l_file.write(log.neg_or_pos() + "\n")
             i_file.write(log.id + "\n")
 

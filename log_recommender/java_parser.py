@@ -186,18 +186,17 @@ class JavaParser(object):
             del(context[opening_quote_index: abs_closing_quote_index+1])
             context.insert(opening_quote_index, STRING_LITERAL_PLACEHOLDER)
 
-    def strip_off_identifiers(self, context, identifiers_to_ignore):
+    def strip_off_identifiers(self, identifiers_to_ignore, context):
         non_identifiers = set(key_words + two_character_tokens + one_character_tokens + one_char_verbose + two_char_verbose + \
                           [COMMENT_PLACEHOLDER, STRING_LITERAL_PLACEHOLDER, NUMBER_LITERAL, IDENTIFIER_SEPARATOR]
                               + tabs + identifiers_to_ignore)
 
-        # result = []
-        # for word in context:
-        #     if not is_number(word) and word not in non_identifiers:
-        #         result.append(IDENTIFIER)
-        #     else:
-        #         result.append(word)
-        result = context
+        result = []
+        for word in context:
+            if not is_number(word) and word not in non_identifiers:
+                result.append(IDENTIFIER)
+            else:
+                result.append(word)
         return result
 
     def strip_off_number_literals(self, context):
