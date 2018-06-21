@@ -86,7 +86,7 @@ def create_df(basic_path):
     return pandas.DataFrame(lines)
 
 
-def get_language_model(model_name, run_training=True):
+def get_language_model(model_name):
     dataset_name = nn_params["dataset_name"]
     path_to_dataset = f'{nn_params["path_to_data"]}/{dataset_name}'
     path_to_model = f'{path_to_dataset}/{model_name}'
@@ -125,7 +125,7 @@ def get_language_model(model_name, run_training=True):
     except FileNotFoundError:
         logging.warning(f"Model {dataset_name} not found. Training from scratch")
 
-    if nn_params['mode'] is Mode.LEARNING_RATE_FINDING and run_training:
+    if nn_params['mode'] is Mode.LEARNING_RATE_FINDING:
         logging.info("Looking for the best learning rate...")
         rnn_learner.lr_find()
 
@@ -133,7 +133,7 @@ def get_language_model(model_name, run_training=True):
         path = os.path.join(dir, path_to_model, 'lr_finder_plot.png')
         rnn_learner.sched.plot(path)
         logging.info(f"Plot is saved to {path}")
-    elif nn_params['mode'] is Mode.TRAINING and run_training:
+    elif nn_params['mode'] is Mode.TRAINING:
         training_start_time = time()
         vals, ep_vals = rnn_learner.fit(nn_arch['lr'], n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
                         cycle_len=nn_arch['cycle']['len'], cycle_mult=nn_arch['cycle']['mult'],
@@ -224,26 +224,42 @@ def printGPUInfo():
         logging.info("Number of GPUs available: " + str(torch.cuda.device_count()))
 
 
+def get_model_name_by_params():
+    folder, config_diff = find_most_similar_config(path_to_dataset, nn_arch)
+    if config_diff == {}:
+        return folder
+    else: #nn wasn't run with this config yet
+        name = find_name_for_new_config(config_diff) if folder is not None else "baseline"
+        path_to_model = f'{path_to_dataset}/{name}'
+        while os.path.exists(path_to_model):
+            name = name + "_"
+            path_to_model = f'{path_to_dataset}/{name}'
+        return name
+
+
 if __name__ =='__main__':
     printGPUInfo()
     logging.info("Using the following parameters:")
     logging.info(nn_arch)
     path_to_dataset = f'{nn_params["path_to_data"]}/{nn_params["dataset_name"]}'
     run_if_already_run = True
-    folder, config_diff = find_most_similar_config(path_to_dataset, nn_arch)
-    if config_diff != {}: #nn wasn't run with this config yet
-        name = find_name_for_new_config(config_diff) if folder is not None else "baseline"
-        path_to_model = f'{path_to_dataset}/{name}'
-        while os.path.exists(path_to_model):
-            path_to_model = path_to_model + "_"
+    if "model_name" in nn_params:
+        model_name = nn_params["model_name"]
+    else:
+        model_name = get_model_name_by_params()
+    path_to_model = f'{path_to_dataset}/{model_name}'
+
+    if not os.path.exists(path_to_model):
+        new_model = True
         os.mkdir(path_to_model)
+    else:
+        new_model = False
+
+    if new_model or run_if_already_run:
         with open(f'{path_to_model}/{PARAM_FILE_NAME}', 'w') as f:
             json.dump(nn_arch, f)
         # with open(f'{path_to_dataset}/{name}/config_diff.json', 'w') as f:
         #     json.dump(config_diff, f)
-        rnn_learner, text_field = get_language_model(name)
-    else:
-        path_to_model = f'{path_to_dataset}/{folder}'
-        rnn_learner, text_field = get_language_model(folder, run_if_already_run)
-    m=rnn_learner.model
-    run_and_display_tests(m, text_field, f'{path_to_model}/gen_text.out')
+        rnn_learner, text_field = get_language_model(model_name)
+        m=rnn_learner.model
+        run_and_display_tests(m, text_field, f'{path_to_model}/gen_text.out')
