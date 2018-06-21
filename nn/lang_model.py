@@ -193,7 +193,8 @@ def find_most_similar_config(path_to_dataset, current_config):
         return config_dict[min(config_dict)][-1]
 
 def extract_last_key(keys):
-    return keys[keys[:-2].rindex('\'') + 1:-2]
+    last_apostrophe = keys.rindex('\'')
+    return keys[keys[:last_apostrophe].rindex('\'') + 1:last_apostrophe]
 
 
 def find_name_for_new_config(config_diff):
@@ -227,6 +228,8 @@ if __name__ =='__main__':
     if config_diff != {}: #nn wasn't run with this config yet
         name = find_name_for_new_config(config_diff) if folder is not None else "baseline"
         path_to_model = f'{path_to_dataset}/{name}'
+        while os.path.exists(path_to_model):
+            path_to_model = path_to_model + "_"
         os.mkdir(path_to_model)
         with open(f'{path_to_model}/{PARAM_FILE_NAME}', 'w') as f:
             json.dump(nn_arch, f)
