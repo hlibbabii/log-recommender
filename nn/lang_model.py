@@ -218,8 +218,14 @@ def find_name_for_new_config(config_diff):
     return name
 
 
-if __name__ =='__main__':
+def printGPUInfo():
     logging.info("Using GPU: " + str(USE_GPU))
+    if USE_GPU:
+        logging.info("Number of GPUs available: " + str(torch.cuda.device_count()))
+
+
+if __name__ =='__main__':
+    printGPUInfo()
     logging.info("Using the following parameters:")
     logging.info(nn_arch)
     path_to_dataset = f'{nn_params["path_to_data"]}/{nn_params["dataset_name"]}'
