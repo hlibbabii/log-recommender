@@ -11,29 +11,28 @@ class Mode(Enum):
 
 nn_params = {
     'path_to_data': '../nn-data/',
-    'dataset_name': 'few_data',
-    # 'model_name': 'devanbu_no_replaced_identifier_split',
+    'dataset_name': 'devanbu_no_replaced_identifier_split_no_tabs_under_2000',
     'arch': {
-        'bs': 32,
+        'bs': 64,
         'bptt': 70,
         'em_sz': 300,  # size of each embedding vector
         'nh': 400,     # number of hidden activations per layer
         'nl': 3,       # number of layers
-        'min_freq': 5,
+        'min_freq': 0,
         'betas': [0.7, 0.99],
         'clip': 0.3,
         'reg_fn': {'alpha': 2, 'beta': 1},
         'drop': {'outi': 0.05, 'out': 0.05, 'w':0.1, 'oute': 0.02, 'outh': 0.05},
         'lr': 1e-3, 'wds': 1e-6,
-        'cycle': {'n': 2, 'len': 1, 'mult': 2},
-        'training_metrics': ['accuracy', 'f2', 'mrr_non_interactive']
+        'cycle': {'n': 3, 'len': 1, 'mult': 2},
+        'training_metrics': ['accuracy', 'mrr']
     },
     'metrics': ['topk_1_10_100_cat_2', 'mrr'],
     'testing': {
-        'how_many_words': 1000,
-        'starting_words': "public <identifier> ( ) throws"
+        'how_many_words': 2000,
+        'starting_words': "public ( ) throws"
     },
-    'mode': Mode.TRAINING
+    'mode': Mode.LEARNING_RATE_FINDING
 }
 
 LEVEL_LABEL = data.Field(sequential=False)
