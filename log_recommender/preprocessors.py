@@ -7,6 +7,11 @@ from java_parser import two_character_tokens, one_character_tokens, one_char_ver
     delimiters_to_drop, delimiters_to_drop_verbose, IDENTIFIER_SEPARATOR, JavaParser, EOF
 
 
+#=====  UTIL ====================
+
+def add_between_elements(list, what_to_add):
+    return [w for part in list for w in (part, what_to_add)][:-1]
+
 def create_regex_from_token_list(token_list):
     m = list(map(lambda x:
              x.replace('\\', '\\\\')
@@ -21,15 +26,12 @@ def create_regex_from_token_list(token_list):
                  .replace('(', "\(")
                  .replace(')', "\)")
                  .replace(".", "\.")
-
-
                  , token_list))
     return "(" + "|".join(
         m
     ) +")"
 
-def add_between_elements(list, what_to_add):
-    return [w for part in list for w in (part, what_to_add)][:-1]
+#=====  Token level  ============
 
 def camel_case_split(identifier, add_separator=False):
     if identifier == '\n': #TODO XXX
@@ -38,18 +40,18 @@ def camel_case_split(identifier, add_separator=False):
     parts = [m.group(0) for m in matches]
     return add_between_elements(parts, IDENTIFIER_SEPARATOR) if add_separator else parts
 
+
 def underscore_split(identifier, add_separator=False):
     #TODO it creates empty element if the identifier starts or ends with underscore
     parts = identifier.split("_")
     return add_between_elements(parts, IDENTIFIER_SEPARATOR) if add_separator else parts
 
-def replace_4whitespaces_with_tabs(s):
-    return list(map(lambda x: x.replace("    ", "\t"), s))
+#======== Token list level   ==========
 
-def merge_tabs(lst):
+def merge_tabs(tokens):
     res = []
     count = 0
-    for word in lst:
+    for word in tokens:
         if word == '\t':
             count += 1
         else:
@@ -61,16 +63,30 @@ def merge_tabs(lst):
         res.append('\t' + str(count))
     return res
 
-def spl(line):
-    two_char_regex = create_regex_from_token_list(two_character_tokens)
-    one_char_regex = create_regex_from_token_list(one_character_tokens)
-    return split_to_key_words_and_identifiers(line, two_char_regex, one_char_regex, delimiters_to_drop)
+#======== Multitoken list level   ==========
+
+def replace_4whitespaces_with_tabs(multitokens):
+    return list(map(lambda x: x.replace("    ", "\t"), multitokens))
+
+def spl(multitokens, two_char_delimiters, one_char_delimiter):
+    two_char_regex = create_regex_from_token_list(two_char_delimiters)
+    one_char_regex = create_regex_from_token_list(one_char_delimiter)
+    return [w for spl in (map(lambda str: split_to_key_words_and_identifiers(str, two_char_regex, one_char_regex, delimiters_to_drop_verbose), multitokens))
+            for w in spl]
+
+
+def spl_non_verbose(line):
+    return spl(line, two_character_tokens, one_character_tokens)
+
 
 def spl_verbose(line):
-    two_char_regex = create_regex_from_token_list(two_character_tokens + two_char_verbose)
-    one_char_regex = create_regex_from_token_list(one_character_tokens + one_char_verbose)
-    return [w for spl in (map(lambda str: split_to_key_words_and_identifiers(str, two_char_regex, one_char_regex, delimiters_to_drop_verbose), line))
-            for w in spl]
+    '''
+    doesn't remove such tokens as tabs, newlines, brackets
+    '''
+    return spl(line,
+               two_character_tokens + two_char_verbose,
+               one_character_tokens + one_char_verbose)
+
 
 def split_to_key_words_and_identifiers(line, two_char_regex, one_char_regex, to_drop):
     two_char_tokens_separated = re.split(two_char_regex, line)
@@ -86,8 +102,8 @@ def split_to_key_words_and_identifiers(line, two_char_regex, one_char_regex, to_
     return result
 
 
-def filter_out_1_and_2_char_tokens(context):
-    return list(filter(lambda x: x not in one_character_tokens and x not in two_character_tokens, context))
+def filter_out_1_and_2_char_tokens(tokens):
+    return list(filter(lambda x: x not in one_character_tokens and x not in two_character_tokens, tokens))
 
 
 split_line_canel_case = lambda context_line: [item.lower() for identifier in context_line for item in camel_case_split(identifier, add_separator=True)]
