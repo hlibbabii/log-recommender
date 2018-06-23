@@ -1,0 +1,7 @@
+name: fastai-cpu
+channels:
+- conda-forge
+dependencies:
+- fastcluster
+- google-api-python-client
+- httplib2
