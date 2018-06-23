@@ -121,37 +121,13 @@ def get_language_model(model_name):
 
     try:
         rnn_learner.load(dataset_name)
-        calculate_and_display_metrics(rnn_learner, nn_params['metrics'], text_field.vocab)
+        model_trained = True
+        # calculate_and_display_metrics(rnn_learner, nn_params['metrics'], text_field.vocab)
     except FileNotFoundError:
-        logging.warning(f"Model {dataset_name} not found. Training from scratch")
+        logging.warning(f"Model {dataset_name}/{model_name} not found")
+        model_trained = False
 
-    if nn_params['mode'] is Mode.LEARNING_RATE_FINDING:
-        logging.info("Looking for the best learning rate...")
-        rnn_learner.lr_find()
-
-        dir = os.path.dirname(os.path.realpath(__file__))
-        path = os.path.join(dir, path_to_model, 'lr_finder_plot.png')
-        rnn_learner.sched.plot(path)
-        logging.info(f"Plot is saved to {path}")
-    elif nn_params['mode'] is Mode.TRAINING:
-        training_start_time = time()
-        vals, ep_vals = rnn_learner.fit(nn_arch['lr'], n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
-                        cycle_len=nn_arch['cycle']['len'], cycle_mult=nn_arch['cycle']['mult'],
-                        metrics=list(map(lambda x: getattr(metrics, x), nn_arch['training_metrics'])),
-                        cycle_save_name=dataset_name, get_ep_vals=True)
-        training_time_mins = int(time() - training_start_time) // 60
-        with open(f'{path_to_model}/results.out', 'w') as f:
-            f.write(str(training_time_mins) + "\n")
-            for _, vals in ep_vals.items():
-                f.write(" ".join(map(lambda x:str(x), vals)) + "\n")
-
-        logging.info(f'Saving model: {dataset_name}/{model_name}')
-        rnn_learner.save(dataset_name)
-        rnn_learner.save_encoder(dataset_name + "_encoder")
-    else:
-        logging.warning('No training...learning mode is off')
-
-    return rnn_learner, text_field
+    return rnn_learner, text_field, model_trained
 
 def run_and_display_tests(m, text_field, path_to_save):
     to_test_mode(m)
@@ -236,30 +212,68 @@ def get_model_name_by_params():
             path_to_model = f'{path_to_dataset}/{name}'
         return name
 
+def find_and_plot_lr(rnn_learner, path_to_model):
+    logging.info("Looking for the best learning rate...")
+    rnn_learner.lr_find()
+
+    dir = os.path.dirname(os.path.realpath(__file__))
+    path = os.path.join(dir, path_to_model, 'lr_finder_plot.png')
+    rnn_learner.sched.plot(path)
+    logging.info(f"Plot is saved to {path}")
+
+
+def train_model(rnn_learner, path_to_dataset, model_name):
+    dataset_name = nn_params["dataset_name"]
+    training_start_time = time()
+    vals, ep_vals = rnn_learner.fit(nn_params['lr'], n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
+                                    cycle_len=nn_arch['cycle']['len'], cycle_mult=nn_arch['cycle']['mult'],
+                                    metrics=list(map(lambda x: getattr(metrics, x), nn_arch['training_metrics'])),
+                                    cycle_save_name=dataset_name, get_ep_vals=True)
+    training_time_mins = int(time() - training_start_time) // 60
+    with open(f'{path_to_dataset}/{model_name}/results.out', 'w') as f:
+        f.write(str(training_time_mins) + "\n")
+        for _, vals in ep_vals.items():
+            f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
+
+    logging.info(f'Saving model: {dataset_name}/{model_name}')
+    rnn_learner.save(dataset_name)
+    rnn_learner.save_encoder(dataset_name + "_encoder")
+
 
 if __name__ =='__main__':
     printGPUInfo()
     logging.info("Using the following parameters:")
     logging.info(nn_arch)
     path_to_dataset = f'{nn_params["path_to_data"]}/{nn_params["dataset_name"]}'
-    run_if_already_run = True
-    if "model_name" in nn_params:
-        model_name = nn_params["model_name"]
-    else:
-        model_name = get_model_name_by_params()
+    force_rerun = True
+    # if "model_name" in nn_params:
+    #     logging.info(f'')
+    #     model_name = nn_params["model_name"]
+    # else:
+    model_name = get_model_name_by_params()
     path_to_model = f'{path_to_dataset}/{model_name}'
 
     if not os.path.exists(path_to_model):
-        new_model = True
         os.mkdir(path_to_model)
-    else:
-        new_model = False
 
-    if new_model or run_if_already_run:
+    rnn_learner, text_field, model_trained = get_language_model(model_name)
+    if not model_trained or force_rerun:
         with open(f'{path_to_model}/{PARAM_FILE_NAME}', 'w') as f:
             json.dump(nn_arch, f)
         # with open(f'{path_to_dataset}/{name}/config_diff.json', 'w') as f:
         #     json.dump(config_diff, f)
-        rnn_learner, text_field = get_language_model(model_name)
-        m=rnn_learner.model
-        run_and_display_tests(m, text_field, f'{path_to_model}/gen_text.out')
+
+        if nn_params['mode'] is Mode.LEARNING_RATE_FINDING:
+            if model_trained:
+                logging.info(f"Forcing lr-finder rerun")
+            find_and_plot_lr(rnn_learner, f'{path_to_dataset}/{model_name}')
+        elif nn_params['mode'] is Mode.TRAINING:
+            if model_trained:
+                logging.info(f"Forcing training rerun")
+            train_model(rnn_learner, path_to_dataset, model_name)
+            m = rnn_learner.model
+            run_and_display_tests(m, text_field, f'{path_to_model}/gen_text.out')
+        else:
+            raise AssertionError("Unknown mode")
+    else:
+        logging.info(f'Model {nn_params["dataset_name"]}/{model_name} already trained. Not rerunning training.')
