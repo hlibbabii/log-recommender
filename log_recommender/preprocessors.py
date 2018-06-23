@@ -6,6 +6,8 @@ from functools import partial
 from java_parser import two_character_tokens, one_character_tokens, one_char_verbose, two_char_verbose, \
     delimiters_to_drop, delimiters_to_drop_verbose, IDENTIFIER_SEPARATOR, JavaParser, EOF
 
+VAR_PLACEHOLDER = "<VAR>"
+STRING_RESOURCE_PLACEHOLDER = "<STRING_RESOURCE>"
 
 #=====  UTIL ====================
 
@@ -31,6 +33,41 @@ def create_regex_from_token_list(token_list):
         m
     ) +")"
 
+#=====  Multitoken level =====================
+
+def remove_placeholders(multitoken):
+    multitoken = re.sub(VAR_PLACEHOLDER, r'', multitoken)
+    multitoken = re.sub(STRING_RESOURCE_PLACEHOLDER, r'', multitoken)
+    return multitoken
+
+def split_log_text_to_keywords_and_identifiers(multitoken):
+    return list(filter(None, re.split("[\[\] ,.\-!?:\n\t(){};=+*/\"&|<>_#\\\@$]+", multitoken)))
+
+
+def strip_line(multitoken):
+    return multitoken.strip()
+
+
+def to_lower(multitoken):
+    return multitoken.lower()
+
+
+def add_ect(multitoken):
+    multitoken += " <ect>"
+    return multitoken
+
+
+def replace_string_resources_names(multitoken):
+    changed = re.sub('^([0-9a-zA-Z]+\\.)+[0-9a-zA-Z]+$', STRING_RESOURCE_PLACEHOLDER, multitoken)
+    return changed
+
+
+def replace_variable_place_holders(multitoken):
+    changed = re.sub('\\{\\}', VAR_PLACEHOLDER, multitoken)
+    changed = re.sub('%[0-9]*[a-z]', VAR_PLACEHOLDER, changed)
+    return changed
+
+
 #=====  Token level  ============
 
 def camel_case_split(identifier, add_separator=False):
@@ -47,6 +84,13 @@ def underscore_split(identifier, add_separator=False):
     return add_between_elements(parts, IDENTIFIER_SEPARATOR) if add_separator else parts
 
 #======== Token list level   ==========
+
+def filter_out_stop_words(tokens):
+    STOP_WORDS = ["a", "an", "and", "are", "as", "at", "be", "for", "has", "in", "is", "it", "its", "of", "on", "that",
+                  "the", "to", "was", "were", "with"]
+    # the following words are normally stop words but we might want not to consider as stop words:  by, from, he, will
+
+    return list(filter(lambda w: w not in STOP_WORDS, tokens))
 
 def merge_tabs(tokens):
     res = []
@@ -106,33 +150,48 @@ def filter_out_1_and_2_char_tokens(tokens):
     return list(filter(lambda x: x not in one_character_tokens and x not in two_character_tokens, tokens))
 
 
-split_line_canel_case = lambda context_line: [item.lower() for identifier in context_line for item in camel_case_split(identifier, add_separator=True)]
-split_line_underscore = lambda context_line: [item for identifier in context_line for item in underscore_split(identifier, add_separator=True)]
+def split_line_canel_case(context_line):
+    return [item.lower() for identifier in context_line
+            for item in camel_case_split(identifier, add_separator=True)]
 
 
-def name_to_func(name, interesting_context_words):
-    java_parser = JavaParser()
-    if name == 'java.strip_off_identifiers':
-        return partial(java_parser.strip_off_identifiers, interesting_context_words)
-    elif name.startswith("java."):
-        return partial(getattr(JavaParser, name[5:]), java_parser)
-    else:
-        return getattr(sys.modules[__name__], name)
+def split_line_underscore(context_line):
+    return [item for identifier in context_line
+            for item in underscore_split(identifier, add_separator=True)]
 
 
 def newline_and_tab_remover(tokens):
     return list(filter(lambda t: t != "\n" and t != "\t", tokens))
 
 
-def preprocess_ctx(context, func_list):
-    pp_context = context
-    for func in func_list:
-        pp_context = func(pp_context)
-    return pp_context
+#==========================================================
+
+def names_to_functions(pp_names, context):
+    pps = []
+    java_parser = JavaParser()
+    for name in pp_names:
+        if name == 'java.strip_off_identifiers':
+            pps.append(partial(java_parser.strip_off_identifiers, context['interesting_context_words']))
+        elif name.startswith("java."):
+            pps.append(partial(getattr(JavaParser, name[5:]), java_parser))
+        else:
+            pps.append(getattr(sys.modules[__name__], name))
+    return pps
+
+
+def apply_preprocessors(to_be_processed, preprocessors, context={}):
+    if not preprocessors:
+        return to_be_processed
+    if isinstance(next(iter(preprocessors)), str):
+        preprocessors = names_to_functions(preprocessors, context)
+    for preprocessor in preprocessors:
+        to_be_processed = preprocessor(to_be_processed)
+    return to_be_processed
 
 
 def process_full_identifiers(context, preprocessors, interesting_context_words):
     string_list = [w for line in context for w in (line, EOF)]
-    processed = preprocess_ctx(string_list, list(map(lambda p: name_to_func(p, interesting_context_words), preprocessors)))
-    processed = repr(" ".join(processed))[1:-1] + " <ect>\n"
+    preprocessors += [lambda p: repr(" ".join(p))[1:-1] + " <ect>\n"]
+    processed = apply_preprocessors(string_list, preprocessors,
+                                    {'interesting_context_words': interesting_context_words})
     return processed

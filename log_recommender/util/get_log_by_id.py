@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
-import sys
-import io_utils
+from util import io_utils
 
 __author__ = 'hlib'
 
 # id = sys.argv[1]
 id = "mapbox_161506"
-pp_logs = io_utils.load_preprocessed_logs()
-for log in pp_logs:
+pp_logs_gen = io_utils.load_preprocessed_logs()
+for log in pp_logs_gen:
     if log.id == id:
         print(log.text)
         print(log.level)

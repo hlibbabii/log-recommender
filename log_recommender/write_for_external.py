@@ -4,15 +4,9 @@ import os
 from operator import attrgetter
 
 from classify_and_select_major_logs import select_logs_from_major_classes
-import io_utils
+from util import io_utils
 from preprocess_params import pp_params
 from preprocessors import process_full_identifiers
-
-
-def write_log_text_to_corpus_file(preprocessed_logs, output_filename):
-    with open(output_filename, 'w') as f:
-        for l in preprocessed_logs:
-            f.write(str(l.text) + "\n")
 
 
 def write_log_context_to_corpus_file(preprocessed_logs, output_filename, context_lines_to_consider):
@@ -45,7 +39,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--context-lines-to-consider', action='store', type=int, default=4)
 
-    parser.add_argument('--output-corpus-file', action='store', default='../../gengram/corpus.txt')
     parser.add_argument('--output-context-corpus-file', action='store', default='../../AutoenCODE/data/corpus.src')
     parser.add_argument('--context-index-file', action='store', default='../context.index')
     parser.add_argument('--fastai-input-file', action='store', default='../../fastai-sample/data')
@@ -54,7 +47,6 @@ if __name__ == '__main__':
     interesting_context_words = io_utils.load_interesting_words()
 
     preprocessed_logs = io_utils.load_preprocessed_logs()
-    write_log_text_to_corpus_file(preprocessed_logs, args.output_corpus_file)
     write_log_context_to_corpus_file(preprocessed_logs, args.output_context_corpus_file,
                                      args.context_lines_to_consider)
     classes = ['debug', 'info', 'warn', 'error']

@@ -1,16 +1,13 @@
 import argparse
 from copy import deepcopy
 import csv
-from functools import reduce
-import pickle
 from random import shuffle
 import itertools
 import numpy
 from numpy.core.multiarray import ndarray
-from hclustering import get_first_words, jaccard
-from io_utils import load_classes
-import io_utils
-from util import sum_vectors
+from cluster.hclustering import get_first_words, jaccard
+from util.io_utils import load_classes
+from util import io_utils
 
 __author__ = 'hlib'
 

@@ -1,8 +1,7 @@
 import argparse
 import logging
-import pickle
 from numpy import genfromtxt
-import io_utils
+from util import io_utils
 
 
 def run_hierarchical_clustering(log_vectors, first_words_vector, contexts, metric_function):

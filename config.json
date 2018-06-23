@@ -6,7 +6,7 @@
       "depends-on": [],
       "params": [
       ],
-      "command": "{PATH_TO_PROJECT}/run.sh"
+      "command": "{PATH_TO_PROJECT}/run.sh -e saner16_projects.csv ../.Projects"
     },
     {
       "id": "preprocess",
@@ -18,117 +18,11 @@
       "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/log_preprocessor.py"
     },
     {
-      "id": "classify-and-select-major-logs",
-      "description": "",
-      "depends-on": ["classes"],
-      "params": [
-        "context-lines-to-consider"
-      ],
-      "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/classify_and_select_major_logs.py"
-    },
-    {
-      "id": "word2vec",
-      "description": "",
-      "depends-on": ["classify-and-select-major-logs"],
-      "params": [
-        "distance-metric",
-        "word2vec-n-vector-dimensions",
-        "max-sentence-length-rae",
-        "max-iter-rae",
-        "n-logs-pick-for-rae-from-each-class",
-        "min-word-occurencies"
-      ],
-      "command": "{PATH_TO_PROJECT}/word2vec.sh --recalculate-word2vec --word2vec-out-file {WORD_TO_VEC_OUT_FILE} --autoencode-location {AUTOENCODE_LOCATION} --classes-file {CLASSES_FILE}"
-    },
-    {
-      "id": "asciidoctor",
-      "description": "",
-      "depends-on": ["markup-contexts"],
-      "params": [],
-      "command": "asciidoctor -b html5 {MARKED_UP_CONTEXTS_FILE}"
-    },
-    {
-      "id": "clusterpy",
-      "description": "",
-      "depends-on": ["context-vectors"],
-      "params": [],
-      "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/cluster.py"
-    },
-    {
-      "id": "hclustering",
-      "description": "",
-      "depends-on": ["word2vec"],
-      "params": ["distance-metric"],
-      "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/hclustering.py --autoencode-dist-file {AUTOENCODE_DIST_FILE}"
-    },
-    {
-      "id": "visual",
-      "description": "",
-      "depends-on": ["hclustering"],
-      "params": [
-        "n-logs-pick-for-rae-from-each-class",
-        "min-word-occurencies"
-      ],
-      "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/visual.py --autoencode-dist-file {AUTOENCODE_DIST_FILE} --context-corpus-file {OUTPUT_CONTEXT_CORPUS_FILE} --context-index-file {CONTEXT_INDEX_FILE} --word-to-vec-out-file {WORD_TO_VEC_OUT_FILE}"
-    },
-    {
-      "id": "freq-stats",
+      "id": "write-log-text-file",
       "description": "",
       "depends-on": ["preprocess"],
-      "params": ["min-log-number-per-project", "context-lines-to-consider"],
-      "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/freq_stats.py"
-    },
-    {
-      "id": "write-for-external",
-      "enabled": "false",
-      "description": "",
-      "depends-on": ["classes", "preprocess"],
-      "params": ["context-lines-to-consider"],
-      "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/write_for_external.py --output-corpus-file {OUTPUT_CORPUS_FILE} --output-context-corpus-file {OUTPUT_CONTEXT_CORPUS_FILE} --context-index-file {CONTEXT_INDEX_FILE} --fastai-input-file {FASTAI_INPUT_FILE}"
-    },
-        {
-      "id": "markup-contexts",
-      "description": "",
-      "depends-on": ["classes", "context-vectors"],
       "params": [],
-      "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/markup_context.py"
-    },
-        {
-      "id": "distributions",
-      "description": "",
-      "depends-on": ["classify-and-select-major-logs"],
-      "params": [],
-      "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/distrib.py"
-    },
-    {
-      "id": "classes",
-      "description": "",
-      "depends-on": ["freq-stats"],
-      "params": ["min-word-occurencies", "min-word-frequency", "min-found-in-projects-frequency"],
-      "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/cl.py"
-    },
-    {
-      "id": "context-vectors",
-      "description": "",
-      "depends-on": ["classes"],
-      "params": ["context-lines-to-consider"],
-      "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/context_vectors.py"
-    },
-    {
-      "id": "write-to-spreadsheets",
-      "description": "",
-      "depends-on": ["classes"],
-      "params": [],
-      "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/class_spreadsheets.py"
-    },
-    {
-      "id": "upload-to-google",
-      "description": "",
-      "depends-on": ["write-to-spreadsheets"],
-      "params": [],
-      "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/upload_to_google.py {SPREADSHEET_OUTPUT_DIR_NAME}"
+      "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/write_log_text_file.py --output-corpus-file {OUTPUT_CORPUS_FILE}"
     }
-
-
   ]
 }

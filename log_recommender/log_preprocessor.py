@@ -2,8 +2,10 @@ import argparse
 import logging
 import re
 import os
-import pickle
-import io_utils
+
+from preprocessors import apply_preprocessors, strip_line, to_lower, split_log_text_to_keywords_and_identifiers, \
+    replace_string_resources_names, replace_variable_place_holders, add_ect
+from util import io_utils
 
 from log_statement import LogStatement
 
@@ -11,9 +13,6 @@ from log_statement import LogStatement
 __author__ = 'hlib'
 
 LOG_LEVEL_REGEX = re.compile(".*([Ll]og|LOG|[Ll]ogger|LOGGER)\.([Tt]race|[Dd]ebug|[Ii]nfo|[Ww]arn|[Ee]rror|[Ff]atal)\(.*")
-
-VAR_PLACEHOLDER = "<VAR>"
-STRING_RESOURCE_PLACEHOLDER = "<STRING_RESOURCE>"
 
 def extract_log_level(line):
     matcher = re.match(LOG_LEVEL_REGEX, line)
@@ -52,39 +51,9 @@ def extract_text_and_variables(line):
 def contains_text(line):
     return line.find("\"") >= 0
 
-def append_period_if_absent(line):
-    if len(line) > 0:
-        if line[-1] not in ['.', '!', '?']:
-            line += "."
-    return line
-
-
-def replace_string_resources_names(line):
-    changed = re.sub('^([0-9a-zA-Z]+\\.)+[0-9a-zA-Z]+$', STRING_RESOURCE_PLACEHOLDER, line)
-    # if changed != line:
-    #     print(line + "  ----->  " + changed)
-    return changed
-
-
-def replace_variable_place_holders(line):
-    changed = re.sub('\\{\\}', VAR_PLACEHOLDER, line)
-    changed = re.sub('%[0-9]*[a-z]', VAR_PLACEHOLDER, changed)
-    # if changed != line:
-    #     print(line + "  ----->  " + changed)
-    return changed
-
-
-def postprocess_extracted_text(line):
-    line = line.strip()
-    line = replace_string_resources_names(line)
-    line = replace_variable_place_holders(line)
-    # line = append_period_if_absent(line)
-    return line
-
-
-STOP_REGEX = re.compile(".*is(Trace|Debug|Info|Warn)Enabled.*")
 
 def filter_bad_context_line(new_context_line):
+    STOP_REGEX = re.compile(".*is(Trace|Debug|Info|Warn)Enabled.*")
     return re.match(STOP_REGEX, new_context_line) is None
 
 
@@ -136,30 +105,20 @@ def read_grepped_log_file(directory, min_log_number_per_project):
             list.extend(current_proj_list)
     return list, project_stats
 
-def remove_placeholders(log_text):
-    log_text = re.sub(VAR_PLACEHOLDER, r'', log_text)
-    log_text = re.sub(STRING_RESOURCE_PLACEHOLDER, r'', log_text)
-    return log_text
-
-def split_log_text_to_keywords_and_identifiers(line):
-    return list(filter(None, re.split("[\[\] ,.\-!?:\n\t(){};=+*/\"&|<>_#\\\@$]+", line)))
-
-
-def get_words_from_log_text(log_text):
-    #Consider different splitting for log statement than for the context
-    log_text = remove_placeholders(log_text)
-    log_text = log_text.lower()
-    return split_log_text_to_keywords_and_identifiers(log_text)
-
 
 def process_log_statement(log_entry):
-    log_text_line, text, n_variables = extract_text_and_variables(log_entry['log_statement'])
-    log_text = postprocess_extracted_text(text)
-    words_from_log_text = get_words_from_log_text(log_text)
-    words_from_log_text = filter_out_stop_words(words_from_log_text)
+    log_text_line, log_text, n_variables = extract_text_and_variables(log_entry['log_statement'])
+    words_from_log_text = apply_preprocessors(log_text, [
+        strip_line,
+        replace_string_resources_names,
+        replace_variable_place_holders,
+        add_ect,
+        to_lower,
+        split_log_text_to_keywords_and_identifiers,
+        # filter_out_stop_words
+    ])
     return LogStatement(
             text_line=log_text_line,
-            text=log_text,
             text_words=words_from_log_text,
             level=extract_log_level(log_entry['log_statement']),
             n_variables=n_variables,
@@ -168,16 +127,13 @@ def process_log_statement(log_entry):
             project = log_entry['project'],
             link=log_entry['github_link'])
 
-STOP_WORDS=["a", "an", "and", "are", "as", "at", "be", "for", "has", "in", "is", "it", "its", "of", "on", "that",
-            "the", "to", "was", "were", "with"]
-#the following words are normally stop words but we might want not to consider as stop words:  by, from, he, will
 
-def filter_out_stop_words(words_from_log_text):
-    return list(filter(lambda w: w not in STOP_WORDS, words_from_log_text))
-
-def filter_empty_logs(pp_logs):
-    return list(filter(lambda l: len(l.text_words) > 0 and len(l.context.context_before) > 0
-                ,pp_logs))
+def preprocess_logs(grepped_logs):
+    for ind, grepped_log in enumerate(grepped_logs):
+        logging.info(f"Processing {ind} log out of {logs_total} ({ind * 100.0 / logs_total:.4}%)")
+        ppl = process_log_statement(grepped_log)
+        if len(ppl.text_words) > 0 and len(ppl.context.context_before) > 0:
+            yield ppl
 
 
 if __name__ == "__main__":
@@ -186,15 +142,12 @@ if __name__ == "__main__":
     parser.add_argument('--min-log-number-per-project', action='store', type=int, default=100)
     args = parser.parse_args()
 
-    in_file = "../.Logs"
+    in_file = "../../.Logs"
     grepped_logs, project_stats = read_grepped_log_file(in_file, args.min_log_number_per_project)
-    pp_logs = []
+    pp_logs_gen = []
     logs_total = len(grepped_logs)
-    for ind, grepped_log in enumerate(grepped_logs):
-        pp_logs.append(process_log_statement(grepped_log))
-        logging.info(f"Processing {ind} log out of {logs_total} ({ind * 100.0 / logs_total:.4}%)")
-    pp_logs = filter_empty_logs(pp_logs)
+    pp_logs_gen = preprocess_logs(grepped_logs)
 
-    io_utils.dump_preprocessed_logs(pp_logs)
+    io_utils.dump_preprocessed_logs(pp_logs_gen)
     io_utils.dump_project_stats(project_stats)
 

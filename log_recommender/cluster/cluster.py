@@ -3,8 +3,8 @@ from math import sqrt
 from sklearn import cluster
 from sklearn.cluster import KMeans
 
-from io_utils import load_classes
-import io_utils
+from util.io_utils import load_classes
+from util import io_utils
 
 
 def gini_impurity(clazz, clustering_stats, word_count):

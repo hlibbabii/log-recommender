@@ -1,10 +1,6 @@
-import re
-import itertools
 import sys
 
-from java_parser import JavaParser, two_character_tokens, one_character_tokens, delimiters_to_drop, \
-    two_char_verbose, one_char_verbose, delimiters_to_drop_verbose, IDENTIFIER_SEPARATOR
-from preprocessors import replace_4whitespaces_with_tabs, spl, preprocess_ctx
+from preprocessors import replace_4whitespaces_with_tabs, camel_case_split, spl_verbose, apply_preprocessors
 
 __author__ = 'hlib'
 
@@ -13,11 +9,11 @@ class LogContext(object):
         self.context_before = context_before
         self.context_after = context_after
         # self.context_words = preprocess_context(self.context_before + self.context_after)
-        self.context_words = list(map(lambda x: preprocess_ctx(x, func_list=[
+        self.context_words = apply_preprocessors(self.context_before, [
             replace_4whitespaces_with_tabs,
-            spl,
+            spl_verbose,
             lambda context_line: [item.lower() for identifier in context_line for item in camel_case_split(identifier)]
-        ]), self.context_before))
+        ])
 
     def get_context_words(self, n_lines_to_consider):
         return [w for w_list in self.context_words[-n_lines_to_consider:] for w in w_list]
@@ -67,10 +63,9 @@ class LogStatement(object):
 
     log_count = 0
 
-    def __init__(self, text_line, text, text_words, level, n_variables,
+    def __init__(self, text_line, text_words, level, n_variables,
                  context_before, context_after, project, link):
         self.text_line = text_line
-        self.text = text
         self.text_words = text_words
         self.level = level
         self.n_variables = n_variables

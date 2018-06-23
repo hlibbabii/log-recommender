@@ -1,14 +1,12 @@
 import argparse
 import operator
-import pickle
 from math import log
 from random import randint
 
 from sortedcontainers import SortedList
-import io_utils
 
-from util import without_duplicates
-
+from util import io_utils
+from util.util import without_duplicates
 
 __author__ = 'hlib'
 
