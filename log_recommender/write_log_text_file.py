@@ -1,9 +1,14 @@
 import argparse
+import os
 
 from util import io_utils
 
 
 def write_log_text_to_corpus_files(preprocessed_logs, output_dir):
+    if not os.path.exists(f'{output_dir}/train'):
+        os.mkdir(f'{output_dir}/train')
+    if not os.path.exists(f'{output_dir}/test'):
+        os.mkdir(f'{output_dir}/test')
     with open(f'{output_dir}/train/context.0.src', 'w') as f, open(f'{output_dir}/test/context.0.src', 'w') as g:
         for ind, l in enumerate(preprocessed_logs):
             line = str(l.text) + "\n"
