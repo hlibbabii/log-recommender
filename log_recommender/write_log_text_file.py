@@ -19,4 +19,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     preprocessed_logs = io_utils.load_preprocessed_logs()
-    write_log_text_to_corpus_files(preprocessed_logs, args.output_corpus_file)
+    write_log_text_to_corpus_files(preprocessed_logs, args.log_text_corpus_dir)
