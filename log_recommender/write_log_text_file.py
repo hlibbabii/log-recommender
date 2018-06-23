@@ -13,7 +13,7 @@ def write_log_text_to_corpus_files(preprocessed_logs, output_dir):
         os.mkdir(f'{output_dir}/test')
     with open(f'{output_dir}/train/context.0.src', 'w') as f, open(f'{output_dir}/test/context.0.src', 'w') as g:
         for ind, l in enumerate(preprocessed_logs):
-            line = str(l.text) + "\n"
+            line = str(" ".join(l.text_words)) + "\n"
             if ind % 20 >= 3:
                 f.write(line)
             else:
