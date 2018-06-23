@@ -52,11 +52,6 @@ def to_lower(multitoken):
     return multitoken.lower()
 
 
-def add_ect(multitoken):
-    multitoken += " <ect>"
-    return multitoken
-
-
 def replace_string_resources_names(multitoken):
     changed = re.sub('^([0-9a-zA-Z]+\\.)+[0-9a-zA-Z]+$', STRING_RESOURCE_PLACEHOLDER, multitoken)
     return changed
@@ -84,6 +79,11 @@ def underscore_split(identifier, add_separator=False):
     return add_between_elements(parts, IDENTIFIER_SEPARATOR) if add_separator else parts
 
 #======== Token list level   ==========
+
+def add_ect(multitoken):
+    multitoken.append("<ect>")
+    return multitoken
+
 
 def filter_out_stop_words(tokens):
     STOP_WORDS = ["a", "an", "and", "are", "as", "at", "be", "for", "has", "in", "is", "it", "its", "of", "on", "that",

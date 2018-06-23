@@ -112,9 +112,9 @@ def process_log_statement(log_entry):
         strip_line,
         replace_string_resources_names,
         replace_variable_place_holders,
-        add_ect,
         to_lower,
         split_log_text_to_keywords_and_identifiers,
+        add_ect,
         # filter_out_stop_words
     ])
     return LogStatement(
