@@ -7,7 +7,7 @@
   "PATH_TO_CACHED_PROJECTS": "{PATH_TO_PROJECT}/../.Projects",
   "SPREADSHEET_OUTPUT_DIR_NAME": "{PATH_TO_PROJECT}/logs",
 
-  "OUTPUT_CORPUS_FILE": "{PATH_TO_PROJECT}/log_text_corpus.src",
+  "LOG_TEXT_CORPUS_DIR": "{PATH_TO_PROJECT}/nn-data/log_text_corpus_556",
   "LOGS_FOR_TRAINING_FILE": "{PATH_TO_PROJECT}/logs_for_training.pkl",
 
   "AUTOENCODE_LOCATION": "{PATH_TO_PROJECT}/../AutoenCODE",

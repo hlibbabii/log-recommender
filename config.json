@@ -22,7 +22,7 @@
       "description": "",
       "depends-on": ["preprocess"],
       "params": [],
-      "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/write_log_text_file.py --output-corpus-file {OUTPUT_CORPUS_FILE}"
+      "command": "{PATH_TO_PYTHON} {PATH_TO_PROJECT}/log_recommender/write_log_text_file.py --log-text-corpus-dir {LOG_TEXT_CORPUS_DIR}"
     }
   ]
 }
