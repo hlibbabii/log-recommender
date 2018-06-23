@@ -5,6 +5,8 @@ from util import io_utils
 
 
 def write_log_text_to_corpus_files(preprocessed_logs, output_dir):
+    if not os.path.exists(f'{output_dir}'):
+        os.mkdir(f'{output_dir}')
     if not os.path.exists(f'{output_dir}/train'):
         os.mkdir(f'{output_dir}/train')
     if not os.path.exists(f'{output_dir}/test'):
