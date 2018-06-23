@@ -1,12 +1,13 @@
 {
-  "PATH_TO_PYTHON": "/home/hlib/miniconda3/envs/fastai-cpu/bin/python3.6",
-  "PATH_TO_PROJECT": "/home/hlib/thesis/log-recommender",
+  "HOME_DIR": "/home/hlib",
+  "PATH_TO_PYTHON": "{HOME_DIR}/miniconda3/envs/fastai-cpu/bin/python3.6",
+  "PATH_TO_PROJECT": "{HOME_DIR}/thesis/log-recommender",
 
   "GENERATED_STATS_FOLDER": "{PATH_TO_PROJECT}/generated_stats",
   "PATH_TO_CACHED_PROJECTS": "{PATH_TO_PROJECT}/../.Projects",
   "SPREADSHEET_OUTPUT_DIR_NAME": "{PATH_TO_PROJECT}/logs",
 
-  "OUTPUT_CORPUS_FILE": "{PATH_TO_PROJECT}/../gengram/corpus.txt",
+  "OUTPUT_CORPUS_FILE": "{PATH_TO_PROJECT}/log_text_corpus.src",
   "LOGS_FOR_TRAINING_FILE": "{PATH_TO_PROJECT}/logs_for_training.pkl",
 
   "AUTOENCODE_LOCATION": "{PATH_TO_PROJECT}/../AutoenCODE",
