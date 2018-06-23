@@ -76,13 +76,20 @@ def dump_interesting_words(words):
 
 #==================================================
 
+
 def load_preprocessed_logs():
     with open(PREPROCESSED_LOGS_FILE, 'rb') as i:
-        return pickle.load(i)
+        while True:
+            try:
+                yield pickle.load(i)
+            except EOFError:
+                break
+
 
 def dump_preprocessed_logs(pp_logs):
     with open(PREPROCESSED_LOGS_FILE, 'wb') as o:
-        pickle.dump(pp_logs, o, pickle.HIGHEST_PROTOCOL)
+        for l in pp_logs:
+            pickle.dump(l, o, pickle.HIGHEST_PROTOCOL)
 
 #==================================================
 
