@@ -24,13 +24,13 @@ LINE_PREFIX="#L"
 
 LINES_BEFORE_TO_EXTRACT=1
 
-REGEX='\([Ll]og\|LOG\|[Ll]ogger\|LOGGER\)\.\([Tt]race\|[Dd]ebug\|[Ii]nfo\|[Ww]arn\|[Ee]rror\|[Ff]atal\)(.*)'
 
-#log statements that are not covered:
-#
-#log.log(Level.WARNING, "Error parsing ObjectDescriptor", e);
-#
-# if only a few log statements are found in the project it means that the same pattern is not followed throughout the project
+CLASS='\([Ll]og\|LOG\|[Ll]ogger\|LOGGER\)'
+LEVEL='\([Tt]race\|TRACE\|[Dd]ebug\|DEBUG\|[Ii]nfo\|INFO\|[Ww]arn\|WARN\|[Ee]rror\|ERROR\|[Ff]atal\|FATAL\|[Ff]inest\|FINEST\|[Ff]iner\|FINER\|[Ff]ine\|FINE\|[Cc]onfig\|CONFIG\|[Ii]nfo\|INFO\|[Ww]arning\|WARNING\|[Ss]evere\|SEVERE\)'
+METHOD_CALL="\($LEVEL\|[Ll]og\|LOG\|debuglog\)$LEVEL*(.*)"
+SOUT="System\.\(out\|err\)\.println(.*)"
+REGEX="\($CLASS\.$METHOD_CALL\|$SOUT\|^\(\\s\)*$METHOD_CALL\)"
+
 
 CSV_FILE=$( abspath "$1" )
 echo "Getting projects from $CSV_FILE"
@@ -87,7 +87,7 @@ do
 
     echo ${LINES_BEFORE_TO_EXTRACT} >> ${FILE_FOR_OUTPUT}
     grep -rn ${REGEX} | while read -r line ; do
-        FILE="$(echo $line | sed -n "s/^\(\S*\.\(java\|scala\|groovy\|aj\|kt\|py\|js\|c\|cs\|rb\|adoc\|md\|vm\|patch\|R\)\):.*$/\1/p")"
+        FILE="$(echo $line | sed -n "s/^\(\S*\.\(java\|scala\|groovy\|gradle\|aj\|kt\|py\|js\|c\|cs\|rb\|adoc\|md\|vm\|patch\|R\)\):.*$/\1/p")"
         if [ -f "${FILE}" ]; then
             LINE_NUMBER="$(echo $line | sed -n "s/^.*:\([1-9][0-9]*\):.*$/\1/p")"
             BASE_PROJECT_URL="$(echo $PROJECT_LINK | sed -n "s/^\(git\)\(.*\)\.git$/https\2/p")"
