@@ -67,8 +67,12 @@ GREPPED_LOGS_DIR_ABSPATH=$(abspath "$GREPPED_LOGS_DIR")
 
 cd ${PROJECT_DIR}
 
+TOTAL_PROJECTS=$(cat ${CSV_FILE} | wc -l)
+PROJECT_COUNTER=0
 while IFS=, read -r PROJECT_NAME PROJECT_LINK
 do
+    PROJECT_COUNTER=$((PROJECT_COUNTER+1))
+    echo "Project $PROJECT_COUNTER out of $TOTAL_PROJECTS..."
     FILE_FOR_OUTPUT="$GREPPED_LOGS_DIR_ABSPATH"/"${PROJECT_NAME}".grepped_logs
     if [ -f "$FILE_FOR_OUTPUT" ]; then
         echo "file ${FILE_FOR_OUTPUT} already exists. Logs have already been extracted"
@@ -86,9 +90,11 @@ do
     echo grepping logs from ${PROJECT_NAME} ...
 
     echo ${LINES_BEFORE_TO_EXTRACT} >> ${FILE_FOR_OUTPUT}
+    LOG_COUNTER=0
     grep -rn ${REGEX} | while read -r line ; do
         FILE="$(echo $line | sed -n "s/^\(\S*\.\(java\|scala\|groovy\|gradle\|aj\|kt\|py\|js\|c\|cs\|rb\|adoc\|md\|vm\|patch\|R\)\):.*$/\1/p")"
         if [ -f "${FILE}" ]; then
+            LOG_COUNTER=$((LOG_COUNTER+1))
             LINE_NUMBER="$(echo $line | sed -n "s/^.*:\([1-9][0-9]*\):.*$/\1/p")"
             BASE_PROJECT_URL="$(echo $PROJECT_LINK | sed -n "s/^\(git\)\(.*\)\.git$/https\2/p")"
 
@@ -147,5 +153,6 @@ do
             (>&2 echo "File name was probably extracted incorrectly: $line")
         fi
     done
+    echo "$LOG_COUNTER logs extracted"
     cd ..
 done < ${CSV_FILE}
