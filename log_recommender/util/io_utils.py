@@ -5,7 +5,7 @@ import pickle
 __author__ = 'hlib'
 
 PATH_TO_CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-PATH_TO_PROJECT = PATH_TO_CURRENT_DIR = '/../../' + PATH_TO_CURRENT_DIR
+PATH_TO_PROJECT = PATH_TO_CURRENT_DIR = PATH_TO_CURRENT_DIR + '/../../'
 
 CLASSES_FILE= PATH_TO_PROJECT + '/classes.csv'
 MAJOR_CLASSES_LOGS_FILE= PATH_TO_PROJECT + '/major_classes_logs.pkl'
