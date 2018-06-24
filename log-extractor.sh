@@ -94,7 +94,7 @@ do
     grep -rn ${REGEX} | while read -r line ; do
         FILE="$(echo $line | sed -n "s/^\(\S*\.\(java\|scala\|groovy\|gradle\|aj\|kt\|py\|js\|c\|cs\|rb\|adoc\|md\|vm\|patch\|R\)\):.*$/\1/p")"
         if [ -f "${FILE}" ]; then
-            LOG_COUNTER=$((LOG_COUNTER+1))
+            LOG_COUNTER=$(($LOG_COUNTER+1))
             LINE_NUMBER="$(echo $line | sed -n "s/^.*:\([1-9][0-9]*\):.*$/\1/p")"
             BASE_PROJECT_URL="$(echo $PROJECT_LINK | sed -n "s/^\(git\)\(.*\)\.git$/https\2/p")"
 
