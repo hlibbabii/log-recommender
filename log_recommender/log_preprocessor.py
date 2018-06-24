@@ -3,6 +3,8 @@ import logging
 import re
 import os
 
+from fastai.imports import tqdm
+from java_parser import JavaParser
 from preprocessors import apply_preprocessors, strip_line, to_lower, split_log_text_to_keywords_and_identifiers, \
     replace_string_resources_names, replace_variable_place_holders, add_ect
 from util import io_utils
@@ -23,20 +25,21 @@ def extract_log_level(line):
         return "Unknown"
 
 def extract_text_and_variables(line):
+    java_parser = JavaParser()
     full_line = line
     text = ""
     text_parts = 0
-    opening_quote_index = line.find("\"")
-    while opening_quote_index >= 0:
+    opening_quote_index = java_parser.find_not_escaped_double_quote(line)
+    while opening_quote_index is not None:
         line = line[opening_quote_index + 1:]
-        closing_quote_index = line.find("\"")
-        if closing_quote_index < 0:
+        closing_quote_index = java_parser.find_not_escaped_double_quote(line)
+        if closing_quote_index is None:
             print("No closing quote found for the opening quote in string: " + full_line)
             return full_line, "", 0
         text += line[:closing_quote_index]
         text_parts += 1
         line = line[closing_quote_index+1:]
-        opening_quote_index = line.find("\"")
+        opening_quote_index = java_parser.find_not_escaped_double_quote(line)
     if line.find("+") >= 0:
         text_parts += 1
     if text_parts > 1:
@@ -129,8 +132,8 @@ def process_log_statement(log_entry):
 
 
 def preprocess_logs(grepped_logs):
-    for ind, grepped_log in enumerate(grepped_logs):
-        logging.info(f"Processing {ind} log out of {logs_total} ({ind * 100.0 / logs_total:.4}%)")
+    for ind, grepped_log in tqdm(enumerate(grepped_logs), leave=False, total=logs_total):
+        logging.info(f"Processing logs")
         ppl = process_log_statement(grepped_log)
         if len(ppl.text_words) > 0 and len(ppl.context.context_before) > 0:
             yield ppl
