@@ -51,14 +51,12 @@ PATH_TO_CACHED_PROJECTS=$1
 
 if [ -n "$PROJECT_LIST_FILE" ]; then
     cd .. #TODO !! fix pathes
-    mv ../.Logs .
     SCRIPT="$(pwd)/log-extractor.sh ${PROJECT_LIST_FILE}"
     if [ -n "$PATH_TO_CACHED_PROJECTS" ]; then
         SCRIPT="$SCRIPT $PATH_TO_CACHED_PROJECTS"
     fi
     echo "Extracting logs: running $SCRIPT"
     eval "$SCRIPT"
-    mv .Logs/ ..
 else
     echo "Not extracting logs, working with existing ones"
 fi

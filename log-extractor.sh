@@ -49,7 +49,7 @@ else
     mkdir "${PROJECT_DIR}"
 fi
 
-DEFAULT_GREPPED_LOGS_DIR=".Logs"
+DEFAULT_GREPPED_LOGS_DIR="../.Logs"
 if [ -z "$3" ]; then
     GREPPED_LOGS_DIR=${DEFAULT_GREPPED_LOGS_DIR}
 else
