@@ -4,7 +4,7 @@ import logging
 import os
 
 from preprocess_params import pp_params
-from write_for_external import process_full_identifiers
+from preprocessors import apply_preprocessors
 
 
 def java_file_mapper(dir, func):
@@ -37,7 +37,7 @@ def preprocess_and_write(dir, subdir, chunks):
                 logging.debug(f"File {file_path} has {len(lines_from_file)} lines. Skiping...")
                 continue
             logging.info(f"Processing file: {file_path} [{ind} out of {total_files}] containing {len(lines_from_file)} lines")
-            processed = process_full_identifiers(lines_from_file, pp_params["preprocessors"], [])
+            processed = apply_preprocessors(lines_from_file, pp_params["preprocessors"], {'interesting_context_words': []})
             if ind % 2 == 0:
                 f0.write(processed)
             else:

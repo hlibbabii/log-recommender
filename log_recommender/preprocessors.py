@@ -103,7 +103,7 @@ def split_log_text_to_keywords_and_identifiers(multitoken_list):
     res = []
     for multitoken in multitoken_list:
         if multitoken not in [STRING_RESOURCE_PLACEHOLDER, VAR_PLACEHOLDER]:
-            res.extend(list(filter(None, re.split("[\[\] ,.\-!?:\n\t(){};=+*/\"&|<>_#\\\@$]+", multitoken))))
+            res.extend(spl_verbose([multitoken]))
         else:
             res.extend([multitoken])
     return res
@@ -133,15 +133,15 @@ def spl(multitokens, two_char_delimiters, one_char_delimiter):
             for w in spl]
 
 
-def spl_non_verbose(line):
-    return spl(line, two_character_tokens, one_character_tokens)
+def spl_non_verbose(multitokens):
+    return spl(multitokens, two_character_tokens, one_character_tokens)
 
 
-def spl_verbose(line):
+def spl_verbose(multitokens):
     '''
     doesn't remove such tokens as tabs, newlines, brackets
     '''
-    return spl(line,
+    return spl(multitokens,
                two_character_tokens + two_char_verbose,
                one_character_tokens + one_char_verbose)
 
@@ -178,6 +178,15 @@ def newline_and_tab_remover(tokens):
     return list(filter(lambda t: t != "\n" and t != "\t", tokens))
 
 
+def to_string_repr(p):
+    return repr(" ".join(p))[1:-1] + " <ect>\n"
+
+#=======  file-lines-level  ==============================
+
+def lines_to_one_lines_with_newlines(lines):
+    return [w for line in lines for w in (line, EOF)]
+
+
 #==========================================================
 
 def names_to_functions(pp_names, context):
@@ -202,10 +211,4 @@ def apply_preprocessors(to_be_processed, preprocessors, context={}):
         to_be_processed = preprocessor(to_be_processed)
     return to_be_processed
 
-
-def process_full_identifiers(context, preprocessors, interesting_context_words):
-    string_list = [w for line in context for w in (line, EOF)]
-    preprocessors += [lambda p: repr(" ".join(p))[1:-1] + " <ect>\n"]
-    processed = apply_preprocessors(string_list, preprocessors,
-                                    {'interesting_context_words': interesting_context_words})
-    return processed
+#=============   preprocess recepees     ======================

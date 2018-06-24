@@ -11,6 +11,8 @@ pp_params = {
         "java.strip_off_one_line_comments",
         "java.strip_off_number_literals",
         # "java.strip_off_identifiers"
+        "to_string_repr"
+        "lines_to_one_lines_with_newlines"
     ],
     'more_lines_ignore': 2000
 }

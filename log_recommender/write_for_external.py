@@ -6,7 +6,7 @@ from operator import attrgetter
 from classify_and_select_major_logs import select_logs_from_major_classes
 from util import io_utils
 from preprocess_params import pp_params
-from preprocessors import process_full_identifiers
+from preprocessors import apply_preprocessors
 
 
 def write_log_context_to_corpus_file(preprocessed_logs, output_filename, context_lines_to_consider):
@@ -25,7 +25,7 @@ def write_log_context_to_fastai_input(train_logs, output_dir, interesting_contex
         for ind, log in enumerate(train_logs):
             if ind % 10 == 0:
                 logging.info(f'Processing log {ind} out of {logs_n_total} ({ind * 100.0 / logs_n_total:.4}%)')
-            c_file.write(process_full_identifiers(pp_params, log.context.context_before, interesting_context_words))
+            c_file.write(apply_preprocessors(pp_params, log.context.context_before, {'interesting_context_words': interesting_context_words}))
             l_file.write(log.neg_or_pos() + "\n")
             i_file.write(log.id + "\n")
 
