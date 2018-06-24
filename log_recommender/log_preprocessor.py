@@ -132,8 +132,8 @@ def process_log_statement(log_entry):
 
 
 def preprocess_logs(grepped_logs):
+    logging.info(f"Processing logs")
     for ind, grepped_log in tqdm(enumerate(grepped_logs), leave=False, total=logs_total):
-        logging.info(f"Processing logs")
         ppl = process_log_statement(grepped_log)
         if len(ppl.text_words) > 0 and len(ppl.context.context_before) > 0:
             yield ppl
