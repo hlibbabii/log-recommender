@@ -51,12 +51,21 @@ class JavaParserTest(unittest.TestCase):
 
         self.assertEqual(expected, actual)
 
+    def test_find_not_escaped_long_seq_before_quote(self):
+        context = ['dededede', 'erdfsf', 'eee', 'de', '\\', '"', '4ed']
+
+        actual = JavaParser().find_not_escaped_double_quote(context)
+
+        expected = None
+
+        self.assertEqual(expected, actual)
+
     def test_find_not_escaped_double_quote_7_slashes(self):
         context = ['\\', '"', '\\', '\\', '\\', '\\', '\\', '\\', '\\', '"', '4']
 
         actual = JavaParser().find_not_escaped_double_quote(context)
 
-        expected = 9
+        expected = None
 
         self.assertEqual(expected, actual)
 

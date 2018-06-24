@@ -163,7 +163,7 @@ class JavaParser(object):
             try:
                 ind = str[index_to_start_search:].index('"')
                 i = ind-1
-                while i >= 0 and str[index_to_start_search-i] == "\\":
+                while i >= 0 and str[index_to_start_search+i] == "\\":
                     i -= 1
                 if (ind - i) % 2 == 1:
                     return index_to_start_search + ind
