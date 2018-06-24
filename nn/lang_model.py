@@ -72,17 +72,14 @@ def calculate_and_display_metrics(rnn_learner, metrics, vocab):
             logging.info(f"mrr: {mrr}")
 
 
-def create_df(basic_path):
-    counter = 0
+def create_df(dir):
     lines = []
-    file = f'{basic_path}/context.{counter}.src'
-    while os.path.exists(file):
-        with open(file, 'r') as f:
-            lines.extend([line for line in f])
-        counter += 1
-        file = f'{basic_path}/context.{counter}.src'
+    for root, dirs, files in os.walk(dir):
+        for file in files:
+            with open(os.path.join(root, file), 'r') as f:
+                lines.extend([line for line in f])
     if not lines:
-        raise ValueError(f"No data available: {basic_path}")
+        raise ValueError(f"No data available: {dir}")
     return pandas.DataFrame(lines)
 
 

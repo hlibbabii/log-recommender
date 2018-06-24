@@ -1,7 +1,18 @@
 import argparse
+import collections
 import os
 
 from util import io_utils
+
+
+class FileDefaultDict(collections.defaultdict):
+    def __init__(self, output_dir):
+        super().__init__()
+        self.output_dir = output_dir
+
+    def __missing__(self, key):
+        self[key] = value = open(f'{self.output_dir}/context.{key}.src', 'w')
+        return value
 
 
 def write_log_text_to_corpus_files(preprocessed_logs, output_dir):
@@ -11,13 +22,19 @@ def write_log_text_to_corpus_files(preprocessed_logs, output_dir):
         os.mkdir(f'{output_dir}/train')
     if not os.path.exists(f'{output_dir}/test'):
         os.mkdir(f'{output_dir}/test')
-    with open(f'{output_dir}/train/context.0.src', 'w') as f, open(f'{output_dir}/test/context.0.src', 'w') as g:
-        for ind, l in enumerate(preprocessed_logs):
-            line = str(" ".join(l.text_words)) + "\n"
-            if ind % 20 >= 3:
-                f.write(line)
-            else:
-                g.write(line)
+    train_files = FileDefaultDict(f'{output_dir}/train')
+    test_files = FileDefaultDict(f'{output_dir}/test')
+    for ind, l in enumerate(preprocessed_logs):
+        n_words = len(l.text_words)
+        line = str(" ".join(l.text_words)) + "\n"
+        if ind % 20 >= 3:
+            train_files[n_words].write(line)
+        else:
+            test_files[n_words].write(line)
+    for file in train_files.values():
+        file.close()
+    for file in test_files.values():
+        file.close()
 
 
 if __name__ == '__main__':
