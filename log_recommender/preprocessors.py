@@ -40,26 +40,14 @@ def remove_placeholders(multitoken):
     multitoken = re.sub(STRING_RESOURCE_PLACEHOLDER, r'', multitoken)
     return multitoken
 
-def split_log_text_to_keywords_and_identifiers(multitoken):
-    return list(filter(None, re.split("[\[\] ,.\-!?:\n\t(){};=+*/\"&|<>_#\\\@$]+", multitoken)))
-
 
 def strip_line(multitoken):
     return multitoken.strip()
 
 
-def to_lower(multitoken):
-    return multitoken.lower()
-
-
 def replace_string_resources_names(multitoken):
     changed = re.sub('^([0-9a-zA-Z]+\\.)+[0-9a-zA-Z]+$', STRING_RESOURCE_PLACEHOLDER, multitoken)
-    return changed
-
-
-def replace_variable_place_holders(multitoken):
-    changed = re.sub('\\{\\}', VAR_PLACEHOLDER, multitoken)
-    changed = re.sub('%[0-9]*[a-z]', VAR_PLACEHOLDER, changed)
+    changed = re.split(f'({STRING_RESOURCE_PLACEHOLDER})', changed)
     return changed
 
 
@@ -78,11 +66,7 @@ def underscore_split(identifier, add_separator=False):
     parts = identifier.split("_")
     return add_between_elements(parts, IDENTIFIER_SEPARATOR) if add_separator else parts
 
-#======== Token list level   ==========
-
-def add_ect(multitoken):
-    multitoken.append("<ect>")
-    return multitoken
+#======== Token list level   =========
 
 
 def filter_out_stop_words(tokens):
@@ -107,7 +91,37 @@ def merge_tabs(tokens):
         res.append('\t' + str(count))
     return res
 
+
+def add_ect(token_list):
+    token_list.append("<ect>")
+    return token_list
+
 #======== Multitoken list level   ==========
+
+
+def split_log_text_to_keywords_and_identifiers(multitoken_list):
+    res = []
+    for multitoken in multitoken_list:
+        if multitoken not in [STRING_RESOURCE_PLACEHOLDER, VAR_PLACEHOLDER]:
+            res.extend(list(filter(None, re.split("[\[\] ,.\-!?:\n\t(){};=+*/\"&|<>_#\\\@$]+", multitoken))))
+        else:
+            res.extend([multitoken])
+    return res
+
+
+def to_lower(multitoken_list):
+    return [w for w in map(lambda w: w.lower() if w not in [STRING_RESOURCE_PLACEHOLDER, VAR_PLACEHOLDER] else w,
+                           multitoken_list)]
+
+
+def replace_variable_place_holders(multitoken_list):
+    res = []
+    for multitoken in multitoken_list:
+        changed = re.sub('\\{\\}', VAR_PLACEHOLDER, multitoken)
+        changed = re.sub('%[0-9]*[a-z]', VAR_PLACEHOLDER, changed)
+        changed = re.split(f'({VAR_PLACEHOLDER})', changed)
+        res.extend(changed)
+    return res
 
 def replace_4whitespaces_with_tabs(multitokens):
     return list(map(lambda x: x.replace("    ", "\t"), multitokens))
