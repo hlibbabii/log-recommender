@@ -116,7 +116,7 @@ def process_log_statement(log_entry):
         replace_string_resources_names,
         replace_variable_place_holders,
         to_lower,
-        spl_verbose,
+        split_log_text_to_keywords_and_identifiers,
         add_ect,
         # filter_out_stop_words
     ])
