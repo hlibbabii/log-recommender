@@ -188,7 +188,6 @@ HikariCP,git://github.com/brettwooldridge/HikariCP.git
 gerrit-trigger-plugin,git://github.com/jenkinsci/gerrit-trigger-plugin.git
 jogl,git://github.com/sgothel/jogl.git
 AxonFramework,git://github.com/AxonFramework/AxonFramework.git
-cdk,git://github.com/cloudera/cdk.git
 sql2o,git://github.com/aaberg/sql2o.git
 orientdb,git://github.com/orientechnologies/orientdb.git
 closure-compiler,git://github.com/google/closure-compiler.git
@@ -553,4 +552,3 @@ libgdx-contribs,git://github.com/manuelbua/libgdx-contribs.git
 fixflow,git://github.com/fixteam/fixflow.git
 pi4j,git://github.com/Pi4J/pi4j.git
 ANE-Facebook,git://github.com/freshplanet/ANE-Facebook.git
-OpenAtlas,git://github.com/bunnyblue/OpenAtlas.git
