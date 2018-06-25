@@ -85,7 +85,12 @@ do
         echo "Getting ${PROJECT_NAME}"
         git clone ${PROJECT_LINK} "${PROJECT_DIR_ABSPATH}/${PROJECT_NAME}"
     fi
-    cd ${PROJECT_NAME}
+    if [ -d "${PROJECT_DIR_ABSPATH}/${PROJECT_NAME}" ]; then
+        cd ${PROJECT_NAME}
+    else
+        echo "Directory ${PROJECT_DIR_ABSPATH}/${PROJECT_NAME} does not exist. The project must have failed to be cloned."
+        continue
+    fi
     COMMIT_HASH=$(git log -n 1 --pretty=format:"%H")
 
     echo grepping logs from ${PROJECT_NAME} ...
@@ -154,6 +159,6 @@ do
             (>&2 echo "File name was probably extracted incorrectly: $line")
         fi
     done
-    echo "$LOG_COUNTER logs extracted"
+    #echo "$LOG_COUNTER logs extracted"
     cd ..
 done < ${CSV_FILE}
