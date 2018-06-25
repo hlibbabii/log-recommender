@@ -48,6 +48,7 @@ else
     echo "Project directory ${PROJECT_DIR} NOT found. Creating it..."
     mkdir "${PROJECT_DIR}"
 fi
+PROJECT_DIR_ABSPATH=$( abspath "$PROJECT_DIR" )
 
 DEFAULT_GREPPED_LOGS_DIR="../.Logs"
 if [ -z "$3" ]; then
@@ -63,9 +64,9 @@ else
     echo "Logs directory ${GREPPED_LOGS_DIR} NOT found. Creating it..."
     mkdir "${GREPPED_LOGS_DIR}"
 fi
-GREPPED_LOGS_DIR_ABSPATH=$(abspath "$GREPPED_LOGS_DIR")
+GREPPED_LOGS_DIR_ABSPATH=$( abspath "$GREPPED_LOGS_DIR" )
 
-cd ${PROJECT_DIR}
+cd ${PROJECT_DIR_ABSPATH}
 
 TOTAL_PROJECTS=$(cat ${CSV_FILE} | wc -l)
 PROJECT_COUNTER=0
@@ -82,7 +83,7 @@ do
          echo "${PROJECT_NAME} already exists"
     else
         echo "Getting ${PROJECT_NAME}"
-        git clone ${PROJECT_LINK} ${PROJECT_NAME}
+        git clone ${PROJECT_LINK} "${PROJECT_DIR_ABSPATH}/${PROJECT_NAME}"
     fi
     cd ${PROJECT_NAME}
     COMMIT_HASH=$(git log -n 1 --pretty=format:"%H")
@@ -94,7 +95,7 @@ do
     grep -rn ${REGEX} | while read -r line ; do
         FILE="$(echo $line | sed -n "s/^\(\S*\.\(java\|scala\|groovy\|gradle\|aj\|kt\|py\|js\|c\|cs\|rb\|adoc\|md\|vm\|patch\|R\)\):.*$/\1/p")"
         if [ -f "${FILE}" ]; then
-            LOG_COUNTER=$(($LOG_COUNTER+1))
+            LOG_COUNTER=$((LOG_COUNTER+1))
             LINE_NUMBER="$(echo $line | sed -n "s/^.*:\([1-9][0-9]*\):.*$/\1/p")"
             BASE_PROJECT_URL="$(echo $PROJECT_LINK | sed -n "s/^\(git\)\(.*\)\.git$/https\2/p")"
 
