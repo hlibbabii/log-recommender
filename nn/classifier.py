@@ -4,6 +4,9 @@ from time import time
 
 import deepdiff
 import matplotlib
+
+from log_loc_dataset import LogLocationDataset
+
 matplotlib.use('Agg')
 
 import logging
@@ -16,9 +19,9 @@ from functools import partial
 
 from fastai.core import USE_GPU
 from fastai.metrics import top_k, MRR
-from fastai.nlp import LanguageModelData, seq2seq_reg
-from params import Mode, nn_params
-from utils import to_test_mode, gen_text, back_to_train_mode, beautify_text
+from fastai.nlp import LanguageModelData, seq2seq_reg, TextData, torchtext
+from classifier_params import Mode, nn_params
+from utils import to_test_mode, gen_text, back_to_train_mode, beautify_text, output_predictions
 import dill as pickle
 from fastai import metrics
 from torchtext import data
@@ -82,38 +85,42 @@ def create_df(dir):
         raise ValueError(f"No data available: {dir}")
     return pandas.DataFrame(lines)
 
+arch = nn_params['arch']
 
 def get_model(model_name):
     dataset_name = nn_params["dataset_name"]
     path_to_dataset = f'{nn_params["path_to_data"]}/{dataset_name}'
     path_to_model = f'{path_to_dataset}/{model_name}'
 
-    train_df = create_df(f'{path_to_dataset}/train/')
-    test_df = create_df(f'{path_to_dataset}/test/')
+    vocab_file = f'{path_to_dataset}/TEXT.pkl'
+    if os.path.exists(vocab_file):
+        text_field = pickle.load(open(vocab_file, 'rb'))
+    else:
+        raise FileNotFoundError(vocab_file)
+    level_label = data.Field(sequential=False)
+    splits = LogLocationDataset.splits(text_field, level_label, path=f'{path_to_dataset}/')
 
-    text_field = data.Field()
-    languageModelData = LanguageModelData.from_dataframes(path_to_model,
-                                                          text_field, 0, train_df, test_df, test_df,
-                                                          bs=nn_arch["bs"],
-                                                          bptt=nn_arch["bptt"],
-                                                          min_freq=nn_arch["min_freq"]
-                                                          # not important since we remove rare tokens during preprocessing
-                                                          )
-    pickle.dump(text_field, open(f'{path_to_dataset}/TEXT.pkl', 'wb'))
+    text_data = TextData.from_splits(nn_params['path_to_data'], splits, arch['bs'])
+    # text_data.classes
+
+    opt_fn = partial(torch.optim.Adam, betas=(0.7, 0.99))
+
+    rnn_learner = text_data.get_model(opt_fn, 50, arch['bptt'], arch['em_sz'], arch['nh'], arch['nl'],
+                                      dropouti=arch['drop']['outi'],
+                                      dropout=arch['drop']['out'],
+                                      wdrop=arch['drop']['w'],
+                                      dropoute=arch['drop']['oute'],
+                                      dropouth=arch['drop']['outh'])
+
+    #reguarizing LSTM paper -- penalizing large activations -- reduce overfitting
+    rnn_learner.reg_fn = partial(seq2seq_reg,
+                                 alpha=arch['reg_fn']['alpha'],
+                                 beta=arch['reg_fn']['beta'])
+
+    # rnn_learner.lr_find()
+    # rnn_learner.sched.plot()
 
     logging.info(f'Dictionary size is: {len(text_field.vocab.itos)}')
-
-    opt_fn = partial(torch.optim.Adam, betas=nn_arch['betas'])
-
-    rnn_learner = languageModelData.get_model(opt_fn, nn_arch['em_sz'], nn_arch['nh'], nn_arch['nl'],
-                                              dropouti=nn_arch['drop']['outi'],
-                                              dropout=nn_arch['drop']['out'],
-                                              wdrop=nn_arch['drop']['w'],
-                                              dropoute=nn_arch['drop']['oute'],
-                                              dropouth=nn_arch['drop']['outh'])
-    rnn_learner.reg_fn = partial(seq2seq_reg, alpha=nn_arch['reg_fn']['alpha'], beta=nn_arch['reg_fn']['beta'])
-    rnn_learner.clip = nn_arch['clip']
-
     logging.info(rnn_learner)
 
     try:
@@ -124,18 +131,38 @@ def get_model(model_name):
         logging.warning(f"Model {dataset_name}/{model_name} not found")
         model_trained = False
 
-    return rnn_learner, text_field, model_trained
+    return rnn_learner, text_field, level_label, model_trained
 
-def run_and_display_tests(m, text_field, path_to_save):
+def run_and_display_tests(m, text_field, LEVEL_LABEL, path_to_save, path_to_dataset):
     to_test_mode(m)
-    print("==============        TESTS       ====================")
+    with open(path_to_save, 'w'):
+        print("==============        TESTS -- TRUE      ====================")
 
-    text = gen_text(m, text_field, nn_testing["starting_words"], nn_testing["how_many_words"])
+        with open(f'{path_to_dataset}/test/true/context.0.src', 'r') as f:
+            counter = 0
+            for line in f:
+                if counter > 30:
+                    break
+                counter += 1
+                print(f'{counter}\n')
+                f.write(f'{counter}\n')
+                predictions = output_predictions(m, text_field, LEVEL_LABEL, line, 3, path_to_save)
+                print(predictions)
+                f.write(predictions)
 
-    beautified_text = beautify_text(text)
-    print(beautified_text)
-    with open(path_to_save, 'w') as f:
-        f.write(beautified_text)
+        print("==============        TESTS -- FALSE     ====================")
+
+        with open(f'{path_to_dataset}/test/false/context.0.src', 'r') as f:
+            counter = 0
+            for line in f:
+                if counter > 30:
+                    break
+                counter += 1
+                print(f'{counter}\n')
+                f.write(f'{counter}\n')
+                predictions = output_predictions(m, text_field, LEVEL_LABEL, line, 3, path_to_save)
+                print(predictions)
+                f.write(predictions)
 
     back_to_train_mode(m, nn_arch['bs'])
 
@@ -243,21 +270,13 @@ if __name__ =='__main__':
     logging.info(nn_arch)
     path_to_dataset = f'{nn_params["path_to_data"]}/{nn_params["dataset_name"]}'
     force_rerun = True
-    # if "model_name" in nn_params:
-    #     logging.info(f'')
-    #     model_name = nn_params["model_name"]
-    # else:
     model_name = get_model_name_by_params()
     path_to_model = f'{path_to_dataset}/{model_name}'
 
     if not os.path.exists(path_to_model):
         os.mkdir(path_to_model)
 
-    learner, text_field, model_trained = get_model(model_name)
-    vocab_file = f'{path_to_dataset}/TEXT.pkl'
-    if not os.path.exists(vocab_file):
-        with open(vocab_file, 'w') as f:
-            f.dump(text_field)
+    learner, text_field, level_field, model_trained = get_model(model_name)
     if not model_trained or force_rerun:
         with open(f'{path_to_model}/{PARAM_FILE_NAME}', 'w') as f:
             json.dump(nn_arch, f)
@@ -273,7 +292,7 @@ if __name__ =='__main__':
                 logging.info(f"Forcing training rerun")
             train_model(learner, path_to_dataset, model_name)
             m = learner.model
-            run_and_display_tests(m, text_field, f'{path_to_model}/gen_text.out')
+            run_and_display_tests(m, text_field, level_field, f'{path_to_model}/gen_text.out')
         else:
             raise AssertionError("Unknown mode")
     else:

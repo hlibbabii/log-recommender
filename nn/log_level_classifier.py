@@ -7,30 +7,36 @@ from context_datasets import ContextsDataset
 from fastai.lm_rnn import seq2seq_reg
 from fastai.metrics import accuracy
 from fastai.nlp import LanguageModelData, TextData
+from params import nn_params
 
-from params import TEXT, LEVEL_LABEL, bptt, bs, path_to_data, em_sz, nh, nl, pretrained_lang_model_name
 from utils import to_test_mode, back_to_train_mode, output_predictions
 import dill as pickle
 import numpy as np
 
 logging.basicConfig(level=logging.DEBUG)
 
-
+arch = nn_params['arch']
 
 def get_text_classifier_model(text_field, level_label, model_name, pretrained_lang_model_name=None):
 
     splits = ContextsDataset.splits(text_field, level_label, path=f'{path_to_data}/{pretrained_lang_model_name}/')
 
-    text_data = TextData.from_splits(path_to_data, splits, bs)
+    text_data = TextData.from_splits(nn_params['path_to_data'], splits, arch['bs'])
     # text_data.classes
 
     opt_fn = partial(torch.optim.Adam, betas=(0.7, 0.99))
 
-    rnn_learner = text_data.get_model(opt_fn, 50, bptt, em_sz, nh, nl,
-                                      dropouti=0.05, dropout=0.05, wdrop=0.1, dropoute=0.02, dropouth=0.05)
+    rnn_learner = text_data.get_model(opt_fn, 50, arch['bptt'], arch['em_sz'], arch['nh'], arch['nl'],
+                                      dropouti=arch['drop']['outi'],
+                                      dropout=arch['drop']['out'],
+                                      wdrop=arch['drop']['w'],
+                                      dropoute=arch['drop']['oute'],
+                                      dropouth=arch['drop']['outh'])
 
     #reguarizing LSTM paper -- penalizing large activations -- reduce overfitting
-    rnn_learner.reg_fn = partial(seq2seq_reg, alpha=2, beta=1)
+    rnn_learner.reg_fn = partial(seq2seq_reg,
+                                 alpha=arch['reg_fn']['alpha'],
+                                 beta=arch['reg_fn']['beta'])
 
     # rnn_learner.lr_find()
     # rnn_learner.sched.plot()

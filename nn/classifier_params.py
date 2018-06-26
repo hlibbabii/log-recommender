@@ -34,7 +34,7 @@ nn_params = {
         'how_many_words': 2000,
         'starting_words': "loading"
     },
-    'mode': Mode.LEARNING_RATE_FINDING
+    'mode': Mode.TRAINING
 }
 
 LEVEL_LABEL = data.Field(sequential=False)

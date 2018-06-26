@@ -3,7 +3,7 @@ import torch
 from fastai.core import to_np, to_gpu
 
 
-def output_predictions(m, input_field, output_field, starting_text, how_many):
+def output_predictions(m, input_field, output_field, starting_text, how_many, file_to_save):
     words = [starting_text.split()]
     t=to_gpu(input_field.numericalize(words, -1))
 
@@ -12,10 +12,13 @@ def output_predictions(m, input_field, output_field, starting_text, how_many):
     #==========================output predictions
 
     probs, labels = torch.topk(res[-1], how_many)
-    print("===================")
-    print(beautify_text(starting_text))
+    text = ""
+    text += ("===================" + "\n")
+    text += (beautify_text(starting_text) + "\n")
     for probability, label in map(to_np, zip(probs, labels)):
-        print(f'{output_field.vocab.itos[label[0]]}: {probability}')
+        uu = f'{output_field.vocab.itos[label[0]]}: {probability}'
+        text += (uu + "\n")
+    return text
 
 
 def gen_text(m, text_field, starting_words, how_many_to_gen):
