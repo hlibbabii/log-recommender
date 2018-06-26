@@ -4,6 +4,7 @@ from time import time
 
 import deepdiff
 import matplotlib
+matplotlib.use('Agg')
 
 from log_loc_dataset import LogLocationDataset
 
