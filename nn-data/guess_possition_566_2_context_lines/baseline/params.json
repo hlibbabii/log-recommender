@@ -1,0 +1,1 @@
+{"bs": 16, "bptt": 10, "em_sz": 300, "nh": 300, "nl": 3, "min_freq": 0, "betas": [0.7, 0.99], "clip": 0.3, "reg_fn": {"alpha": 2, "beta": 1}, "drop": {"outi": 0.05, "out": 0.05, "w": 0.1, "oute": 0.02, "outh": 0.05}, "wds": 1e-06, "cycle": {"n": 1, "len": 1, "mult": 2}, "training_metrics": ["accuracy", "mrr"]}
