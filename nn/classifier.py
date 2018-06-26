@@ -100,7 +100,7 @@ def get_model(model_name):
     level_label = data.Field(sequential=False)
     splits = LogLocationDataset.splits(text_field, level_label, path=f'{path_to_dataset}/')
 
-    text_data = TextData.from_splits(nn_params['path_to_data'], splits, arch['bs'])
+    text_data = TextData.from_splits(path_to_model, splits, arch['bs'])
     # text_data.classes
 
     opt_fn = partial(torch.optim.Adam, betas=(0.7, 0.99))
@@ -135,7 +135,7 @@ def get_model(model_name):
 
 def run_and_display_tests(m, text_field, LEVEL_LABEL, path_to_save, path_to_dataset):
     to_test_mode(m)
-    with open(path_to_save, 'w'):
+    with open(path_to_save, 'w') as d:
         print("==============        TESTS -- TRUE      ====================")
 
         with open(f'{path_to_dataset}/test/true/context.0.src', 'r') as f:
@@ -145,10 +145,10 @@ def run_and_display_tests(m, text_field, LEVEL_LABEL, path_to_save, path_to_data
                     break
                 counter += 1
                 print(f'{counter}\n')
-                f.write(f'{counter}\n')
+                d.write(f'{counter}\n')
                 predictions = output_predictions(m, text_field, LEVEL_LABEL, line, 3, path_to_save)
                 print(predictions)
-                f.write(predictions)
+                d.write(predictions)
 
         print("==============        TESTS -- FALSE     ====================")
 
@@ -159,10 +159,10 @@ def run_and_display_tests(m, text_field, LEVEL_LABEL, path_to_save, path_to_data
                     break
                 counter += 1
                 print(f'{counter}\n')
-                f.write(f'{counter}\n')
+                d.write(f'{counter}\n')
                 predictions = output_predictions(m, text_field, LEVEL_LABEL, line, 3, path_to_save)
                 print(predictions)
-                f.write(predictions)
+                d.write(predictions)
 
     back_to_train_mode(m, nn_arch['bs'])
 
@@ -292,7 +292,7 @@ if __name__ =='__main__':
                 logging.info(f"Forcing training rerun")
             train_model(learner, path_to_dataset, model_name)
             m = learner.model
-            run_and_display_tests(m, text_field, level_field, f'{path_to_model}/gen_text.out')
+            run_and_display_tests(m, text_field, level_field, f'{path_to_model}/gen_text.out', path_to_dataset)
         else:
             raise AssertionError("Unknown mode")
     else:
