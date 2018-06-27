@@ -6,10 +6,6 @@ import deepdiff
 import matplotlib
 matplotlib.use('Agg')
 
-from log_loc_dataset import LogLocationDataset
-
-matplotlib.use('Agg')
-
 import logging
 import os
 
@@ -26,6 +22,8 @@ from utils import to_test_mode, gen_text, back_to_train_mode, beautify_text, out
 import dill as pickle
 from fastai import metrics
 from torchtext import data
+
+from log_loc_dataset import LogLocationDataset
 
 logging.basicConfig(level=logging.DEBUG)
 
