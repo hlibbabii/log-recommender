@@ -79,7 +79,8 @@ def create_df(dir):
     for root, dirs, files in os.walk(dir):
         for file in files:
             with open(os.path.join(root, file), 'r') as f:
-                lines.extend([line for line in f])
+                if not file.startswith("_"):
+                    lines.extend([line for line in f])
     if not lines:
         raise ValueError(f"No data available: {dir}")
     return pandas.DataFrame(lines)
@@ -227,7 +228,7 @@ def train_model(rnn_learner, path_to_dataset, model_name):
     vals, ep_vals = rnn_learner.fit(nn_params['lr'], n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
                                     cycle_len=nn_arch['cycle']['len'], cycle_mult=nn_arch['cycle']['mult'],
                                     metrics=list(map(lambda x: getattr(metrics, x), nn_arch['training_metrics'])),
-                                    cycle_save_name=dataset_name, get_ep_vals=True, best_model_save=f'{dataset_name}_best')
+                                    cycle_save_name=dataset_name, get_ep_vals=True, best_save_name=f'{dataset_name}_best')
     training_time_mins = int(time() - training_start_time) // 60
     with open(f'{path_to_dataset}/{model_name}/results.out', 'w') as f:
         f.write(str(training_time_mins) + "\n")
@@ -274,6 +275,7 @@ if __name__ =='__main__':
             if model_trained:
                 logging.info(f"Forcing training rerun")
             train_model(learner, path_to_dataset, model_name)
+            logging.info("Loading the best model")
             learner.load(f'{nn_params["dataset_name"]}_best')
             m = learner.model
             run_and_display_tests(m, text_field, f'{path_to_model}/gen_text.out')
