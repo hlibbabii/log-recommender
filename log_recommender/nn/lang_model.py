@@ -274,6 +274,7 @@ if __name__ =='__main__':
             if model_trained:
                 logging.info(f"Forcing training rerun")
             train_model(learner, path_to_dataset, model_name)
+            learner.load(f'{nn_params["dataset_name"]}_best')
             m = learner.model
             run_and_display_tests(m, text_field, f'{path_to_model}/gen_text.out')
         else:
