@@ -2,6 +2,7 @@ import argparse
 import logging
 import re
 import os
+from ast import literal_eval
 
 from fastai.imports import tqdm
 from java_parser import JavaParser
@@ -48,7 +49,7 @@ def extract_text_and_variables(line):
         n_variables = text.count("{}")
         if n_variables == 0:
             n_variables = text.count("%")
-    return full_line, text, n_variables
+    return full_line, literal_eval("'%s'" % text), n_variables
 
 
 def contains_text(line):
@@ -115,8 +116,8 @@ def process_log_statement(log_entry):
         strip_line,
         replace_string_resources_names,
         replace_variable_place_holders,
-        to_lower,
         split_log_text_to_keywords_and_identifiers,
+        to_lower,
         add_ect,
         # filter_out_stop_words
     ])
@@ -146,6 +147,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     in_file = "../../.Logs"
+    in_file_abspath = os.path.abspath(in_file)
+    logging.info(f"Preprocessing logs from {in_file_abspath}")
     grepped_logs, project_stats = read_grepped_log_file(in_file, args.min_log_number_per_project)
     pp_logs_gen = []
     logs_total = len(grepped_logs)
