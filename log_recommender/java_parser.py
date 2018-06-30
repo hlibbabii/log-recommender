@@ -173,14 +173,13 @@ class JavaParser(object):
                 return None
 
     def strip_off_string_literals(self, context):
-        copy = deepcopy(context)
         while True:
             opening_quote_index = self.find_not_escaped_double_quote(context)
             if opening_quote_index is None:
                 return context
             closing_quote_index = self.find_not_escaped_double_quote(context[opening_quote_index + 1:])
             if closing_quote_index is None:
-                print(f'Warning: closing bracket is not found: {copy}')
+                print(f'Warning: closing bracket is not found: {context[opening_quote_index + 1:]}')
                 closing_quote_index = sys.maxsize
             abs_closing_quote_index = opening_quote_index + 1 + closing_quote_index
             del(context[opening_quote_index: abs_closing_quote_index+1])
