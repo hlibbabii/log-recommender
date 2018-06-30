@@ -1,17 +1,17 @@
 import logging
 from functools import partial
-import pandas
 import torch
-from context_datasets import ContextsDataset
 
 from fastai.lm_rnn import seq2seq_reg
 from fastai.metrics import accuracy
-from fastai.nlp import LanguageModelData, TextData
-from params import nn_params
+from fastai.nlp import TextData
 
-from utils import to_test_mode, back_to_train_mode, output_predictions
 import dill as pickle
 import numpy as np
+
+from nn.classifier_params import LEVEL_LABEL, nn_params
+from nn.context_datasets import ContextsDataset
+from nn.utils import to_test_mode, output_predictions, back_to_train_mode
 
 logging.basicConfig(level=logging.DEBUG)
 

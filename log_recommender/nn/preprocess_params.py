@@ -14,5 +14,5 @@ pp_params = {
         "newline_and_tab_remover",
         "to_string_repr"
     ],
-    'more_lines_ignore': 2000
+    'more_lines_ignore': 5000000
 }

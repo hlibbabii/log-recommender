@@ -6,6 +6,10 @@ import deepdiff
 import matplotlib
 matplotlib.use('Agg')
 
+from nn.params import nn_params, Mode
+from nn.utils import to_test_mode, back_to_train_mode, beautify_text, gen_text
+
+
 import logging
 import os
 
@@ -17,8 +21,6 @@ from functools import partial
 from fastai.core import USE_GPU
 from fastai.metrics import top_k, MRR
 from fastai.nlp import LanguageModelData, seq2seq_reg
-from params import Mode, nn_params
-from utils import to_test_mode, gen_text, back_to_train_mode, beautify_text
 import dill as pickle
 from fastai import metrics
 from torchtext import data

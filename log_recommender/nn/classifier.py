@@ -6,6 +6,11 @@ import deepdiff
 import matplotlib
 matplotlib.use('Agg')
 
+from nn.log_loc_dataset import LogLocationDataset
+from nn.classifier_params import nn_params, Mode
+from nn.utils import output_predictions, back_to_train_mode, to_test_mode, beautify_text
+
+
 import logging
 import os
 
@@ -16,14 +21,10 @@ from functools import partial
 
 from fastai.core import USE_GPU
 from fastai.metrics import top_k, MRR
-from fastai.nlp import LanguageModelData, seq2seq_reg, TextData, torchtext
-from classifier_params import Mode, nn_params
-from utils import to_test_mode, gen_text, back_to_train_mode, beautify_text, output_predictions
+from fastai.nlp import seq2seq_reg, TextData
 import dill as pickle
 from fastai import metrics
 from torchtext import data
-
-from log_loc_dataset import LogLocationDataset
 
 logging.basicConfig(level=logging.DEBUG)
 
