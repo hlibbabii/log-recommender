@@ -47,13 +47,16 @@ def preprocess_and_write(dir, subdir, chunks):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--fastai-input-file', action='store',
-                        default='../../nn-data/devanbu_no_replaced_identifier_split_no_tabs_under_2000/')
+                        default='../../nn-data/devanbu_no_replaced_identifier_split_no_tabs_under_2000_fixed/')
     parser.add_argument('--dir', action='store', default='../../../FSE\'17 Replication/projects/1_percent/')
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG)
-
     dataset_dir = f'{args.fastai_input_file}'
+
+    logging.info(f"Getting files from {os.path.abspath(args.dir)}")
+    logging.info(f"Writing preprocessed files to {os.path.abspath(dataset_dir)}")
+
     train_dir = f'{dataset_dir}/train/'
     test_dir = f'{dataset_dir}/test/'
     if not os.path.exists(train_dir):
