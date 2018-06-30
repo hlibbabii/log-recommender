@@ -3,7 +3,7 @@ import json
 import logging
 import os
 
-from preprocess_params import pp_params
+from nn.preprocess_params import pp_params
 from preprocessors import apply_preprocessors
 
 
