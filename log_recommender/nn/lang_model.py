@@ -37,7 +37,6 @@ def display_not_guessed_examples(examples, vocab):
             beautify_text(" ".join([vocab.itos[inp]
                                     if ind != num + 1 else "[[[" + vocab.itos[inp] + "]]]"
                                     for ind, inp in enumerate(input)])),
-            num,
             [vocab.itos[p] for p in preds],
             vocab.itos[target]
     ))
@@ -45,7 +44,6 @@ def display_not_guessed_examples(examples, vocab):
         logging.info(f'                    ... {ex[0]}')
         logging.info(f'                    ... {ex[1]}')
         logging.info(f'                    ... {ex[2]}')
-        logging.info(f'                    ... {ex[3]}')
         logging.info(f'===============================================')
 
 
