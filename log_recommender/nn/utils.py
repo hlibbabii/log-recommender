@@ -1,6 +1,11 @@
+import logging
+
 import torch
 
 from fastai.core import to_np, to_gpu
+from fastai.metrics import top_k, MRR
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 def output_predictions(m, input_field, output_field, starting_text, how_many, file_to_save):
@@ -53,3 +58,44 @@ def to_test_mode(m):
 def back_to_train_mode(m, bs):
     # Put the batch size back to what it was
     m[0].bs = bs
+
+def display_not_guessed_examples(examples, vocab):
+    exs = []
+    for input, num, preds, target in examples:
+        exs.append((
+            beautify_text(" ".join([vocab.itos[inp]
+                                    if ind != num + 1 else "[[[" + vocab.itos[inp] + "]]]"
+                                    for ind, inp in enumerate(input)])),
+            [vocab.itos[p] for p in preds],
+            vocab.itos[target]
+    ))
+    for ex in exs:
+        logging.info(f'                    ... {ex[0]}')
+        logging.info(f'                    ... {ex[1]}')
+        logging.info(f'                    ... {ex[2]}')
+        logging.info(f'===============================================')
+
+
+def calc_and_display_top_k(rnn_learner, metric, vocab):
+    spl = metric.split("_")
+    cat_index = spl.index("cat")
+    if cat_index == -1 or len(spl) <= cat_index + 1:
+        raise ValueError(f'Illegal metric format: {metric}')
+    ks = list(map(lambda x: int(x), spl[1: cat_index]))
+    cat = int(spl[cat_index + 1])
+
+    accuracies, examples = top_k(*rnn_learner.predict_with_targs(True), ks, cat)
+
+    logging.info(f'Current tops are ...')
+    logging.info(f'                    ... {accuracies}')
+    if spl[-1] == 'show':
+        display_not_guessed_examples(examples, vocab)
+
+
+def calculate_and_display_metrics(rnn_learner, metrics, vocab):
+    for metric in metrics:
+        if metric.startswith("topk"):
+            calc_and_display_top_k(rnn_learner, metric, vocab)
+        elif metric == 'mrr':
+            mrr = MRR(*rnn_learner.predict_with_targs(True))
+            logging.info(f"mrr: {mrr}")

@@ -8,7 +8,7 @@ matplotlib.use('Agg')
 
 from nn.log_loc_dataset import LogLocationDataset
 from nn.classifier_params import nn_params, Mode
-from nn.utils import output_predictions, back_to_train_mode, to_test_mode, beautify_text
+from nn.utils import output_predictions, back_to_train_mode, to_test_mode
 
 
 import logging
@@ -20,7 +20,6 @@ import torch
 from functools import partial
 
 from fastai.core import USE_GPU
-from fastai.metrics import top_k, MRR
 from fastai.nlp import seq2seq_reg, TextData
 import dill as pickle
 from fastai import metrics
@@ -30,47 +29,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 nn_arch = nn_params['arch']
 nn_testing = nn_params['testing']
-
-def display_not_guessed_examples(examples, vocab):
-    exs = []
-    for input, num, preds, target in examples:
-        exs.append((
-            beautify_text(" ".join([vocab.itos[inp]
-                                    if ind != num + 1 else "[[[" + vocab.itos[inp] + "]]]"
-                                    for ind, inp in enumerate(input)])),
-            [vocab.itos[p] for p in preds],
-            vocab.itos[target]
-    ))
-    for ex in exs:
-        logging.info(f'                    ... {ex[0]}')
-        logging.info(f'                    ... {ex[1]}')
-        logging.info(f'                    ... {ex[2]}')
-        logging.info(f'===============================================')
-
-
-def calc_and_display_top_k(rnn_learner, metric, vocab):
-    spl = metric.split("_")
-    cat_index = spl.index("cat")
-    if cat_index == -1 or len(spl) <= cat_index + 1:
-        raise ValueError(f'Illegal metric format: {metric}')
-    ks = list(map(lambda x: int(x), spl[1: cat_index]))
-    cat = int(spl[cat_index + 1])
-
-    accuracies, examples = top_k(*rnn_learner.predict_with_targs(True), ks, cat)
-
-    logging.info(f'Current tops are ...')
-    logging.info(f'                    ... {accuracies}')
-    if spl[-1] == 'show':
-        display_not_guessed_examples(examples, vocab)
-
-
-def calculate_and_display_metrics(rnn_learner, metrics, vocab):
-    for metric in metrics:
-        if metric.startswith("topk"):
-            calc_and_display_top_k(rnn_learner, metric, vocab)
-        elif metric == 'mrr':
-            mrr = MRR(*rnn_learner.predict_with_targs(True))
-            logging.info(f"mrr: {mrr}")
 
 
 def create_df(dir):
