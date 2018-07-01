@@ -1,7 +1,11 @@
 import itertools
+import logging
 import re
 import sys
+import time
 from functools import partial
+
+logging.basicConfig(level=logging.DEBUG)
 
 from java_parser import two_character_tokens, one_character_tokens, one_char_verbose, two_char_verbose, \
     delimiters_to_drop, delimiters_to_drop_verbose, IDENTIFIER_SEPARATOR, JavaParser, EOF
@@ -208,7 +212,11 @@ def apply_preprocessors(to_be_processed, preprocessors, context={}):
     if isinstance(next(iter(preprocessors)), str):
         preprocessors = names_to_functions(preprocessors, context)
     for preprocessor in preprocessors:
+        start = time.time()
         to_be_processed = preprocessor(to_be_processed)
+        t = int(time.time() - start)
+        if t > 0:
+            logging.debug(f"{preprocessor}: {t}s")
     return to_be_processed
 
 #=============   preprocess recepees     ======================
