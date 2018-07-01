@@ -10,7 +10,7 @@ class Mode(Enum):
 
 
 nn_params = {
-    'path_to_data': '../nn-data/',
+    'path_to_data': '../../nn-data/',
     'dataset_name': 'guess_possition_566_2_context_lines',
     # 'model_name': 'baseline',
     'arch': {
