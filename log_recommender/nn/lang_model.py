@@ -129,7 +129,7 @@ def get_model(model_name):
 
     return rnn_learner, text_field, model_trained
 
-def run_and_display_tests(m, text_field, path_to_save):
+def run_and_display_tests(m, text_field, path_to_save=None):
     to_test_mode(m)
     print("==============        TESTS       ====================")
 
@@ -137,8 +137,9 @@ def run_and_display_tests(m, text_field, path_to_save):
 
     beautified_text = beautify_text(text)
     print(beautified_text)
-    with open(path_to_save, 'w') as f:
-        f.write(beautified_text)
+    if path_to_save:
+        with open(path_to_save, 'w') as f:
+            f.write(beautified_text)
 
     back_to_train_mode(m, nn_arch['bs'])
 
