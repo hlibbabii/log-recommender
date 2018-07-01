@@ -120,7 +120,7 @@ def get_model(model_name):
     logging.info(rnn_learner)
 
     try:
-        rnn_learner.load(dataset_name)
+        rnn_learner.load(f'{nn_params["dataset_name"]}_best')
         model_trained = True
         # calculate_and_display_metrics(rnn_learner, nn_params['metrics'], text_field.vocab)
     except FileNotFoundError:
