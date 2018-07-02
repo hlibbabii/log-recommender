@@ -211,6 +211,7 @@ if __name__ =='__main__':
     model_name = get_model_name_by_params()
     path_to_model = f'{path_to_dataset}/{model_name}'
 
+    logging.info(f"Path to model: {os.path.abspath(path_to_model)}")
     if not os.path.exists(path_to_model):
         os.mkdir(path_to_model)
 
@@ -228,7 +229,7 @@ if __name__ =='__main__':
         if nn_params['mode'] is Mode.LEARNING_RATE_FINDING:
             if model_trained:
                 logging.info(f"Forcing lr-finder rerun")
-            find_and_plot_lr(learner, f'{path_to_dataset}/{model_name}')
+            find_and_plot_lr(learner, f'{path_to_model}')
         elif nn_params['mode'] is Mode.TRAINING:
             if model_trained:
                 logging.info(f"Forcing training rerun")
