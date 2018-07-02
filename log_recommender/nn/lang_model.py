@@ -6,9 +6,6 @@ import deepdiff
 import matplotlib
 matplotlib.use('Agg')
 
-from nn.params import nn_params, Mode
-from nn.utils import to_test_mode, back_to_train_mode, beautify_text, gen_text, calculate_and_display_metrics
-
 import logging
 import os
 
@@ -17,11 +14,16 @@ import pandas
 import torch
 from functools import partial
 
+import dill as pickle
+
 from fastai.core import USE_GPU
 from fastai.nlp import LanguageModelData, seq2seq_reg
-import dill as pickle
 from fastai import metrics
 from torchtext import data
+from nn.utils import to_test_mode, back_to_train_mode, beautify_text, gen_text, calculate_and_display_metrics
+
+# for some reason this import should go here to avoid error
+from nn.params import nn_params, Mode
 
 logging.basicConfig(level=logging.DEBUG)
 
