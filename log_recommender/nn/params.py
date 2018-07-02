@@ -32,7 +32,7 @@ nn_params = {
     'metrics': ['topk_1_10_100_cat_2', 'mrr'],
     'testing': {
         'how_many_words': 2000,
-        'starting_words': "loading"
+        'starting_words': "<comment> public static class"
     },
     'mode': Mode.LEARNING_RATE_FINDING
 }
