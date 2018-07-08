@@ -59,6 +59,9 @@ def get_model(model_name):
                                                           min_freq=nn_arch["min_freq"]
                                                           # not important since we remove rare tokens during preprocessing
                                                           )
+    with open(f'{path_to_dataset}/vocab.txt', 'w') as f:
+        for word, freq in text_field.vocab.freqs.items():
+            f.write(f'{str(word)} {str(freq)}\n')
     pickle.dump(text_field, open(f'{path_to_dataset}/TEXT.pkl', 'wb'))
 
     logging.info(f'Dictionary size is: {len(text_field.vocab.itos)}')
