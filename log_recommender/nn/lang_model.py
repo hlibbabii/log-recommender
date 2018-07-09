@@ -1,5 +1,6 @@
 import json
 from collections import defaultdict
+from shutil import copyfile
 from time import time
 
 import deepdiff
@@ -86,6 +87,11 @@ def get_model(model_name):
     except FileNotFoundError:
         logging.warning(f"Model {dataset_name}/{model_name} not found")
         model_trained = False
+        try:
+            rnn_learner.load(f'{nn_params["dataset_name"]}_best_base')
+            logging.info("Base model detected and loaded")
+        except FileNotFoundError:
+            pass
 
     return rnn_learner, text_field, model_trained
 
@@ -207,12 +213,30 @@ if __name__ =='__main__':
     logging.info(nn_arch)
     path_to_dataset = f'{nn_params["path_to_data"]}/{nn_params["dataset_name"]}'
     force_rerun = True
-    # if "model_name" in nn_params:
-    #     logging.info(f'')
-    #     model_name = nn_params["model_name"]
-    # else:
-    model_name = get_model_name_by_params()
-    path_to_model = f'{path_to_dataset}/{model_name}'
+    if "base_model" in nn_params:
+        base_model_name = nn_params["base_model"]
+        path_to_best_model = f'{path_to_dataset}/{base_model_name}/models/{nn_params["dataset_name"]}_best.h5'
+        logging.info(f"Using base model: {base_model_name}")
+        model_name = base_model_name  + "_extratrained"
+        path_to_model = f'{path_to_dataset}/{model_name}'
+        while os.path.exists(path_to_model):
+            model_name = model_name + "_"
+            path_to_model = f'{path_to_dataset}/{model_name}'
+        os.mkdir(path_to_model)
+        path_to_model_models = f'{path_to_model}/models'
+        os.mkdir(path_to_model_models)
+        path_to_model_best_base = f'{path_to_model_models}/{nn_params["dataset_name"]}_best_base.h5'
+        try:
+            logging.info(f"Copying from {os.path.abspath(path_to_best_model)} "
+                         f"to {os.path.abspath(path_to_model_best_base)}")
+            copyfile(path_to_best_model, path_to_model_best_base)
+        except IOError:
+            logging.error("Error copying file!")
+            exit(1)
+    else:
+        logging.info("Not using base model. Training coefficients from scratch...")
+        model_name = get_model_name_by_params()
+        path_to_model = f'{path_to_dataset}/{model_name}'
 
     logging.info(f"Path to model: {os.path.abspath(path_to_model)}")
     if not os.path.exists(path_to_model):
@@ -223,18 +247,19 @@ if __name__ =='__main__':
     if not os.path.exists(vocab_file):
         with open(vocab_file, 'w') as f:
             f.dump(text_field)
-    if not model_trained or force_rerun:
+    rerunning_model = model_trained or "base_model" not in nn_params
+    if not rerunning_model or force_rerun:
         with open(f'{path_to_model}/{PARAM_FILE_NAME}', 'w') as f:
             json.dump(nn_arch, f)
         # with open(f'{path_to_dataset}/{name}/config_diff.json', 'w') as f:
         #     json.dump(config_diff, f)
 
         if nn_params['mode'] is Mode.LEARNING_RATE_FINDING:
-            if model_trained:
+            if rerunning_model:
                 logging.info(f"Forcing lr-finder rerun")
             find_and_plot_lr(learner, f'{path_to_model}')
         elif nn_params['mode'] is Mode.TRAINING:
-            if model_trained:
+            if rerunning_model:
                 logging.info(f"Forcing training rerun")
             train_model(learner, path_to_dataset, model_name)
             logging.info("Loading the best model")
