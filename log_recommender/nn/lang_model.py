@@ -212,7 +212,7 @@ if __name__ =='__main__':
     logging.info("Using the following parameters:")
     logging.info(nn_arch)
     path_to_dataset = f'{nn_params["path_to_data"]}/{nn_params["dataset_name"]}'
-    force_rerun = True
+    force_rerun = False
     if "base_model" in nn_params:
         base_model_name = nn_params["base_model"]
         path_to_best_model = f'{path_to_dataset}/{base_model_name}/models/{nn_params["dataset_name"]}_best.h5'
@@ -247,7 +247,7 @@ if __name__ =='__main__':
     if not os.path.exists(vocab_file):
         with open(vocab_file, 'w') as f:
             f.dump(text_field)
-    rerunning_model = model_trained or "base_model" not in nn_params
+    rerunning_model = model_trained
     if not rerunning_model or force_rerun:
         with open(f'{path_to_model}/{PARAM_FILE_NAME}', 'w') as f:
             json.dump(nn_arch, f)
