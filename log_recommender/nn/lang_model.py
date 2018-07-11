@@ -55,7 +55,7 @@ def get_model(model_name):
     text_field = data.Field()
     languageModelData = LanguageModelData.from_dataframes(path_to_model,
                                                           text_field, 0, train_df, test_df, test_df,
-                                                          bs=nn_arch["bs"],
+                                                          bs=nn_arch["bs"], validation_bs=nn_params["validation_bs"],
                                                           bptt=nn_arch["bptt"],
                                                           min_freq=nn_arch["min_freq"]
                                                           # not important since we remove rare tokens during preprocessing
