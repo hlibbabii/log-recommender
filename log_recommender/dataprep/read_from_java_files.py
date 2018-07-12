@@ -29,6 +29,7 @@ def preprocess_and_write(src_dir, dest_dir, subdir, chunk):
     path_to_preprocessed_file = os.path.join(dest_dir, f'preprocessed.{chunk}.src')
     if os.path.exists(path_to_preprocessed_file):
         logging.warning(f"File {path_to_preprocessed_file} already exists! Doing nothing.")
+        exit(1)
     with open(f'{path_to_preprocessed_file}.part', 'w') as f:
         dir_with_files_to_preprocess=os.path.join(src_dir, subdir, chunk)
         logging.info(f"Preprocessing java files from {dir_with_files_to_preprocess}")
