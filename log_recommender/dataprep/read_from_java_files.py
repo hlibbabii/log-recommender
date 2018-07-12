@@ -25,9 +25,12 @@ def read_file_contents(file_path):
             logging.error(f"Unicode decode error in file: {file_path}")
 
 
-def preprocess_and_write(dir, subdir, chunk):
-    with open(os.path.join(dir, f'context.{chunk}.src'), 'w') as f:
-        dir_with_files_to_preprocess=os.path.join(args.dir, subdir, chunk)
+def preprocess_and_write(src_dir, dest_dir, subdir, chunk):
+    path_to_preprocessed_file = os.path.join(dest_dir, f'preprocessed.{chunk}.src')
+    if os.path.exists(path_to_preprocessed_file):
+        logging.warning(f"File {path_to_preprocessed_file} already exists! Doing nothing.")
+    with open(f'{path_to_preprocessed_file}.part', 'w') as f:
+        dir_with_files_to_preprocess=os.path.join(src_dir, subdir, chunk)
         logging.info(f"Preprocessing java files from {dir_with_files_to_preprocess}")
         total_files = sum([f for f in java_file_mapper(dir_with_files_to_preprocess, lambda path: 1)])
         print(f'Total amount of files to process: {total_files}')
@@ -39,34 +42,35 @@ def preprocess_and_write(dir, subdir, chunk):
             logging.info(f"Processing file: {file_path} [{ind+1} out of {total_files}] containing {len(lines_from_file)} lines")
             processed = apply_preprocessors(lines_from_file, pp_params["preprocessors"], {'interesting_context_words': []})
             f.write(processed)
+    # remove .part to show that all raw files in this chunk have been preprocessed
+    os.rename(f'{path_to_preprocessed_file}.part', path_to_preprocessed_file)
 
 
 if __name__ == '__main__':
+    base='/home/lv71161/hlibbabii'
+    base_from=f'{base}/log-recommender/nn-data/'
+    base_to=f'{base}/raw_datasets/devanbu/'
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--fastai-input-file', action='store',
-		default='/home/lv71161/hlibbabii/log-recommender/nn-data/devanbu_no_replaced_identifier_split_no_tabs_under_5000_15_percent/')
-    parser.add_argument('--dir', action='store', default='/home/lv71161/hlibbabii/raw_datasets/devanbu/15_percent/')
+    parser.add_argument('--raw-dataset', action='store')
+    parser.add_argument('--dest-dataset', action='store')
     parser.add_argument('--folder', action='store')
     parser.add_argument('--chunk', action='store')
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG)
-    dataset_dir = f'{args.fastai_input_file}'
+    dest_dataset_dir = f'{base_to}/{args.dest_dataset}/'
+    raw_dataset_dir=f'{base_from}/{args.raw_dataset}/'
 
-    logging.info(f"Getting files from {os.path.abspath(args.dir)}")
-    logging.info(f"Writing preprocessed files to {os.path.abspath(dataset_dir)}")
+    logging.info(f"Getting files from {os.path.abspath(raw_dataset_dir)}")
+    logging.info(f"Writing preprocessed files to {os.path.abspath(dest_dataset_dir)}")
 
-    train_dir = f'{dataset_dir}/train/'
-    test_dir = f'{dataset_dir}/test/'
-    if not os.path.exists(train_dir):
-        os.makedirs(train_dir)
-    if not os.path.exists(test_dir):
-        os.makedirs(test_dir)
+    dest_dir = f'{dest_dataset_dir}/{args.folder}/'
 
-    with open(f'{dataset_dir}/params.json', 'w') as f:
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+
+    with open(f'{dest_dataset_dir}/params.json', 'w') as f:
         json.dump(pp_params, f)
-    if args.folder == 'train':
-        preprocess_and_write(train_dir, "train/", args.chunk)
-    else:
-        preprocess_and_write(test_dir, "test/", args.chunk)
+    preprocess_and_write(raw_dataset_dir, dest_dir, "test/", args.chunk)
 
