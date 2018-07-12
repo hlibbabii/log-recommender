@@ -11,7 +11,7 @@ def java_file_mapper(dir, func):
     import os
     for root, dirs, files in os.walk(dir):
         for file in files:
-            if file.endswith(".java"):
+            if file.endswith(".java") and not file.startswith("."):
                 ret = func(os.path.join(root, file))
                 if ret is not None:
                     yield ret
@@ -26,15 +26,17 @@ def read_file_contents(file_path):
 
 
 def preprocess_and_write(dir, subdir, chunk):
-    with (os.path.join(dir, f'context.{chunk}.src'), 'w') as f:
-        total_files = sum([f for f in java_file_mapper(os.path.join(args.dir, subdir, chunk), lambda path: 1)])
+    with open(os.path.join(dir, f'context.{chunk}.src'), 'w') as f:
+        dir_with_files_to_preprocess=os.path.join(args.dir, subdir, chunk)
+        logging.info(f"Preprocessing java files from {dir_with_files_to_preprocess}")
+        total_files = sum([f for f in java_file_mapper(dir_with_files_to_preprocess, lambda path: 1)])
         print(f'Total amount of files to process: {total_files}')
 
-        for lines_from_file, file_path in java_file_mapper(os.path.join(args.dir, subdir, chunk), read_file_contents):
+        for ind, (lines_from_file, file_path) in enumerate(java_file_mapper(dir_with_files_to_preprocess, read_file_contents)):
             if len(lines_from_file) > pp_params['more_lines_ignore']:
                 logging.debug(f"File {file_path} has {len(lines_from_file)} lines. Skiping...")
                 continue
-            logging.info(f"Processing file: {file_path} [{ind} out of {total_files}] containing {len(lines_from_file)} lines")
+            logging.info(f"Processing file: {file_path} [{ind+1} out of {total_files}] containing {len(lines_from_file)} lines")
             processed = apply_preprocessors(lines_from_file, pp_params["preprocessors"], {'interesting_context_words': []})
             f.write(processed)
 
@@ -42,8 +44,9 @@ def preprocess_and_write(dir, subdir, chunk):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--fastai-input-file', action='store',
-                        default='../../nn-data/devanbu_no_replaced_identifier_split_no_tabs_under_2000_fixed/')
-    parser.add_argument('--dir', action='store', default='../../../FSE\'17 Replication/projects/1_percent/')
+		default='/home/lv71161/hlibbabii/log-recommender/nn-data/devanbu_no_replaced_identifier_split_no_tabs_under_5000_15_percent/')
+    parser.add_argument('--dir', action='store', default='/home/lv71161/hlibbabii/raw_datasets/devanbu/15_percent/')
+    parser.add_argument('--folder', action='store')
     parser.add_argument('--chunk', action='store')
     args = parser.parse_args()
 
@@ -62,6 +65,8 @@ if __name__ == '__main__':
 
     with open(f'{dataset_dir}/params.json', 'w') as f:
         json.dump(pp_params, f)
-    preprocess_and_write(train_dir, "Train/", args.chunk)
-    preprocess_and_write(test_dir, "Test/", args.chunk)
+    if args.folder == 'train':
+        preprocess_and_write(train_dir, "train/", args.chunk)
+    else:
+        preprocess_and_write(test_dir, "test/", args.chunk)
 
