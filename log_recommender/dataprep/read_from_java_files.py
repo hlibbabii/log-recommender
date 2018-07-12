@@ -73,5 +73,5 @@ if __name__ == '__main__':
 
     with open(f'{dest_dataset_dir}/params.json', 'w') as f:
         json.dump(pp_params, f)
-    preprocess_and_write(raw_dataset_dir, dest_dir, "test/", args.chunk)
+    preprocess_and_write(raw_dataset_dir, dest_dir, args.folder, args.chunk)
 
