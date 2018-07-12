@@ -30,8 +30,11 @@ def preprocess_and_write(src_dir, dest_dir, subdir, chunk):
     if os.path.exists(path_to_preprocessed_file):
         logging.warning(f"File {path_to_preprocessed_file} already exists! Doing nothing.")
         exit(1)
+    dir_with_files_to_preprocess = os.path.join(src_dir, subdir, chunk)
+    if not os.path.exists(dir_with_files_to_preprocess):
+        logging.error(f"Path {dir_with_files_to_preprocess} does not exist")
+        exit(2)
     with open(f'{path_to_preprocessed_file}.part', 'w') as f:
-        dir_with_files_to_preprocess=os.path.join(src_dir, subdir, chunk)
         logging.info(f"Preprocessing java files from {dir_with_files_to_preprocess}")
         total_files = sum([f for f in java_file_mapper(dir_with_files_to_preprocess, lambda path: 1)])
         print(f'Total amount of files to process: {total_files}')
