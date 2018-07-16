@@ -1,5 +1,5 @@
+import re
 import sys
-from copy import deepcopy
 
 START_MULTILINE_COMMENT = "/*"
 END_MULTILINE_COMMENT = "*/"
@@ -7,11 +7,16 @@ END_MULTILINE_COMMENT = "*/"
 START_ONE_LINE_COMMENT = "//"
 EOF = "\n"
 
-COMMENT_PLACEHOLDER = "<comment>"
-STRING_LITERAL_PLACEHOLDER = "<string_literal>"
-NUMBER_LITERAL="<number_literal>"
-IDENTIFIER = "<identifier>"
-IDENTIFIER_SEPARATOR = "<identifiersep>"
+placeholders= {
+    'comment': '`comment`',
+    'string_literal': '`stringliteral`',
+    'hex_start': '`hexstart`',
+    'identifier': '`identifier`',
+    'identifier_separator': '`idsep`',
+    'dot': '`dot`',
+    'long': '`lng`',
+    'float': '`flt`'
+}
 
 tabs = ["\t" + str(i) for i in range(11)]
 
@@ -31,6 +36,8 @@ two_character_tokens = [
     "%="
     "<=",
     ">=",
+    ">>",
+    "<<",
     "&&",
     "||"
 ]
@@ -112,11 +119,8 @@ key_words = [
 ]
 
 def is_number(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
+    return re.match('([^a-zA-Z]|^)((0x[0-9a-fA-F]+[lL]?)|([0-9]+[lLfF]?)|([0-9]*\.[0-9]+[Ff]?)|([0-9]+\.[0-9]*[Ff]?))([^a-zA-Z]|$)', s)
+
 
 class JavaParser(object):
     def strip_off_multiline_comments(self, context):
@@ -134,13 +138,13 @@ class JavaParser(object):
                 return context
             elif end is None:
                 del(context[start:])
-                context.append(COMMENT_PLACEHOLDER)
+                context.append(placeholders['comment'])
             elif start is None or end < start:
                 del(context[:end+1])
-                context.insert(0, COMMENT_PLACEHOLDER)
+                context.insert(0, placeholders['comment'])
             elif start < end:
                 del(context[start:end+1])
-                context.insert(start, COMMENT_PLACEHOLDER)
+                context.insert(start, placeholders['comment'])
 
     def strip_off_one_line_comments(self, context):
         while True:
@@ -155,7 +159,7 @@ class JavaParser(object):
                 eof_index = sys.maxsize
             abs_eof_index = start+eof_index+1
             del(context[start:abs_eof_index])
-            context.insert(start, COMMENT_PLACEHOLDER)
+            context.insert(start, placeholders['comment'])
 
     def find_not_escaped_double_quote(self, str):
         index_to_start_search = 0
@@ -183,17 +187,16 @@ class JavaParser(object):
                 closing_quote_index = sys.maxsize
             abs_closing_quote_index = opening_quote_index + 1 + closing_quote_index
             del(context[opening_quote_index: abs_closing_quote_index+1])
-            context.insert(opening_quote_index, STRING_LITERAL_PLACEHOLDER)
+            context.insert(opening_quote_index, placeholders['string_literal'])
 
     def strip_off_identifiers(self, identifiers_to_ignore, context):
         non_identifiers = set(key_words + two_character_tokens + one_character_tokens + one_char_verbose + two_char_verbose + \
-                          [COMMENT_PLACEHOLDER, STRING_LITERAL_PLACEHOLDER, NUMBER_LITERAL, IDENTIFIER_SEPARATOR]
-                              + tabs + identifiers_to_ignore)
+                          list(placeholders.values()) + tabs + identifiers_to_ignore)
 
         result = []
         for word in context:
             if not is_number(word) and word not in non_identifiers:
-                result.append(IDENTIFIER)
+                result.append(placeholders['identifier'])
             else:
                 result.append(word)
         return result
@@ -201,8 +204,19 @@ class JavaParser(object):
     def strip_off_number_literals(self, context):
         result = []
         for word in context:
-            if is_number(word) and float(word) not in [-1, 0, 1] and word not in tabs:
-                result.append(NUMBER_LITERAL)
+            if is_number(word) and word not in tabs:
+                if word.startswith("0x"):
+                    result.append(placeholders['hex_start'])
+                    word=word[2:]
+                for ch in word:
+                    if ch == '.':
+                        result.append(placeholders['dot'])
+                    elif ch == 'l' or ch == 'L':
+                        result.append(placeholders['long'])
+                    elif ch == 'f' or ch == 'F':
+                        result.append(placeholders['float'])
+                    else:
+                        result.append(ch)
             else:
                 result.append(word)
         return result

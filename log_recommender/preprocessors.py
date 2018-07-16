@@ -8,7 +8,7 @@ from functools import partial
 logging.basicConfig(level=logging.DEBUG)
 
 from java_parser import two_character_tokens, one_character_tokens, one_char_verbose, two_char_verbose, \
-    delimiters_to_drop, delimiters_to_drop_verbose, IDENTIFIER_SEPARATOR, JavaParser, EOF
+    delimiters_to_drop, delimiters_to_drop_verbose, JavaParser, EOF, placeholders
 
 VAR_PLACEHOLDER = "<VAR>"
 STRING_RESOURCE_PLACEHOLDER = "<STRING_RESOURCE>"
@@ -61,14 +61,19 @@ def camel_case_split(identifier, add_separator=False):
     if identifier == '\n': #TODO XXX
         return [identifier]
     matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
-    parts = [m.group(0) for m in matches]
-    return add_between_elements(parts, IDENTIFIER_SEPARATOR) if add_separator else parts
+    parts = [m.group(0).lower() for m in matches]
+    return add_between_elements(parts, placeholders['identifier_separator']) if add_separator else parts
+
+
+def split_with_numbers(identifier, add_separator=False):
+    parts = list(filter(None, re.split('(?<=[a-zA-Z0-9])([0-9])(?=[a-zA-Z0-9]+|$)', identifier)))
+    return add_between_elements(parts, placeholders['identifier_separator']) if add_separator else parts
 
 
 def underscore_split(identifier, add_separator=False):
     #TODO it creates empty element if the identifier starts or ends with underscore
     parts = identifier.split("_")
-    return add_between_elements(parts, IDENTIFIER_SEPARATOR) if add_separator else parts
+    return add_between_elements(parts, placeholders['identifier_separator']) if add_separator else parts
 
 #======== Token list level   =========
 
@@ -100,7 +105,32 @@ def add_ect(token_list):
     token_list.append("<ect>")
     return token_list
 
-#======== Multitoken list level   ==========
+def replace_infrequent_numeric_literal(token_list, context):
+    try:
+        frequent_tokens = context['frequent_tokens']
+    except KeyError:
+        logging.error("no frequent tokens attribute in preprocessing context")
+        return
+    for i in range(len(token_list)):
+        if token_list[i] not in frequent_tokens:
+            if re.fullmatch("[0-9]+", token_list[i]):
+                token_list[i] = "<decnumber>"
+            if re.fullmatch("0x[0-9]+", token_list[i]):
+                token_list[i] = "<hexnumber>"
+            if re.fullmatch("[0-9]+[l|L]", token_list[i]):
+                token_list[i] = "<longnumber>"
+
+
+    #======== Multitoken list level   ==========
+
+def split_numeric_literals(multitokens):
+    res = []
+    for multitoken in multitokens:
+        res.extend(list(filter(None, re.split(
+            '(?:^|(?<=[^a-zA-Z0-9]))(0x[0-9a-fA-F]+[lL]?|[0-9]+[lLFf]?|[0-9]*\.[0-9]+[Ff]?|[0-9]+\.[0-9]*[Ff]?)*(?=[^a-zA-Z0-9]|$)',
+            multitoken))))
+    return res
+
 
 
 def split_log_text_to_keywords_and_identifiers(multitoken_list):
@@ -169,13 +199,18 @@ def filter_out_1_and_2_char_tokens(tokens):
 
 
 def split_line_canel_case(context_line):
-    return [item.lower() for identifier in context_line
+    return [item for identifier in context_line
             for item in camel_case_split(identifier, add_separator=True)]
 
 
 def split_line_underscore(context_line):
     return [item for identifier in context_line
             for item in underscore_split(identifier, add_separator=True)]
+
+
+def split_line_with_numbers(line):
+    return [item for identifier in line
+            for item in split_with_numbers(identifier, add_separator=True)]
 
 
 def newline_and_tab_remover(tokens):
