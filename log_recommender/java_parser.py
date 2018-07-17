@@ -207,10 +207,12 @@ class JavaParser(object):
     def strip_off_number_literals(self, context):
         result = []
         for word in context:
+            hex=False
             if is_number(word) and word not in tabs:
                 if word.startswith("0x"):
                     result.append(placeholders['hex_start'])
                     word=word[2:]
+                    hex=True
                 for ch in word:
                     if ch == '.':
                         result.append(placeholders['dot'])
@@ -218,7 +220,7 @@ class JavaParser(object):
                         result.append(placeholders['long'])
                     elif ch == 'f' or ch == 'F':
                         result.append(placeholders['float'])
-                    elif ch == 'e' or ch == 'E':
+                    elif (ch == 'e' or ch == 'E') and hex:
                         result.append(placeholders['e'])
                     else:
                         result.append(ch)
