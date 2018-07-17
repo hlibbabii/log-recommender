@@ -209,6 +209,9 @@ class JavaParser(object):
         for word in context:
             hex=False
             if is_number(word) and word not in tabs:
+                if word.startswith('-'):
+                    result.append('-')
+                    word=word[1:]
                 if word.startswith("0x"):
                     result.append(placeholders['hex_start'])
                     word=word[2:]
@@ -218,7 +221,7 @@ class JavaParser(object):
                         result.append(placeholders['dot'])
                     elif ch == 'l' or ch == 'L':
                         result.append(placeholders['long'])
-                    elif (ch == 'f' or ch == 'F') and not hex :
+                    elif (ch == 'f' or ch == 'F') and not hex:
                         result.append(placeholders['float'])
                     elif (ch == 'e' or ch == 'E') and not hex:
                         result.append(placeholders['e'])
