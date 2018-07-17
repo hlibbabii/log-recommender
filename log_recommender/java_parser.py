@@ -218,9 +218,9 @@ class JavaParser(object):
                         result.append(placeholders['dot'])
                     elif ch == 'l' or ch == 'L':
                         result.append(placeholders['long'])
-                    elif ch == 'f' or ch == 'F':
+                    elif (ch == 'f' or ch == 'F') and not hex :
                         result.append(placeholders['float'])
-                    elif (ch == 'e' or ch == 'E') and hex:
+                    elif (ch == 'e' or ch == 'E') and not hex:
                         result.append(placeholders['e'])
                     else:
                         result.append(ch)
