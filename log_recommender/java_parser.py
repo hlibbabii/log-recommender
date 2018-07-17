@@ -15,7 +15,8 @@ placeholders= {
     'identifier_separator': '`idsep`',
     'dot': '`dot`',
     'long': '`lng`',
-    'float': '`flt`'
+    'float': '`flt`',
+    'e': '`e`'
 }
 
 tabs = ["\t" + str(i) for i in range(11)]
@@ -118,8 +119,10 @@ key_words = [
 "null"
 ]
 
+NUMBER_REGEX= '-?(?:0x[0-9a-fA-F]+[lL]?|[0-9]+[lL]?|(?:[0-9]*\.[0-9]+|[0-9]+(?:\.[0-9]*)?)(?:[eE][-+][0-9]+)?[fF]?)'
+
 def is_number(s):
-    return re.match('([^a-zA-Z]|^)((0x[0-9a-fA-F]+[lL]?)|([0-9]+[lLfF]?)|([0-9]*\.[0-9]+[Ff]?)|([0-9]+\.[0-9]*[Ff]?))([^a-zA-Z]|$)', s)
+    return re.fullmatch(NUMBER_REGEX, s)
 
 
 class JavaParser(object):
@@ -215,6 +218,8 @@ class JavaParser(object):
                         result.append(placeholders['long'])
                     elif ch == 'f' or ch == 'F':
                         result.append(placeholders['float'])
+                    elif ch == 'e' or ch == 'E':
+                        result.append(placeholders['e'])
                     else:
                         result.append(ch)
             else:

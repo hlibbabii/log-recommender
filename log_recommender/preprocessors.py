@@ -4,6 +4,7 @@ import re
 import sys
 import time
 from functools import partial
+from java_parser import NUMBER_REGEX
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -127,7 +128,7 @@ def split_numeric_literals(multitokens):
     res = []
     for multitoken in multitokens:
         res.extend(list(filter(None, re.split(
-            '(?:^|(?<=[^a-zA-Z0-9]))(0x[0-9a-fA-F]+[lL]?|[0-9]+[lLFf]?|[0-9]*\.[0-9]+[Ff]?|[0-9]+\.[0-9]*[Ff]?)*(?=[^a-zA-Z0-9]|$)',
+            f'(?:^|(?<=[^a-zA-Z0-9]))({NUMBER_REGEX})(?=[^a-zA-Z0-9]|$)',
             multitoken))))
     return res
 
