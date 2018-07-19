@@ -71,10 +71,26 @@ def split_with_numbers(identifier, add_separator=False):
     return add_between_elements(parts, placeholders['identifier_separator']) if add_separator else parts
 
 
+SPLITTING_FILE_LOCATION=""
+splitting_dict = {}
+with open(SPLITTING_FILE_LOCATION, 'r') as f:
+    for line in f:
+        word, splitting = line.split("|")
+        splitting_dict[word] = splitting.split()
+
+
+def split_lowercase(identifier, add_separator=False):
+    if identifier in splitting_dict:
+        parts = splitting_dict[identifier]
+    else:
+        parts = [identifier]
+    return add_between_elements(parts, placeholders['identifier_separator']) if add_separator else parts
+
+
 def underscore_split(identifier, add_separator=False):
     #TODO it creates empty element if the identifier starts or ends with underscore
     parts = identifier.split("_")
-    return add_between_elements(parts, placeholders['identifier_separator']) if add_separator else parts
+    return add_between_elements(parts, placeholders['lowercase_identifier_separator']) if add_separator else parts
 
 #======== Token list level   =========
 
@@ -212,6 +228,10 @@ def split_line_underscore(context_line):
 def split_line_with_numbers(line):
     return [item for identifier in line
             for item in split_with_numbers(identifier, add_separator=True)]
+
+def split_line_lowercase(line):
+    return [item for identifier in line
+            for item in split_lowercase(identifier, add_separator=True)]
 
 
 def newline_and_tab_remover(tokens):

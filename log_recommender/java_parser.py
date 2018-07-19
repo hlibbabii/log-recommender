@@ -13,6 +13,7 @@ placeholders= {
     'hex_start': '`hexstart`',
     'identifier': '`identifier`',
     'identifier_separator': '`idsep`',
+    'lowercase_identifier_separator': '`lidsep`',
     'dot': '`dot`',
     'long': '`lng`',
     'float': '`flt`',

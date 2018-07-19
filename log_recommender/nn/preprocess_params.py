@@ -15,6 +15,7 @@ pp_params = {
         # "java.strip_off_identifiers"
         "newline_and_tab_remover",
         "split_line_with_numbers",
+        "split_line_lowercase",
         "to_string_repr"
     ],
     'more_lines_ignore': 5000
