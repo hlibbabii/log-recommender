@@ -11,8 +11,8 @@ class Mode(Enum):
 
 nn_params = {
     'path_to_data': '../../nn-data/',
-    'dataset_name': 'guess_possition_566_2_context_lines',
-    # 'model_name': 'baseline',
+    'dataset_name': 'devanbu_no_replaced_identifier_split_no_tabs_new_splits3_under_5000_15_percent',
+    # 'base_model': 'baseline_',
     'arch': {
         'bs': 16,
         'bptt': 10,
