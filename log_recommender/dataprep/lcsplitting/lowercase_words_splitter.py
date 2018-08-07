@@ -157,7 +157,7 @@ def load_english_dict(path_to_dict_dir):
     for file in os.listdir(path_to_dict_dir):
         with open(file, 'r') as f:
             for line in f:
-                general_dict[line[:-1]] = 1
+                general_dict[line[:-1].lower()] = 1
     return general_dict
 
 
