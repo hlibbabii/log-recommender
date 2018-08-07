@@ -17,6 +17,7 @@ placeholders= {
     'dot': '`dot`',
     'long': '`lng`',
     'float': '`flt`',
+    'double': '`double`',
     'e': '`e`'
 }
 
@@ -60,7 +61,7 @@ two_char_verbose = [
 
 one_char_verbose = [
     "{", "}", "[", "]", ",", ".", "-", "?", ":", "(", ")", ";", '"', "&",
-    "|", "\\", "@", "#", "$"
+    "|", "\\", "@", "#", "$", "'", "~", "%", "^", "\\"
 ]
 
 delimiters_to_drop = "[\[\] ,.\-?:\n\t(){};\"&|_#\\\@$]"
@@ -120,7 +121,8 @@ key_words = [
 "null"
 ]
 
-NUMBER_REGEX= '-?(?:0x[0-9a-fA-F]+[lL]?|[0-9]+[lL]?|(?:[0-9]*\.[0-9]+|[0-9]+(?:\.[0-9]*)?)(?:[eE][-+][0-9]+)?[fF]?)'
+NUMBER_REGEX = '-?(?:0x[0-9a-fA-F]+[lL]?|[0-9]+[lL]?|(?:[0-9]*\.[0-9]+|[0-9]+(?:\.[0-9]*)?)(?:[eE][-+][0-9]+)?[fFdD]?)'
+
 
 def is_number(s):
     return re.fullmatch(NUMBER_REGEX, s)
@@ -205,6 +207,7 @@ class JavaParser(object):
                 result.append(word)
         return result
 
+    # TODO rename to process number literal
     def strip_off_number_literals(self, context):
         result = []
         for word in context:
@@ -224,6 +227,8 @@ class JavaParser(object):
                         result.append(placeholders['long'])
                     elif (ch == 'f' or ch == 'F') and not hex:
                         result.append(placeholders['float'])
+                    elif (ch == 'd' or ch == 'D') and not hex:
+                        result.append(placeholders['double'])
                     elif (ch == 'e' or ch == 'E') and not hex:
                         result.append(placeholders['e'])
                     else:
