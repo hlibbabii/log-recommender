@@ -3,6 +3,7 @@ import json
 import logging
 import os
 
+from dataprep import base_project_dir, base_dir
 from nn.preprocess_params import pp_params
 from preprocessors import apply_preprocessors
 
@@ -51,9 +52,8 @@ def preprocess_and_write(src_dir, dest_dir, subdir, chunk):
 
 
 if __name__ == '__main__':
-    base = os.environ['THESIS_DIR'] if 'THESIS_DIR' in os.environ else os.environ['HOME']
-    base_to = f'{base}/log-recommender/nn-data'
-    base_from = f'{base}/raw_datasets/devanbu'
+    base_to = f'{base_project_dir}/nn-data'
+    base_from = f'{base_dir}/raw_datasets/devanbu'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--raw-dataset', action='store', default='few_data')

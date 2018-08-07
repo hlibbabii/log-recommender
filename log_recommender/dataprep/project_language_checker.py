@@ -1,7 +1,7 @@
 import os
 from collections import defaultdict
 
-from dataprep.lcsplitting.lowercase_words_splitter import create_dict
+from dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
 
 path_to_preprocessed_project_file = "/home/hlib/thesis/log-recommender/nn-data/devanbu_no_replaced_identifier_split_no_tabs/train/context.1.src"
 
@@ -10,7 +10,7 @@ path_to_dicts = "/home/hlib/thesis/log-recommender/dicts/"
 lang_to_number = defaultdict(int)
 lang_to_word_examples = defaultdict(list)
 
-english_general_dict = create_dict(f'/usr/share/dict/words')
+english_general_dict = load_english_dict(f'/usr/share/dict/words')
 
 dict_files_names = [f for f in os.listdir("/home/hlib/thesis/log-recommender/dicts")]
 word_to_lang_map = {}

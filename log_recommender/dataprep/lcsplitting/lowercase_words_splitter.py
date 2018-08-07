@@ -5,7 +5,6 @@ from math import log
 from operator import itemgetter
 from random import shuffle
 
-from fastai.imports import tqdm
 from nn.params import nn_params
 
 logging.basicConfig(level=logging.INFO)
@@ -153,27 +152,12 @@ def get_splittings(words_to_split, freqs, general_dict, params):
     return transformed, nontransformed, possible_typos
 
 
-def create_general_dict(path_to_file):
-    extras = [
-        'prober', 'unbang', 'debrid', 'slashy', 'hanuka', 'edoras', 'rachel', 'modist', 'morton', 'regexes', 'resized',
-        'quartic', 'jsonify', 'upsilon', 'seqable', 'autorun', 'denoise', 'outlink', 'healths', 'fujitsu', 'allocine',
-        'catmania', 'uniquify', 'headward', 'tashkeel', 'autostop', 'scottish', 'passcode', 'stripify', 'gelbooru',
-        'talarkam', 'alocavel', 'angelina', 'kibibyte', 'elemiter', 'unsupport', 'enrollees', 'enomedium', 'tokenizers',
-        'gigaspaces', 'deregister', 'ingestible', 'launchable', 'uninserted', 'misaligned', 'serverless', 'unannotated',
-        'unrecovered', 'confirmable', 'redemptions', 'redelivered', 'teleporting', 'ethnicities', 'suppressors',
-        'partitioners', 'notificating', 'updatability', 'refreshables', 'compressions', 'concreteness', 'silmarillion',
-        'inactivating', 'decapitalized', 'differentiator', 'instrumentations', 'diversifications'
-    ]
-    return create_dict(path_to_file, extras)
-
-
-def create_dict(path_to_file, extra_words_lists=[]):
+def load_english_dict(path_to_dict_dir):
     general_dict = {}
-    with open(path_to_file, 'r') as f:
-        for line in f:
-            general_dict[line[:-1]] = 1
-    for e in extra_words_lists:
-        general_dict[e] = 1
+    for file in os.listdir(path_to_dict_dir):
+        with open(file, 'r') as f:
+            for line in f:
+                general_dict[line[:-1]] = 1
     return general_dict
 
 
@@ -188,7 +172,7 @@ if __name__ == '__main__':
             line = l.split()
             freqs[line[0]] = int(line[1])
 
-    general_dict = create_general_dict(f'/usr/share/dict/words')
+    general_dict = load_english_dict(f'{base_dir}/log-recommender/eng-dicts')
 
     transformed, nontransformed, possible_typos = get_splittings(freqs.keys(), freqs, general_dict, params)
 
