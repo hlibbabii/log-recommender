@@ -1,18 +1,19 @@
 import os
 from collections import defaultdict
 
-from dataprep.lcsplitting.lowercase_words_splitter import create_dict
+from dataprep import base_project_dir
+from dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
 
-path_to_preprocessed_project_file = "/home/hlib/thesis/log-recommender/nn-data/devanbu_no_replaced_identifier_split_no_tabs/train/context.1.src"
+path_to_preprocessed_project_file = f"{base_project_dir}/nn-data/devanbu_no_replaced_identifier_split_no_tabs/train/context.1.src"
 
-path_to_dicts = "/home/hlib/thesis/log-recommender/dicts/"
+path_to_dicts = f"{base_project_dir}/dicts/"
 
 lang_to_number = defaultdict(int)
 lang_to_word_examples = defaultdict(list)
 
-english_general_dict = create_dict(f'/usr/share/dict/words')
+english_general_dict = load_english_dict(f'{base_project_dir}/eng-dicts')
 
-dict_files_names = [f for f in os.listdir("/home/hlib/thesis/log-recommender/dicts")]
+dict_files_names = [f for f in os.listdir(f"{base_project_dir}/dicts")]
 word_to_lang_map = {}
 for dict_file_name in dict_files_names:
     with open(f'{path_to_dicts}/{dict_file_name}', 'r') as f:
