@@ -155,7 +155,7 @@ def get_splittings(words_to_split, freqs, general_dict, params):
 def load_english_dict(path_to_dict_dir):
     general_dict = {}
     for file in os.listdir(path_to_dict_dir):
-        with open(file, 'r') as f:
+        with open(f'{path_to_dict_dir}/{file}', 'r') as f:
             for line in f:
                 general_dict[line[:-1].lower()] = 1
     return general_dict
