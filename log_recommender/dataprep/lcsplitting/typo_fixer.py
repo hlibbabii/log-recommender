@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from tqdm import tqdm
 
 from dataprep import base_project_dir
@@ -6,7 +8,7 @@ from dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
 
 def get_possible_fixes_candidates(word):
     ln = len(word)
-    return general_dict[ln - 1] + general_dict[ln] + general_dict[ln + 1]
+    return len_to_words_in_dict[ln - 1] + len_to_words_in_dict[ln] + len_to_words_in_dict[ln + 1]
 
 
 from Levenshtein.StringMatcher import StringMatcher
@@ -39,6 +41,11 @@ if __name__ == '__main__':
             words_with_typos.append(line[:-1])
 
     general_dict = load_english_dict(f'{base_project_dir}/eng-dicts')
+    len_to_words_in_dict = defaultdict(list)
+    for w in general_dict:
+        len_to_words_in_dict[len(w)].append(w)
+    len_to_words_in_dict.default_factory = None
+
 
     with open(file_with_fixes, 'w') as f:
         for word in tqdm(words_with_typos):
