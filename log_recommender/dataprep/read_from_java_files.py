@@ -51,15 +51,15 @@ def preprocess_and_write(src_dir, dest_dir, subdir, chunk):
 
 
 if __name__ == '__main__':
-    base='/home/lv71161/hlibbabii'
-    base_to=f'{base}/log-recommender/nn-data/'
-    base_from=f'{base}/raw_datasets/devanbu/'
+    base = os.environ['THESIS_DIR'] if 'THESIS_DIR' in os.environ else os.environ['HOME']
+    base_to = f'{base}/log-recommender/nn-data'
+    base_from = f'{base}/raw_datasets/devanbu'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--raw-dataset', action='store')
-    parser.add_argument('--dest-dataset', action='store')
-    parser.add_argument('--folder', action='store')
-    parser.add_argument('--chunk', action='store')
+    parser.add_argument('--raw-dataset', action='store', default='few_data')
+    parser.add_argument('--dest-dataset', action='store', default='few_data')
+    parser.add_argument('--folder', action='store', default='train')
+    parser.add_argument('--chunk', action='store', default='1')
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG)
