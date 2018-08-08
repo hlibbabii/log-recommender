@@ -20,3 +20,11 @@ hostname
 realtime
 whitelist
 popup
+invocable
+compilable
+ide
+configurer
+installable
+num
+bilinear
+scriptable
