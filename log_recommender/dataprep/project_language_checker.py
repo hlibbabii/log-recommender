@@ -8,9 +8,6 @@ path_to_dir_with_preprocessed_projects = f"{base_project_dir}/nn-data/devanbu_no
 
 path_to_dicts = f"{base_project_dir}/dicts/"
 
-lang_to_number = defaultdict(int)
-lang_to_word_examples = defaultdict(list)
-
 english_general_dict = load_english_dict(f'{base_project_dir}/eng-dicts')
 
 dict_files_names = [f for f in os.listdir(f"{base_project_dir}/dicts")]
@@ -25,6 +22,8 @@ for dict_file_name in dict_files_names:
 # print(word_to_lang_map)
 
 for file in os.listdir(path_to_dir_with_preprocessed_projects):
+    lang_to_number = defaultdict(int)
+    lang_to_word_examples = defaultdict(list)
     total = 0
     with open(os.path.join(path_to_dir_with_preprocessed_projects, file), 'r') as f:
         for line in f:
@@ -35,6 +34,6 @@ for file in os.listdir(path_to_dir_with_preprocessed_projects):
                         lang_to_number[word_to_lang_map[word]] += 1
                         lang_to_word_examples[word_to_lang_map[word]].append(word)
 
-    lang_to_percent = {k: float(v) / total for k, v in lang_to_number.items()}
-    print(lang_to_percent)
+    lang_to_percent = {k: float(v) / total if total > 0 else 0 for k, v in lang_to_number.items()}
+    print(f'Gen stats: file:{file}, {lang_to_percent}, total: {total}')
     print(lang_to_word_examples)
