@@ -4,7 +4,7 @@ from collections import defaultdict
 from dataprep import base_project_dir
 from dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
 
-path_to_preprocessed_project_file = f"{base_project_dir}/nn-data/devanbu_no_replaced_identifier_split_no_tabs/train/context.1.src"
+path_to_dir_with_preprocessed_projects = f"{base_project_dir}/nn-data/devanbu_no_replaced_identifier_split_no_tabs/train"
 
 path_to_dicts = f"{base_project_dir}/dicts/"
 
@@ -24,16 +24,17 @@ for dict_file_name in dict_files_names:
 
 # print(word_to_lang_map)
 
-total = 0
-with open(path_to_preprocessed_project_file, 'r') as f:
-    for line in f:
-        for word in line.split():
-            total += 1
-            if word in word_to_lang_map:
-                if word not in lang_to_word_examples[word_to_lang_map[word]]:
-                    lang_to_number[word_to_lang_map[word]] += 1
-                    lang_to_word_examples[word_to_lang_map[word]].append(word)
+for file in os.listdir(path_to_dir_with_preprocessed_projects):
+    total = 0
+    with open(os.path.join(path_to_dir_with_preprocessed_projects, file), 'r') as f:
+        for line in f:
+            for word in line.split():
+                total += 1
+                if word in word_to_lang_map:
+                    if word not in lang_to_word_examples[word_to_lang_map[word]]:
+                        lang_to_number[word_to_lang_map[word]] += 1
+                        lang_to_word_examples[word_to_lang_map[word]].append(word)
 
-lang_to_percent = {k: float(v) / total for k, v in lang_to_number.items()}
-print(lang_to_percent)
-print(lang_to_word_examples)
+    lang_to_percent = {k: float(v) / total for k, v in lang_to_number.items()}
+    print(lang_to_percent)
+    print(lang_to_word_examples)
