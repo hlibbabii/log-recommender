@@ -36,7 +36,14 @@ def calc_lang_stats(path_to_dir_with_preprocessed_projects, file, word_to_lang_m
                             lang_to_word_examples[lang].append(word)
 
     lang_to_percent = {k: float(v) / total if total > 0 else 0 for k, v in lang_to_number.items()}
-    return lang_to_percent, lang_to_word_examples, total
+    return lang_to_percent, lang_to_word_examples, total, encountered_words
+
+
+def check_more_than_limit(lang_to_percent):
+    for v in lang_to_percent.values():
+        if v > 0.01:
+            return True
+    return False
 
 
 if __name__ == '__main__':
@@ -48,7 +55,9 @@ if __name__ == '__main__':
     word_to_lang_map = create_word_to_lang_map(path_to_dicts, english_general_dict)
 
     for file in os.listdir(path_to_dir_with_preprocessed_projects):
-        lang_to_percent, lang_to_word_examples, total = \
+        lang_to_percent, lang_to_word_examples, total, enc_words = \
             calc_lang_stats(path_to_dir_with_preprocessed_projects, file, word_to_lang_map)
-        print(f'Gen stats: file:{file}, {lang_to_percent}, total: {total}')
-        print(lang_to_word_examples)
+        non_eng = check_more_than_limit(lang_to_percent)
+        if non_eng:
+            print(f'Gen stats: file:{file}, {lang_to_percent}, total: {total}')
+            print(lang_to_word_examples)
