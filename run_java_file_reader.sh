@@ -38,6 +38,7 @@ echo "Using $PYTHON ..."
 for (( c=$CHUNK_FROM; c<=$CHUNK_TO; c++ ))
 do
     $PYTHON dataprep/read_from_java_files.py --raw-dataset $RAW_DATASET --dest-dataset $DEST_DATASET --folder $FOLDER --chunk $c &
+    sleep 5
 done
 
 cd ..
