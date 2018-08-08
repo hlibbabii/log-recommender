@@ -4,6 +4,9 @@ from collections import defaultdict
 from dataprep import base_project_dir
 from dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
 
+MIN_FREQ_TO_BE_NON_ENGLISH = 0.01
+MIN_WORDS_TO_BE_NON_ENGLISH = 0.01
+
 
 def create_word_to_lang_map(dicts_dir, english_general_dict):
     dict_files_names = [f for f in os.listdir(dicts_dir)]
@@ -39,9 +42,9 @@ def calc_lang_stats(path_to_dir_with_preprocessed_projects, file, word_to_lang_m
     return lang_to_percent, lang_to_word_examples, total, encountered_words
 
 
-def check_more_than_limit(lang_to_percent):
+def check_more_than_limit(lang_to_percent, total):
     for v in lang_to_percent.values():
-        if v > 0.01:
+        if v > MIN_FREQ_TO_BE_NON_ENGLISH and total * v > MIN_WORDS_TO_BE_NON_ENGLISH:
             return True
     return False
 
@@ -54,10 +57,16 @@ if __name__ == '__main__':
     english_general_dict = load_english_dict(path_to_general_english_dict)
     word_to_lang_map = create_word_to_lang_map(path_to_dicts, english_general_dict)
 
+    non_english_files = []
     for file in os.listdir(path_to_dir_with_preprocessed_projects):
         lang_to_percent, lang_to_word_examples, total, enc_words = \
             calc_lang_stats(path_to_dir_with_preprocessed_projects, file, word_to_lang_map)
-        non_eng = check_more_than_limit(lang_to_percent)
+        non_eng = check_more_than_limit(lang_to_percent, total)
         if non_eng:
+            non_english_files.append(file)
             print(f'Gen stats: file:{file}, {lang_to_percent}, total: {total}')
             print(lang_to_word_examples)
+            print("\n\n")
+    with open(f'{path_to_dir_with_preprocessed_projects}/lang_stats.txt', 'w') as f:
+        for file in non_english_files:
+            f.write(file + "\n")
