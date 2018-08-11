@@ -6,12 +6,13 @@ from torchtext import data
 class Mode(Enum):
     TRAINING = auto()
     LEARNING_RATE_FINDING = auto()
+    VOCAB_BUILDING = auto()
     # ONLY_TESTING = auto()
 
 
 nn_params = {
     'path_to_data': '../../nn-data/',
-    'dataset_name': 'devanbu_no_replaced_identifier_split_no_tabs_new_splits3_under_5000_15_percent',
+    'dataset_name': 'few-data',
     # 'base_model': 'baseline_',
     'arch': {
         'bs': 16,
@@ -35,7 +36,7 @@ nn_params = {
         'how_many_words': 2000,
         'starting_words': "<comment> public static class"
     },
-    'mode': Mode.LEARNING_RATE_FINDING
+    'mode': Mode.VOCAB_BUILDING
 }
 
 LEVEL_LABEL = data.Field(sequential=False)

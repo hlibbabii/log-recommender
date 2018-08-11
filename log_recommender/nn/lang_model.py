@@ -44,7 +44,7 @@ def create_df(dir):
     return pandas.DataFrame(lines)
 
 
-def get_model(model_name):
+def get_model(model_name, only_build_vocab=False):
     dataset_name = nn_params["dataset_name"]
     path_to_dataset = f'{nn_params["path_to_data"]}/{dataset_name}'
     path_to_model = f'{path_to_dataset}/{model_name}'
@@ -66,6 +66,8 @@ def get_model(model_name):
     pickle.dump(text_field, open(f'{path_to_dataset}/TEXT.pkl', 'wb'))
 
     logging.info(f'Dictionary size is: {len(text_field.vocab.itos)}')
+    if only_build_vocab:
+        return None, text_field, None
 
     opt_fn = partial(torch.optim.Adam, betas=nn_arch['betas'])
 
@@ -213,7 +215,11 @@ if __name__ =='__main__':
     logging.info(nn_arch)
     path_to_dataset = f'{nn_params["path_to_data"]}/{nn_params["dataset_name"]}'
     force_rerun = False
-    if "base_model" in nn_params:
+    if nn_params['mode'] == Mode.VOCAB_BUILDING:
+        learner, text_field, model_trained = get_model("vocab", only_build_vocab=True)
+        logging.info("Vocab is built.")
+        exit(0)
+    elif "base_model" in nn_params:
         base_model_name = nn_params["base_model"]
         path_to_best_model = f'{path_to_dataset}/{base_model_name}/models/{nn_params["dataset_name"]}_best.h5'
         logging.info(f"Using base model: {base_model_name}")
