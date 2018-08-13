@@ -71,15 +71,7 @@ def split_with_numbers(identifier, add_separator=False):
     return add_between_elements(parts, placeholders['identifier_separator']) if add_separator else parts
 
 
-SPLITTING_FILE_LOCATION=""
-splitting_dict = {}
-with open(SPLITTING_FILE_LOCATION, 'r') as f:
-    for line in f:
-        word, splitting = line.split("|")
-        splitting_dict[word] = splitting.split()
-
-
-def split_lowercase(identifier, add_separator=False):
+def split_lowercase(identifier, splitting_dict, add_separator=False):
     if identifier in splitting_dict:
         parts = splitting_dict[identifier]
     else:
@@ -229,9 +221,16 @@ def split_line_with_numbers(line):
     return [item for identifier in line
             for item in split_with_numbers(identifier, add_separator=True)]
 
-def split_line_lowercase(line):
+
+def split_line_lowercase(splitting_file_location, line):
+    splitting_dict = {}
+    with open(splitting_file_location, 'r') as f:
+        for ln in f:
+            word, splitting = ln.split("|")
+            splitting_dict[word] = splitting.split()
+
     return [item for identifier in line
-            for item in split_lowercase(identifier, add_separator=True)]
+            for item in split_lowercase(identifier, splitting_dict, add_separator=True)]
 
 
 def newline_and_tab_remover(tokens):
@@ -253,7 +252,9 @@ def names_to_functions(pp_names, context):
     pps = []
     java_parser = JavaParser()
     for name in pp_names:
-        if name == 'java.strip_off_identifiers':
+        if name == 'split_line_lowercase':
+            pps.append(partial(split_line_lowercase, context['splitting_file_path']))
+        elif name == 'java.strip_off_identifiers':
             pps.append(partial(java_parser.strip_off_identifiers, context['interesting_context_words']))
         elif name.startswith("java."):
             pps.append(partial(getattr(JavaParser, name[5:]), java_parser))

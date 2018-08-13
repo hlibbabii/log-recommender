@@ -45,7 +45,8 @@ def preprocess_and_write(src_dir, dest_dir, subdir, chunk):
                 logging.debug(f"File {file_path} has {len(lines_from_file)} lines. Skiping...")
                 continue
             logging.info(f"Processing file: {file_path} [{ind+1} out of {total_files}] containing {len(lines_from_file)} lines")
-            processed = apply_preprocessors(lines_from_file, pp_params["preprocessors"], {'interesting_context_words': []})
+            processed = apply_preprocessors(lines_from_file, pp_params["preprocessors"], {
+                'interesting_context_words': [], 'splitting_file_path': f'{dest_dir}/../splittings.txt'})
             f.write(processed)
     # remove .part to show that all raw files in this chunk have been preprocessed
     os.rename(f'{path_to_preprocessed_file}.part', path_to_preprocessed_file)
