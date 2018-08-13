@@ -5,7 +5,7 @@ from dataprep import base_project_dir
 from dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
 
 MIN_FREQ_TO_BE_NON_ENGLISH = 0.01
-MIN_WORDS_TO_BE_NON_ENGLISH = 0.01
+MIN_WORDS_TO_BE_NON_ENGLISH = 5
 
 
 def create_word_to_lang_map(dicts_dir, english_general_dict):
