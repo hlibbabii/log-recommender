@@ -5,9 +5,9 @@ import os
 from ast import literal_eval
 
 from fastai.imports import tqdm
-from java_parser import JavaParser
+from dataprep.java_parser import JavaParser
 from preprocessors import apply_preprocessors, strip_line, to_lower, split_log_text_to_keywords_and_identifiers, \
-    replace_string_resources_names, replace_variable_place_holders, add_ect, spl_verbose
+    replace_string_resources_names, replace_variable_place_holders, add_ect
 from util import io_utils
 
 from log_statement import LogStatement
