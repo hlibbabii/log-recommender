@@ -1,10 +1,11 @@
-from log_recommender.util import sum_vectors
+from util.util import sum_vectors
 
 __author__ = 'hlib'
 
 import unittest
 
-class VisualTest(unittest.TestCase):
+
+class Test(unittest.TestCase):
     def test_sum_vectors(self):
         vectors = [[0.0, 1.0, 9.0, 8.0, 7.0],
                 [0.0, 1.0, 9.0, 8.0, 7.0],
@@ -15,3 +16,7 @@ class VisualTest(unittest.TestCase):
         actual = sum_vectors(vectors)
 
         self.assertEqual(expected, actual)
+
+
+if __name__ == '__main__':
+    unittest.main()
