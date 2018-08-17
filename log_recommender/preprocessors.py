@@ -22,6 +22,7 @@ def add_between_elements(list, what_to_add):
 def create_regex_from_token_list(token_list):
     m = list(map(lambda x:
              x.replace('\\', '\\\\')
+                 .replace("^", "\\^")
                  .replace("+", "\+")
                  .replace("|", "\|")
                  .replace("*", "\*")
@@ -63,12 +64,12 @@ def camel_case_split(identifier, add_separator=False):
         return [identifier]
     matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
     parts = [m.group(0).lower() for m in matches]
-    return add_between_elements(parts, placeholders['identifier_separator']) if add_separator else parts
+    return add_between_elements(parts, placeholders['camel_case_separator']) if add_separator else parts
 
 
 def split_with_numbers(identifier, add_separator=False):
-    parts = list(filter(None, re.split('(?<=[a-zA-Z0-9])([0-9])(?=[a-zA-Z0-9]+|$)', identifier)))
-    return add_between_elements(parts, placeholders['identifier_separator']) if add_separator else parts
+    parts = list(filter(None, re.split('(?<=[a-zA-Z0-9])?([0-9])(?=[a-zA-Z0-9]+|$)', identifier)))
+    return add_between_elements(parts, placeholders['camel_case_separator']) if add_separator else parts
 
 
 def split_lowercase(identifier, splitting_dict, add_separator=False):
@@ -76,13 +77,13 @@ def split_lowercase(identifier, splitting_dict, add_separator=False):
         parts = splitting_dict[identifier]
     else:
         parts = [identifier]
-    return add_between_elements(parts, placeholders['identifier_separator']) if add_separator else parts
+    return add_between_elements(parts, placeholders['same_case_separator']) if add_separator else parts
 
 
 def underscore_split(identifier, add_separator=False):
     #TODO it creates empty element if the identifier starts or ends with underscore
     parts = identifier.split("_")
-    return add_between_elements(parts, placeholders['lowercase_identifier_separator']) if add_separator else parts
+    return add_between_elements(parts, placeholders['underscore_separator']) if add_separator else parts
 
 #======== Token list level   =========
 
@@ -136,7 +137,7 @@ def split_numeric_literals(multitokens):
     res = []
     for multitoken in multitokens:
         res.extend(list(filter(None, re.split(
-            f'(?:^|(?<=[^a-zA-Z0-9]))({NUMBER_REGEX})(?=[^a-zA-Z0-9]|$)',
+            f'(?:^|(?<=[^a-zA-Z0-9]))({NUMBER_REGEX})(?=[^a-zA-Z0-9.]|$)',
             multitoken))))
     return res
 

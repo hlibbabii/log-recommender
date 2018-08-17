@@ -12,8 +12,10 @@ placeholders= {
     'string_literal': '`stringliteral`',
     'hex_start': '`hexstart`',
     'identifier': '`identifier`',
-    'identifier_separator': '`idsep`',
-    'lowercase_identifier_separator': '`lidsep`',
+    'number_separator': '`numsep`',
+    'same_case_separator': '`scsep`',
+    'camel_case_separator': '`ccsep`',
+    'underscore_separator': '`ussep`',
     'dot': '`dot`',
     'long': '`lng`',
     'float': '`flt`',
@@ -36,9 +38,12 @@ two_character_tokens = [
     "-=",
     "/=",
     "*=",
-    "%="
+    "%=",
     "<=",
     ">=",
+    "^=",
+    "&=",
+    "|=",
     ">>",
     "<<",
     "&&",
@@ -121,7 +126,7 @@ key_words = [
 "null"
 ]
 
-NUMBER_REGEX = '-?(?:0x[0-9a-fA-F]+[lL]?|[0-9]+[lL]?|(?:[0-9]*\.[0-9]+|[0-9]+(?:\.[0-9]*)?)(?:[eE][-+][0-9]+)?[fFdD]?)'
+NUMBER_REGEX = '-?(?:0x[0-9a-fA-F]+[lL]?|[0-9]+[lL]?|(?:[0-9]*\.[0-9]+|[0-9]+(?:\.[0-9]*)?)(?:[eE][-+]?[0-9]+)?[fFdD]?)'
 
 
 def is_number(s):
