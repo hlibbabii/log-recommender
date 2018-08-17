@@ -83,7 +83,13 @@ def split_lowercase(identifier, splitting_dict, add_separator=False):
 def underscore_split(identifier, add_separator=False):
     #TODO it creates empty element if the identifier starts or ends with underscore
     parts = identifier.split("_")
-    return add_between_elements(parts, placeholders['underscore_separator']) if add_separator else parts
+    parts_with_separators = add_between_elements(parts,
+                                                 placeholders['underscore_separator']) if add_separator else parts
+    if parts_with_separators[0] == '':
+        del (parts_with_separators[0])
+    if parts_with_separators[-1] == '':
+        del (parts_with_separators[-1])
+    return parts_with_separators
 
 #======== Token list level   =========
 

@@ -3,7 +3,7 @@ pp_params = {
         "lines_to_one_lines_with_newlines",
         "replace_4whitespaces_with_tabs",
         "split_numeric_literals",
-        "java.strip_off_number_literals",
+        "java.process_number_literals",
         "spl_verbose",
         "split_line_camel_case",
         "split_line_underscore",

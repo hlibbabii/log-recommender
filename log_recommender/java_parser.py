@@ -212,8 +212,7 @@ class JavaParser(object):
                 result.append(word)
         return result
 
-    # TODO rename to process number literal
-    def strip_off_number_literals(self, context):
+    def process_number_literals(self, context):
         result = []
         for word in context:
             hex=False

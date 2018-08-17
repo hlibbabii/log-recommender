@@ -17,7 +17,7 @@ preprocessors = [
         "java.strip_off_string_literals",
         "java.strip_off_multiline_comments",
         "java.strip_off_one_line_comments",
-        "java.strip_off_number_literals"
+    "java.process_number_literals"
     ]
 
 def get_true_context(log):
