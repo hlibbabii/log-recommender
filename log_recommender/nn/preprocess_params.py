@@ -5,7 +5,7 @@ pp_params = {
         "split_numeric_literals",
         "java.strip_off_number_literals",
         "spl_verbose",
-        "split_line_canel_case",
+        "split_line_camel_case",
         "split_line_underscore",
         # "merge_tabs",
         "java.strip_off_string_literals",

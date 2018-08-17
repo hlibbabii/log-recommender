@@ -208,7 +208,7 @@ def filter_out_1_and_2_char_tokens(tokens):
     return list(filter(lambda x: x not in one_character_tokens and x not in two_character_tokens, tokens))
 
 
-def split_line_canel_case(context_line):
+def split_line_camel_case(context_line):
     return [item for identifier in context_line
             for item in camel_case_split(identifier, add_separator=True)]
 

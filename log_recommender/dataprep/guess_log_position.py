@@ -12,7 +12,7 @@ preprocessors = [
         "replace_4whitespaces_with_tabs",
         "spl_verbose",
         "newline_and_tab_remover",
-        "split_line_canel_case",
+    "split_line_camel_case",
         "split_line_underscore",
         "java.strip_off_string_literals",
         "java.strip_off_multiline_comments",
