@@ -4,8 +4,8 @@ import logging
 import os
 
 from dataprep import base_project_dir, base_dir
+from dataprep.preprocessors import apply_preprocessors
 from nn.preprocess_params import pp_params
-from preprocessors import apply_preprocessors
 
 
 def java_file_mapper(dir, func):

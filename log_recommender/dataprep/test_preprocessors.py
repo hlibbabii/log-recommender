@@ -1,8 +1,7 @@
 import deepdiff
 
+from dataprep.preprocessors.core import apply_preprocessors
 from nn.preprocess_params import pp_params
-from preprocessors import apply_preprocessors, lines_to_one_lines_with_newlines, split_numeric_literals, \
-    split_line_underscore, split_line_camel_case
 
 text2 = '''
 ] _my_favorite_ints_

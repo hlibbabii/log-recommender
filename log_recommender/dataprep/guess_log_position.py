@@ -1,8 +1,8 @@
 import argparse
-import collections
 import os
 
-from preprocessors import apply_preprocessors, to_string_repr
+from dataprep.preprocessors import apply_preprocessors
+from dataprep.preprocessors.general import to_string_repr
 from util import io_utils
 
 LOG_PLACEHOLDER = "<LOG>"

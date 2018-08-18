@@ -1,17 +1,16 @@
 import argparse
 import logging
-import re
 import os
+import re
 from ast import literal_eval
 
+from dataprep.preprocessors import apply_preprocessors
+from dataprep.preprocessors import java
+from dataprep.preprocessors.legacy import replace_string_resources_names, strip_line, replace_variable_place_holders, \
+    split_log_text_to_keywords_and_identifiers, to_lower, add_ect
 from fastai.imports import tqdm
-from dataprep.java_parser import JavaParser
-from preprocessors import apply_preprocessors, strip_line, to_lower, split_log_text_to_keywords_and_identifiers, \
-    replace_string_resources_names, replace_variable_place_holders, add_ect
-from util import io_utils
-
 from log_statement import LogStatement
-
+from util import io_utils
 
 __author__ = 'hlib'
 
@@ -26,21 +25,20 @@ def extract_log_level(line):
         return "Unknown"
 
 def extract_text_and_variables(line):
-    java_parser = JavaParser()
     full_line = line
     text = ""
     text_parts = 0
-    opening_quote_index = java_parser.find_not_escaped_double_quote(line)
+    opening_quote_index = java.find_not_escaped_double_quote(line)
     while opening_quote_index is not None:
         line = line[opening_quote_index + 1:]
-        closing_quote_index = java_parser.find_not_escaped_double_quote(line)
+        closing_quote_index = java.find_not_escaped_double_quote(line)
         if closing_quote_index is None:
             print("No closing quote found for the opening quote in string: " + full_line)
             return full_line, "", 0
         text += line[:closing_quote_index]
         text_parts += 1
         line = line[closing_quote_index+1:]
-        opening_quote_index = java_parser.find_not_escaped_double_quote(line)
+        opening_quote_index = java.find_not_escaped_double_quote(line)
     if line.find("+") >= 0:
         text_parts += 1
     if text_parts > 1:
