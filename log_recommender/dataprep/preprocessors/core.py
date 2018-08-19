@@ -6,7 +6,8 @@ from functools import partial
 
 preps_to_required_params_dict = {
     'same_case_split.split': ['splitting_file_path'],
-    'java.strip_off_identifiers': ['interesting_context_words']
+    'java.strip_off_identifiers': ['interesting_context_words'],
+    'repr.to_repr': ['verbosity_params']
 }
 
 def names_to_functions(pp_names, context):

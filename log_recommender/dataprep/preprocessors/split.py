@@ -1,48 +1,80 @@
 import re
 
-from dataprep.preprocessors import placeholders
-from dataprep.preprocessors.util import add_between_elements
-
-
 ############   Multitoken list level    ###############3
-
-def camel_case(context_line):
-    return [item for identifier in context_line
-            for item in camel_case_split(identifier, add_separator=True)]
-
-
-def underscore(context_line):
-    return [item for identifier in context_line
-            for item in underscore_split(identifier, add_separator=True)]
+from dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer
+from dataprep.preprocessors.model.split import CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, \
+    NonDelimiterSplitContainer
 
 
-def with_numbers(line):
-    return [item for identifier in line
-            for item in split_with_numbers(identifier, add_separator=True)]
+def camel_case(token_list):
+    return [camel_case_split(identifier) for identifier in token_list]
+
+
+def underscore(token_list):
+    return [underscore_split(identifier) for identifier in token_list]
+
+
+def with_numbers(token_list):
+    return [with_numbers_split(identifier) for identifier in token_list]
 
 
 #############  Token Level ################
 
-def camel_case_split(identifier, add_separator=False):
-    if identifier == '\n': #TODO XXX
-        return [identifier]
-    matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
-    parts = [m.group(0).lower() for m in matches]
-    return add_between_elements(parts, placeholders['camel_case_separator']) if add_separator else parts
+def camel_case_split(token):
+    if isinstance(token, ProcessableToken):
+        matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', token.get_val())
+        parts = [m.group(0) for m in matches]
+        parts_lowercased = [ProcessableToken(p.lower()) for p in parts]
+        if len(parts) > 1:
+            return CamelCaseSplit(parts_lowercased, parts[0][0].isupper())
+        else:
+            return token
+    elif isinstance(token, ProcessableTokenContainer):
+        parts = []
+        for subtoken in token.get_subtokens():
+            parts.append(camel_case_split(subtoken))
+        if isinstance(token, NonDelimiterSplitContainer):
+            return type(token)(parts, token.is_capitalized())
+        else:
+            return type(token)(parts)
+    else:
+        return token
 
 
-def split_with_numbers(identifier, add_separator=False):
-    parts = list(filter(None, re.split('(?<=[a-zA-Z0-9])?([0-9])(?=[a-zA-Z0-9]+|$)', identifier)))
-    return add_between_elements(parts, placeholders['camel_case_separator']) if add_separator else parts
+def with_numbers_split(token):
+    if isinstance(token, ProcessableToken):
+        parts = [w for w in list(filter(None, re.split('(?<=[a-zA-Z0-9])?([0-9])(?=[a-zA-Z0-9]+|$)', token.get_val())))]
+        pt_parts = [ProcessableToken(w) for w in parts]
+        if len(parts) > 1:
+            return WithNumbersSplit(pt_parts, parts[0][0].isupper())
+        else:
+            return token
+    elif isinstance(token, ProcessableTokenContainer):
+        parts = []
+        for subtoken in token.get_subtokens():
+            parts.append(with_numbers_split(subtoken))
+        if isinstance(token, NonDelimiterSplitContainer):
+            return type(token)(parts, token.is_capitalized())
+        else:
+            return type(token)(parts)
+    else:
+        return token
 
 
-def underscore_split(identifier, add_separator=False):
-    #TODO it creates empty element if the identifier starts or ends with underscore
-    parts = identifier.split("_")
-    parts_with_separators = add_between_elements(parts,
-                                                 placeholders['underscore_separator']) if add_separator else parts
-    if parts_with_separators[0] == '':
-        del (parts_with_separators[0])
-    if parts_with_separators[-1] == '':
-        del (parts_with_separators[-1])
-    return parts_with_separators
+def underscore_split(token):
+    if isinstance(token, ProcessableToken):
+        parts = [ProcessableToken(w) for w in token.get_val().split("_")]
+        if len(parts) > 1:
+            return UnderscoreSplit(parts)
+        else:
+            return token
+    elif isinstance(token, ProcessableTokenContainer):
+        parts = []
+        for subtoken in token.get_subtokens():
+            parts.append(underscore_split(subtoken))
+        if isinstance(token, NonDelimiterSplitContainer):
+            return type(token)(parts, token.is_capitalized())
+        else:
+            return type(token)(parts)
+    else:
+        return token

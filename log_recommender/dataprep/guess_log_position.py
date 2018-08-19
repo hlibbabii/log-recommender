@@ -2,7 +2,7 @@ import argparse
 import os
 
 from dataprep.preprocessors import apply_preprocessors
-from dataprep.preprocessors.general import to_string_repr
+from dataprep.preprocessors.general import to_token_list
 from util import io_utils
 
 LOG_PLACEHOLDER = "<LOG>"
@@ -23,13 +23,13 @@ preprocessors = [
 def get_true_context(log):
     pp_before = apply_preprocessors(log.context.context_before[1:], preprocessors)
     pp_after = apply_preprocessors(log.context.context_after[:-1], preprocessors)
-    return apply_preprocessors(pp_before + [LOG_PLACEHOLDER] + pp_after, [to_string_repr])
+    return apply_preprocessors(pp_before + [LOG_PLACEHOLDER] + pp_after, [to_token_list])
 
 
 def get_false_context(log):
     pp_before = apply_preprocessors(log.context.context_before[:-1], preprocessors)
     pp_after = apply_preprocessors([log.context.context_before[-1]] + log.context.context_after[:-2], preprocessors)
-    return apply_preprocessors(pp_before + [LOG_PLACEHOLDER] + pp_after, [to_string_repr])
+    return apply_preprocessors(pp_before + [LOG_PLACEHOLDER] + pp_after, [to_token_list])
 
 
 def write_corpus(preprocessed_logs, output_dir):

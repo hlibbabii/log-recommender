@@ -3,8 +3,8 @@ import re
 
 #################   Multitoken list  level    #######
 from dataprep.preprocessors import java
-from dataprep.preprocessors import placeholders
 from dataprep.preprocessors.general import spl, spl_verbose
+from dataprep.preprocessors.model.placeholders import placeholders
 
 
 def replace_variable_place_holders(multitoken_list):

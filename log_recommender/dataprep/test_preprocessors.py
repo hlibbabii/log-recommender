@@ -4,12 +4,12 @@ from dataprep.preprocessors.core import apply_preprocessors
 from nn.preprocess_params import pp_params
 
 text2 = '''
-] _my_favorite_ints_
+_my_favoRite_ints_
 '''
 
 text = '''
 long[] lovely_longs = {0x34a35EL,     0x88bc96fl           , -0x34L};
-int[] _my_favorite_ints_ = {0x12, 0x1fE, 441, -81, -0xfFf};
+int[] _my_favoRite_ints_ = {0x12, 0x1fE, 441, -81, -0xfFf};
 float[] floats = {-0.43E4f, .58F, 0.d, -9.63e+2D, 0.E-8}; 
 BigAWESOMEString[] a2y = "abc".doSplit("\\"");
 // this code won't compile but the preprocessing still has to be done corrrectly
@@ -32,22 +32,30 @@ $
 <=
 >=
 @
-^=
-&=
-#
->>
+    ^=
+    &=
+    #
+                                                                                 >>
 <<
 &&
 ||
 +*!/><\t\n
 {}[],.-:();&|\\'~%^
-/*multi-line comment
-*/
-
+/*multi-line MyComment_
+*//
+_operations
 '''
 
+text2 = '''" RegisterImage "'''
+
 res = apply_preprocessors([l for l in text.split("\n")], pp_params["preprocessors"], {
-    'interesting_context_words': []})
+    'interesting_context_words': [], 'verbosity_params': {
+        'splitting_done': True,
+    'number_splitting_done': True,
+    'comments_str_literals_obfuscated': True,
+    'new_lines_and_tabs_removed': False
+
+    }})
 
 print(res)
 
@@ -69,4 +77,4 @@ expected_result = ['long', '[', ']', 'lovely', '`ussep`', 'longs', '=', '{', '`h
                    '(', ')', ';', '&', '|', '\\', "'", '~', '%', '^', '`comment`']
 
 dd = deepdiff.DeepDiff(expected_result, res)
-print(dd)
+# print(dd)

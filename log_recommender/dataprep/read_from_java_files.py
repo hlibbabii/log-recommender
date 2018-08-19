@@ -3,7 +3,7 @@ import json
 import logging
 import os
 
-from dataprep import base_project_dir, base_dir
+from dataprep import base_project_dir
 from dataprep.preprocessors import apply_preprocessors
 from nn.preprocess_params import pp_params
 
@@ -41,23 +41,27 @@ def preprocess_and_write(src_dir, dest_dir, subdir, chunk):
         print(f'Total amount of files to process: {total_files}')
 
         for ind, (lines_from_file, file_path) in enumerate(java_file_mapper(dir_with_files_to_preprocess, read_file_contents)):
-            if len(lines_from_file) > pp_params['more_lines_ignore']:
-                logging.debug(f"File {file_path} has {len(lines_from_file)} lines. Skiping...")
-                continue
+            # if len(lines_from_file) > pp_params['more_lines_ignore']:
+            #     logging.debug(f"File {file_path} has {len(lines_from_file)} lines. Skiping...")
+            #     continue
             logging.info(f"Processing file: {file_path} [{ind+1} out of {total_files}] containing {len(lines_from_file)} lines")
-            processed = apply_preprocessors(lines_from_file, pp_params["preprocessors"], {
-                'interesting_context_words': [], 'splitting_file_path': f'{dest_dir}/../splittings.txt'})
+            processed = apply_preprocessors(lines_from_file[:1000], pp_params["preprocessors"], {
+                'interesting_context_words': [],
+                'splitting_file_path': f'{dest_dir}/../splittings.txt',
+                'verbosity_params': {'splitting_done': False, 'number_splitting_done': False,
+                                     'comments_str_literals_obfuscated': False}
+            })
             f.write(processed)
     # remove .part to show that all raw files in this chunk have been preprocessed
     os.rename(f'{path_to_preprocessed_file}.part', path_to_preprocessed_file)
 
 if __name__ == '__main__':
     base_to = f'{base_project_dir}/nn-data'
-    base_from = f'{base_dir}/raw_datasets/devanbu'
+    base_from = f'{base_project_dir}/nn-data'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--raw-dataset', action='store', default='few_data')
-    parser.add_argument('--dest-dataset', action='store', default='few_data')
+    parser.add_argument('--raw-dataset', action='store', default='test')
+    parser.add_argument('--dest-dataset', action='store', default='test')
     parser.add_argument('--folder', action='store', default='train')
     parser.add_argument('--chunk', action='store', default='1')
     args = parser.parse_args()

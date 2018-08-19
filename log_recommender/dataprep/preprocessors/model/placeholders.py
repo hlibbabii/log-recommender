@@ -1,0 +1,19 @@
+placeholders= {
+    'comment': '<comment>',
+    'string_literal': '<str_literal>',
+    'hex_start': '<0x>',
+    'identifier': '<identifier>',
+    'number_separator': '<num_sep>',
+    'same_case_separator': '<sc_sep>',
+    'camel_case_separator': '<cc_sep>',
+    'underscore_separator': '<us_sep>',
+    'capital': '<capital>',
+    'decimal_point': '<dec_point>',
+    'long': '<l>',
+    'float': '<f>',
+    'double': '<d>',
+    'e': '<e>',
+    'var': '<var>',
+    'string_resource': '<str_res>',
+    'ect': '<ect>'
+}
