@@ -91,16 +91,25 @@ if __name__ == '__main__':
         json.dump(verbosity_param_dict, f)
 
     params = []
-    for root, dirs, files in os.walk(raw_dataset_dir):
-        for file in files:
-            if file.endswith(f".java"):
-                first, second, chunk = split_two_last_levels(root)
-                full_src_dir = os.path.join(first, second)
-                full_dest_dir = os.path.join(dest_dataset_dir, second)
-                if not os.path.exists(full_dest_dir):
-                    os.makedirs(full_dest_dir)
-                params.append((full_src_dir, full_dest_dir, chunk, verbosity_param_dict))
 
+    subfolder = "train"
+    full_dest_dir = os.path.join(dest_dataset_dir, subfolder)
+    if not os.path.exists(full_dest_dir):
+        os.makedirs(full_dest_dir)
+    for i in range(10000):
+        params.append((os.path.join(raw_dataset_dir, subfolder), full_dest_dir, i+1, verbosity_param_dict))
+    subfolder = "test"
+    full_dest_dir = os.path.join(dest_dataset_dir, subfolder)
+    if not os.path.exists(full_dest_dir):
+        os.makedirs(full_dest_dir)
+    for i in range(4000):
+        params.append((os.path.join(raw_dataset_dir, subfolder), full_dest_dir, i + 1, verbosity_param_dict))
+    subfolder = "valid"
+    full_dest_dir = os.path.join(dest_dataset_dir, subfolder)
+    if not os.path.exists(full_dest_dir):
+        os.makedirs(full_dest_dir)
+    for i in range(4000):
+        params.append((os.path.join(raw_dataset_dir, subfolder), full_dest_dir, i + 1, verbosity_param_dict))
 
     files_total = len(params)
     current_file = 0
