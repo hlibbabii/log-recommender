@@ -134,7 +134,7 @@ def find_all_comment_string_literal_symbols(token_list):
             i = ind - 1
             while i >= 0 and token_list[i] == BACKSLASH:
                 i -= 1
-            if (ind - i) % 2 == 1:
+            if (ind - i) % 2 == 1 and (ind == 0 or token_list[ind-1] != "'" or ind +1 >= len(token_list) or token_list[ind+1] != "'"):
                 res.append((ind, token_list[ind]))
         elif token_list[ind] in [START_MULTILINE_COMMENT, END_MULTILINE_COMMENT, START_ONE_LINE_COMMENT, NEW_LINE]:
             res.append((ind, token_list[ind]))
@@ -158,10 +158,9 @@ def process_comments_and_str_literals(token_list, context):
     segments_to_remove = []
 
     for index, symbol in comment_string_literal_symbols_locations:
-        logging.debug(f"Processing {index} out of {len(token_list)}")
         if active_symbol is None:
             if symbol == END_MULTILINE_COMMENT:
-                logging.warning(f"{token_list[index-100:index+1]}, index: {index}")
+                logging.warning(f"{repr(' '.join(token_list[index-100:index+1]))}, index: {index}")
                 return token_list
             elif symbol == NEW_LINE:
                 pass
@@ -169,7 +168,7 @@ def process_comments_and_str_literals(token_list, context):
                 active_symbol, active_symbol_index = symbol, index
         elif active_symbol == QUOTE:
             if symbol == NEW_LINE:
-                logging.warning(f"{token_list[index-100:index+1]}, index: {index}")
+                logging.warning(f"{repr(' '.join(token_list[index-100:index+1]))}, index: {index}")
                 return token_list
             elif symbol == QUOTE:
                 segments_to_remove.append((active_symbol_index, index, StringLiteral))
