@@ -77,7 +77,6 @@ def preprocess_and_write(src_file, dest_file, preprocessing_verbosity_params, ol
         logging.error(f"File {src_file} does not exist")
         exit(2)
 
-    start = time.time()
     logging.info(f"Preprocessing parsed file {src_file}")
     with open(src_file, 'rb') as i:
         verbosity_param_dict = pickle.load(i)
@@ -100,7 +99,6 @@ def preprocess_and_write(src_file, dest_file, preprocessing_verbosity_params, ol
                     break
     # remove .part to show that all raw files in this chunk have been preprocessed
     os.rename(f'{dest_file}.{writer.extension}.{NOT_FINISHED_EXTENSION}', f'{dest_file}.{writer.extension}')
-    logging.info(f"Preprocessed in {time.time() - start} seconds")
 
 
 def gen_dir_name(new_verbosity_param_dict, verb_params_short_names):
@@ -176,10 +174,11 @@ if __name__ == '__main__':
                 files_total += 1
 
     current_file = 0
-    import os
+    total_time = 0
     for root, dirs, files in os.walk(full_src_dir):
         for file in files:
             if file.endswith(f".{PARSED_FILE_EXTENSION}") or file.endswith(f".{PART_REPR_EXTENSION}"):
+                start = time.time()
                 current_file += 1
                 logging.info(f"Processing {current_file} out of {files_total}")
                 full_dest_dir_with_sub_dir = os.path.join(full_dest_dir, root[len(full_src_dir)+1:])
@@ -189,3 +188,8 @@ if __name__ == '__main__':
                                      os.path.join(full_dest_dir_with_sub_dir, file),
                                      preprocessing_verbosity_params, old_verbosity_params)
                 os.path.join(full_dest_dir, file)
+                time_for_file = time.time() - start
+                logging.info(f"Preprocessed in {time_for_file} seconds")
+                total_time += time_for_file
+                estimated_time_left = total_time / current_file * files_total
+                logging.info(f"Time elapsed: {total_time}. Estimated_time_left: {estimated_time_left}")
