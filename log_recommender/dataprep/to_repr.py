@@ -62,7 +62,7 @@ class FinalReprWriter(ReprWriter):
         super().__init__(dest_file, 'w', f'{REPR_EXTENSION}')
 
     def write(self, token_list):
-        self.handle.write(repr(" ".join(map(lambda t : str(t) ,token_list))) + f" {placeholders['ect']}\n")
+        self.handle.write(repr(" ".join(map(lambda t : str(t) ,token_list)))[1:-1] + f" {placeholders['ect']}\n")
 
 
 class IntermediateReprWriter(ReprWriter):
