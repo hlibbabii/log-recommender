@@ -90,7 +90,7 @@ def preprocess_and_write(params):
         writer = FinalReprWriter(dest_file) if got_pure_repr else IntermediateReprWriter(dest_file)
 
         if os.path.exists(writer.get_full_dest_name()):
-            logging.warning(f"File {writer.get_full_dest_file()} already exists! Doing nothing.")
+            logging.warning(f"File {writer.get_full_dest_name()} already exists! Doing nothing.")
             return
 
         with writer as w:
@@ -104,7 +104,7 @@ def preprocess_and_write(params):
                 except EOFError:
                     break
     # remove .part to show that all raw files in this chunk have been preprocessed
-    os.rename(f'{writer.get_full_dest_file()}.{NOT_FINISHED_EXTENSION}', f'{writer.get_full_dest_file()}')
+    os.rename(f'{writer.get_full_dest_name()}.{NOT_FINISHED_EXTENSION}', f'{writer.get_full_dest_name()}')
 
 
 def gen_dir_name(new_verbosity_param_dict, verb_params_short_names):
