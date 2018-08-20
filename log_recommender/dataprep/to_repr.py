@@ -188,7 +188,7 @@ if __name__ == '__main__':
     files_total = len(params)
     current_file = 0
     with Pool() as pool:
-        it = pool.imap(preprocess_and_write, params)
+        it = pool.imap_unordered(preprocess_and_write, params)
         for _ in it:
             current_file += 1
             logging.info(f"Processed {current_file} out of {files_total}")
