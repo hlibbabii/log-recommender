@@ -53,8 +53,8 @@ def preprocess_and_write(src_dir, dest_dir, subdir, chunk, verbosity_param_dict)
     os.rename(f'{path_to_preprocessed_file}.part', path_to_preprocessed_file)
 
 if __name__ == '__main__':
-    base_to = f'{base_project_dir}/nn-data'
-    base_from = f'{base_project_dir}/nn-data'
+    base_from = f'{base_project_dir}/../raw_datasets/devanbu'
+    base_to = f'{base_project_dir}/nn-data/new_framework/'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--raw-dataset', action='store', default='test/raw/test1')

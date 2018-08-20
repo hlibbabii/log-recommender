@@ -118,12 +118,12 @@ def gen_dir_name(new_verbosity_param_dict, verb_params_short_names):
 
 
 if __name__ == '__main__':
-    base_from = f'{base_project_dir}/nn-data/test/'
-    base_to = f'{base_project_dir}/nn-data/test/'
+    base_from = f'{base_project_dir}/nn-data/new_framework/'
+    base_to = f'{base_project_dir}/nn-data/new_framework/'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--src-dir', action='store', default='test1/partrepr/spl_1_numspl_1_nostrcom_0_nonewlinestabs_unk')
-    parser.add_argument('--dest-dir', action='store', default='test1/')
+    parser.add_argument('--src-dir', action='store', default='100_percent/parsed')
+    parser.add_argument('--dest-dir', action='store', default='100_percent')
     parser.add_argument('--verbosity-params', action='store', default='splitting_done=1,number_splitting_done=1,comments_str_literals_obfuscated=0,new_lines_and_tabs_removed=0')
     args = parser.parse_args()
 

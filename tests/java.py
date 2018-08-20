@@ -2,7 +2,7 @@ import unittest
 
 from deepdiff import DeepDiff
 
-from dataprep.preprocessors.java import find_not_escaped_double_quote, strip_off_multiline_comments, \
+from dataprep.preprocessors.java import find_all_not_escaped_quotes, strip_off_multiline_comments, \
     strip_off_string_literals
 
 
@@ -10,7 +10,7 @@ class JavaParserTest(unittest.TestCase):
     def test_find_not_escaped_double_quote_trivial(self):
         context = ['4', '"']
 
-        actual = find_not_escaped_double_quote(context)
+        actual = find_all_not_escaped_quotes(context)
 
         expected = 1
 
@@ -19,7 +19,7 @@ class JavaParserTest(unittest.TestCase):
     def test_find_not_escaped_double_quote_trivial_none(self):
         context = ['4']
 
-        actual = find_not_escaped_double_quote(context)
+        actual = find_all_not_escaped_quotes(context)
 
         expected = None
 
@@ -28,7 +28,7 @@ class JavaParserTest(unittest.TestCase):
     def test_find_not_escaped_double_quote_none(self):
         context = ['\\', '"','4']
 
-        actual = find_not_escaped_double_quote(context)
+        actual = find_all_not_escaped_quotes(context)
 
         expected = None
 
@@ -37,7 +37,7 @@ class JavaParserTest(unittest.TestCase):
     def test_find_not_escaped_double_quote_two_slashes(self):
         context = ['\\', '\\', '"', '4']
 
-        actual = find_not_escaped_double_quote(context)
+        actual = find_all_not_escaped_quotes(context)
 
         expected = 2
 
@@ -46,7 +46,7 @@ class JavaParserTest(unittest.TestCase):
     def test_find_not_escaped_double_quote_multiple_escaped_quotes(self):
         context = ['\\', '"', '\\', '\\', '"', '4ed']
 
-        actual = find_not_escaped_double_quote(context)
+        actual = find_all_not_escaped_quotes(context)
 
         expected = 4
 
@@ -55,7 +55,7 @@ class JavaParserTest(unittest.TestCase):
     def test_find_not_escaped_long_seq_before_quote(self):
         context = ['dededede', 'erdfsf', 'eee', 'de', '\\', '"', '4ed']
 
-        actual = find_not_escaped_double_quote(context)
+        actual = find_all_not_escaped_quotes(context)
 
         expected = None
 
@@ -64,7 +64,7 @@ class JavaParserTest(unittest.TestCase):
     def test_find_not_escaped_double_quote_7_slashes(self):
         context = ['\\', '"', '\\', '\\', '\\', '\\', '\\', '\\', '\\', '"', '4']
 
-        actual = find_not_escaped_double_quote(context)
+        actual = find_all_not_escaped_quotes(context)
 
         expected = None
 

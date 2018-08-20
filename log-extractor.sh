@@ -22,12 +22,13 @@ function abspath() {
 
 LINE_PREFIX="#L"
 
-LINES_BEFORE_TO_EXTRACT=1
+LINES_BEFORE_TO_EXTRACT=2
+SNIPPET_SIZE=$((LINES_BEFORE_TO_EXTRACT + LINES_BEFORE_TO_EXTRACT + 1))
 
 
 CLASS='\([Ll]og\|LOG\|[Ll]ogger\|LOGGER\)'
 LEVEL='\([Tt]race\|TRACE\|[Dd]ebug\|DEBUG\|[Ii]nfo\|INFO\|[Ww]arn\|WARN\|[Ee]rror\|ERROR\|[Ff]atal\|FATAL\|[Ff]inest\|FINEST\|[Ff]iner\|FINER\|[Ff]ine\|FINE\|[Cc]onfig\|CONFIG\|[Ii]nfo\|INFO\|[Ww]arning\|WARNING\|[Ss]evere\|SEVERE\)'
-METHOD_CALL="\($LEVEL\|[Ll]og\|LOG\|debuglog\)$LEVEL*(.*)"
+METHOD_CALL="\($LEVEL\|\([Ll]og\|LOG\)$LEVEL\?\|debuglog\)(.*)"
 SOUT="System\.\(out\|err\)\.println(.*)"
 REGEX="\($CLASS\.$METHOD_CALL\|$SOUT\|^\(\\s\)*$METHOD_CALL\)"
 
@@ -70,6 +71,9 @@ cd ${PROJECT_DIR_ABSPATH}
 
 TOTAL_PROJECTS=$(cat ${CSV_FILE} | wc -l)
 PROJECT_COUNTER=0
+GREP_LINE_REGEX="^\(\S\+\.\S\+\)[:-]\([0-9]\+\)[:-]\(.*\)\$"
+GREP_RESULT_SEPARATOR_REGEX="^\-\-\$"
+LINES_EXTRACTED="0"a
 while IFS=, read -r PROJECT_NAME PROJECT_LINK
 do
     PROJECT_COUNTER=$((PROJECT_COUNTER+1))
@@ -79,7 +83,8 @@ do
         echo "file ${FILE_FOR_OUTPUT} already exists. Logs have already been extracted"
         continue
     fi
-    if [ -d "${PROJECT_DIR}/${PROJECT_NAME}" ]; then
+    echo "Checking if dir exists: ${PROJECT_DIR_ABSPATH}/${PROJECT_NAME}"
+    if [ -d "${PROJECT_DIR_ABSPATH}/${PROJECT_NAME}" ]; then
          echo "${PROJECT_NAME} already exists"
     else
         echo "Getting ${PROJECT_NAME}"
@@ -96,69 +101,40 @@ do
     echo grepping logs from ${PROJECT_NAME} ...
 
     echo ${LINES_BEFORE_TO_EXTRACT} >> ${FILE_FOR_OUTPUT}
-    LOG_COUNTER=0
-    grep -rn ${REGEX} | while read -r line ; do
-        FILE="$(echo $line | sed -n "s/^\(\S*\.\(java\|scala\|groovy\|gradle\|aj\|kt\|py\|js\|c\|cs\|rb\|adoc\|md\|vm\|patch\|R\)\):.*$/\1/p")"
-        if [ -f "${FILE}" ]; then
+    LOG_COUNTER="0"
+    grep -rn -B ${LINES_BEFORE_TO_EXTRACT} -A ${LINES_BEFORE_TO_EXTRACT} ${REGEX} | while read -r line ; do
+        if [[ "$line" =~ $GREP_RESULT_SEPARATOR_REGEX ]]; then
+            while [ $LINES_EXTRACTED -lt $SNIPPET_SIZE ]; do
+                #add padding
+                echo "" >> ${FILE_FOR_OUTPUT}
+                LINES_EXTRACTED=$((LINES_EXTRACTED+1))
+            done
+            LINES_EXTRACTED="0"
+            echo "" >> ${FILE_FOR_OUTPUT}
+            echo "" >> ${FILE_FOR_OUTPUT}
+            continue
+        elif [[ $LINES_EXTRACTED -eq $SNIPPET_SIZE ]]; then
+           #just skip
+           :
+        elif [[ $LINES_EXTRACTED -eq "0" ]]; then
+            FILE="$(echo $line | sed -n "s/$GREP_LINE_REGEX/\1/p")"
             LOG_COUNTER=$((LOG_COUNTER+1))
-            LINE_NUMBER="$(echo $line | sed -n "s/^.*:\([1-9][0-9]*\):.*$/\1/p")"
+            LINE_NUMBER="$(echo $line | sed -n "s/$GREP_LINE_REGEX/\2/p")"
+            LOG_LINE="$(echo $line | sed -n "s/$GREP_LINE_REGEX/\3/p")"
+
             BASE_PROJECT_URL="$(echo $PROJECT_LINK | sed -n "s/^\(git\)\(.*\)\.git$/https\2/p")"
 
             echo "${BASE_PROJECT_URL}/blob/${COMMIT_HASH}/${FILE}${LINE_PREFIX}${LINE_NUMBER}" >> ${FILE_FOR_OUTPUT}
-
-            LOG_LINE=$(sed -n "${LINE_NUMBER}p" ${FILE})
-
-            #extracting context before
-            LINES_LEFT_TO_EXTRACT=${LINES_BEFORE_TO_EXTRACT}
-            CURRENT_LINE_NUMBER=$((LINE_NUMBER-1))
-            for (( i=1; i<=${LINES_BEFORE_TO_EXTRACT}; i++ )); do
-                LOG_CONTEXT_BEFORE[${i}]=""
-            done
-            while [ "${LINES_LEFT_TO_EXTRACT}" -gt "0" ] && [ "${CURRENT_LINE_NUMBER}" -gt "0" ]; do
-                CURRENT_LINE=$(sed -n "${CURRENT_LINE_NUMBER}p" ${FILE} | tr -d '\n\r')
-                CURRENT_LINE_NUMBER=$((CURRENT_LINE_NUMBER-1))
-                if ! [[ "$CURRENT_LINE" =~ ^[[:space:]]*}?[[:space:]]*$ ]]; then
-                    LOG_CONTEXT_BEFORE[${LINES_LEFT_TO_EXTRACT}]="${CURRENT_LINE}${LOG_CONTEXT_BEFORE[${LINES_LEFT_TO_EXTRACT}]}"
-                    LINES_LEFT_TO_EXTRACT=$((LINES_LEFT_TO_EXTRACT-1))
-                elif [[ "$CURRENT_LINE" =~ ^[[:space:]]*}[[:space:]]*$ ]]; then
-                    LOG_CONTEXT_BEFORE[${LINES_LEFT_TO_EXTRACT}]="}""${LOG_CONTEXT_BEFORE[${LINES_LEFT_TO_EXTRACT}]}"
-                fi
-            done
-
-            #extracting context after
-            LINES_LEFT_TO_EXTRACT=${LINES_BEFORE_TO_EXTRACT}
-            CURRENT_LINE_NUMBER=$((LINE_NUMBER+1))
-            LINES_IN_FILE=$(wc -l < "${FILE}")
-            for (( i=1; i<=${LINES_BEFORE_TO_EXTRACT}; i++ )); do
-                LOG_CONTEXT_AFTER[${i}]=""
-            done
-            while [ "${LINES_LEFT_TO_EXTRACT}" -gt "0" ] && [ "${CURRENT_LINE_NUMBER}" -le "$LINES_IN_FILE" ]; do
-                CURRENT_LINE=$(sed -n "${CURRENT_LINE_NUMBER}p" ${FILE} | tr -d '\n\r')
-                CURRENT_LINE_NUMBER=$((CURRENT_LINE_NUMBER+1))
-                CURRENT_INDEX=$((LINES_BEFORE_TO_EXTRACT-LINES_LEFT_TO_EXTRACT + 1))
-                if ! [[ "$CURRENT_LINE" =~ ^[[:space:]]*}?[[:space:]]*$ ]]; then
-                    LINES_LEFT_TO_EXTRACT=$((LINES_LEFT_TO_EXTRACT-1))
-                    LOG_CONTEXT_AFTER[${CURRENT_INDEX}]="${LOG_CONTEXT_AFTER[${CURRENT_INDEX}]}${CURRENT_LINE}"
-                elif [[ "$CURRENT_LINE" =~ ^[[:space:]]*}[[:space:]]*$ ]]; then
-                    LOG_CONTEXT_AFTER[${CURRENT_INDEX}]="${LOG_CONTEXT_AFTER[${CURRENT_INDEX}]}""}"
-                fi
-            done
-            for (( i=1; i<=${LINES_BEFORE_TO_EXTRACT}; i++ )); do
-                printf '%s\n' "${LOG_CONTEXT_BEFORE[${i}]}" >> ${FILE_FOR_OUTPUT}
-            done
             printf '%s\n'  "${LOG_LINE}" >> ${FILE_FOR_OUTPUT}
-            for (( i=1; i<=${LINES_BEFORE_TO_EXTRACT}; i++ )); do
-                printf '%s\n'  "${LOG_CONTEXT_AFTER[${i}]}" >> ${FILE_FOR_OUTPUT}
-            done
-
-            echo "" >> ${FILE_FOR_OUTPUT}
-            echo "" >> ${FILE_FOR_OUTPUT}
-        elif ! [ -n "${FILE}" ]; then
-            (>&2 echo "Can't extract file name: $line")
+            LINES_EXTRACTED="1"
         else
-            (>&2 echo "File name was probably extracted incorrectly: $line")
+            LOG_LINE="$(echo "$line" | sed -n "s/$GREP_LINE_REGEX/\3/p")"
+            printf '%s\n'  "${LOG_LINE}" >> ${FILE_FOR_OUTPUT}
+            LINES_EXTRACTED=$((LINES_EXTRACTED+1))
         fi
     done
-    #echo "$LOG_COUNTER logs extracted"
+    echo "$LOG_COUNTER logs extracted"
     cd ..
 done < ${CSV_FILE}
+echo "" >> ${FILE_FOR_OUTPUT}
+echo "" >> ${FILE_FOR_OUTPUT}
