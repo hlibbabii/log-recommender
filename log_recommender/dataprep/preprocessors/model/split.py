@@ -45,3 +45,6 @@ class CamelCaseSplit(NonDelimiterSplitContainer):
 
 class WithNumbersSplit(NonDelimiterSplitContainer):
     pass
+
+class SameCaseSplit(NonDelimiterSplitContainer):
+    pass

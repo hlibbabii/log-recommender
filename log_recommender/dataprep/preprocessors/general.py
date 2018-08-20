@@ -10,13 +10,13 @@ from dataprep.preprocessors.model.placeholders import placeholders
 from dataprep.preprocessors.util import create_regex_from_token_list
 
 
-def lines_to_one_lines_with_newlines(lines):
+def lines_to_one_lines_with_newlines(lines, context):
     return [w for line in lines for w in (ProcessableToken(line if len(line) > 0 and line[-1] != '\n' else line[:-1]), NewLine())]
 
 ###############   Multitoken list level   ###########
 
 
-def replace_4whitespaces_with_tabs(token_list):
+def replace_4whitespaces_with_tabs(token_list, context):
     result = []
     for token in token_list:
         if isinstance(token, ProcessableToken):
@@ -33,7 +33,7 @@ def replace_4whitespaces_with_tabs(token_list):
 def to_token_list(tokens):
     return repr(" ".join(map(lambda t : str(t),tokens))) + f" {placeholders['ect']}\n"
 
-def to_human_readable(tokens):
+def to_human_readable(tokens, context):
     return " ".join(map(lambda t : str(t),tokens)) + "\n"
 
 
@@ -45,7 +45,7 @@ def spl(token_list, two_char_delimiters, one_char_delimiter):
                                                          java.delimiters_to_drop_verbose), token_list))
     return [w for lst in split_nested_list for w in lst]
 
-def spl_verbose(token_list):
+def spl_verbose(token_list, context):
     '''
     doesn't remove such tokens as tabs, newlines, brackets
     '''

@@ -28,17 +28,17 @@ def extract_text_and_variables(line):
     full_line = line
     text = ""
     text_parts = 0
-    opening_quote_index = java.find_not_escaped_double_quote(line)
+    opening_quote_index = java.find_all_not_escaped_quotes(line)
     while opening_quote_index is not None:
         line = line[opening_quote_index + 1:]
-        closing_quote_index = java.find_not_escaped_double_quote(line)
+        closing_quote_index = java.find_all_not_escaped_quotes(line)
         if closing_quote_index is None:
             print("No closing quote found for the opening quote in string: " + full_line)
             return full_line, "", 0
         text += line[:closing_quote_index]
         text_parts += 1
         line = line[closing_quote_index+1:]
-        opening_quote_index = java.find_not_escaped_double_quote(line)
+        opening_quote_index = java.find_all_not_escaped_quotes(line)
     if line.find("+") >= 0:
         text_parts += 1
     if text_parts > 1:

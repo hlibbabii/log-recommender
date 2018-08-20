@@ -1,6 +1,5 @@
 import logging
 import re
-import sys
 
 from dataprep.preprocessors.model.chars import MultilineCommentStart, MultilineCommentEnd, OneLineCommentStart, NewLine, \
     Backslash, Quote
@@ -14,6 +13,9 @@ END_MULTILINE_COMMENT = MultilineCommentEnd()
 
 START_ONE_LINE_COMMENT = OneLineCommentStart()
 NEW_LINE = NewLine()
+
+QUOTE = Quote()
+BACKSLASH = Backslash()
 
 tabs = ["\t" + str(i) for i in range(11)]
 
@@ -125,95 +127,85 @@ def is_number(s):
     return re.fullmatch(NUMBER_REGEX, s)
 
 
-def strip_off_multiline_comments(context):
-    while True:
-        try:
-            start = context.index(START_MULTILINE_COMMENT)
-        except ValueError:
-            start = None
-        try:
-            end = context.index(END_MULTILINE_COMMENT)
-        except ValueError:
-            end = None
-
-        if start is None and end is None:
-            return context
-        elif end is None:
-            comment_content = context[start+1:]
-            del (context[start:])
-        elif start is None or end < start:
-            comment_content = context[:end]
-            del (context[:end + 1])
-        elif start < end:
-            comment_content = context[start+1:end]
-            del (context[start:end + 1])
-        context.insert(start, MultilineComment(comment_content))
-
-
-def strip_off_one_line_comments(context):
-    while True:
-        try:
-            start = context.index(START_ONE_LINE_COMMENT)
-        except ValueError:
-            return context
-
-        try:
-            eof_index = context[start + 1:].index(NEW_LINE)
-        except ValueError:
-            eof_index = sys.maxsize
-        abs_eof_index = start + eof_index + 1
-        one_line_comment_contents = context[start+1:abs_eof_index]
-        del (context[start:abs_eof_index])
-        context.insert(start, OneLineComment(one_line_comment_contents))
-
-
-def find_not_escaped_double_quote(token_list):
-    QUOTE = Quote()
-    BACKSLASH = Backslash()
-    index_to_start_search = 0
-    while True:
-        try:
-            ind = token_list[index_to_start_search:].index(QUOTE)
+def find_all_comment_string_literal_symbols(token_list):
+    res = []
+    for ind in range(len(token_list)):
+        if token_list[ind] == QUOTE:
             i = ind - 1
-            while i >= 0 and token_list[index_to_start_search + i] == BACKSLASH:
+            while i >= 0 and token_list[i] == BACKSLASH:
                 i -= 1
             if (ind - i) % 2 == 1:
-                return index_to_start_search + ind
+                res.append((ind, token_list[ind]))
+        elif token_list[ind] in [START_MULTILINE_COMMENT, END_MULTILINE_COMMENT, START_ONE_LINE_COMMENT, NEW_LINE]:
+            res.append((ind, token_list[ind]))
+    return res
+
+
+def replace_segments(token_list, segments_to_remove):
+    new_token_list = []
+    curr_ind = 0
+    for begin, end, clazz in segments_to_remove:
+        new_token_list.extend(token_list[curr_ind:begin])
+        new_token_list.append(clazz(token_list[begin+1:end]))
+        curr_ind = end if clazz == OneLineComment else end + 1
+    if curr_ind < len(token_list):
+        new_token_list.extend(token_list[curr_ind:])
+    return new_token_list
+
+def process_comments_and_str_literals(token_list, context):
+    comment_string_literal_symbols_locations = find_all_comment_string_literal_symbols(token_list)
+    active_symbol, active_symbol_index = None, -1
+    segments_to_remove = []
+
+    for index, symbol in comment_string_literal_symbols_locations:
+        logging.debug(f"Processing {index} out of {len(token_list)}")
+        if active_symbol is None:
+            if symbol == END_MULTILINE_COMMENT:
+                logging.warning(f"{token_list[index-100:index+1]}, index: {index}")
+                return token_list
+            elif symbol == NEW_LINE:
+                pass
             else:
-                index_to_start_search = index_to_start_search + ind + 1
-        except ValueError:
-            return None
+                active_symbol, active_symbol_index = symbol, index
+        elif active_symbol == QUOTE:
+            if symbol == NEW_LINE:
+                logging.warning(f"{token_list[index-100:index+1]}, index: {index}")
+                return token_list
+            elif symbol == QUOTE:
+                segments_to_remove.append((active_symbol_index, index, StringLiteral))
+                active_symbol, active_symbol_index = None, -1
+        elif active_symbol == START_ONE_LINE_COMMENT:
+            if symbol == NEW_LINE:
+                segments_to_remove.append((active_symbol_index, index, OneLineComment))
+                active_symbol, active_symbol_index = None, -1
+        elif active_symbol == START_MULTILINE_COMMENT:
+            if symbol == END_MULTILINE_COMMENT:
+                segments_to_remove.append((active_symbol_index, index, MultilineComment))
+                active_symbol, active_symbol_index = None, -1
+        else:
+            raise AssertionError(f"Unknown symbol: {active_symbol}")
+    token_list = replace_segments(token_list, segments_to_remove)
+    return token_list
 
+def replace(token_list, start, end, new_symbol):
+    len_before_replacement = len(token_list)
+    string_literal_content = token_list[start+1:end]
+    del (token_list[start: end if new_symbol == OneLineComment else end+1])
+    token_list.insert(start, new_symbol(string_literal_content))
+    return len_before_replacement - len(token_list)
 
-def strip_off_string_literals(token_list):
-    list_len = len(token_list)
-    logging.debug(f"Memory used to store token list: {sys.getsizeof(token_list)}, length: {list_len}")
-    while True:
-        opening_quote_index = find_not_escaped_double_quote(token_list)
-        logging.debug(f"Processing now element {opening_quote_index} out of {list_len}")
-        if opening_quote_index is None:
-            return token_list
-        closing_quote_index = find_not_escaped_double_quote(token_list[opening_quote_index + 1:])
-        if closing_quote_index is None:
-            print(f'Warning: closing bracket is not found: {token_list[opening_quote_index + 1:]}')
-            closing_quote_index = sys.maxsize
-        abs_closing_quote_index = opening_quote_index + 1 + closing_quote_index
-        string_literal_content = token_list[opening_quote_index+1: abs_closing_quote_index]
-        del (token_list[opening_quote_index: abs_closing_quote_index + 1])
-        token_list.insert(opening_quote_index, StringLiteral(string_literal_content))
-
-
-def strip_off_identifiers(identifiers_to_ignore, context):
+def strip_off_identifiers(token_list, context):
+    identifiers_to_ignore = context['identifiers_to_ignore']
     non_identifiers = set(
         key_words + two_character_tokens + one_character_tokens + one_char_verbose + two_char_verbose + \
         list(placeholders.values()) + tabs + identifiers_to_ignore)
 
     result = []
-    for word in context:
-        if not is_number(word) and word not in non_identifiers:
+    for token in token_list:
+        if not is_number(token) and token not in non_identifiers:
             result.append(placeholders['identifier'])
         else:
-            result.append(word)
+            result.append(token)
     return result
 
 
@@ -247,7 +239,7 @@ def process_number_literal(possible_number):
         return ProcessableToken(possible_number)
 
 
-def process_numeric_literals(token_list):
+def process_numeric_literals(token_list, context):
     res = []
     for token in token_list:
         if isinstance(token, ProcessableToken):

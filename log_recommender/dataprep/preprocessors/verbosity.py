@@ -4,14 +4,6 @@ from dataprep.preprocessors.model.numeric import Number
 from dataprep.preprocessors.model.split import CamelCaseSplit, WithNumbersSplit, UnderscoreSplit
 from dataprep.preprocessors.model.textcontainers import OneLineComment, MultilineComment, StringLiteral
 
-preprocessing_verbosity_params = [
-    "splitting_done",
-    "sc_splitting_done",
-    "number_splitting_done",
-    "comments_str_literals_obfuscated",
-    "new_lines_and_tabs_removed"
-]
-
 token_to_verbosity_level_dict = {
     CamelCaseSplit: 'splitting_done',
     WithNumbersSplit: 'splitting_done',
@@ -23,6 +15,9 @@ token_to_verbosity_level_dict = {
     NewLine: 'new_lines_and_tabs_removed',
     Tab: 'new_lines_and_tabs_removed'
 }
+
+def get_all_verbosity_params():
+    return list(set(token_to_verbosity_level_dict.values()))
 
 recursive = [CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, OneLineComment, MultilineComment, StringLiteral]
 always_repr = [ProcessableToken]

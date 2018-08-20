@@ -2,9 +2,11 @@ import argparse
 import json
 import logging
 import os
+import pickle
 
 from dataprep import base_project_dir
 from dataprep.preprocessors import apply_preprocessors
+from dataprep.preprocessors.verbosity import get_all_verbosity_params
 from nn.preprocess_params import pp_params
 
 
@@ -26,8 +28,8 @@ def read_file_contents(file_path):
             logging.error(f"Unicode decode error in file: {file_path}")
 
 
-def preprocess_and_write(src_dir, dest_dir, subdir, chunk):
-    path_to_preprocessed_file = os.path.join(dest_dir, f'preprocessed.{chunk}.src')
+def preprocess_and_write(src_dir, dest_dir, subdir, chunk, verbosity_param_dict):
+    path_to_preprocessed_file = os.path.join(dest_dir, f'preprocessed.{chunk}.parsed')
     if os.path.exists(path_to_preprocessed_file):
         logging.warning(f"File {path_to_preprocessed_file} already exists! Doing nothing.")
         exit(1)
@@ -35,23 +37,18 @@ def preprocess_and_write(src_dir, dest_dir, subdir, chunk):
     if not os.path.exists(dir_with_files_to_preprocess):
         logging.error(f"Path {dir_with_files_to_preprocess} does not exist")
         exit(2)
-    with open(f'{path_to_preprocessed_file}.part', 'w') as f:
+    with open(f'{path_to_preprocessed_file}.part', 'wb') as f:
         logging.info(f"Preprocessing java files from {dir_with_files_to_preprocess}")
         total_files = sum([f for f in java_file_mapper(dir_with_files_to_preprocess, lambda path: 1)])
         print(f'Total amount of files to process: {total_files}')
 
+        pickle.dump(verbosity_param_dict, f, pickle.HIGHEST_PROTOCOL)
         for ind, (lines_from_file, file_path) in enumerate(java_file_mapper(dir_with_files_to_preprocess, read_file_contents)):
-            # if len(lines_from_file) > pp_params['more_lines_ignore']:
-            #     logging.debug(f"File {file_path} has {len(lines_from_file)} lines. Skiping...")
-            #     continue
             logging.info(f"Processing file: {file_path} [{ind+1} out of {total_files}] containing {len(lines_from_file)} lines")
-            processed = apply_preprocessors(lines_from_file[:1000], pp_params["preprocessors"], {
-                'interesting_context_words': [],
-                'splitting_file_path': f'{dest_dir}/../splittings.txt',
-                'verbosity_params': {'splitting_done': False, 'number_splitting_done': False,
-                                     'comments_str_literals_obfuscated': False}
+            parsed = apply_preprocessors(lines_from_file[:170000], pp_params["preprocessors"], {
+                'interesting_context_words': []
             })
-            f.write(processed)
+            pickle.dump(parsed, f, pickle.HIGHEST_PROTOCOL)
     # remove .part to show that all raw files in this chunk have been preprocessed
     os.rename(f'{path_to_preprocessed_file}.part', path_to_preprocessed_file)
 
@@ -60,8 +57,8 @@ if __name__ == '__main__':
     base_from = f'{base_project_dir}/nn-data'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--raw-dataset', action='store', default='test')
-    parser.add_argument('--dest-dataset', action='store', default='test')
+    parser.add_argument('--raw-dataset', action='store', default='test/raw/test1')
+    parser.add_argument('--dest-dataset', action='store', default='test/parsed/test1')
     parser.add_argument('--folder', action='store', default='train')
     parser.add_argument('--chunk', action='store', default='1')
     args = parser.parse_args()
@@ -72,6 +69,10 @@ if __name__ == '__main__':
 
     logging.info(f"Getting files from {os.path.abspath(raw_dataset_dir)}")
     logging.info(f"Writing preprocessed files to {os.path.abspath(dest_dataset_dir)}")
+    verbosity_params = get_all_verbosity_params()
+    verbosity_param_dict = {k:None for k in verbosity_params}
+    logging.info(f"To get preprocessing represantation, "
+                 f"resolve the following verbosity params: {verbosity_params}")
 
     dest_dir = f'{dest_dataset_dir}/{args.folder}/'
 
@@ -80,5 +81,5 @@ if __name__ == '__main__':
 
     with open(f'{dest_dataset_dir}/params.json', 'w') as f:
         json.dump(pp_params, f)
-    preprocess_and_write(raw_dataset_dir, dest_dir, args.folder, args.chunk)
+    preprocess_and_write(raw_dataset_dir, dest_dir, args.folder, args.chunk, verbosity_param_dict)
 

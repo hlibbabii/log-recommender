@@ -16,7 +16,7 @@ def replace_variable_place_holders(multitoken_list):
         res.extend(changed)
     return res
 
-def spl_non_verbose(multitokens):
+def spl_non_verbose(multitokens, context):
     return spl(multitokens, java.two_character_tokens, java.one_character_tokens)
 
 
@@ -30,7 +30,7 @@ def split_log_text_to_keywords_and_identifiers(multitoken_list):
     return res
 
 
-def to_lower(multitoken_list):
+def to_lower(multitoken_list, context):
     return [w for w in map(lambda w: w.lower() if w not in [placeholders['string_resource'], placeholders['var']] else w,
                            multitoken_list)]
 
@@ -41,13 +41,13 @@ def filter_out_1_and_2_char_tokens(tokens):
 
 #################    Multitoken level    ############
 
-def remove_placeholders(multitoken):
+def remove_placeholders(multitoken, context):
     multitoken = re.sub(placeholders['var'], r'', multitoken)
     multitoken = re.sub(placeholders['string_resource'], r'', multitoken)
     return multitoken
 
 
-def replace_string_resources_names(multitoken):
+def replace_string_resources_names(multitoken, context):
     changed = re.sub('^([0-9a-zA-Z]+\\.)+[0-9a-zA-Z]+$', placeholders['string_resource'], multitoken)
     changed = re.split(f'({placeholders["string_resource"]})', changed)
     return changed
@@ -65,7 +65,7 @@ def filter_out_stop_words(tokens):
 
     return list(filter(lambda w: w not in STOP_WORDS, tokens))
 
-def merge_tabs(tokens):
+def merge_tabs(tokens, context):
     res = []
     count = 0
     for word in tokens:
@@ -81,7 +81,7 @@ def merge_tabs(tokens):
     return res
 
 
-def add_ect(token_list):
+def add_ect(token_list, context):
     token_list.append("<ect>")
     return token_list
 

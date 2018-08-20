@@ -1,21 +1,35 @@
+import logging
 import re
-
 ############   Multitoken list level    ###############3
+import time
+
 from dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer
 from dataprep.preprocessors.model.split import CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, \
-    NonDelimiterSplitContainer
+    NonDelimiterSplitContainer, SameCaseSplit
 
 
-def camel_case(token_list):
+def camel_case(token_list, context):
     return [camel_case_split(identifier) for identifier in token_list]
 
 
-def underscore(token_list):
+def underscore(token_list, context):
     return [underscore_split(identifier) for identifier in token_list]
 
 
-def with_numbers(token_list):
+def with_numbers(token_list, context):
     return [with_numbers_split(identifier) for identifier in token_list]
+
+def same_case(token_list, context):
+    splitting_file_location = context['splitting_file_location']
+    start = time.time()
+    splitting_dict = {}
+    with open(splitting_file_location, 'r') as f:
+        for ln in f:
+            word, splitting = ln.split("|")
+            splitting_dict[word] = splitting.split()
+    logging.info(f"Splitting dictionary is build in {time.time()-start} s")
+
+    return [same_case_split(identifier, splitting_dict) for identifier in token_list]
 
 
 #############  Token Level ################
@@ -72,6 +86,25 @@ def underscore_split(token):
         parts = []
         for subtoken in token.get_subtokens():
             parts.append(underscore_split(subtoken))
+        if isinstance(token, NonDelimiterSplitContainer):
+            return type(token)(parts, token.is_capitalized())
+        else:
+            return type(token)(parts)
+    else:
+        return token
+
+
+def same_case_split(token, splitting_dict):
+    if isinstance(token, ProcessableToken):
+        parts = splitting_dict[token] if token in splitting_dict else [token]
+        if len(parts) > 1:
+            return SameCaseSplit(parts)
+        else:
+            return token
+    elif isinstance(token, ProcessableTokenContainer):
+        parts = []
+        for subtoken in token.get_subtokens():
+            parts.append(same_case_split(subtoken))
         if isinstance(token, NonDelimiterSplitContainer):
             return type(token)(parts, token.is_capitalized())
         else:

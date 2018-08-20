@@ -11,16 +11,12 @@ pp_params = {
         "split.camel_case",
         "split.underscore",
         "split.with_numbers",
+        # "split.same_case",
         # "legacy.merge_tabs",
 
-        "java.strip_off_string_literals",
-        "java.strip_off_multiline_comments",
-        "java.strip_off_one_line_comments",
-        "repr.to_repr",
+        "java.process_comments_and_str_literals",
 
         # "java.strip_off_identifiers"
-        # "same_case_split.split",
-        "general.to_human_readable"
-    ],
-    'more_lines_ignore': 5000
+        # "general.to_human_readable"
+    ]
 }
