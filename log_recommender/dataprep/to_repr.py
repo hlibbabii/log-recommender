@@ -125,6 +125,8 @@ if __name__ == '__main__':
     parser.add_argument('--src-dir', action='store', default='100_percent/parsed')
     parser.add_argument('--dest-dir', action='store', default='100_percent')
     parser.add_argument('--verbosity-params', action='store', default='splitting_done=1,number_splitting_done=1,comments_str_literals_obfuscated=0,new_lines_and_tabs_removed=0')
+    parser.add_argument('--n-processes', action='store', default='32')
+
     args = parser.parse_args()
 
 
@@ -189,7 +191,7 @@ if __name__ == '__main__':
     files_total = len(params)
     current_file = 0
     start_time = time.time()
-    with Pool() as pool:
+    with Pool(int(args.n_processes)) as pool:
         it = pool.imap_unordered(preprocess_and_write, params)
         for _ in it:
             current_file += 1
