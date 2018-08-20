@@ -3,8 +3,8 @@ import json
 import logging
 import os
 import pickle
-import time
 from abc import ABCMeta, abstractmethod
+from multiprocessing.pool import Pool
 from pickle import HIGHEST_PROTOCOL
 
 from dataprep import base_project_dir
@@ -69,7 +69,8 @@ class IntermediateReprWriter(ReprWriter):
         pickle.dump(token_list, self.handle, HIGHEST_PROTOCOL)
 
 
-def preprocess_and_write(src_file, dest_file, preprocessing_verbosity_params, old_verbosity_params):
+def preprocess_and_write(params):
+    src_file, dest_file, preprocessing_verbosity_params, old_verbosity_params = params
     if os.path.exists(dest_file):
         logging.warning(f"File {dest_file} already exists! Doing nothing.")
         exit(1)
@@ -173,23 +174,21 @@ if __name__ == '__main__':
             if file.endswith(f".{PARSED_FILE_EXTENSION}") or file.endswith(f".{PART_REPR_EXTENSION}"):
                 files_total += 1
 
-    current_file = 0
-    total_time = 0
+    params = []
     for root, dirs, files in os.walk(full_src_dir):
         for file in files:
             if file.endswith(f".{PARSED_FILE_EXTENSION}") or file.endswith(f".{PART_REPR_EXTENSION}"):
-                start = time.time()
-                current_file += 1
-                logging.info(f"Processing {current_file} out of {files_total}")
+
                 full_dest_dir_with_sub_dir = os.path.join(full_dest_dir, root[len(full_src_dir)+1:])
                 if not os.path.exists(full_dest_dir_with_sub_dir):
                     os.makedirs(full_dest_dir_with_sub_dir)
-                preprocess_and_write(os.path.join(root, file),
+                params.append((os.path.join(root, file),
                                      os.path.join(full_dest_dir_with_sub_dir, file),
-                                     preprocessing_verbosity_params, old_verbosity_params)
-                os.path.join(full_dest_dir, file)
-                time_for_file = time.time() - start
-                logging.info(f"Preprocessed in {time_for_file} seconds")
-                total_time += time_for_file
-                estimated_time_left = total_time / current_file * files_total
-                logging.info(f"Time elapsed: {total_time}. Estimated_time_left: {estimated_time_left}")
+                                     preprocessing_verbosity_params, old_verbosity_params))
+    files_total = len(params)
+    current_file = 0
+    with Pool() as pool:
+        it = pool.imap(preprocess_and_write, params)
+        for _ in it:
+            current_file += 1
+            logging.info(f"Processed {current_file} out of {files_total}")
