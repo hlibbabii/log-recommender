@@ -16,6 +16,13 @@ token_to_verbosity_level_dict = {
     Tab: 'new_lines_and_tabs_removed'
 }
 
+verb_params_short_names = {
+    'splitting_done': 'spl',
+    'number_splitting_done': 'numspl',
+    'comments_str_literals_obfuscated': 'nostrcom',
+    'new_lines_and_tabs_removed': 'nonewlinestabs'
+}
+
 def get_all_verbosity_params():
     return list(set(token_to_verbosity_level_dict.values()))
 

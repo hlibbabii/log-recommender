@@ -45,7 +45,7 @@ def preprocess_and_write(src_dir, dest_dir, subdir, chunk, verbosity_param_dict)
         pickle.dump(verbosity_param_dict, f, pickle.HIGHEST_PROTOCOL)
         for ind, (lines_from_file, file_path) in enumerate(java_file_mapper(dir_with_files_to_preprocess, read_file_contents)):
             logging.info(f"Processing file: {file_path} [{ind+1} out of {total_files}] containing {len(lines_from_file)} lines")
-            parsed = apply_preprocessors(lines_from_file[:170000], pp_params["preprocessors"], {
+            parsed = apply_preprocessors(lines_from_file, pp_params["preprocessors"], {
                 'interesting_context_words': []
             })
             pickle.dump(parsed, f, pickle.HIGHEST_PROTOCOL)
@@ -58,13 +58,13 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--raw-dataset', action='store', default='test/raw/test1')
-    parser.add_argument('--dest-dataset', action='store', default='test/parsed/test1')
+    parser.add_argument('--dest-dataset', action='store', default='test/test1')
     parser.add_argument('--folder', action='store', default='train')
     parser.add_argument('--chunk', action='store', default='1')
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG)
-    dest_dataset_dir = f'{base_to}/{args.dest_dataset}/'
+    dest_dataset_dir = f'{base_to}/{args.dest_dataset}/parsed/'
     raw_dataset_dir=f'{base_from}/{args.raw_dataset}/'
 
     logging.info(f"Getting files from {os.path.abspath(raw_dataset_dir)}")
@@ -81,5 +81,7 @@ if __name__ == '__main__':
 
     with open(f'{dest_dataset_dir}/params.json', 'w') as f:
         json.dump(pp_params, f)
+    with open(f'{dest_dataset_dir}/verbosity_params.json', 'w') as f:
+        json.dump(verbosity_param_dict, f)
     preprocess_and_write(raw_dataset_dir, dest_dir, args.folder, args.chunk, verbosity_param_dict)
 
