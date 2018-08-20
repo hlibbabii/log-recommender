@@ -97,19 +97,19 @@ if __name__ == '__main__':
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir)
     for i in range(10000):
-        params.append((os.path.join(raw_dataset_dir, subfolder), full_dest_dir, i+1, verbosity_param_dict))
+        params.append((os.path.join(raw_dataset_dir, subfolder), full_dest_dir, str(i+1), verbosity_param_dict))
     subfolder = "test"
     full_dest_dir = os.path.join(dest_dataset_dir, subfolder)
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir)
     for i in range(4000):
-        params.append((os.path.join(raw_dataset_dir, subfolder), full_dest_dir, i + 1, verbosity_param_dict))
+        params.append((os.path.join(raw_dataset_dir, subfolder), full_dest_dir, str(i + 1), verbosity_param_dict))
     subfolder = "valid"
     full_dest_dir = os.path.join(dest_dataset_dir, subfolder)
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir)
     for i in range(4000):
-        params.append((os.path.join(raw_dataset_dir, subfolder), full_dest_dir, i + 1, verbosity_param_dict))
+        params.append((os.path.join(raw_dataset_dir, subfolder), full_dest_dir, str(i + 1), verbosity_param_dict))
 
     files_total = len(params)
     current_file = 0
