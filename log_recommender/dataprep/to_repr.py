@@ -9,7 +9,7 @@ from multiprocessing.pool import Pool
 from pickle import HIGHEST_PROTOCOL
 
 from dataprep import base_project_dir
-from dataprep.preprocessors.model.placeholders import placeholders
+from dataprep.preprocessors.general import to_token_list
 from dataprep.preprocessors.repr import to_repr
 from dataprep.preprocessors.verbosity import token_to_verbosity_level_dict, verb_params_short_names
 
@@ -62,7 +62,7 @@ class FinalReprWriter(ReprWriter):
         super().__init__(dest_file, 'w', f'{REPR_EXTENSION}')
 
     def write(self, token_list):
-        self.handle.write(repr(" ".join(map(lambda t : str(t) ,token_list)))[1:-1] + f" {placeholders['ect']}\n")
+        self.handle.write(to_token_list(token_list))
 
 
 class IntermediateReprWriter(ReprWriter):

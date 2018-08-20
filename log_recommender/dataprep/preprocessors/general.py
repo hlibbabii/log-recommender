@@ -31,7 +31,7 @@ def replace_4whitespaces_with_tabs(token_list, context):
 
 
 def to_token_list(tokens):
-    return repr(" ".join(map(lambda t : str(t),tokens))) + f" {placeholders['ect']}\n"
+    return repr(" ".join(map(lambda t : str(t),tokens)))[1:-1] + f" {placeholders['ect']}\n"
 
 def to_human_readable(tokens, context):
     return " ".join(map(lambda t : str(t),tokens)) + "\n"

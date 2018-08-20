@@ -9,7 +9,7 @@ class ProcessableToken(object):
         return self.val
 
     def to_repr(self):
-        return self.val
+        return self.val.lower()
 
     def get_flat_list(self):
         return self.__get_flat_list(self.val)
