@@ -160,7 +160,7 @@ def process_comments_and_str_literals(token_list, context):
     for index, symbol in comment_string_literal_symbols_locations:
         if active_symbol is None:
             if symbol == END_MULTILINE_COMMENT:
-                logging.warning(f"{repr(' '.join(token_list[index-100:index+1]))}, index: {index}")
+                logging.warning(f"{repr(' '.join(list(map(lambda t: str(t),token_list[index-100:index+1]))))}, index: {index}")
                 return token_list
             elif symbol == NEW_LINE:
                 pass
@@ -168,7 +168,8 @@ def process_comments_and_str_literals(token_list, context):
                 active_symbol, active_symbol_index = symbol, index
         elif active_symbol == QUOTE:
             if symbol == NEW_LINE:
-                logging.warning(f"{repr(' '.join(token_list[index-100:index+1]))}, index: {index}")
+                logging.warning(
+                    f"{repr(' '.join(list(map(lambda t: str(t),token_list[index-100:index+1]))))}, index: {index}")
                 return token_list
             elif symbol == QUOTE:
                 segments_to_remove.append((active_symbol_index, index, StringLiteral))
