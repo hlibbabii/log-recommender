@@ -167,10 +167,21 @@ if __name__ == '__main__':
     with open(f'{full_dest_dir}/verbosity_params.json', "w") as f:
         json.dump(new_verbosity_param_dict, f)
 
+
+    #TODO remove duplication
+    files_total = 0
+    for root, dirs, files in os.walk(full_src_dir):
+        for file in files:
+            if file.endswith(f".{PARSED_FILE_EXTENSION}") or file.endswith(f".{PART_REPR_EXTENSION}"):
+                files_total += 1
+
+    current_file = 0
     import os
     for root, dirs, files in os.walk(full_src_dir):
         for file in files:
             if file.endswith(f".{PARSED_FILE_EXTENSION}") or file.endswith(f".{PART_REPR_EXTENSION}"):
+                current_file += 1
+                logging.info(f"Processing {current_file} out of {files_total}")
                 full_dest_dir_with_sub_dir = os.path.join(full_dest_dir, root[len(full_src_dir)+1:])
                 if not os.path.exists(full_dest_dir_with_sub_dir):
                     os.makedirs(full_dest_dir_with_sub_dir)
