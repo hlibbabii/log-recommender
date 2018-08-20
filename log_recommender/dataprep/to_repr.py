@@ -43,14 +43,14 @@ class ReprWriter(metaclass=ABCMeta):
         self.extension = extension
 
     def __enter__(self):
-        self.handle = open(self.get_full_dest_name(), self.mode)
+        self.handle = open(f'{self.get_full_dest_name()}.{NOT_FINISHED_EXTENSION}', self.mode)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.handle.close()
 
     def get_full_dest_name(self):
-        return f'{self.dest_file}.{self.extension}.{NOT_FINISHED_EXTENSION}'
+        return f'{self.dest_file}.{self.extension}'
 
     @abstractmethod
     def write(self, token_list):
@@ -89,7 +89,7 @@ def preprocess_and_write(params):
         new_verbosity_param_dict, got_pure_repr = calc_new_verbosity_param_dict(verbosity_param_dict, preprocessing_verbosity_params)
         writer = FinalReprWriter(dest_file) if got_pure_repr else IntermediateReprWriter(dest_file)
 
-        if os.path.exists(writer.get_full_dest_file()):
+        if os.path.exists(writer.get_full_dest_name()):
             logging.warning(f"File {writer.get_full_dest_file()} already exists! Doing nothing.")
             return
 
@@ -104,7 +104,7 @@ def preprocess_and_write(params):
                 except EOFError:
                     break
     # remove .part to show that all raw files in this chunk have been preprocessed
-    os.rename(f'{writer.get_full_dest_file()}', f'{dest_file}.{writer.extension}')
+    os.rename(f'{writer.get_full_dest_file()}.{NOT_FINISHED_EXTENSION}', f'{writer.get_full_dest_file()}')
 
 
 def gen_dir_name(new_verbosity_param_dict, verb_params_short_names):
