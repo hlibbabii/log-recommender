@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import pickle
+import time
 from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import Pool
 from pickle import HIGHEST_PROTOCOL
@@ -187,8 +188,12 @@ if __name__ == '__main__':
                                      preprocessing_verbosity_params, old_verbosity_params))
     files_total = len(params)
     current_file = 0
+    start_time = time.time()
     with Pool() as pool:
         it = pool.imap_unordered(preprocess_and_write, params)
         for _ in it:
             current_file += 1
             logging.info(f"Processed {current_file} out of {files_total}")
+            time_elapsed = time.time() - start_time
+            logging.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
+                         f"{time / current_file * files_total:.2f} s")
