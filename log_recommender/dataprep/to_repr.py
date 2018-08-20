@@ -196,4 +196,4 @@ if __name__ == '__main__':
             logging.info(f"Processed {current_file} out of {files_total}")
             time_elapsed = time.time() - start_time
             logging.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
-                         f"{time_elapsed / current_file * files_total:.2f} s")
+                         f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
