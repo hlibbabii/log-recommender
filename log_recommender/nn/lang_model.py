@@ -35,10 +35,20 @@ nn_testing = nn_params['testing']
 
 def create_df(dir):
     lines = []
+    files_total = 0
     for root, dirs, files in os.walk(dir):
         for file in files:
             with open(os.path.join(root, file), 'r') as f:
                 if not file.startswith("_"):
+                    files_total += 1
+
+    cur_file = 0
+    for root, dirs, files in os.walk(dir):
+        for file in files:
+            with open(os.path.join(root, file), 'r') as f:
+                if not file.startswith("_"):
+                    cur_file += 1
+                    logging.info(f'Adding {os.path.join(root, file)} to dataframe [{cur_file} out of {files_total}]')
                     lines.extend([line for line in f])
     if not lines:
         raise ValueError(f"No data available: {dir}")
