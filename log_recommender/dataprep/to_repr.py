@@ -186,7 +186,7 @@ if __name__ == '__main__':
         for file in files:
             if file.endswith(f".{PARSED_FILE_EXTENSION}") or file.endswith(f".{PART_REPR_EXTENSION}"):
 
-                full_dest_dir_with_sub_dir = os.path.join(full_dest_dir, root[len(full_src_dir)+1:])
+                full_dest_dir_with_sub_dir = os.path.join(full_dest_dir, os.path.relpath(root, full_src_dir))
                 if not os.path.exists(full_dest_dir_with_sub_dir):
                     os.makedirs(full_dest_dir_with_sub_dir)
                 params.append((os.path.join(root, file),

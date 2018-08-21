@@ -13,6 +13,14 @@ from dataprep.preprocessors.verbosity import get_all_verbosity_params
 from nn.preprocess_params import pp_params
 
 
+def get_two_levels_subdirs(dir):
+    subdirs = next(os.walk(dir))[1]
+    for subdir in subdirs:
+        for subsubdir in next(os.walk(os.path.join(dir, subdir)))[1]:
+            yield dir, subdir, subsubdir
+
+
+
 def java_file_mapper(dir, func):
     import os
     for root, dirs, files in os.walk(dir):
@@ -32,23 +40,25 @@ def read_file_contents(file_path):
 
 
 def preprocess_and_write(params):
-    src_dir, dest_dir, chunk, verbosity_param_dict = params
-    path_to_preprocessed_file = os.path.join(dest_dir, f'preprocessed.{chunk}.parsed')
+    src_dir, dest_dir, subdir, chunk, verbosity_param_dict = params
+    full_dest_dir = os.path.join(dest_dir, subdir)
+    path_to_preprocessed_file = os.path.join(full_dest_dir, f'preprocessed.{chunk}.parsed')
+    if not os.path.exists(full_dest_dir):
+        os.makedirs(full_dest_dir)
     if os.path.exists(path_to_preprocessed_file):
         logging.warning(f"File {path_to_preprocessed_file} already exists! Doing nothing.")
-        exit(1)
-    dir_with_files_to_preprocess = os.path.join(src_dir, chunk)
+        return
+    dir_with_files_to_preprocess = os.path.join(src_dir, subdir, chunk)
     if not os.path.exists(dir_with_files_to_preprocess):
         logging.error(f"Path {dir_with_files_to_preprocess} does not exist")
         exit(2)
     with open(f'{path_to_preprocessed_file}.part', 'wb') as f:
-        logging.info(f"Preprocessing java files from {dir_with_files_to_preprocess}")
         total_files = sum([f for f in java_file_mapper(dir_with_files_to_preprocess, lambda path: 1)])
-        print(f'Total amount of files to process: {total_files}')
-
+        logging.info(f"Preprocessing java files from {dir_with_files_to_preprocess}. Files to process: {total_files}")
         pickle.dump(verbosity_param_dict, f, pickle.HIGHEST_PROTOCOL)
         for ind, (lines_from_file, file_path) in enumerate(java_file_mapper(dir_with_files_to_preprocess, read_file_contents)):
-            logging.info(f"Processing file: {file_path} [{ind+1} out of {total_files}] containing {len(lines_from_file)} lines")
+            if (ind+1) % 100 == 0:
+                logging.info(f"[{subdir}/{chunk}] Parsed {ind+1} out of {total_files} files ({(ind+1)/float(total_files)*100:.2f}%)")
             parsed = apply_preprocessors(lines_from_file, pp_params["preprocessors"], {
                 'interesting_context_words': []
             })
@@ -92,24 +102,8 @@ if __name__ == '__main__':
 
     params = []
 
-    subfolder = "train"
-    full_dest_dir = os.path.join(dest_dataset_dir, subfolder)
-    if not os.path.exists(full_dest_dir):
-        os.makedirs(full_dest_dir)
-    for i in range(10000):
-        params.append((os.path.join(raw_dataset_dir, subfolder), full_dest_dir, str(i+1), verbosity_param_dict))
-    subfolder = "test"
-    full_dest_dir = os.path.join(dest_dataset_dir, subfolder)
-    if not os.path.exists(full_dest_dir):
-        os.makedirs(full_dest_dir)
-    for i in range(4000):
-        params.append((os.path.join(raw_dataset_dir, subfolder), full_dest_dir, str(i + 1), verbosity_param_dict))
-    subfolder = "valid"
-    full_dest_dir = os.path.join(dest_dataset_dir, subfolder)
-    if not os.path.exists(full_dest_dir):
-        os.makedirs(full_dest_dir)
-    for i in range(4000):
-        params.append((os.path.join(raw_dataset_dir, subfolder), full_dest_dir, str(i + 1), verbosity_param_dict))
+    for _, subdir, chunk in get_two_levels_subdirs(raw_dataset_dir):
+        params.append((raw_dataset_dir, dest_dataset_dir, subdir, chunk, verbosity_param_dict))
 
     files_total = len(params)
     current_file = 0
@@ -118,7 +112,7 @@ if __name__ == '__main__':
         it = pool.imap_unordered(preprocess_and_write, params)
         for _ in it:
             current_file += 1
-            logging.info(f"Processed {current_file} out of {files_total}")
+            logging.info(f"Processed {current_file} out of {files_total} chunks")
             time_elapsed = time.time() - start_time
             logging.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
                          f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
