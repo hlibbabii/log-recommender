@@ -95,6 +95,8 @@ if __name__ == '__main__':
     logging.info(f"To get preprocessing represantation, "
                  f"resolve the following verbosity params: {verbosity_params}")
 
+    if not os.path.exists(dest_dataset_dir):
+        os.makedirs(dest_dataset_dir)
     with open(f'{dest_dataset_dir}/params.json', 'w') as f:
         json.dump(pp_params, f)
     with open(f'{dest_dataset_dir}/verbosity_params.json', 'w') as f:
