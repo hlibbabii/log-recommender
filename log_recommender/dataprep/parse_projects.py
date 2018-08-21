@@ -44,7 +44,7 @@ def preprocess_and_write(params):
     full_dest_dir = os.path.join(dest_dir, subdir)
     path_to_preprocessed_file = os.path.join(full_dest_dir, f'preprocessed.{chunk}.parsed')
     if not os.path.exists(full_dest_dir):
-        os.makedirs(full_dest_dir)
+        os.makedirs(full_dest_dir, exist_ok=True)
     if os.path.exists(path_to_preprocessed_file):
         logging.warning(f"File {path_to_preprocessed_file} already exists! Doing nothing.")
         return
