@@ -5,6 +5,7 @@ from time import time
 
 import deepdiff
 import matplotlib
+
 matplotlib.use('Agg')
 
 import logging
@@ -21,7 +22,7 @@ from fastai.core import USE_GPU
 from fastai.nlp import LanguageModelData, seq2seq_reg
 from fastai import metrics
 from torchtext import data
-from nn.utils import to_test_mode, back_to_train_mode, beautify_text, gen_text, calculate_and_display_metrics
+from nn.utils import to_test_mode, back_to_train_mode, beautify_text, gen_text
 
 # for some reason this import should go here to avoid error
 from nn.params import nn_params, Mode
@@ -51,10 +52,11 @@ def get_model(model_name, only_build_vocab=False):
 
     train_df = create_df(f'{path_to_dataset}/train/')
     test_df = create_df(f'{path_to_dataset}/test/')
+    valid_df = create_df(f'{path_to_dataset}/valid/') if os.path.exists(f'{path_to_dataset}/valid/') else test_df
 
     text_field = data.Field()
     languageModelData = LanguageModelData.from_dataframes(path_to_model,
-                                                          text_field, 0, train_df, test_df, test_df,
+                                                          text_field, 0, train_df, valid_df, test_df, test_df,
                                                           bs=nn_arch["bs"], validation_bs=nn_params["validation_bs"],
                                                           bptt=nn_arch["bptt"],
                                                           min_freq=nn_arch["min_freq"]
