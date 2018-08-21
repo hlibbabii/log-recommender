@@ -23,6 +23,7 @@ from fastai.nlp import LanguageModelData, seq2seq_reg
 from fastai import metrics
 from torchtext import data
 from nn.utils import to_test_mode, back_to_train_mode, beautify_text, gen_text
+import sys
 
 # for some reason this import should go here to avoid error
 from nn.params import nn_params, Mode
@@ -48,10 +49,10 @@ def create_df(dir):
             with open(os.path.join(root, file), 'r') as f:
                 if not file.startswith("_"):
                     cur_file += 1
-                    logging.info(f'Adding {os.path.join(root, file)} to dataframe [{cur_file} out of {files_total}]')
+                    logging.info(f'Adding {os.path.join(root, file)} to dataframe [{cur_file} out of {files_total}], curr dataframe size: {sys.getsizeof(lines)}')
                     lines.extend([line for line in f])
     if not lines:
-        raise ValueError(f"No data available: {dir}")
+        raise ValueError(f"No data available: {os.path.abspath(dir)}")
     return pandas.DataFrame(lines)
 
 
