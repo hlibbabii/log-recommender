@@ -43,7 +43,9 @@ def create_df(dir):
                 if not file.startswith("_"):
                     files_total += 1
 
+    DATAFRAME_LINES_THRESHOLD = 10 * 3
     cur_file = 0
+    at_least_one_frame_created = False
     for root, dirs, files in os.walk(dir):
         for file in files:
             with open(os.path.join(root, file), 'r') as f:
@@ -51,9 +53,16 @@ def create_df(dir):
                     cur_file += 1
                     logging.info(f'Adding {os.path.join(root, file)} to dataframe [{cur_file} out of {files_total}], curr dataframe size: {sys.getsizeof(lines)}')
                     lines.extend([line for line in f])
-    if not lines:
+                    if len(lines) > DATAFRAME_LINES_THRESHOLD:
+                        yield pandas.DataFrame(lines)
+                        lines = []
+                        at_least_one_frame_created = True
+
+    if lines:
+        yield pandas.DataFrame(lines)
+        at_least_one_frame_created = True
+    if not at_least_one_frame_created:
         raise ValueError(f"No data available: {os.path.abspath(dir)}")
-    return pandas.DataFrame(lines)
 
 
 def get_model(model_name, only_build_vocab=False):
@@ -61,13 +70,15 @@ def get_model(model_name, only_build_vocab=False):
     path_to_dataset = f'{nn_params["path_to_data"]}/{dataset_name}'
     path_to_model = f'{path_to_dataset}/{model_name}'
 
-    train_df = create_df(f'{path_to_dataset}/train/')
-    test_df = create_df(f'{path_to_dataset}/test/')
-    valid_df = create_df(f'{path_to_dataset}/valid/') if os.path.exists(f'{path_to_dataset}/valid/') else test_df
+    train_df_gen = create_df(f'{path_to_dataset}/train/')
+    test_df_gen = create_df(f'{path_to_dataset}/test/')
+    valid_df_gen = create_df(f'{path_to_dataset}/valid/') if os.path.exists(f'{path_to_dataset}/valid/') else test_df_gen
 
     text_field = data.Field()
     languageModelData = LanguageModelData.from_dataframes(path_to_model,
-                                                          text_field, 0, train_df, valid_df, test_df,
+                                                          text_field, 0, create_df,
+                                                          f'{path_to_dataset}/train/', f'{path_to_dataset}/valid/',
+                                                          f'{path_to_dataset}/test/',
                                                           bs=nn_arch["bs"], validation_bs=nn_params["validation_bs"],
                                                           bptt=nn_arch["bptt"],
                                                           min_freq=nn_arch["min_freq"]
