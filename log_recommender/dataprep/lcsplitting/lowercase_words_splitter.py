@@ -45,7 +45,7 @@ typo_params = {
     'min_length_for_typo_detection': 8
 }
 
-max_subwords = [(10, 5), (15, 6), (23, 7), (35, 8), (48, 9), (1000, 10)]
+max_subwords = [(10, 5), (15, 6), (30, 7), (1000, 8)]
 
 
 def get_max_subwords(word):
