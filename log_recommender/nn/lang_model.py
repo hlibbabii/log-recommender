@@ -70,15 +70,16 @@ def get_model(model_name, only_build_vocab=False):
     path_to_dataset = f'{nn_params["path_to_data"]}/{dataset_name}'
     path_to_model = f'{path_to_dataset}/{model_name}'
 
-    train_df_gen = create_df(f'{path_to_dataset}/train/')
-    test_df_gen = create_df(f'{path_to_dataset}/test/')
-    valid_df_gen = create_df(f'{path_to_dataset}/valid/') if os.path.exists(f'{path_to_dataset}/valid/') else test_df_gen
+    train_df_path = f'{path_to_dataset}/train/'
+    test_df_path =  f'{path_to_dataset}/test/'
+    valid_df_path = f'{path_to_dataset}/valid/'
+    if not os.path.exists(valid_df_path):
+        valid_df_path = test_df_path
 
     text_field = data.Field()
     languageModelData = LanguageModelData.from_dataframes(path_to_model,
                                                           text_field, 0, create_df,
-                                                          f'{path_to_dataset}/train/', f'{path_to_dataset}/valid/',
-                                                          f'{path_to_dataset}/test/',
+                                                          train_df_path, valid_df_path, test_df_path,
                                                           bs=nn_arch["bs"], validation_bs=nn_params["validation_bs"],
                                                           bptt=nn_arch["bptt"],
                                                           min_freq=nn_arch["min_freq"]
@@ -100,7 +101,8 @@ def get_model(model_name, only_build_vocab=False):
                                               dropout=nn_arch['drop']['out'],
                                               wdrop=nn_arch['drop']['w'],
                                               dropoute=nn_arch['drop']['oute'],
-                                              dropouth=nn_arch['drop']['outh'])
+                                              dropouth=nn_arch['drop']['outh'],
+                                              text_field=text_field)
     rnn_learner.reg_fn = partial(seq2seq_reg, alpha=nn_arch['reg_fn']['alpha'], beta=nn_arch['reg_fn']['beta'])
     rnn_learner.clip = nn_arch['clip']
 
