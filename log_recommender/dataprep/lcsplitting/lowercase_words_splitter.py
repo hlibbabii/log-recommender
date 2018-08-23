@@ -65,13 +65,14 @@ def ll(word, params):
                                            params['beta']) + params['gamma'])
 
 
-def get_splittings(words_to_split, freqs, general_dict, params):
+def get_splittings(words_to_split, freqs, general_dict, non_eng_dicts, params):
     freqs = dict(sorted(freqs.items(), key=lambda x: len(x[0])))
     new_freqs = freqs.copy()
     transformed = {}
     nontransformed = []
     possible_typos = []
 
+    current_word_len = 0
     for ind, (word, freq) in enumerate(tqdm(freqs.items(), leave=False, total=len(freqs))):
         if word not in words_to_split:
             continue
@@ -82,8 +83,14 @@ def get_splittings(words_to_split, freqs, general_dict, params):
         options = []
         if word in cache:
             combinations = cache[word]
+        elif (word in non_eng_dicts or word in general_dict) and len(word) >= 4:
+            combinations = [[word]]
         else:
-            combinations = combos(word, get_max_subwords(word))
+            max_subwords = get_max_subwords(word)
+            combinations = combos(word, max_subwords)
+        if len(word) > current_word_len:
+            current_word_len = len(word)
+            logging.info(f"Splitting words of length {current_word_len} (max word parts {max_subwords})...")
         for subwords_set in combinations:
             all_words_exist = True
             num = 0.0
@@ -142,6 +149,16 @@ def load_english_dict(path_to_dict_dir):
     return general_dict
 
 
+def load_non_english_dicts(path_to_dicts):
+    dict = set()
+    dict_files_names = [f for f in os.listdir(path_to_dicts)]
+    for file in dict_files_names:
+        with open(f'{path_to_dicts}/{file}') as f:
+            for l in f:
+                dict.add(l[:-1] if l[-1] == '\n' else l)
+    return dict
+
+
 if __name__ == '__main__':
     base_dir = base_from = f'{base_project_dir}/nn-data/new_framework/'
 
@@ -159,11 +176,13 @@ if __name__ == '__main__':
             line = l.split()
             freqs[line[0]] = int(line[1])
 
+    logging.info("Loading dictionaries")
     general_dict = load_english_dict(f'{base_project_dir}/dicts/eng')
+    non_eng_dicts = load_non_english_dicts(f'{base_project_dir}/dicts/non-eng')
 
     logging.info("Starting splitting...")
-    transformed, nontransformed, possible_typos = get_splittings(freqs.keys(), freqs, general_dict, params)
-    logging.info(f"Splitting done! Saving sata to '{path_to_split_folder}")
+    transformed, nontransformed, possible_typos = get_splittings(freqs.keys(), freqs, general_dict, non_eng_dicts, params)
+    logging.info(f"Splitting done! Saving sata to '{path_to_splits}")
     path_to_split_folder = f'{path_to_splits}/1'
     while os.path.exists(path_to_split_folder):
         path_to_split_folder = f'{path_to_split_folder}1'
