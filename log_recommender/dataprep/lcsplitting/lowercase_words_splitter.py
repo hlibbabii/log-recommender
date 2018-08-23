@@ -1,3 +1,4 @@
+import argparse
 import json
 import logging
 import os
@@ -5,7 +6,7 @@ from math import log
 from operator import itemgetter
 from random import shuffle
 
-from nn.params import nn_params
+from dataprep import base_project_dir
 
 logging.basicConfig(level=logging.INFO)
 
@@ -42,7 +43,7 @@ typo_params = {
     'min_length_for_typo_detection': 8
 }
 
-max_subwords = [(10, 5), (15, 6), (20, 7), (25, 8), (30, 5), (35, 7), (37, 5), (38, 9), (42, 5)]
+max_subwords = [(10, 5), (15, 6), (20, 7), (25, 8), (30, 9), (35, 10), (37, 11), (38, 12), (42, 13)]
 
 
 def get_max_subwords(word):
@@ -162,8 +163,13 @@ def load_english_dict(path_to_dict_dir):
 
 
 if __name__ == '__main__':
-    dataset_name = nn_params["dataset_name"]
-    path_to_dataset = f'{nn_params["path_to_data"]}/{dataset_name}'
+    base_dir = base_from = f'{base_project_dir}/nn-data/new_framework/'
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--path-to-dataset', action='store', default='100_percent/repr/nonewlinestabs_1_spl_1_numspl_1_nostrcom_1')
+    args = parser.parse_args()
+
+    path_to_dataset = f'{base_dir}/{args.path_to_dataset}'
     path_to_splits = f'{path_to_dataset}/splits'
 
     freqs = {}
@@ -172,7 +178,7 @@ if __name__ == '__main__':
             line = l.split()
             freqs[line[0]] = int(line[1])
 
-    general_dict = load_english_dict(f'{base_dir}/log-recommender/dicts/eng')
+    general_dict = load_english_dict(f'{base_project_dir}/dicts/eng')
 
     transformed, nontransformed, possible_typos = get_splittings(freqs.keys(), freqs, general_dict, params)
 
