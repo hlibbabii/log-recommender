@@ -7,6 +7,7 @@ from operator import itemgetter
 from random import shuffle
 
 from dataprep import base_project_dir
+from dataprep.lcsplitting.split_cache import cache
 from fastai.imports import tqdm
 
 logging.basicConfig(level=logging.INFO)
@@ -44,7 +45,7 @@ typo_params = {
     'min_length_for_typo_detection': 8
 }
 
-max_subwords = [(10, 5), (15, 6), (20, 7), (25, 8), (30, 9), (35, 10), (37, 11), (38, 12), (42, 13)]
+max_subwords = [(10, 5), (15, 6), (20, 7), (30, 8), (40, 9), (50, 10), (1000, 11)]
 
 
 def get_max_subwords(word):
@@ -62,28 +63,6 @@ def ff(freq, occurs_in_general_dict, fullword, params):
 def ll(word, params):
     return 1.0 / log(adjusted_negative_abs(len(word) - avg_length_of_most_frequent_words,
                                            params['beta']) + params['gamma'])
-
-
-cache = {
-    # "requestexaddcontacttocontactlist": [["request", "ex", "add", "contact", "to", "contact", "list"]],
-    # "notshiftedlargestrunninglengthcount": [["not", "shifted", "largest", "running", "length count"]],
-    # "structuredcontentfieldtemplateimpl": [["structured", "content", "field", "template", "impl"]],
-    # "astructurenetherbridgepieceweight": [["a", "structure", "net", "her", "bridge", "piece", "weight"]],
-    # "requestsetpleadgeacademymaster": [["request", "set", "pleadge", "academy", "master"]],
-    # "astructurestrongholdpieceweight": [["a", "structure", "strong", "hold", "piece", "weight"]],
-    # "modifysemanticvaluesactionconfiguration": [["modify", "semantic", "values", "action", "configuration"]],
-    "hivemapjoinfollowedbymapaggrhashmemory": [
-        ["hive", "map", "join", "followed", "by", "map", "aggr", "hash", "memory"]]
-    # "createlocalpostconditionintervalconstraint": [["create", "local", "postcondition", "interval", "constraint"]],
-    # "createlocalpreconditiondurationconstraint": [["create", "local", "precondition", "duration", "constraint"]],
-    # "createlocalpreconditiontimeconstraint": [["create", "local", "precondition", "time", "constraint"]],
-    # "hivestatsdbconnectionstring": [["hive", "stats", "db", "connection", "string"]],
-    # "structuredcontentitemcriteria": [["structured", "content", "item", "criteria"]],
-    # "pledgeshowmemberlistdelete": [["pledge", "show", "member", "list", "delete"]],
-    # "discreteorderitemfeeprice": [["discrete", "order", "item", "fee", "price"]],
-    # "requestexenchantskillinfo": [["request", "ex", "enchant", "skill", "info"]],
-    # "defaultpersistencemanagerref": [["default", "persistence", "manager", "ref"]]
-}
 
 
 def get_splittings(words_to_split, freqs, general_dict, params):
