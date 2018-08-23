@@ -6,8 +6,8 @@ cache = {
     # "requestsetpleadgeacademymaster": [["request", "set", "pleadge", "academy", "master"]],
     # "astructurestrongholdpieceweight": [["a", "structure", "strong", "hold", "piece", "weight"]],
     # "modifysemanticvaluesactionconfiguration": [["modify", "semantic", "values", "action", "configuration"]],
-    "hivemapjoinfollowedbymapaggrhashmemory": [
-        ["hive", "map", "join", "followed", "by", "map", "aggr", "hash", "memory"]]
+    "hivemapjoinfollowedbymapaggrhashmemory":
+        ["hive", "map", "join", "followed", "by", "map", "aggr", "hash", "memory"]
     # "createlocalpostconditionintervalconstraint": [["create", "local", "postcondition", "interval", "constraint"]],
     # "createlocalpreconditiondurationconstraint": [["create", "local", "precondition", "duration", "constraint"]],
     # "createlocalpreconditiontimeconstraint": [["create", "local", "precondition", "time", "constraint"]],

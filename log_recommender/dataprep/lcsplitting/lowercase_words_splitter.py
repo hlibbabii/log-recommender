@@ -3,12 +3,14 @@ import json
 import logging
 import os
 from math import log
+from multiprocessing.pool import Pool
 from operator import itemgetter
 from random import shuffle
 
+from fastai.imports import tqdm
+
 from dataprep import base_project_dir
 from dataprep.lcsplitting.split_cache import cache
-from fastai.imports import tqdm
 
 logging.basicConfig(level=logging.INFO)
 
@@ -22,6 +24,18 @@ def combos(s, max_words):
     for i in range(1, len(s)):
         for c in combos(s[i:], max_words - 1):
             yield (s[:i],) + c
+
+
+def cache_comb_creator(word):
+    return [cache[word]]
+
+
+def identity_comb_creator(word):
+    return [[word]]
+
+def true_comb_creator(word):
+    max_subwords = get_max_subwords(word)
+    return combos(word, max_subwords)
 
 
 def adjusted_negative_abs(x, alpha):
@@ -65,78 +79,97 @@ def ll(word, params):
                                            params['beta']) + params['gamma'])
 
 
+def get_splitting(pp):
+    word, freq, comb_creator, freqs, params = pp
+    denum_f = ff(freq, word in general_dict, True, params)
+    denum_l = ll(word, params)
+    denum = denum_f * denum_l
+    options = []
+    combinations = comb_creator(word)
+    for subwords_set in combinations:
+        all_words_exist = True
+        num = 0.0
+        num_ls = []
+        num_fs = []
+        n = len(subwords_set)
+        for subword in subwords_set:
+            if subword in freqs:
+                num_fs.append(ff(freqs[subword], subword in general_dict, n == 1, params))
+                num_ls.append(ll(subword, params))
+                num += num_fs[-1] * num_ls[-1]
+            else:
+                all_words_exist = False
+        num = num * (1.0 / n ** params['lambda_'])
+        if all_words_exist:
+            result = num / denum
+            options.append({
+                'subwords_set': subwords_set,
+                'num': num,
+                'denum': denum,
+                'results': result,
+                'denum_f': denum_f,
+                'denum_l': denum_l,
+                'num_fs': num_fs,
+                'num_ls': num_ls
+            })
+    options.sort(key=itemgetter('num'), reverse=True)
+    # if word not in cache:
+    #     cache[word] = [opt['subwords_set'] for opt in options[:10]]
+    for option in options[:5]:
+        num_str = "avg(" + "+".join([f'{f:.2f}*{l:.2f}' for f, l in zip(option["num_fs"], option["num_ls"])]) + ")"
+        logging.debug(
+            f' {option["results"]:.2f}: {word} -> {option["subwords_set"]}:  {option["num"]:.2f}/{option["denum"]:.2f}='
+            f'{num_str}/{option["denum_f"]:.2f}*{option["denum_l"]:.2f}')
+    logging.debug("================================")
+    if len(options) <= 0:
+        raise AssertionError(f"No split options for: {word}")
+    if options[0]["denum"] < typo_params['denum_error_likelihood_param'] \
+            and options[0]["results"] < typo_params['error_likelihood_param'] \
+            and len(word) >= typo_params['min_length_for_typo_detection']:
+        return None, None, word
+    if options[0]["results"] > 1.0 and len(options[0]["subwords_set"]) > 1:
+        return (word, options[0]), None, None
+    else:
+        return None, word, None
+
 def get_splittings(words_to_split, freqs, general_dict, non_eng_dicts, params):
     freqs = dict(sorted(freqs.items(), key=lambda x: len(x[0])))
     new_freqs = freqs.copy()
     transformed = {}
     nontransformed = []
     possible_typos = []
-
+    to_remove_from_new_freqs = []
     current_word_len = 0
+    pp = []
     for ind, (word, freq) in enumerate(tqdm(freqs.items(), leave=False, total=len(freqs))):
-        if word not in words_to_split:
-            continue
-        # if ind >= 1000: break
-        denum_f = ff(freq, word in general_dict, True, params)
-        denum_l = ll(word, params)
-        denum = denum_f * denum_l
-        options = []
-        if word in cache:
-            combinations = cache[word]
-        elif (word in non_eng_dicts or word in general_dict) and len(word) >= 4:
-            combinations = [[word]]
-        else:
-            max_subwords = get_max_subwords(word)
-            combinations = combos(word, max_subwords)
-        if len(word) > current_word_len:
-            current_word_len = len(word)
-            logging.info(f"Splitting words of length {current_word_len} (max word parts {max_subwords})...")
-        for subwords_set in combinations:
-            all_words_exist = True
-            num = 0.0
-            num_ls = []
-            num_fs = []
-            n = len(subwords_set)
-            for subword in subwords_set:
-                if subword in new_freqs:
-                    num_fs.append(ff(new_freqs[subword], subword in general_dict, n == 1, params))
-                    num_ls.append(ll(subword, params))
-                    num += num_fs[-1] * num_ls[-1]
-                else:
-                    all_words_exist = False
-            num = num * (1.0 / n ** params['lambda_'])
-            if all_words_exist:
-                result = num / denum
-                options.append({
-                    'subwords_set': subwords_set,
-                    'num': num,
-                    'denum': denum,
-                    'results': result,
-                    'denum_f': denum_f,
-                    'denum_l': denum_l,
-                    'num_fs': num_fs,
-                    'num_ls': num_ls
-                })
-        options.sort(key=itemgetter('num'), reverse=True)
-        if word not in cache:
-            cache[word] = [opt['subwords_set'] for opt in options[:10]]
-        for option in options[:5]:
-            num_str = "avg(" + "+".join([f'{f:.2f}*{l:.2f}' for f, l in zip(option["num_fs"], option["num_ls"])]) + ")"
-            logging.debug(
-                f' {option["results"]:.2f}: {word} -> {option["subwords_set"]}:  {option["num"]:.2f}/{option["denum"]:.2f}='
-                f'{num_str}/{option["denum_f"]:.2f}*{option["denum_l"]:.2f}')
-        if len(options) <= 0:
-            raise AssertionError(f"No split options for: {word}")
-        if options[0]["denum"] < typo_params['denum_error_likelihood_param'] \
-                and options[0]["results"] < typo_params['error_likelihood_param'] \
-                and len(word) >= typo_params['min_length_for_typo_detection']:
-            possible_typos.append(word)
-        if options[0]["results"] > 1.0 and len(options[0]["subwords_set"]) > 1:
-            transformed[word] = options[0]
-            del (new_freqs[word])
-        else:
-            nontransformed.append(word)
-        logging.debug("================================")
+        if word in words_to_split:
+            # freqs should contain all the words from words_to_split, but the other way round is not guaranteed
+            if len(word) > current_word_len:
+                with Pool() as pool:
+                    results = pool.map(get_splitting, pp)
+                    pp = []
+                for split_word, non_split_word, possible_typo in results:
+                    if split_word is not None:
+                        original_word, splitting = split_word
+                        transformed[original_word] = splitting
+                        to_remove_from_new_freqs.append(original_word)
+                    elif non_split_word is not None:
+                        nontransformed.append(non_split_word)
+                    else:
+                        possible_typos.append(possible_typo)
+                for to_remove in to_remove_from_new_freqs:
+                    del (new_freqs[to_remove])
+                del to_remove_from_new_freqs[:]
+                current_word_len = len(word)
+                logging.info(f"Splitting words of length {current_word_len} (max word parts {get_max_subwords(word)})...")
+            if word in cache:
+                comb_creator = cache_comb_creator
+            elif (word in non_eng_dicts or word in general_dict) and len(word) >= 4:
+                comb_creator = identity_comb_creator
+            else:
+                comb_creator = true_comb_creator
+            pp.append((word, freq, comb_creator, new_freqs, params))
+
     return transformed, nontransformed, possible_typos
 
 
