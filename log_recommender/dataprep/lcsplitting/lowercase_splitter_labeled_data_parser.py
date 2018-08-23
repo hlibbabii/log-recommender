@@ -1,4 +1,5 @@
 import csv
+import logging
 from collections import defaultdict
 from pprint import pprint
 
@@ -8,8 +9,6 @@ from dataprep.lcsplitting.param_mutator import ParamMutator
 from dataprep.lcsplitting.typo_fixer import is_typo
 from fastai.imports import tqdm
 from nn.params import nn_params
-
-import logging
 
 logging.basicConfig(level=logging.INFO)
 
@@ -163,7 +162,7 @@ dataset_name = nn_params["dataset_name"]
 path_to_dataset = f'{nn_params["path_to_data"]}/{dataset_name}'
 path_to_splits = f'{path_to_dataset}/splits'
 
-general_dict = load_english_dict(f'{base_project_dir}/eng-dicts')
+general_dict = load_english_dict(f'{base_project_dir}/dicts/eng')
 
 possibel_var_values, (keys, mutations) = ParamMutator(
     [{'name': 'alpha', 'start': 0.1, 'end': 1000000.0, 'plus_or_mult': 'mult', 'koef': 2.0},

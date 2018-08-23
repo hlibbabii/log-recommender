@@ -40,7 +40,7 @@ if __name__ == '__main__':
         for line in f:
             words_with_typos.append(line[:-1])
 
-    general_dict = load_english_dict(f'{base_project_dir}/eng-dicts')
+    general_dict = load_english_dict(f'{base_project_dir}/dicts/eng')
     len_to_words_in_dict = defaultdict(list)
     for w in general_dict:
         len_to_words_in_dict[len(w)].append(w)

@@ -172,7 +172,7 @@ if __name__ == '__main__':
             line = l.split()
             freqs[line[0]] = int(line[1])
 
-    general_dict = load_english_dict(f'{base_dir}/log-recommender/eng-dicts')
+    general_dict = load_english_dict(f'{base_dir}/log-recommender/dicts/eng')
 
     transformed, nontransformed, possible_typos = get_splittings(freqs.keys(), freqs, general_dict, params)
 
