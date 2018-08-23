@@ -7,6 +7,7 @@ from operator import itemgetter
 from random import shuffle
 
 from dataprep import base_project_dir
+from fastai.imports import tqdm
 
 logging.basicConfig(level=logging.INFO)
 
@@ -92,7 +93,7 @@ def get_splittings(words_to_split, freqs, general_dict, params):
     nontransformed = []
     possible_typos = []
 
-    for ind, (word, freq) in enumerate(freqs.items()):
+    for ind, (word, freq) in enumerate(tqdm(freqs.items(), leave=False, total=len(freqs))):
         if word not in words_to_split:
             continue
         # if ind >= 1000: break
@@ -172,6 +173,7 @@ if __name__ == '__main__':
     path_to_dataset = f'{base_dir}/{args.path_to_dataset}'
     path_to_splits = f'{path_to_dataset}/splits'
 
+    logging.info("Loading vocabulary into memory...")
     freqs = {}
     with open(f'{path_to_dataset}/vocab.txt', 'r') as f:
         for l in f:
@@ -180,8 +182,9 @@ if __name__ == '__main__':
 
     general_dict = load_english_dict(f'{base_project_dir}/dicts/eng')
 
+    logging.info("Starting splitting...")
     transformed, nontransformed, possible_typos = get_splittings(freqs.keys(), freqs, general_dict, params)
-
+    logging.info(f"Splitting done! Saving sata to '{path_to_split_folder}")
     path_to_split_folder = f'{path_to_splits}/1'
     while os.path.exists(path_to_split_folder):
         path_to_split_folder = f'{path_to_split_folder}1'
