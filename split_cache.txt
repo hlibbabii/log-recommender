@@ -1,0 +1,1 @@
+hivemapjoinfollowedbymapaggrhashmemory|hive map join followed by map aggr hash memory

@@ -10,7 +10,6 @@ from random import shuffle
 from fastai.imports import tqdm
 
 from dataprep import base_project_dir
-from dataprep.lcsplitting.split_cache import cache
 
 logging.basicConfig(level=logging.INFO)
 
@@ -26,8 +25,20 @@ def combos(s, max_words):
             yield (s[:i],) + c
 
 
+def init_caches(common_cache_file, project_cache_file):
+    cache = {}
+    for file in (common_cache_file, project_cache_file):
+        if os.path.exists(file):
+            with open(file, 'r') as f:
+                for line in f:
+                    line = line if line[-1] != '\n' else line[:-1]
+                    spl = line.split("|")
+                    cache[spl[0]] = spl[1].split(" ")
+    return cache
+
+
 def cache_comb_creator(word):
-    return [cache[word]]
+    return [cache[word], [word]]
 
 
 def identity_comb_creator(word):
@@ -132,7 +143,7 @@ def get_splitting(pp):
     else:
         return None, word, None
 
-def get_splittings(words_to_split, freqs, general_dict, non_eng_dicts, params):
+def get_splittings(words_to_split, freqs, general_dict, non_eng_dicts, cache, params):
     freqs = dict(sorted(freqs.items(), key=lambda x: len(x[0])))
     new_freqs = freqs.copy()
     transformed = {}
@@ -161,6 +172,7 @@ def get_splittings(words_to_split, freqs, general_dict, non_eng_dicts, params):
                     del (new_freqs[to_remove])
                 del to_remove_from_new_freqs[:]
                 current_word_len = len(word)
+                dump_split(transformed, f'{path_to_split_folder}/split.txt')
                 logging.info(f"Splitting words of length {current_word_len} (max word parts {get_max_subwords(word)})...")
             if word in cache:
                 comb_creator = cache_comb_creator
@@ -192,6 +204,11 @@ def load_non_english_dicts(path_to_dicts):
     return dict
 
 
+def dump_split(what, where):
+    with open(where, 'w') as f:
+        for word, tr in what.items():
+            f.write(f'{word}|{" ".join(tr["subwords_set"])}\n')
+
 if __name__ == '__main__':
     base_dir = base_from = f'{base_project_dir}/nn-data/new_framework/'
 
@@ -213,34 +230,30 @@ if __name__ == '__main__':
     general_dict = load_english_dict(f'{base_project_dir}/dicts/eng')
     non_eng_dicts = load_non_english_dicts(f'{base_project_dir}/dicts/non-eng')
 
-    logging.info("Starting splitting...")
-    transformed, nontransformed, possible_typos = get_splittings(freqs.keys(), freqs, general_dict, non_eng_dicts, params)
-    logging.info(f"Splitting done! Saving sata to '{path_to_splits}")
-    path_to_split_folder = f'{path_to_splits}/1'
-    while os.path.exists(path_to_split_folder):
-        path_to_split_folder = f'{path_to_split_folder}1'
+    path_to_split_folder = path_to_splits
+    if not os.path.exists(path_to_splits):
+        os.makedirs(path_to_split_folder)
 
-    os.makedirs(path_to_split_folder)
+    cache = init_caches(f'{path_to_split_folder}/split.txt', f'{base_project_dir}/split_cache.txt')
+
+    logging.info("Starting splitting...")
+    transformed, nontransformed, possible_typos = get_splittings(freqs.keys(), freqs, general_dict, non_eng_dicts, cache, params)
+    logging.info(f"Splitting done! Saving sata to '{path_to_splits}")
 
     with open(f'{path_to_split_folder}/params.json', 'w') as f:
         json.dump(params, f)
 
     print("\n################   Split  #####################")
-    with open(f'{path_to_split_folder}/split.txt', 'w') as f:
-        for word, tr in transformed.items():
-            print(f'{word} --> {tr["subwords_set"]}')
-            f.write(f'{word}|{" ".join(tr["subwords_set"])}\n')
+    dump_split(transformed, f'{path_to_split_folder}/split.txt')
 
     print("\n################ Non-split #####################")
     with open(f'{path_to_split_folder}/nonsplit.txt', 'w') as f:
         for word in nontransformed:
-            print(f'{word}')
             f.write(f'{word}\n')
 
     print("\n################ Possible typos #####################")
     with open(f'{path_to_split_folder}/typos.txt', 'w') as f:
         for word in possible_typos:
-            print(f'{word}')
             f.write(f'{word}\n')
 
     transformed_list = list(transformed.items())
