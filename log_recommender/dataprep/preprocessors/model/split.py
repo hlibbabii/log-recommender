@@ -29,6 +29,11 @@ class NonDelimiterSplitContainer(SplitContainer):
     def __str__(self):
         return self.non_preprocessed_repr()
 
+    def is_capitalized(self):
+        return self.capitalized
+
+
+class CamelCaseSplit(NonDelimiterSplitContainer):
     def non_preprocessed_repr(self):
         capitalized_str = "".join(map(lambda s: str(s).capitalize(), self.subtokens))
         return (capitalized_str[0] if self.capitalized else capitalized_str[0].lower()) + capitalized_str[1:]
@@ -36,15 +41,20 @@ class NonDelimiterSplitContainer(SplitContainer):
     def preprocessed_repr(self):
         return ([placeholders['capital']] if self.capitalized else []) + [w for subtoken in self.subtokens for w in (subtoken, placeholders['camel_case_separator'])][:-1]
 
-    def is_capitalized(self):
-        return self.capitalized
-
-
-class CamelCaseSplit(NonDelimiterSplitContainer):
-    pass
 
 class WithNumbersSplit(NonDelimiterSplitContainer):
-    pass
+    def non_preprocessed_repr(self):
+        capitalized_str = "".join(map(lambda s: str(s), self.subtokens))
+        return (capitalized_str[0] if self.capitalized else capitalized_str[0].lower()) + capitalized_str[1:]
+
+    def preprocessed_repr(self):
+        return ([placeholders['capital']] if self.capitalized else []) + [w for subtoken in self.subtokens for w in (subtoken, placeholders['camel_case_separator'])][:-1]
+
 
 class SameCaseSplit(NonDelimiterSplitContainer):
-    pass
+    def non_preprocessed_repr(self):
+        capitalized_str = "".join(map(lambda s: str(s), self.subtokens))
+        return (capitalized_str[0] if self.capitalized else capitalized_str[0].lower()) + capitalized_str[1:]
+
+    def preprocessed_repr(self):
+        return ([placeholders['capital']] if self.capitalized else []) + [w for subtoken in self.subtokens for w in (subtoken, placeholders['same_case_separator'])][:-1]

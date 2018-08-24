@@ -40,7 +40,7 @@ def read_file_contents(file_path):
 
 
 def preprocess_and_write(params):
-    src_dir, dest_dir, subdir, chunk, verbosity_param_dict = params
+    src_dir, dest_dir, subdir, chunk, verbosity_param_dict, splitting_file = params
     full_dest_dir = os.path.join(dest_dir, subdir)
     path_to_preprocessed_file = os.path.join(full_dest_dir, f'preprocessed.{chunk}.parsed')
     if not os.path.exists(full_dest_dir):
@@ -60,7 +60,8 @@ def preprocess_and_write(params):
             if (ind+1) % 100 == 0:
                 logging.info(f"[{subdir}/{chunk}] Parsed {ind+1} out of {total_files} files ({(ind+1)/float(total_files)*100:.2f}%)")
             parsed = apply_preprocessors(lines_from_file, pp_params["preprocessors"], {
-                'interesting_context_words': []
+                'interesting_context_words': [],
+                'splitting_file_location': splitting_file
             })
             pickle.dump(parsed, f, pickle.HIGHEST_PROTOCOL)
     # remove .part to show that all raw files in this chunk have been preprocessed
@@ -81,6 +82,8 @@ if __name__ == '__main__':
     parser.add_argument('--dest-dataset', action='store', default='100_percent')
     # parser.add_argument('--folder', action='store', default='train')
     # parser.add_argument('--chunk', action='store', default='1')
+    parser.add_argument('--splitting-file', action='store',
+                        default='/home/hlib/thesis/log-recommender/nn-data/devanbu_split_no_tabs_under_2000/splits/split.txt')
     parser.add_argument('--n-processes', action='store', default='32')
     args = parser.parse_args()
 
@@ -105,7 +108,7 @@ if __name__ == '__main__':
     params = []
 
     for _, subdir, chunk in get_two_levels_subdirs(raw_dataset_dir):
-        params.append((raw_dataset_dir, dest_dataset_dir, subdir, chunk, verbosity_param_dict))
+        params.append((raw_dataset_dir, dest_dataset_dir, subdir, chunk, verbosity_param_dict, args.splitting_file))
 
     files_total = len(params)
     current_file = 0

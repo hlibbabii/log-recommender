@@ -96,15 +96,15 @@ def underscore_split(token):
 
 def same_case_split(token, splitting_dict):
     if isinstance(token, ProcessableToken):
-        parts = splitting_dict[token] if token in splitting_dict else [token]
+        parts = splitting_dict[token.get_val()] if token.get_val() in splitting_dict else [token]
         if len(parts) > 1:
-            return SameCaseSplit(parts)
+            return SameCaseSplit(parts, parts[0][0].isupper())
         else:
             return token
     elif isinstance(token, ProcessableTokenContainer):
         parts = []
         for subtoken in token.get_subtokens():
-            parts.append(same_case_split(subtoken))
+            parts.append(same_case_split(subtoken, splitting_dict))
         if isinstance(token, NonDelimiterSplitContainer):
             return type(token)(parts, token.is_capitalized())
         else:

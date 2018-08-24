@@ -32,6 +32,6 @@ def to_repr_token(types_to_be_repr_dict, token):
         else:
             return repr
     elif clazz in recursive:
-        return clazz(to_repr_list(types_to_be_repr_dict, token.get_subtokens()))
+        return clazz(to_repr_list(types_to_be_repr_dict, token.get_subtokens()), token.is_capitalized())
     else:
         return token
