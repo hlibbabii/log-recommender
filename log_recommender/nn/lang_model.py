@@ -23,7 +23,6 @@ from fastai.nlp import LanguageModelData, seq2seq_reg
 from fastai import metrics
 from torchtext import data
 from nn.utils import to_test_mode, back_to_train_mode, beautify_text, gen_text
-import sys
 
 # for some reason this import should go here to avoid error
 from nn.params import nn_params, Mode
@@ -51,7 +50,7 @@ def create_df(dir):
             with open(os.path.join(root, file), 'r') as f:
                 if not file.startswith("_"):
                     cur_file += 1
-                    logging.info(f'Adding {os.path.join(root, file)} to dataframe [{cur_file} out of {files_total}], curr dataframe size: {sys.getsizeof(lines)}')
+                    logging.info(f'Adding {os.path.join(root, file)} to dataframe [{cur_file} out of {files_total}]')
                     lines.extend([line for line in f])
                     if len(lines) > DATAFRAME_LINES_THRESHOLD:
                         yield pandas.DataFrame(lines)
@@ -82,10 +81,11 @@ def get_model(model_name, only_build_vocab=False):
                                                           train_df_path, valid_df_path, test_df_path,
                                                           bs=nn_arch["bs"], validation_bs=nn_params["validation_bs"],
                                                           bptt=nn_arch["bptt"],
-                                                          min_freq=nn_arch["min_freq"]
+                                                          min_freq=nn_arch["min_freq"],
+                                                          only_build_vocab=only_build_vocab
                                                           # not important since we remove rare tokens during preprocessing
                                                           )
-    with open(f'{path_to_dataset}/vocab.txt', 'w') as f:
+    with open(f'{path_to_dataset}/vocab_all.txt', 'w') as f:
         for word, freq in text_field.vocab.freqs.items():
             f.write(f'{str(word)} {str(freq)}\n')
     pickle.dump(text_field, open(f'{path_to_dataset}/TEXT.pkl', 'wb'))
