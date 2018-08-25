@@ -58,9 +58,9 @@ def camel_case_split(token):
 def with_numbers_split(token):
     if isinstance(token, ProcessableToken):
         parts = [w for w in list(filter(None, re.split('(?<=[a-zA-Z0-9])?([0-9])(?=[a-zA-Z0-9]+|$)', token.get_val())))]
-        pt_parts = [ProcessableToken(w) for w in parts]
+        parts_lowercased = [ProcessableToken(w.lower()) for w in parts]
         if len(parts) > 1:
-            return WithNumbersSplit(pt_parts, parts[0][0].isupper())
+            return WithNumbersSplit(parts_lowercased, parts[0][0].isupper())
         else:
             return token
     elif isinstance(token, ProcessableTokenContainer):
@@ -77,9 +77,10 @@ def with_numbers_split(token):
 
 def underscore_split(token):
     if isinstance(token, ProcessableToken):
-        parts = [ProcessableToken(w) for w in token.get_val().split("_")]
+        parts = [w for w in token.get_val().split("_")]
+        parts_lowercased = [ProcessableToken(p.lower()) for p in parts]
         if len(parts) > 1:
-            return UnderscoreSplit(parts)
+            return UnderscoreSplit(parts_lowercased)
         else:
             return token
     elif isinstance(token, ProcessableTokenContainer):
@@ -97,8 +98,9 @@ def underscore_split(token):
 def same_case_split(token, splitting_dict):
     if isinstance(token, ProcessableToken):
         parts = splitting_dict[token.get_val()] if token.get_val() in splitting_dict else [token]
+        parts_lowercased = [ProcessableToken(p.lower()) for p in parts]
         if len(parts) > 1:
-            return SameCaseSplit(parts, parts[0][0].isupper())
+            return SameCaseSplit(parts_lowercased, parts[0][0].isupper())
         else:
             return token
     elif isinstance(token, ProcessableTokenContainer):
