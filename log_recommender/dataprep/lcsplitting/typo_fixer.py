@@ -1,17 +1,18 @@
+import argparse
+import logging
+import os
 from collections import defaultdict
 
+from Levenshtein.StringMatcher import StringMatcher
 from tqdm import tqdm
 
 from dataprep import base_project_dir
 from dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
 
 
-def get_possible_fixes_candidates(word):
+def get_words_of_almost_same_length(word):
     ln = len(word)
     return len_to_words_in_dict[ln - 1] + len_to_words_in_dict[ln] + len_to_words_in_dict[ln + 1]
-
-
-from Levenshtein.StringMatcher import StringMatcher
 
 
 def fl(word, word_from_dict):
@@ -32,8 +33,16 @@ def is_typo(word, word_from_dict):
 
 
 if __name__ == '__main__':
-    path_to_typo_candidates = f"{base_project_dir}/nn-data/devanbu_no_replaced_identifier_split_no_tabs_new_splits3_under_5000_15_percent/splits/0/typos.txt"
-    file_with_fixes = f"{base_project_dir}/nn-data/devanbu_no_replaced_identifier_split_no_tabs_new_splits3_under_5000_15_percent/splits/0/fixes.txt"
+    base_dir = base_from = f'{base_project_dir}/nn-data/new-framework/'
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--path-to-typo-candidates', action='store', default="100_percent/splits/typo-candidates.txt")
+    args = parser.parse_args()
+
+    path_to_typo_candidates = f"{base_dir}/{args.path_to_typo_candidates}"
+    file_with_fixes = os.path.join(os.path.split(path_to_typo_candidates)[0], 'typo-fixes.txt')
+    logging.basicConfig(level=logging.DEBUG)
+    logging.info(f"Reading typo candidates from {path_to_typo_candidates}...")
 
     words_with_typos = []
     with open(path_to_typo_candidates, 'r') as f:
@@ -50,7 +59,7 @@ if __name__ == '__main__':
     with open(file_with_fixes, 'w') as f:
         for word in tqdm(words_with_typos):
             possible_fixes = []
-            for word_from_dict in get_possible_fixes_candidates(word):
+            for word_from_dict in get_words_of_almost_same_length(word):
                 if is_typo(word, word_from_dict):
                     possible_fixes.append(word_from_dict)
             stringified_possible_fixes = " ".join(possible_fixes)

@@ -2,14 +2,14 @@ import argparse
 import json
 import logging
 import os
+from functools import partial
 from math import log
 from multiprocessing.pool import Pool
 from operator import itemgetter
 from random import shuffle
 
-from fastai.imports import tqdm
-
 from dataprep import base_project_dir
+from fastai.imports import tqdm
 
 logging.basicConfig(level=logging.INFO)
 
@@ -37,8 +37,16 @@ def init_caches(common_cache_file, project_cache_file):
     return cache
 
 
-def cache_comb_creator(word):
-    return [cache[word], [word]]
+def init_cache(file):
+    res=[]
+    if os.path.exists(file):
+        with open(file, 'r') as f:
+            for line in f:
+                res.append(line if line[-1] != '\n' else line[:-1])
+    return res
+
+def cache_comb_creator(split_cache, word):
+    return [split_cache[word], [word]]
 
 
 def identity_comb_creator(word):
@@ -143,12 +151,20 @@ def get_splitting(pp):
     else:
         return None, word, None
 
-def get_splittings(words_to_split, freqs, general_dict, non_eng_dicts, cache, params):
+def get_splittings(words_to_split, freqs, general_dict, non_eng_dicts, cache_files, params, general_cache_file):
+    split_cache_file, nonsplit_cache_file, typo_candidates_cache_file = cache_files
+
+    logging.info("Initializing caches...")
+    split_cache = init_caches(split_cache_file, general_cache_file)
+    nonsplit_cache = init_cache(nonsplit_cache_file)
+    typo_candidates_cache = init_cache(typo_candidates_cache_file)
+
+    logging.info("Starting splitting...")
     freqs = dict(sorted(freqs.items(), key=lambda x: len(x[0])))
     new_freqs = freqs.copy()
     transformed = {}
     nontransformed = []
-    possible_typos = []
+    typo_candidates = []
     to_remove_from_new_freqs = []
     current_word_len = 0
     pp = []
@@ -167,22 +183,28 @@ def get_splittings(words_to_split, freqs, general_dict, non_eng_dicts, cache, pa
                     elif non_split_word is not None:
                         nontransformed.append(non_split_word)
                     else:
-                        possible_typos.append(possible_typo)
+                        typo_candidates.append(possible_typo)
                 for to_remove in to_remove_from_new_freqs:
                     del (new_freqs[to_remove])
                 del to_remove_from_new_freqs[:]
                 current_word_len = len(word)
-                dump_split(transformed, f'{path_to_split_folder}/split.txt')
+
+                dump_split(transformed, split_cache_file)
+                dump_non_split(nontransformed, nonsplit_cache_file)
+                dump_typo_candidates(typo_candidates, typo_candidates_cache_file)
+
                 logging.info(f"Splitting words of length {current_word_len} (max word parts {get_max_subwords(word)})...")
-            if word in cache:
-                comb_creator = cache_comb_creator
+            if word in split_cache:
+                comb_creator = partial(cache_comb_creator, split_cache)
             elif (word in non_eng_dicts or word in general_dict) and len(word) >= 4:
+                comb_creator = identity_comb_creator
+            elif word in nonsplit_cache or word in typo_candidates_cache:
                 comb_creator = identity_comb_creator
             else:
                 comb_creator = true_comb_creator
             pp.append((word, freq, comb_creator, new_freqs, params))
 
-    return transformed, nontransformed, possible_typos
+    return transformed, nontransformed, typo_candidates
 
 
 def load_english_dict(path_to_dict_dir):
@@ -209,6 +231,31 @@ def dump_split(what, where):
         for word, tr in what.items():
             f.write(f'{word}|{" ".join(tr["subwords_set"])}\n')
 
+def dump_non_split(what, where):
+    with open(where, 'w') as f:
+        for word in what:
+            f.write(f'{word}\n')
+
+def dump_typo_candidates(what, where):
+    with open(where, 'w') as f:
+        for word in what:
+            f.write(f'{word}\n')
+
+def generate_sample(transformed, nontransformed, nn, where):
+    transformed_list = list(transformed.items())
+    shuffle(transformed_list)
+    shuffle(nontransformed)
+    how_many_transformed = nn[0]
+    how_many_nontransformed = nn[1]
+    with open(where, 'w') as f:
+        f.write("#####################  Split #####################\n")
+        for w, tr in transformed_list[:how_many_transformed]:
+            f.write(f'{w}|{" ".join(tr["subwords_set"])}\n')
+        f.write("\n\n#####################  Non-split #####################\n")
+        for w in nontransformed[:how_many_nontransformed]:
+            f.write(f'{w}\n')
+
+
 if __name__ == '__main__':
     base_dir = base_from = f'{base_project_dir}/nn-data/new_framework/'
 
@@ -218,10 +265,11 @@ if __name__ == '__main__':
 
     path_to_dataset = f'{base_dir}/{args.path_to_dataset}'
     path_to_splits = f'{path_to_dataset}/splits'
+    vocab_file = f'{path_to_dataset}/vocab.txt'
 
-    logging.info("Loading vocabulary into memory...")
+    logging.info(f"Loading vocabulary into memory from {vocab_file} ...")
     freqs = {}
-    with open(f'{path_to_dataset}/vocab.txt', 'r') as f:
+    with open(vocab_file, 'r') as f:
         for l in f:
             line = l.split()
             freqs[line[0]] = int(line[1])
@@ -234,37 +282,24 @@ if __name__ == '__main__':
     if not os.path.exists(path_to_splits):
         os.makedirs(path_to_split_folder)
 
-    cache = init_caches(f'{path_to_split_folder}/split.txt', f'{base_project_dir}/split_cache.txt')
+    split_file =  f'{path_to_split_folder}/split.txt'
+    nonsplit_file = f"{path_to_split_folder}/nonsplit.txt"
+    typo_candidates_file = f"{path_to_split_folder}/typo-candidates.txt"
 
-    logging.info("Starting splitting...")
-    transformed, nontransformed, possible_typos = get_splittings(freqs.keys(), freqs, general_dict, non_eng_dicts, cache, params)
+    split_cache_file = f'{split_file}.cache'
+    nonsplit_cache_file = f'{nonsplit_file}.cache'
+    typo_candidates_cache_file = f'{typo_candidates_file}.cache'
+
+    transformed, nontransformed, typo_candidates = get_splittings(freqs.keys(), freqs, general_dict, non_eng_dicts,
+                                                                 (split_cache_file, nonsplit_cache_file, typo_candidates_cache_file),
+                                                                  params, f'{path_to_split_folder}/split_cache.txt')
     logging.info(f"Splitting done! Saving sata to '{path_to_splits}")
 
     with open(f'{path_to_split_folder}/params.json', 'w') as f:
-        json.dump(params, f)
+        json.dump({'params': params, 'typo_params': typo_params, 'max_subwords': max_subwords}, f)
 
-    print("\n################   Split  #####################")
-    dump_split(transformed, f'{path_to_split_folder}/split.txt')
+    dump_split(transformed, split_file)
+    dump_non_split(nontransformed, nonsplit_file)
+    dump_typo_candidates(typo_candidates, typo_candidates_file)
 
-    print("\n################ Non-split #####################")
-    with open(f'{path_to_split_folder}/nonsplit.txt', 'w') as f:
-        for word in nontransformed:
-            f.write(f'{word}\n')
-
-    print("\n################ Possible typos #####################")
-    with open(f'{path_to_split_folder}/typos.txt', 'w') as f:
-        for word in possible_typos:
-            f.write(f'{word}\n')
-
-    transformed_list = list(transformed.items())
-    shuffle(transformed_list)
-    shuffle(nontransformed)
-    how_many_transformed = 1000
-    how_many_nontransformed = 400
-    with open(f'{path_to_split_folder}/sample.txt', 'w') as f:
-        f.write("#####################  Split #####################\n")
-        for w, tr in transformed_list[:how_many_transformed]:
-            f.write(f'{w}|{" ".join(tr["subwords_set"])}\n')
-        f.write("\n\n#####################  Non-split #####################\n")
-        for w in nontransformed[:how_many_nontransformed]:
-            f.write(f'{w}\n')
+    generate_sample(transformed, nontransformed, (1000, 4000), f'{path_to_split_folder}/sample.txt')
