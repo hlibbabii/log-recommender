@@ -27,6 +27,6 @@ def apply_preprocessors(to_be_processed, preprocessors, context={}):
         else:
             to_be_processed = preprocessor_output
         t = int(time.time() - start)
-        if t > -1:
+        if t > 1:
             logging.debug(f"{preprocessor}: {t}s")
     return to_be_processed
