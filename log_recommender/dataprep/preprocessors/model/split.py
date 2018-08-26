@@ -32,6 +32,9 @@ class NonDelimiterSplitContainer(SplitContainer):
     def is_capitalized(self):
         return self.capitalized
 
+    def __repr__(self):
+        return f'{self.__class__.__name__}{"(CAP)" if self.capitalized else ""}{self.subtokens}'
+
 
 class CamelCaseSplit(NonDelimiterSplitContainer):
     def non_preprocessed_repr(self):

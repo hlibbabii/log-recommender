@@ -9,7 +9,7 @@ class Number(object):
         return self.non_preprocessed_repr()
 
     def __repr__(self):
-        return self.__str__()
+        return f'{self.__class__.__name__}{self.parts_of_number}'
 
     def non_preprocessed_repr(self):
         return "".join([(w.non_preprocessed_repr() if isinstance(w, SpecialNumberChar) else str(w)) for w in self.parts_of_number])
@@ -19,7 +19,8 @@ class Number(object):
 
 
 class SpecialNumberChar(object):
-    pass
+    def __repr__(self):
+        return f'{self.__class__.__name__}'
 
 
 class E(SpecialNumberChar):

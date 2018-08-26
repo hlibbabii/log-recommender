@@ -15,5 +15,6 @@ placeholders= {
     'e': '<e>',
     'var': '<var>',
     'string_resource': '<str_res>',
-    'ect': '<ect>'
+    'ect': '<ect>',
+    'non_ascii': '<non_ascii>'
 }

@@ -1,3 +1,6 @@
+from dataprep.preprocessors.model.placeholders import placeholders
+
+
 class ProcessableToken(object):
     def __init__(self, s):
         if isinstance(s, str):
@@ -18,7 +21,7 @@ class ProcessableToken(object):
         return self.val
 
     def __repr__(self):
-        return self.__str__()
+        return f'{self.__class__.__name__}({self.val})'
 
     def __get_flat_list(self, val):
         if isinstance(val, list):
@@ -39,6 +42,9 @@ class ProcessableToken(object):
     def simple(self):
         return len(self.val) == 1 and isinstance(self.val[0], str)
 
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.val == other.val
+
 
 class ProcessableTokenContainer(object):
     def __init__(self, subtokens):
@@ -49,3 +55,31 @@ class ProcessableTokenContainer(object):
 
     def get_subtokens(self):
         return self.subtokens
+
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.subtokens == other.subtokens
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}{self.subtokens}'
+
+
+class NonEng(object):
+    def __init__(self, str):
+        self.str = str
+
+    def non_preprocessed_repr(self):
+        return self.str
+        # raise NotImplementedError("We don't support non preprocessed representation of NonEng, i.e. non-english tokens")
+
+    def preprocessed_repr(self):
+        return placeholders['non_ascii']
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.str})'
+
+    def __str__(self):
+        return self.non_preprocessed_repr()
+
+    def to_repr(self):
+        return self.preprocessed_repr()
+

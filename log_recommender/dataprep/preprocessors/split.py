@@ -2,6 +2,7 @@ import logging
 import re
 ############   Multitoken list level    ###############3
 import time
+from functools import partial
 
 from dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer
 from dataprep.preprocessors.model.split import CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, \
@@ -9,15 +10,15 @@ from dataprep.preprocessors.model.split import CamelCaseSplit, WithNumbersSplit,
 
 
 def camel_case(token_list, context):
-    return [camel_case_split(identifier) for identifier in token_list]
+    return [apply_splitting_to_token(identifier, split_string_camel_case) for identifier in token_list]
 
 
 def underscore(token_list, context):
-    return [underscore_split(identifier) for identifier in token_list]
+    return [apply_splitting_to_token(identifier, split_string_underscore) for identifier in token_list]
 
 
 def with_numbers(token_list, context):
-    return [with_numbers_split(identifier) for identifier in token_list]
+    return [apply_splitting_to_token(identifier, split_string_with_numbers) for identifier in token_list]
 
 def same_case(token_list, context):
     splitting_file_location = context['splitting_file_location']
@@ -29,24 +30,41 @@ def same_case(token_list, context):
             splitting_dict[word] = splitting.split()
     logging.info(f"Splitting dictionary is build in {time.time()-start} s")
 
-    return [same_case_split(identifier, splitting_dict) for identifier in token_list]
+    return [apply_splitting_to_token(identifier, partial(split_string_same_case, splitting_dict)) for identifier in token_list]
 
+
+#############  String Level ################
+
+def split_string_camel_case(str):
+    matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', str)
+    return [m.group(0) for m in matches], CamelCaseSplit
+
+def split_string_with_numbers(str):
+    return [w for w in list(filter(None, re.split('(?<=[a-zA-Z0-9])?([0-9])(?=[a-zA-Z0-9]+|$)', str)))], WithNumbersSplit
+
+def split_string_underscore(str):
+    return [w for w in str.split("_")], UnderscoreSplit
+
+def split_string_same_case(splitting_dict, str):
+    return splitting_dict[str] if str in splitting_dict else [str], SameCaseSplit
 
 #############  Token Level ################
 
-def camel_case_split(token):
+def apply_splitting_to_token(token, str_splitting_func):
     if isinstance(token, ProcessableToken):
-        matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', token.get_val())
-        parts = [m.group(0) for m in matches]
+        parts, cls = str_splitting_func(token.get_val())
         parts_lowercased = [ProcessableToken(p.lower()) for p in parts]
         if len(parts) > 1:
-            return CamelCaseSplit(parts_lowercased, parts[0][0].isupper())
+            if issubclass(cls, NonDelimiterSplitContainer):
+                return cls(parts_lowercased, parts[0][0].isupper())
+            else:
+                return cls(parts_lowercased)
         else:
             return token
     elif isinstance(token, ProcessableTokenContainer):
         parts = []
         for subtoken in token.get_subtokens():
-            parts.append(camel_case_split(subtoken))
+            parts.append(apply_splitting_to_token(subtoken, str_splitting_func))
         if isinstance(token, NonDelimiterSplitContainer):
             return type(token)(parts, token.is_capitalized())
         else:
@@ -54,62 +72,3 @@ def camel_case_split(token):
     else:
         return token
 
-
-def with_numbers_split(token):
-    if isinstance(token, ProcessableToken):
-        parts = [w for w in list(filter(None, re.split('(?<=[a-zA-Z0-9])?([0-9])(?=[a-zA-Z0-9]+|$)', token.get_val())))]
-        parts_lowercased = [ProcessableToken(w.lower()) for w in parts]
-        if len(parts) > 1:
-            return WithNumbersSplit(parts_lowercased, parts[0][0].isupper())
-        else:
-            return token
-    elif isinstance(token, ProcessableTokenContainer):
-        parts = []
-        for subtoken in token.get_subtokens():
-            parts.append(with_numbers_split(subtoken))
-        if isinstance(token, NonDelimiterSplitContainer):
-            return type(token)(parts, token.is_capitalized())
-        else:
-            return type(token)(parts)
-    else:
-        return token
-
-
-def underscore_split(token):
-    if isinstance(token, ProcessableToken):
-        parts = [w for w in token.get_val().split("_")]
-        parts_lowercased = [ProcessableToken(p.lower()) for p in parts]
-        if len(parts) > 1:
-            return UnderscoreSplit(parts_lowercased)
-        else:
-            return token
-    elif isinstance(token, ProcessableTokenContainer):
-        parts = []
-        for subtoken in token.get_subtokens():
-            parts.append(underscore_split(subtoken))
-        if isinstance(token, NonDelimiterSplitContainer):
-            return type(token)(parts, token.is_capitalized())
-        else:
-            return type(token)(parts)
-    else:
-        return token
-
-
-def same_case_split(token, splitting_dict):
-    if isinstance(token, ProcessableToken):
-        parts = splitting_dict[token.get_val()] if token.get_val() in splitting_dict else [token]
-        parts_lowercased = [ProcessableToken(p.lower()) for p in parts]
-        if len(parts) > 1:
-            return SameCaseSplit(parts_lowercased, parts[0][0].isupper())
-        else:
-            return token
-    elif isinstance(token, ProcessableTokenContainer):
-        parts = []
-        for subtoken in token.get_subtokens():
-            parts.append(same_case_split(subtoken, splitting_dict))
-        if isinstance(token, NonDelimiterSplitContainer):
-            return type(token)(parts, token.is_capitalized())
-        else:
-            return type(token)(parts)
-    else:
-        return token

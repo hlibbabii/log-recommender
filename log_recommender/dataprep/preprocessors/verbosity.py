@@ -1,5 +1,5 @@
 from dataprep.preprocessors.model.chars import NewLine, Tab
-from dataprep.preprocessors.model.general import ProcessableToken
+from dataprep.preprocessors.model.general import ProcessableToken, NonEng
 from dataprep.preprocessors.model.numeric import Number
 from dataprep.preprocessors.model.split import CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, SameCaseSplit
 from dataprep.preprocessors.model.textcontainers import OneLineComment, MultilineComment, StringLiteral
@@ -29,4 +29,4 @@ def get_all_verbosity_params():
     return list(set(token_to_verbosity_level_dict.values()))
 
 recursive = [SameCaseSplit, CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, OneLineComment, MultilineComment, StringLiteral]
-always_repr = [ProcessableToken]
+always_repr = [ProcessableToken, NonEng]
