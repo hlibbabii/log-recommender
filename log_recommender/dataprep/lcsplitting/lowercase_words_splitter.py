@@ -2,7 +2,6 @@ import argparse
 import json
 import logging
 import os
-from functools import partial
 from math import log
 from multiprocessing.pool import Pool
 from operator import itemgetter
@@ -14,15 +13,19 @@ from fastai.imports import tqdm
 logging.basicConfig(level=logging.INFO)
 
 
-def combos(s, max_words):
-    if not s:
-        return
-    yield (s,)
-    if max_words == 1:
-        return
-    for i in range(1, len(s)):
-        for c in combos(s[i:], max_words - 1):
-            yield (s[:i],) + c
+def get_next_combo(last_subwords_comb, max_subwords, non_ex_index=-1):
+    if isinstance(last_subwords_comb, str):
+        return [last_subwords_comb]
+    # find last subword which length is more than 1
+    start = len(last_subwords_comb)-1 if non_ex_index == -1 else non_ex_index
+    while start >= 0 and (start+1 == max_subwords or len(last_subwords_comb[start]) == 1):
+        start -= 1
+    if start != -1:
+        changed_part = get_next_combo(last_subwords_comb[start][-1] + "".join(last_subwords_comb[start+1:]),
+                                      max_subwords - start - 1, -1)
+        return last_subwords_comb[:start] + [last_subwords_comb[start][:-1]] + changed_part
+    else:
+        return None
 
 
 def init_caches(common_cache_file, project_cache_file):
@@ -47,10 +50,6 @@ def init_cache(file):
 
 def cache_comb_creator(split_cache, word):
     return [split_cache[word], [word]]
-
-
-def identity_comb_creator(word):
-    return [[word]]
 
 def true_comb_creator(word):
     max_subwords = get_max_subwords(word)
@@ -98,39 +97,66 @@ def ll(word, params):
                                            params['beta']) + params['gamma'])
 
 
+def calc_score(subwords_set, denum, denum_f, denum_l):
+    num = 0.0
+    num_ls = []
+    num_fs = []
+    n = len(subwords_set)
+    non_existant_word = None
+    for ind, subword in enumerate(subwords_set):
+        if subword in freqs:
+            num_fs.append(ff(freqs[subword], subword in general_dict, n == 1, params))
+            num_ls.append(ll(subword, params))
+            num += num_fs[-1] * num_ls[-1]
+        else:
+            non_existant_word = ind
+            break
+    num = num * (1.0 / n ** params['lambda_'])
+    if non_existant_word is None:
+        result = num / denum
+        return {
+            'subwords_set': subwords_set,
+            'num': num,
+            'denum': denum,
+            'results': result,
+            'denum_f': denum_f,
+            'denum_l': denum_l,
+            'num_fs': num_fs,
+            'num_ls': num_ls
+        }
+    else:
+        return non_existant_word
+
+
 def get_splitting(pp):
-    word, freq, comb_creator, freqs, params = pp
+    word, freq, freqs, params, cached_combs, identity = pp
     denum_f = ff(freq, word in general_dict, True, params)
     denum_l = ll(word, params)
     denum = denum_f * denum_l
     options = []
-    combinations = comb_creator(word)
-    for subwords_set in combinations:
-        all_words_exist = True
-        num = 0.0
-        num_ls = []
-        num_fs = []
-        n = len(subwords_set)
-        for subword in subwords_set:
-            if subword in freqs:
-                num_fs.append(ff(freqs[subword], subword in general_dict, n == 1, params))
-                num_ls.append(ll(subword, params))
-                num += num_fs[-1] * num_ls[-1]
+    pregenerated=True
+    if cached_combs:
+        combinations=cached_combs
+    elif identity:
+        combinations = [[word]]
+    else:
+        pregenerated=False
+    if pregenerated:
+        for subwords_set in combinations:
+            score = calc_score(subwords_set, denum, denum_f, denum_l)
+            if score is not None:
+                options.append(score)
+    else:
+        max_subwords = get_max_subwords(word)
+        combo = get_next_combo(word, max_subwords, -1)
+        while combo is not None:
+            score = calc_score(combo, denum, denum_f, denum_l)
+            if isinstance(score, dict):
+                combo = get_next_combo(combo, max_subwords, -1)
+                options.append(score)
             else:
-                all_words_exist = False
-        num = num * (1.0 / n ** params['lambda_'])
-        if all_words_exist:
-            result = num / denum
-            options.append({
-                'subwords_set': subwords_set,
-                'num': num,
-                'denum': denum,
-                'results': result,
-                'denum_f': denum_f,
-                'denum_l': denum_l,
-                'num_fs': num_fs,
-                'num_ls': num_ls
-            })
+                combo = get_next_combo(combo, max_subwords, score)
+
     options.sort(key=itemgetter('num'), reverse=True)
     # if word not in cache:
     #     cache[word] = [opt['subwords_set'] for opt in options[:10]]
@@ -141,7 +167,7 @@ def get_splitting(pp):
             f'{num_str}/{option["denum_f"]:.2f}*{option["denum_l"]:.2f}')
     logging.debug("================================")
     if len(options) <= 0:
-        raise AssertionError(f"No split options for: {word}")
+        raise AssertionError(f"No split options for: {word}. There should exist at least identity option")
     if options[0]["denum"] < typo_params['denum_error_likelihood_param'] \
             and options[0]["results"] < typo_params['error_likelihood_param'] \
             and len(word) >= typo_params['min_length_for_typo_detection']:
@@ -194,15 +220,15 @@ def get_splittings(words_to_split, freqs, general_dict, non_eng_dicts, cache_fil
                 dump_typo_candidates(typo_candidates, typo_candidates_cache_file)
 
                 logging.info(f"Splitting words of length {current_word_len} (max word parts {get_max_subwords(word)})...")
+            identity = False
+            cached_combs = None
             if word in split_cache:
-                comb_creator = partial(cache_comb_creator, split_cache)
+                cached_combs = cache_comb_creator(split_cache, word)
             elif (word in non_eng_dicts or word in general_dict) and len(word) >= 4:
-                comb_creator = identity_comb_creator
+                identity = True
             elif word in nonsplit_cache or word in typo_candidates_cache:
-                comb_creator = identity_comb_creator
-            else:
-                comb_creator = true_comb_creator
-            pp.append((word, freq, comb_creator, new_freqs, params))
+                identity = True
+            pp.append((word, freq, new_freqs, params, cached_combs, identity))
 
     return transformed, nontransformed, typo_candidates
 
