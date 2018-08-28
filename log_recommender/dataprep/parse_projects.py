@@ -45,9 +45,9 @@ def preprocess_and_write(params):
     path_to_preprocessed_file = os.path.join(full_dest_dir, f'preprocessed.{chunk}.parsed')
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir, exist_ok=True)
-    if os.path.exists(path_to_preprocessed_file):
-        logging.warning(f"File {path_to_preprocessed_file} already exists! Doing nothing.")
-        return
+    # if os.path.exists(path_to_preprocessed_file):
+    #     logging.warning(f"File {path_to_preprocessed_file} already exists! Doing nothing.")
+    #     return
     dir_with_files_to_preprocess = os.path.join(src_dir, subdir, chunk)
     if not os.path.exists(dir_with_files_to_preprocess):
         logging.error(f"Path {dir_with_files_to_preprocess} does not exist")
@@ -74,17 +74,17 @@ def split_two_last_levels(root):
 
 
 if __name__ == '__main__':
-    base_from = f'{base_project_dir}/../raw_datasets/devanbu/'
-    base_to = f'{base_project_dir}/nn-data/new_framework/'
+    base_from = f'{base_project_dir}/nn-data/'
+    base_to = f'{base_project_dir}/nn-data//'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--raw-dataset', action='store', default='100_percent')
-    parser.add_argument('--dest-dataset', action='store', default='100_percent')
+    parser.add_argument('--raw-dataset', action='store', default='test/raw/test1')
+    parser.add_argument('--dest-dataset', action='store', default='test/test1')
     # parser.add_argument('--folder', action='store', default='train')
     # parser.add_argument('--chunk', action='store', default='1')
     parser.add_argument('--splitting-file', action='store',
                         default='/home/hlib/thesis/log-recommender/nn-data/devanbu_split_no_tabs_under_2000/splits/split.txt')
-    parser.add_argument('--n-processes', action='store', default='32')
+    # parser.add_argument('--n-processes', action='store', default='1')
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG)
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     files_total = len(params)
     current_file = 0
     start_time = time.time()
-    with Pool(int(args.n_processes)) as pool:
+    with Pool() as pool:
         it = pool.imap_unordered(preprocess_and_write, params)
         for _ in it:
             current_file += 1
