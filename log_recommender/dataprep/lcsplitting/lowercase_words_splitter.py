@@ -283,10 +283,10 @@ def generate_sample(transformed, nontransformed, nn, where):
 
 
 if __name__ == '__main__':
-    base_dir = base_from = f'{base_project_dir}/nn-data/new_framework/'
+    base_dir = base_from = f'{base_project_dir}/nn-data/'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path-to-dataset', action='store', default='100_percent/repr/nonewlinestabs_1_spl_1_numspl_1_nostrcom_1')
+    parser.add_argument('--path-to-dataset', action='store', default='devanbu_split_no_tabs_under_2000')
     args = parser.parse_args()
 
     path_to_dataset = f'{base_dir}/{args.path_to_dataset}'
@@ -329,3 +329,15 @@ if __name__ == '__main__':
     dump_typo_candidates(typo_candidates, typo_candidates_file)
 
     generate_sample(transformed, nontransformed, (1000, 4000), f'{path_to_split_folder}/sample.txt')
+
+
+# combo = get_next_combo("abcdefg", 3, -1)
+# print(combo)
+# combo = get_next_combo(combo, 3, -1)
+# print(combo)
+# combo = get_next_combo(combo, 3, -1)
+# print(combo)
+# combo = get_next_combo(combo, 3, 0)
+# while combo is not None:
+#     print(combo)
+#     combo = get_next_combo(combo, 3, -1)

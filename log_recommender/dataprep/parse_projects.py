@@ -93,9 +93,9 @@ if __name__ == '__main__':
     logging.info(f"Getting files from {os.path.abspath(raw_dataset_dir)}")
     logging.info(f"Writing preprocessed files to {os.path.abspath(dest_dataset_dir)}")
     preprocessing_types_set = get_preprocessing_types_set()
-    preprocessing_types_dict = {k:None for k in preprocessing_types_set}
+    preprocessing_types_dict = {k.value:None for k in preprocessing_types_set}
     logging.info(f"To get preprocessing represantation, "
-                 f"resolve the following preprocessing params: {preprocessing_types_set}")
+                 f"resolve the following preprocessing params: {', '.join(map(lambda x: x.value, preprocessing_types_set))}")
 
     if not os.path.exists(dest_dataset_dir):
         os.makedirs(dest_dataset_dir)

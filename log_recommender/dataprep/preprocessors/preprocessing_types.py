@@ -11,7 +11,7 @@ class PreprocessingType(Enum):
     SPL = 'spl'
     SC_SPL = 'scspl'
     NUM_SPL = 'numspl'
-    NO_STR_COM = 'nostrcom'
+    NO_STR_COM = 'nocomstr'
     NO_NEWLINES_TABS = 'nonewlinestabs'
 
 

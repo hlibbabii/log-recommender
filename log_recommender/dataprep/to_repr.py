@@ -149,7 +149,7 @@ if __name__ == '__main__':
 
     preprocessing_params = {param.split('=')[0]: bool(int(param.split('=')[1])) for param in args.preprocessing_types.split(',')}
     for param in preprocessing_params.keys():
-        if param not in token_to_preprocessing_type_level_dict.values():
+        if param not in map(lambda x: x.value ,token_to_preprocessing_type_level_dict.values()):
             raise ValueError(f"Invalid preprocessing type: {param}")
 
     new_preprocessing_types_dict, got_pure_repr = calc_new_preprocessing_types_dict(old_preprocessing_params,
