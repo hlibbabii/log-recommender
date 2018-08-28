@@ -49,13 +49,7 @@ _operations
 text2 = '''" RegisterImage "'''
 
 res = apply_preprocessors([l for l in text.split("\n")], pp_params["preprocessors"], {
-    'interesting_context_words': [], 'verbosity_params': {
-        'splitting_done': True,
-    'number_splitting_done': True,
-    'comments_str_literals_obfuscated': True,
-    'new_lines_and_tabs_removed': False
-
-    }})
+    'interesting_context_words': []})
 
 print(res)
 

@@ -1,9 +1,9 @@
-from dataprep.preprocessors.verbosity import token_to_verbosity_level_dict, recursive, always_repr
+from dataprep.preprocessors.preprocessing_types import token_to_preprocessing_type_level_dict, always_repr, recursive
 
 
-def to_repr(verbosity_params, token_list):
-    types_to_be_repr_dict = {k:verbosity_params[v] for (k,v) in token_to_verbosity_level_dict.items()
-                            if v in verbosity_params}
+def to_repr(preprocessing_params, token_list):
+    types_to_be_repr_dict = {k:preprocessing_params[v] for (k, v) in token_to_preprocessing_type_level_dict.items()
+                             if v in preprocessing_params}
     repr_list = to_repr_list(types_to_be_repr_dict, token_list)
     return repr_list
 

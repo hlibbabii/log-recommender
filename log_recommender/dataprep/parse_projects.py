@@ -9,7 +9,7 @@ from pathlib import Path
 
 from dataprep import base_project_dir
 from dataprep.preprocessors import apply_preprocessors
-from dataprep.preprocessors.verbosity import get_all_verbosity_params
+from dataprep.preprocessors.preprocessing_types import get_preprocessing_types_set
 from nn.preprocess_params import pp_params
 
 
@@ -40,7 +40,7 @@ def read_file_contents(file_path):
 
 
 def preprocess_and_write(params):
-    src_dir, dest_dir, subdir, chunk, verbosity_param_dict, splitting_file = params
+    src_dir, dest_dir, subdir, chunk, preprocessing_param_dict, splitting_file = params
     full_dest_dir = os.path.join(dest_dir, subdir)
     path_to_preprocessed_file = os.path.join(full_dest_dir, f'preprocessed.{chunk}.parsed')
     if not os.path.exists(full_dest_dir):
@@ -55,7 +55,7 @@ def preprocess_and_write(params):
     with open(f'{path_to_preprocessed_file}.part', 'wb') as f:
         total_files = sum([f for f in java_file_mapper(dir_with_files_to_preprocess, lambda path: 1)])
         logging.info(f"Preprocessing java files from {dir_with_files_to_preprocess}. Files to process: {total_files}")
-        pickle.dump(verbosity_param_dict, f, pickle.HIGHEST_PROTOCOL)
+        pickle.dump(preprocessing_param_dict, f, pickle.HIGHEST_PROTOCOL)
         for ind, (lines_from_file, file_path) in enumerate(java_file_mapper(dir_with_files_to_preprocess, read_file_contents)):
             if (ind+1) % 100 == 0:
                 logging.info(f"[{subdir}/{chunk}] Parsed {ind+1} out of {total_files} files ({(ind+1)/float(total_files)*100:.2f}%)")
@@ -74,41 +74,40 @@ def split_two_last_levels(root):
 
 
 if __name__ == '__main__':
-    base_from = f'{base_project_dir}/nn-data/'
-    base_to = f'{base_project_dir}/nn-data//'
+    default_base_from = f'{base_project_dir}/nn-data/'
+    default_base_to = f'{base_project_dir}/nn-data//'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--raw-dataset', action='store', default='test/raw/test1')
-    parser.add_argument('--dest-dataset', action='store', default='test/test1')
-    # parser.add_argument('--folder', action='store', default='train')
-    # parser.add_argument('--chunk', action='store', default='1')
+    parser.add_argument('--base-from',action='store', default=default_base_from)
+    parser.add_argument('--base-to',action='store', default=default_base_to)
+    parser.add_argument('src', help="name of the 'raw' dataset")
+    parser.add_argument('dest', help='destination for parsed files, recommended format <dataset name>/parsed')
     parser.add_argument('--splitting-file', action='store',
                         default='/home/hlib/thesis/log-recommender/nn-data/devanbu_split_no_tabs_under_2000/splits/split.txt')
-    # parser.add_argument('--n-processes', action='store', default='1')
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG)
-    raw_dataset_dir=f'{base_from}/{args.raw_dataset}/'
-    dest_dataset_dir = f'{base_to}/{args.dest_dataset}/parsed/'
+    raw_dataset_dir=f'{args.base_from}/{args.src}/'
+    dest_dataset_dir = f'{args.base_to}/{args.dest}/'
 
     logging.info(f"Getting files from {os.path.abspath(raw_dataset_dir)}")
     logging.info(f"Writing preprocessed files to {os.path.abspath(dest_dataset_dir)}")
-    verbosity_params = get_all_verbosity_params()
-    verbosity_param_dict = {k:None for k in verbosity_params}
+    preprocessing_types_set = get_preprocessing_types_set()
+    preprocessing_types_dict = {k:None for k in preprocessing_types_set}
     logging.info(f"To get preprocessing represantation, "
-                 f"resolve the following verbosity params: {verbosity_params}")
+                 f"resolve the following preprocessing params: {preprocessing_types_set}")
 
     if not os.path.exists(dest_dataset_dir):
         os.makedirs(dest_dataset_dir)
     with open(f'{dest_dataset_dir}/params.json', 'w') as f:
         json.dump(pp_params, f)
-    with open(f'{dest_dataset_dir}/verbosity_params.json', 'w') as f:
-        json.dump(verbosity_param_dict, f)
+    with open(f'{dest_dataset_dir}/preprocessing_types.json', 'w') as f:
+        json.dump(preprocessing_types_dict, f)
 
     params = []
 
     for _, subdir, chunk in get_two_levels_subdirs(raw_dataset_dir):
-        params.append((raw_dataset_dir, dest_dataset_dir, subdir, chunk, verbosity_param_dict, args.splitting_file))
+        params.append((raw_dataset_dir, dest_dataset_dir, subdir, chunk, preprocessing_types_dict, args.splitting_file))
 
     files_total = len(params)
     current_file = 0

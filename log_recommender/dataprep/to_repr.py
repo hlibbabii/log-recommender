@@ -10,8 +10,8 @@ from pickle import HIGHEST_PROTOCOL
 
 from dataprep import base_project_dir
 from dataprep.preprocessors.general import to_token_list
+from dataprep.preprocessors.preprocessing_types import token_to_preprocessing_type_level_dict
 from dataprep.preprocessors.repr import to_repr
-from dataprep.preprocessors.verbosity import token_to_verbosity_level_dict, verb_params_short_names
 
 PARSED_FILE_EXTENSION = "parsed"
 PART_REPR_EXTENSION = "partrepr"
@@ -19,21 +19,21 @@ REPR_EXTENSION = "repr"
 NOT_FINISHED_EXTENSION = "part"
 
 
-def calc_new_verbosity_param_dict(verbosity_param_dict, preprocessing_verbosity_params):
-    if not isinstance(verbosity_param_dict, dict):
-        raise AssertionError("Should be verbosity param dict!")
-    new_verbosity_param_dict = {}
-    for (k, v) in verbosity_param_dict.items():
+def calc_new_preprocessing_types_dict(preprocessing_types_dict, preprocessing_types):
+    if not isinstance(preprocessing_types_dict, dict):
+        raise AssertionError("Should be preprocessing param dict!")
+    new_preprocessing_types_dict = {}
+    for (k, v) in preprocessing_types_dict.items():
         if v is None:
-            new_verbosity_param_dict[k] = preprocessing_verbosity_params[k] if k in preprocessing_verbosity_params else None
-        elif k in preprocessing_verbosity_params and preprocessing_verbosity_params[k] != v:
+            new_preprocessing_types_dict[k] = preprocessing_types[k] if k in preprocessing_types else None
+        elif k in preprocessing_types and preprocessing_types[k] != v:
             raise ValueError(f'Preprocessing {k} has already been applied with value {v}. '
-                            f'Cannot be applied again with value {preprocessing_verbosity_params[k]}')
+                             f'Cannot be applied again with value {preprocessing_types[k]}')
         else:
-            new_verbosity_param_dict[k] = v
+            new_preprocessing_types_dict[k] = v
 
-    got_pure_repr = None not in new_verbosity_param_dict.values()
-    return new_verbosity_param_dict, got_pure_repr
+    got_pure_repr = None not in new_preprocessing_types_dict.values()
+    return new_preprocessing_types_dict, got_pure_repr
 
 
 class ReprWriter(metaclass=ABCMeta):
@@ -74,19 +74,19 @@ class IntermediateReprWriter(ReprWriter):
 
 
 def preprocess_and_write(params):
-    src_file, dest_file, preprocessing_verbosity_params, old_verbosity_params = params
+    src_file, dest_file, preprocessing_params, old_preprocessing_params = params
     if not os.path.exists(src_file):
         logging.error(f"File {src_file} does not exist")
         exit(2)
 
     logging.info(f"Preprocessing parsed file {src_file}")
     with open(src_file, 'rb') as i:
-        verbosity_param_dict = pickle.load(i)
-        if old_verbosity_params != verbosity_param_dict:
-            logging.error(f"File {src_file} was expected to have verbosity params "
-                          f"{old_verbosity_params}, but has {verbosity_param_dict}")
+        preprocessing_param_dict = pickle.load(i)
+        if old_preprocessing_params != preprocessing_param_dict:
+            logging.error(f"File {src_file} was expected to have preprocessing params "
+                          f"{old_preprocessing_params}, but has {preprocessing_param_dict}")
             exit(221)
-        new_verbosity_param_dict, got_pure_repr = calc_new_verbosity_param_dict(verbosity_param_dict, preprocessing_verbosity_params)
+        new_preprocessing_param_dict, got_pure_repr = calc_new_preprocessing_types_dict(preprocessing_param_dict, preprocessing_params)
         writer = FinalReprWriter(dest_file) if got_pure_repr else IntermediateReprWriter(dest_file)
 
         if os.path.exists(writer.get_full_dest_name()):
@@ -95,11 +95,11 @@ def preprocess_and_write(params):
 
         with writer as w:
             if not got_pure_repr:
-                w.write(new_verbosity_param_dict)
+                w.write(new_preprocessing_param_dict)
             while True:
                 try:
                     token_list = pickle.load(i)
-                    repr = to_repr(preprocessing_verbosity_params, token_list)
+                    repr = to_repr(preprocessing_params, token_list)
                     w.write(repr)
                 except EOFError:
                     break
@@ -107,70 +107,73 @@ def preprocess_and_write(params):
     os.rename(f'{writer.get_full_dest_name()}.{NOT_FINISHED_EXTENSION}', f'{writer.get_full_dest_name()}')
 
 
-def gen_dir_name(new_verbosity_param_dict, verb_params_short_names):
+def gen_dir_name(new_preprocessing_param_dict):
     yes = ""
     no = ""
     unknown = ""
-    for (k,v) in new_verbosity_param_dict.items():
+    for (k,v) in new_preprocessing_param_dict.items():
         if v is None:
-            unknown += (verb_params_short_names[k] + "_unk_")
+            unknown += (k + "_unk_")
         elif v:
-            yes += (verb_params_short_names[k] + "_1_")
+            yes += (k + "_1_")
         else:
-            no += (verb_params_short_names[k] + "_0_")
+            no += (k + "_0_")
     return (yes + no + unknown)[:-1]
 
 
 if __name__ == '__main__':
-    base_from = f'{base_project_dir}/nn-data/test/'
-    base_to = f'{base_project_dir}/nn-data/test/'
+    default_base_from = f'{base_project_dir}/nn-data/test/'
+    default_base_to = f'{base_project_dir}/nn-data/test/'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--src-dir', action='store', default='test1/parsed')
-    parser.add_argument('--dest-dir', action='store', default='test1')
-    parser.add_argument('--verbosity-params', action='store', default='splitting_done=1,number_splitting_done=1,comments_str_literals_obfuscated=0,new_lines_and_tabs_removed=0,same_case_splitting=1')
+    parser.add_argument('--base-from',action='store', default=default_base_from)
+    parser.add_argument('--base-to',action='store', default=default_base_to)
+    parser.add_argument('src', action='store', help=f'path to the parsed dataset relative to {default_base_from}')
+    parser.add_argument('dest', action='store', help=f'destination for representation relative to {default_base_to}')
+    parser.add_argument('--preprocessing-types', action='store', help='preprocessing params line, \n Example: '
+                                                                      'spl=1,numspl=1,nocomstr=0,nonewlinestabs=0,scspl=1')
 
     args = parser.parse_args()
 
 
     logging.basicConfig(level=logging.DEBUG)
 
-    full_src_dir = f'{base_from}/{args.src_dir}'
+    full_src_dir = f'{args.base_from}/{args.src}'
     if not os.path.exists(full_src_dir):
         logging.error(f"Dir does not exist: {full_src_dir}")
         exit(3)
     logging.info(f"Reading parsed files from: {os.path.abspath(full_src_dir)}")
-    with open(f'{full_src_dir}/verbosity_params.json', 'r') as f:
-        old_verbosity_params = json.load(f)
-    logging.info(f"Old verbosity params : {old_verbosity_params}")
+    with open(f'{full_src_dir}/preprocessing_types.json', 'r') as f:
+        old_preprocessing_params = json.load(f)
+    logging.info(f"Old preprocessing params : {old_preprocessing_params}")
 
-    preprocessing_verbosity_params = {param.split('=')[0]: bool(int(param.split('=')[1])) for param in args.verbosity_params.split(',')}
-    for param in preprocessing_verbosity_params.keys():
-        if param not in token_to_verbosity_level_dict.values():
-            raise ValueError(f"Invalid verbosity param: {param}")
+    preprocessing_params = {param.split('=')[0]: bool(int(param.split('=')[1])) for param in args.preprocessing_types.split(',')}
+    for param in preprocessing_params.keys():
+        if param not in token_to_preprocessing_type_level_dict.values():
+            raise ValueError(f"Invalid preprocessing type: {param}")
 
-    new_verbosity_param_dict, got_pure_repr = calc_new_verbosity_param_dict(old_verbosity_params,
-                                                                            preprocessing_verbosity_params)
-    if old_verbosity_params == new_verbosity_param_dict:
+    new_preprocessing_types_dict, got_pure_repr = calc_new_preprocessing_types_dict(old_preprocessing_params,
+                                                                                    preprocessing_params)
+    if old_preprocessing_params == new_preprocessing_types_dict:
         logging.warning("No new preprocessors to be applied found")
         exit(0)
 
     if got_pure_repr:
         logging.info("Representation resolved")
     else:
-        logging.info(f"Representation not resolved: {new_verbosity_param_dict}")
+        logging.info(f"Representation not resolved: {new_preprocessing_types_dict}")
 
-    gen_dir_name_from_verb_param = gen_dir_name(new_verbosity_param_dict, verb_params_short_names)
+    gen_dir_name_from_verb_param = gen_dir_name(new_preprocessing_types_dict)
     while os.path.exists(gen_dir_name_from_verb_param):
         gen_dir_name_from_verb_param += '_'
 
-    full_dest_dir = f'{base_to}/{args.dest_dir}/{"repr" if got_pure_repr else "partrepr"}/{gen_dir_name_from_verb_param}'
+    full_dest_dir = f'{args.base_to}/{args.dest}/{"repr" if got_pure_repr else "partrepr"}/{gen_dir_name_from_verb_param}'
     logging.info(f"Writing preprocessed files to {os.path.abspath(full_dest_dir)}")
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir)
 
-    with open(f'{full_dest_dir}/verbosity_params.json', "w") as f:
-        json.dump(new_verbosity_param_dict, f)
+    with open(f'{full_dest_dir}/preprocessing_types.json', "w") as f:
+        json.dump(new_preprocessing_types_dict, f)
 
 
     #TODO remove duplication
@@ -189,8 +192,8 @@ if __name__ == '__main__':
                 if not os.path.exists(full_dest_dir_with_sub_dir):
                     os.makedirs(full_dest_dir_with_sub_dir)
                 params.append((os.path.join(root, file),
-                                     os.path.join(full_dest_dir_with_sub_dir, file),
-                                     preprocessing_verbosity_params, old_verbosity_params))
+                               os.path.join(full_dest_dir_with_sub_dir, file),
+                               preprocessing_params, old_preprocessing_params))
     files_total = len(params)
     current_file = 0
     start_time = time.time()
