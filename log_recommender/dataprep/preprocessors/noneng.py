@@ -1,13 +1,15 @@
 from functools import partial
 
-from dataprep import base_project_dir
-from dataprep.lcsplitting.lowercase_words_splitter import load_english_dict, load_non_english_dicts
 from dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer, NonEng
 from dataprep.preprocessors.model.split import NonDelimiterSplitContainer
 
 
 def isascii(str):
-    return all(ord(c) < 128 for c in str)
+    try:
+        str.encode('ascii')
+        return True
+    except UnicodeEncodeError:
+        return False
 
 def mark_noneng(eng_dict, non_eng_dict, token):
     str = token.get_val()
@@ -16,8 +18,10 @@ def mark_noneng(eng_dict, non_eng_dict, token):
 
 
 def mark(token_list, context):
-    eng_dict = load_english_dict(f'{base_project_dir}/dicts/eng')
-    non_eng_dict = load_non_english_dicts(f'{base_project_dir}/dicts/non-eng')
+    # eng_dict = load_english_dict(f'{base_project_dir}/dicts/eng')
+    eng_dict = None
+    # non_eng_dict = load_non_english_dicts(f'{base_project_dir}/dicts/non-eng')
+    non_eng_dict = None
 
     return [apply_operation_to_token(token, partial(mark_noneng, eng_dict, non_eng_dict)) for token in token_list]
 
