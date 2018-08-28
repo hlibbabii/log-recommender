@@ -45,16 +45,16 @@ def preprocess_and_write(params):
     path_to_preprocessed_file = os.path.join(full_dest_dir, f'preprocessed.{chunk}.parsed')
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir, exist_ok=True)
-    # if os.path.exists(path_to_preprocessed_file):
-    #     logging.warning(f"File {path_to_preprocessed_file} already exists! Doing nothing.")
-    #     return
+    if os.path.exists(path_to_preprocessed_file):
+        logging.warning(f"File {path_to_preprocessed_file} already exists! Doing nothing.")
+        return
     dir_with_files_to_preprocess = os.path.join(src_dir, subdir, chunk)
     if not os.path.exists(dir_with_files_to_preprocess):
         logging.error(f"Path {dir_with_files_to_preprocess} does not exist")
         exit(2)
     with open(f'{path_to_preprocessed_file}.part', 'wb') as f:
         total_files = sum([f for f in java_file_mapper(dir_with_files_to_preprocess, lambda path: 1)])
-        logging.info(f"Preprocessing java files from {dir_with_files_to_preprocess}. Files to process: {total_files}")
+        logging.info(f"Preprocessing java file's from {dir_with_files_to_preprocess}. Files to process: {total_files}")
         pickle.dump(preprocessing_param_dict, f, pickle.HIGHEST_PROTOCOL)
         for ind, (lines_from_file, file_path) in enumerate(java_file_mapper(dir_with_files_to_preprocess, read_file_contents)):
             if (ind+1) % 100 == 0:
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     parser.add_argument('dest', help='destination for parsed files, recommended format <dataset name>/parsed')
     parser.add_argument('--splitting-file', action='store',
                         default='/home/hlib/thesis/log-recommender/nn-data/devanbu_split_no_tabs_under_2000/splits/split.txt')
-    args = parser.parse_args()
+    args = parser.parse_args(['test/raw/test1', 'test/test1/parsed'])
 
     logging.basicConfig(level=logging.DEBUG)
     raw_dataset_dir=f'{args.base_from}/{args.src}/'
