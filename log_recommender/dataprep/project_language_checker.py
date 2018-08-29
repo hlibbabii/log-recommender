@@ -55,7 +55,7 @@ def check_more_than_limit(lang_to_percent, total):
 
 
 if __name__ == '__main__':
-    default_base_dataset_dir = f'{base_project_dir}/nn-data/test/'
+    default_base_dataset_dir = f'{base_project_dir}/nn-data/new_framework/'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--base-dataset-dir', default=f'{default_base_dataset_dir}')
