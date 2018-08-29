@@ -1,3 +1,4 @@
+from dataprep.preprocessors.model.split import NonDelimiterSplitContainer
 from dataprep.preprocessors.preprocessing_types import token_to_preprocessing_type_level_dict, always_repr, recursive
 
 
@@ -32,6 +33,10 @@ def to_repr_token(types_to_be_repr_dict, token):
         else:
             return repr
     elif clazz in recursive:
-        return clazz(to_repr_list(types_to_be_repr_dict, token.get_subtokens()), token.is_capitalized())
+        repr_list = to_repr_list(types_to_be_repr_dict, token.get_subtokens())
+        if isinstance(token, NonDelimiterSplitContainer):
+            return clazz(repr_list, token.is_capitalized())
+        else:
+            return clazz(repr_list)
     else:
         return token
