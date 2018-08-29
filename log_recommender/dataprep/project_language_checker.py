@@ -13,7 +13,7 @@ def create_word_to_lang_map(dicts_dir, english_general_dict):
     dict_files_names = [f for f in os.listdir(dicts_dir)]
     word_to_lang_map = defaultdict(set)
     for dict_file_name in dict_files_names:
-        with open(f'{path_to_dicts}/{dict_file_name}', 'r') as f:
+        with open(os.path.join(dicts_dir,dict_file_name), 'r') as f:
             for line in f:
                 word = line.split('/')[0]
                 if word not in english_general_dict:
