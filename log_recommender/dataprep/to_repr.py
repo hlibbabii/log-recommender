@@ -111,7 +111,7 @@ def gen_dir_name(new_preprocessing_param_dict):
     yes = ""
     no = ""
     unknown = ""
-    for (k,v) in new_preprocessing_param_dict.items():
+    for (k,v) in sorted(new_preprocessing_param_dict.items()):
         if v is None:
             unknown += (k + "_unk_")
         elif v:
