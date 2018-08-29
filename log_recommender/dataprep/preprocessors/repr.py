@@ -3,8 +3,8 @@ from dataprep.preprocessors.preprocessing_types import token_to_preprocessing_ty
 
 
 def to_repr(preprocessing_params, token_list):
-    types_to_be_repr_dict = {k:preprocessing_params[v] for (k, v) in token_to_preprocessing_type_level_dict.items()
-                             if v in preprocessing_params}
+    types_to_be_repr_dict = {k:preprocessing_params[v.value] for (k, v) in token_to_preprocessing_type_level_dict.items()
+                             if v.value in preprocessing_params}
     repr_list = to_repr_list(types_to_be_repr_dict, token_list)
     return repr_list
 
