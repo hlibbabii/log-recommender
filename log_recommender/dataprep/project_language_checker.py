@@ -1,4 +1,6 @@
 import argparse
+import logging
+import math
 import os
 from collections import defaultdict
 
@@ -53,6 +55,14 @@ def check_more_than_limit(lang_to_percent, total):
             return True
     return False
 
+def gen_stats(lang_to_percent_list):
+    gr = defaultdict(int)
+    for lang_to_percent in lang_to_percent_list:
+        max_percent = max(lang_to_percent.values()) if lang_to_percent else .0
+        gr[math.ceil(max_percent)] += 1
+    gr.default_factory = None
+    return gr
+
 
 if __name__ == '__main__':
     default_base_dataset_dir = f'{base_project_dir}/nn-data/new_framework/'
@@ -75,14 +85,23 @@ if __name__ == '__main__':
 
     path_to_dir_with_preprocessed_projects = f'{args.base_dataset_dir}/{args.preprocessed_dataset}'
 
+    logging.basicConfig(level=logging.DEBUG)
+    if not os.path.exists(path_to_dir_with_preprocessed_projects):
+        logging.error(f"Path: {path_to_dir_with_preprocessed_projects} does not exist")
+        exit(1)
+
+    logging.info("Loading english dictionary")
     english_general_dict = load_english_dict(path_to_general_english_dict)
+    logging.info("Loading non-english dictionaries")
     word_to_lang_map = create_word_to_lang_map(path_to_non_eng_dicts, english_general_dict)
 
     non_english_files = []
+    all_files = []
     for file in os.listdir(path_to_dir_with_preprocessed_projects):
         lang_to_percent, lang_to_word_examples, total = \
             calc_lang_stats(os.path.join(path_to_dir_with_preprocessed_projects, file), word_to_lang_map)
         non_eng = check_more_than_limit(lang_to_percent, total)
+        all_files.append((file, lang_to_percent, total, lang_to_word_examples))
         if non_eng:
             non_english_files.append((file, lang_to_percent, total, lang_to_word_examples))
             print(f'Gen stats: file:{file}, {lang_to_percent}, total: {total}')
@@ -97,3 +116,7 @@ if __name__ == '__main__':
             f.write(f'Gen stats: file:{file}, {lang_to_percent}, total: {total}\n')
             f.write(f"{lang_to_word_examples}\n")
             f.write("\n\n")
+    stats = gen_stats(list(map(lambda e: e[1], all_files)))
+    with open(f'{path_to_dir_with_preprocessed_projects}/noneng_projects_stats.txt', 'w') as f:
+        for k,v in sorted(stats.items()):
+            f.write(f"{k} {v}\n")
