@@ -74,8 +74,8 @@ def split_two_last_levels(root):
 
 
 if __name__ == '__main__':
-    default_base_from = f'{base_project_dir}/../raw_datasets/devanbu/alllang/'
-    default_base_to = f'{base_project_dir}/nn-data/new_framework/alllang/'
+    default_base_from = f'{base_project_dir}/nn-data/'
+    default_base_to = f'{base_project_dir}/nn-data//'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--base-from',action='store', default=default_base_from)
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     parser.add_argument('dest', help='destination for parsed files, recommended format <dataset name>/parsed')
     parser.add_argument('--splitting-file', action='store',
                         default='/home/hlib/thesis/log-recommender/nn-data/devanbu_split_no_tabs_under_2000/splits/split.txt')
-    args = parser.parse_args(['test/raw/test1', 'test/test1/parsed'])
+    args = parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG)
     raw_dataset_dir=f'{args.base_from}/{args.src}/'

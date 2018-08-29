@@ -122,8 +122,8 @@ def gen_dir_name(new_preprocessing_param_dict):
 
 
 if __name__ == '__main__':
-    default_base_from = f'{base_project_dir}/nn-data/new_framework/'
-    default_base_to = f'{base_project_dir}/nn-data/new_framework/'
+    default_base_from = f'{base_project_dir}/nn-data/test/'
+    default_base_to = f'{base_project_dir}/nn-data/test/'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--base-from',action='store', default=default_base_from)
@@ -133,8 +133,7 @@ if __name__ == '__main__':
     parser.add_argument('-p','--preprocessing-types', required=True, action='store', help='preprocessing params line, \n Example: '
                                                                       'spl=1,numspl=1,nocomstr=0,nonewlinestabs=0,scspl=1')
 
-    args = parser.parse_args(['--preprocessing-types', 'spl=1,numspl=1,nocomstr=0,nonewlinestabs=0,scspl=1',
-                              'test1/parsed', 'test1'])
+    args = parser.parse_args()
 
 
     logging.basicConfig(level=logging.DEBUG)
