@@ -64,7 +64,7 @@ if __name__ == '__main__':
     path_to_non_eng_dicts = f"{path_to_dicts}/non-eng"
     path_to_general_english_dict = f'{base_project_dir}/eng'
 
-    path_to_dir_with_preprocessed_projects = f'{args.base_dir}/{args.preprocessed_dataset}'
+    path_to_dir_with_preprocessed_projects = f'{args.base_dataset_dir}/{args.preprocessed_dataset}'
 
     english_general_dict = load_english_dict(path_to_general_english_dict)
     word_to_lang_map = create_word_to_lang_map(path_to_non_eng_dicts, english_general_dict)
