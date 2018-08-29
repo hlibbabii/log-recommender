@@ -74,12 +74,12 @@ def split_two_last_levels(root):
 
 
 if __name__ == '__main__':
-    default_base_from = f'{base_project_dir}/nn-data/'
-    default_base_to = f'{base_project_dir}/nn-data//'
-
-    parser = argparse.ArgumentParser()
     default_base_from = f'{base_project_dir}/../raw_datasets/devanbu/alllang/'
     default_base_to = f'{base_project_dir}/nn-data/new_framework/alllang/'
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--base-from',action='store', default=default_base_from)
+    parser.add_argument('--base-to',action='store', default=default_base_to)
     parser.add_argument('src', help="name of the 'raw' dataset")
     parser.add_argument('dest', help='destination for parsed files, recommended format <dataset name>/parsed')
     parser.add_argument('--splitting-file', action='store',
