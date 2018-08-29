@@ -1,3 +1,4 @@
+import argparse
 import os
 from collections import defaultdict
 
@@ -50,10 +51,20 @@ def check_more_than_limit(lang_to_percent, total):
 
 
 if __name__ == '__main__':
-    path_to_dir_with_preprocessed_projects = f"{base_project_dir}/nn-data/devanbu_no_replaced_identifier_split_no_tabs/train"
+    default_base_dataset_dir = f"{base_project_dir}/nn-data/new_framework/"
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--base-dataset-dir', default=f'{default_base_dataset_dir}')
+    parser.add_argument('preprocessed-dataset', help='path to preprocessed dataset relative '
+                                                     'to the one passed as --base-dataset-dir param')
+
+    args = parser.parse_args()
+
     path_to_dicts = f"{base_project_dir}/dicts/"
     path_to_non_eng_dicts = f"{path_to_dicts}/non-eng"
     path_to_general_english_dict = f'{base_project_dir}/eng'
+
+    path_to_dir_with_preprocessed_projects = f'{args.base_dir}/{args.preprocessed_dataset}'
 
     english_general_dict = load_english_dict(path_to_general_english_dict)
     word_to_lang_map = create_word_to_lang_map(path_to_non_eng_dicts, english_general_dict)
