@@ -59,7 +59,7 @@ def gen_stats(lang_to_percent_list):
     gr = defaultdict(int)
     for lang_to_percent in lang_to_percent_list:
         max_percent = max(lang_to_percent.values()) if lang_to_percent else .0
-        gr[math.ceil(max_percent)] += 1
+        gr[math.ceil(max_percent*100)] += 1
     gr.default_factory = None
     return gr
 
