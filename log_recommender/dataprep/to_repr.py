@@ -122,8 +122,8 @@ def gen_dir_name(new_preprocessing_param_dict):
 
 
 if __name__ == '__main__':
-    default_base_from = f'{base_project_dir}/nn-data/test/'
-    default_base_to = f'{base_project_dir}/nn-data/test/'
+    default_base_from = f'{base_project_dir}/nn-data/new_framework/'
+    default_base_to = f'{base_project_dir}/nn-data/new_framework/'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--base-from',action='store', default=default_base_from)
