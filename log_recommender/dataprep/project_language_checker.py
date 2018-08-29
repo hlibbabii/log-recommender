@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--base-dataset-dir', default=f'{default_base_dataset_dir}')
-    parser.add_argument('preprocessed-dataset', help='path to preprocessed dataset relative '
+    parser.add_argument('preprocessed_dataset', help='path to preprocessed dataset relative '
                                                      'to the one passed as --base-dataset-dir param')
 
     args = parser.parse_args()
