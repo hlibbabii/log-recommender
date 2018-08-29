@@ -107,6 +107,7 @@ if __name__ == '__main__':
             print(f'Gen stats: file:{file}, {lang_to_percent}, total: {total}')
             print(lang_to_word_examples)
             print("\n\n")
+    non_english_files.sort(key=lambda x: max(x[1].values()) if x[1] else 0.0)
     with open(f'{path_to_dir_with_preprocessed_projects}/noneng_projects_{min_freq_to_be_non_eng}_{min_words_to_be_non_eng}.txt', 'w') as f:
         for file, _, _, _ in non_english_files:
             f.write(file + "\n")
