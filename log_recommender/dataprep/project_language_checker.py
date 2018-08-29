@@ -58,7 +58,6 @@ if __name__ == '__main__':
     default_base_dataset_dir = f'{base_project_dir}/nn-data/new_framework/'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--base-dataset-dir', default=f'{default_base_dataset_dir}')
     parser.add_argument('--min-freq', default=f'{DEFAULT_MIN_FREQ_TO_BE_NON_ENG}')
     parser.add_argument('--min-words', default=f'{DEFAULT_MIN_WORDS_TO_BE_NON_ENG}')
     parser.add_argument('--base-dataset-dir', default=f'{default_base_dataset_dir}')
