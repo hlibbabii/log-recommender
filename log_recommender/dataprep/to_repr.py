@@ -126,8 +126,8 @@ if __name__ == '__main__':
     default_base_to = f'{base_project_dir}/nn-data/test/'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--base-from',action='store', default=default_base_from)
-    parser.add_argument('--base-to',action='store', default=default_base_to)
+    default_base_from = f'{base_project_dir}/nn-data/new_framework/'
+    default_base_to = f'{base_project_dir}/nn-data/new_framework/'
     parser.add_argument('src', action='store', help=f'path to the parsed dataset relative to {default_base_from}')
     parser.add_argument('dest', action='store', help=f'destination for representation relative to {default_base_to}')
     parser.add_argument('-p','--preprocessing-types', required=True, action='store', help='preprocessing params line, \n Example: '
