@@ -4,6 +4,7 @@ from collections import defaultdict
 
 from dataprep import base_project_dir
 from dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
+from dataprep.preprocessors.noneng import isascii
 
 MIN_FREQ_TO_BE_NON_ENGLISH = 0.01
 MIN_WORDS_TO_BE_NON_ENGLISH = 5
@@ -22,17 +23,20 @@ def create_word_to_lang_map(dicts_dir, english_general_dict):
     return word_to_lang_map
 
 
-def calc_lang_stats(path_to_dir_with_preprocessed_projects, file, word_to_lang_map):
+def calc_lang_stats(file, word_to_lang_map):
     lang_to_number = defaultdict(int)
     lang_to_word_examples = defaultdict(list)
-    encountered_words = {}
+    encountered_words = set()
     total = 0
-    with open(os.path.join(path_to_dir_with_preprocessed_projects, file), 'r') as f:
+    with open(file, 'r') as f:
         for line in f:
             for word in line.split():
                 if word not in encountered_words:
                     total += 1
-                    encountered_words[word] = 1
+                    encountered_words.add(word)
+                    if not isascii(word):
+                        lang_to_number['nonascii'] +=1
+                        lang_to_word_examples['nonascii'].append(word)
                     if word in word_to_lang_map:
                         langs_word_belongs_to = word_to_lang_map[word]
                         for lang in langs_word_belongs_to:
@@ -40,7 +44,7 @@ def calc_lang_stats(path_to_dir_with_preprocessed_projects, file, word_to_lang_m
                             lang_to_word_examples[lang].append(word)
 
     lang_to_percent = {k: float(v) / total if total > 0 else 0 for k, v in lang_to_number.items()}
-    return lang_to_percent, lang_to_word_examples, total, encountered_words
+    return lang_to_percent, lang_to_word_examples, total
 
 
 def check_more_than_limit(lang_to_percent, total):
@@ -71,14 +75,14 @@ if __name__ == '__main__':
 
     non_english_files = []
     for file in os.listdir(path_to_dir_with_preprocessed_projects):
-        lang_to_percent, lang_to_word_examples, total, enc_words = \
-            calc_lang_stats(path_to_dir_with_preprocessed_projects, file, word_to_lang_map)
+        lang_to_percent, lang_to_word_examples, total = \
+            calc_lang_stats(os.path.join(path_to_dir_with_preprocessed_projects, file), word_to_lang_map)
         non_eng = check_more_than_limit(lang_to_percent, total)
         if non_eng:
             non_english_files.append(file)
             print(f'Gen stats: file:{file}, {lang_to_percent}, total: {total}')
             print(lang_to_word_examples)
             print("\n\n")
-    with open(f'{path_to_dir_with_preprocessed_projects}/lang_stats.txt', 'w') as f:
+    with open(f'{path_to_dir_with_preprocessed_projects}/noneng_projects_{MIN_FREQ_TO_BE_NON_ENGLISH}_{MIN_WORDS_TO_BE_NON_ENGLISH}.txt', 'w') as f:
         for file in non_english_files:
             f.write(file + "\n")
