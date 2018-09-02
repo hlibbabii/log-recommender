@@ -96,7 +96,11 @@ def get_model(model_name, only_build_vocab=False):
             f.write(f'{str(word)} {str(freq)}\n')
     pickle.dump(text_field, open(f'{path_to_dataset}/TEXT.pkl', 'wb'))
 
-    logging.info(f'Dictionary size is: {len(text_field.vocab.itos)}')
+    vocab_size=len(text_field.vocab.itos)
+    logging.info(f'Dictionary size is: {vocab_size}')
+    with open(f'{path_to_dataset}/vocab_size', 'w') as f:
+        f.write("# This is automatically generated file! Do not edit!\n")
+        f.write(str(vocab_size))
     if only_build_vocab:
         return None, text_field, None
 
