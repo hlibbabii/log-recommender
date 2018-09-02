@@ -1,15 +1,3 @@
-from enum import Enum, auto
-
-from torchtext import data
-
-
-class Mode(Enum):
-    TRAINING = auto()
-    LEARNING_RATE_FINDING = auto()
-    VOCAB_BUILDING = auto()
-    # ONLY_TESTING = auto()
-
-
 nn_params = {
     'path_to_data': '../../nn-data/',
     'dataset_name': 'few-data',
@@ -38,5 +26,3 @@ nn_params = {
     },
     'mode': Mode.TRAINING
 }
-
-LEVEL_LABEL = data.Field(sequential=False)

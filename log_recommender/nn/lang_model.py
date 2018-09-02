@@ -1,5 +1,8 @@
+import importlib
 import json
+from argparse import ArgumentParser
 from collections import defaultdict
+from enum import Enum
 from shutil import copyfile
 from time import time
 
@@ -25,12 +28,15 @@ from torchtext import data
 from nn.utils import to_test_mode, back_to_train_mode, beautify_text, gen_text
 
 # for some reason this import should go here to avoid error
-from nn.params import nn_params, Mode
 
 logging.basicConfig(level=logging.DEBUG)
 
-nn_arch = nn_params['arch']
-nn_testing = nn_params['testing']
+LEVEL_LABEL = data.Field(sequential=False)
+
+class Mode(Enum):
+    TRAINING = "training"
+    LEARNING_RATE_FINDING = "learning_rate_finding"
+    VOCAB_BUILDING = "vocab_building"
 
 
 def create_df(dir):
@@ -65,8 +71,8 @@ def create_df(dir):
 
 
 def get_model(model_name, only_build_vocab=False):
-    dataset_name = nn_params["dataset_name"]
-    path_to_dataset = f'{nn_params["path_to_data"]}/{dataset_name}'
+    dataset_name = params.nn_params["dataset_name"]
+    path_to_dataset = f'{params.nn_params["path_to_data"]}/{dataset_name}'
     path_to_model = f'{path_to_dataset}/{model_name}'
 
     train_df_path = f'{path_to_dataset}/train/'
@@ -79,7 +85,7 @@ def get_model(model_name, only_build_vocab=False):
     languageModelData = LanguageModelData.from_dataframes(path_to_model,
                                                           text_field, 0, create_df,
                                                           train_df_path, valid_df_path, test_df_path,
-                                                          bs=nn_arch["bs"], validation_bs=nn_params["validation_bs"],
+                                                          bs=nn_arch["bs"], validation_bs=params.nn_params["validation_bs"],
                                                           bptt=nn_arch["bptt"],
                                                           min_freq=nn_arch["min_freq"],
                                                           only_build_vocab=only_build_vocab
@@ -109,14 +115,14 @@ def get_model(model_name, only_build_vocab=False):
     logging.info(rnn_learner)
 
     try:
-        rnn_learner.load(f'{nn_params["dataset_name"]}_best')
+        rnn_learner.load(f'{params.nn_params["dataset_name"]}_best')
         model_trained = True
         # calculate_and_display_metrics(rnn_learner, nn_params['metrics'], text_field.vocab)
     except FileNotFoundError:
         logging.warning(f"Model {dataset_name}/{model_name} not found")
         model_trained = False
         try:
-            rnn_learner.load(f'{nn_params["dataset_name"]}_best_base')
+            rnn_learner.load(f'{params.nn_params["dataset_name"]}_best_base')
             logging.info("Base model detected and loaded")
         except FileNotFoundError:
             pass
@@ -218,9 +224,9 @@ def find_and_plot_lr(rnn_learner, path_to_model):
 
 
 def train_model(rnn_learner, path_to_dataset, model_name):
-    dataset_name = nn_params["dataset_name"]
+    dataset_name = params.nn_params["dataset_name"]
     training_start_time = time()
-    vals, ep_vals = rnn_learner.fit(nn_params['lr'], n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
+    vals, ep_vals = rnn_learner.fit(params.nn_params['lr'], n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
                                     cycle_len=nn_arch['cycle']['len'], cycle_mult=nn_arch['cycle']['mult'],
                                     metrics=list(map(lambda x: getattr(metrics, x), nn_arch['training_metrics'])),
                                     cycle_save_name=dataset_name, get_ep_vals=True, best_save_name=f'{dataset_name}_best')
@@ -236,18 +242,28 @@ def train_model(rnn_learner, path_to_dataset, model_name):
 
 
 if __name__ =='__main__':
+    parser = ArgumentParser()
+    parser.add_argument("params_file")
+    args = parser.parse_args(["params"])
+    params = importlib.import_module(args.params_file)
+
+    nn_arch = params.nn_params['arch']
+    nn_testing = params.nn_params['testing']
+
     printGPUInfo()
     logging.info("Using the following parameters:")
     logging.info(nn_arch)
-    path_to_dataset = f'{nn_params["path_to_data"]}/{nn_params["dataset_name"]}'
+
+    path_to_dataset = f'{params.nn_params["path_to_data"]}/{params.nn_params["dataset_name"]}'
     force_rerun = False
-    if nn_params['mode'] == Mode.VOCAB_BUILDING:
+    if params.nn_params['mode'] == Mode.VOCAB_BUILDING.value:
         learner, text_field, model_trained = get_model("vocab", only_build_vocab=True)
         logging.info("Vocab is built.")
         exit(0)
-    elif "base_model" in nn_params:
-        base_model_name = nn_params["base_model"]
-        path_to_best_model = f'{path_to_dataset}/{base_model_name}/models/{nn_params["dataset_name"]}_best.h5'
+
+    if "base_model" in params.nn_params:
+        base_model_name = params.nn_params["base_model"]
+        path_to_best_model = f'{path_to_dataset}/{base_model_name}/models/{params.nn_params["dataset_name"]}_best.h5'
         logging.info(f"Using base model: {base_model_name}")
         model_name = base_model_name  + "_extratrained"
         path_to_model = f'{path_to_dataset}/{model_name}'
@@ -257,7 +273,7 @@ if __name__ =='__main__':
         os.mkdir(path_to_model)
         path_to_model_models = f'{path_to_model}/models'
         os.mkdir(path_to_model_models)
-        path_to_model_best_base = f'{path_to_model_models}/{nn_params["dataset_name"]}_best_base.h5'
+        path_to_model_best_base = f'{path_to_model_models}/{params.nn_params["dataset_name"]}_best_base.h5'
         try:
             logging.info(f"Copying from {os.path.abspath(path_to_best_model)} "
                          f"to {os.path.abspath(path_to_model_best_base)}")
@@ -286,19 +302,19 @@ if __name__ =='__main__':
         # with open(f'{path_to_dataset}/{name}/config_diff.json', 'w') as f:
         #     json.dump(config_diff, f)
 
-        if nn_params['mode'] is Mode.LEARNING_RATE_FINDING:
+        if params.nn_params['mode'] == Mode.LEARNING_RATE_FINDING.value:
             if rerunning_model:
                 logging.info(f"Forcing lr-finder rerun")
             find_and_plot_lr(learner, f'{path_to_model}')
-        elif nn_params['mode'] is Mode.TRAINING:
+        elif params.nn_params['mode'] == Mode.TRAINING.value:
             if rerunning_model:
                 logging.info(f"Forcing training rerun")
             train_model(learner, path_to_dataset, model_name)
             logging.info("Loading the best model")
-            learner.load(f'{nn_params["dataset_name"]}_best')
+            learner.load(f'{params.nn_params["dataset_name"]}_best')
             m = learner.model
             run_and_display_tests(m, text_field, f'{path_to_model}/gen_text.out')
         else:
             raise AssertionError("Unknown mode")
     else:
-        logging.info(f'Model {nn_params["dataset_name"]}/{model_name} already trained. Not rerunning training.')
+        logging.info(f'Model {params.nn_params["dataset_name"]}/{model_name} already trained. Not rerunning training.')
