@@ -10,6 +10,7 @@ from dataprep.preprocessors.noneng import isascii
 
 DEFAULT_MIN_FREQ_TO_BE_NON_ENG = 0.01
 DEFAULT_MIN_WORDS_TO_BE_NON_ENG = 5
+DEFAULT_MIN_CHARS_TO_BE_NON_ENG=4
 
 
 def create_word_to_lang_map(dicts_dir, english_general_dict):
@@ -19,7 +20,7 @@ def create_word_to_lang_map(dicts_dir, english_general_dict):
         with open(os.path.join(dicts_dir,dict_file_name), 'r') as f:
             for line in f:
                 word = line.split('/')[0]
-                if word not in english_general_dict:
+                if word not in english_general_dict and len(word) >= DEFAULT_MIN_CHARS_TO_BE_NON_ENG:
                     word_to_lang_map[word].add(dict_file_name.split(".")[0])
     word_to_lang_map.default_factory = None
     return word_to_lang_map
@@ -70,6 +71,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--min-freq', type=float, default=f'{DEFAULT_MIN_FREQ_TO_BE_NON_ENG}')
     parser.add_argument('--min-words', type=int, default=f'{DEFAULT_MIN_WORDS_TO_BE_NON_ENG}')
+    parser.add_argument('--min-chars', type=int, default=f'{DEFAULT_MIN_CHARS_TO_BE_NON_ENG}')
     parser.add_argument('--base-dataset-dir', default=f'{default_base_dataset_dir}')
     parser.add_argument('preprocessed_dataset', help='path to preprocessed dataset relative '
                                                      'to the one passed as --base-dataset-dir param')
@@ -78,6 +80,7 @@ if __name__ == '__main__':
 
     min_freq_to_be_non_eng = args.min_freq
     min_words_to_be_non_eng = args.min_words
+    min_chars_to_be_non_eng = args.min_chars
 
     path_to_dicts = f"{base_project_dir}/dicts/"
     path_to_non_eng_dicts = f"{path_to_dicts}/non-eng"
@@ -108,11 +111,11 @@ if __name__ == '__main__':
             print(lang_to_word_examples)
             print("\n\n")
     non_english_files.sort(key=lambda x: max(x[1].values()) if x[1] else 0.0)
-    with open(f'{path_to_dir_with_preprocessed_projects}/noneng_projects_{min_freq_to_be_non_eng}_{min_words_to_be_non_eng}.txt', 'w') as f:
+    with open(f'{path_to_dir_with_preprocessed_projects}/noneng_projects_{min_freq_to_be_non_eng}_{min_words_to_be_non_eng}_{min_chars_to_be_non_eng}.txt', 'w') as f:
         for file, _, _, _ in non_english_files:
             f.write(file + "\n")
 
-    with open(f'{path_to_dir_with_preprocessed_projects}/noneng_projects_verbose_{min_freq_to_be_non_eng}_{min_words_to_be_non_eng}.txt', 'w') as f:
+    with open(f'{path_to_dir_with_preprocessed_projects}/noneng_projects_verbose_{min_freq_to_be_non_eng}_{min_words_to_be_non_eng}_{min_chars_to_be_non_eng}.txt', 'w') as f:
         for file, lang_to_percent, total, lang_to_word_examples in non_english_files:
             f.write(f'Gen stats: file:{file}, {lang_to_percent}, total: {total}\n')
             f.write(f"{lang_to_word_examples}\n")
