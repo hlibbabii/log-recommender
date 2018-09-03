@@ -74,8 +74,8 @@ def split_two_last_levels(root):
 
 
 if __name__ == '__main__':
-    default_base_from = f'{base_project_dir}/../raw_datasets/devanbu/alllang/'
-    default_base_to = f'{base_project_dir}/nn-data/new_framework/alllang/'
+    default_base_from = f'{base_project_dir}/../raw_datasets/devanbu/data/'
+    default_base_to = f'{base_project_dir}/nn-data/new_framework/'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--base-from',action='store', default=default_base_from)
