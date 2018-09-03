@@ -37,11 +37,10 @@ def to_human_readable(tokens, context):
     return " ".join(map(lambda t : str(t),tokens)) + "\n"
 
 
-def spl(token_list, two_char_delimiters, one_char_delimiter):
-    two_char_regex = create_regex_from_token_list(two_char_delimiters)
-    one_char_regex = create_regex_from_token_list(one_char_delimiter)
+def spl(token_list, multiline_comments_tokens, two_char_delimiters, one_char_delimiters):
     split_nested_list = list(map(
-        lambda token: split_to_key_words_and_identifiers(token, two_char_regex, one_char_regex,
+        lambda token: split_to_key_words_and_identifiers(token, multiline_comments_tokens,
+                                                         two_char_delimiters, one_char_delimiters,
                                                          java.delimiters_to_drop_verbose), token_list))
     return [w for lst in split_nested_list for w in lst]
 
@@ -50,24 +49,35 @@ def spl_verbose(token_list, context):
     doesn't remove such tokens as tabs, newlines, brackets
     '''
     return spl(token_list,
+               java.multiline_comments_tokens,
                java.two_character_tokens + java.two_char_verbose,
                java.one_character_tokens + java.one_char_verbose)
 
-characters = set(java.two_character_tokens + java.two_char_verbose + java.one_character_tokens + java.one_char_verbose)
+characters = set(java.multiline_comments_tokens + java.two_character_tokens + java.two_char_verbose + java.one_character_tokens + java.one_char_verbose)
 
-def split_to_key_words_and_identifiers(token, two_char_regex, one_char_regex, to_drop):
+def split_to_key_words_and_identifiers(token, multiline_comments_tokens,
+                                       two_char_delimiters, one_char_delimiter, to_drop):
+    multiline_comments_regex = create_regex_from_token_list(multiline_comments_tokens)
+    two_char_regex = create_regex_from_token_list(two_char_delimiters)
+    one_char_regex = create_regex_from_token_list(one_char_delimiter)
+
     if isinstance(token, ProcessableToken):
         raw_result = []
         result = []
-        two_char_tokens_separated = re.split(two_char_regex, token.get_val())
-        for str in two_char_tokens_separated:
-            if str in java.two_character_tokens:
-                raw_result.append(str)
+        comment_tokens_separated = re.split(multiline_comments_regex, token.get_val())
+        for st in comment_tokens_separated:
+            if st in multiline_comments_tokens:
+                raw_result.append(st)
             else:
-                one_char_token_separated = re.split(one_char_regex, str)
-                raw_result.extend(list(filter(None, itertools.chain.from_iterable(
-                    [re.split(to_drop, str) for str in one_char_token_separated]
-                ))))
+                two_char_tokens_separated = re.split(two_char_regex, st)
+                for str in two_char_tokens_separated:
+                    if str in java.two_character_tokens:
+                        raw_result.append(str)
+                    else:
+                        one_char_token_separated = re.split(one_char_regex, str)
+                        raw_result.extend(list(filter(None, itertools.chain.from_iterable(
+                            [re.split(to_drop, str) for str in one_char_token_separated]
+                        ))))
         for raw_str in raw_result:
             if not raw_str in characters:
                 result.append(ProcessableToken(raw_str))

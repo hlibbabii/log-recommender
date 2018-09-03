@@ -17,7 +17,7 @@ def replace_variable_place_holders(multitoken_list):
     return res
 
 def spl_non_verbose(multitokens, context):
-    return spl(multitokens, java.two_character_tokens, java.one_character_tokens)
+    return spl(multitokens, java.multiline_comments_tokens, java.two_character_tokens, java.one_character_tokens)
 
 
 def split_log_text_to_keywords_and_identifiers(multitoken_list):
@@ -37,7 +37,9 @@ def to_lower(multitoken_list, context):
 
 
 def filter_out_1_and_2_char_tokens(tokens):
-    return list(filter(lambda x: x not in java.one_character_tokens and x not in java.two_character_tokens, tokens))
+    return list(filter(lambda x: x not in java.one_character_tokens
+                                 and x not in java.two_character_tokens
+                                 and x not in java.multiline_comments_tokens, tokens))
 
 #################    Multitoken level    ############
 

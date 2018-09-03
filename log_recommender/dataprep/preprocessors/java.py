@@ -19,9 +19,9 @@ BACKSLASH = Backslash()
 
 tabs = ["\t" + str(i) for i in range(11)]
 
+multiline_comments_tokens = ["/*", "*/"]
+
 two_character_tokens = [
-    "/*",
-    "*/",
     "==",
     "!=",
     "**",
@@ -197,7 +197,7 @@ def replace(token_list, start, end, new_symbol):
 def strip_off_identifiers(token_list, context):
     identifiers_to_ignore = context['identifiers_to_ignore']
     non_identifiers = set(
-        key_words + two_character_tokens + one_character_tokens + one_char_verbose + two_char_verbose + \
+        key_words + multiline_comments_tokens + two_character_tokens + one_character_tokens + one_char_verbose + two_char_verbose + \
         list(placeholders.values()) + tabs + identifiers_to_ignore)
 
     result = []
