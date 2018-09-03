@@ -38,9 +38,13 @@ def to_human_readable(tokens, context):
 
 
 def spl(token_list, multiline_comments_tokens, two_char_delimiters, one_char_delimiters):
+    multiline_comments_regex = create_regex_from_token_list(multiline_comments_tokens)
+    two_char_regex = create_regex_from_token_list(two_char_delimiters)
+    one_char_regex = create_regex_from_token_list(one_char_delimiters)
+
     split_nested_list = list(map(
-        lambda token: split_to_key_words_and_identifiers(token, multiline_comments_tokens,
-                                                         two_char_delimiters, one_char_delimiters,
+        lambda token: split_to_key_words_and_identifiers(token, multiline_comments_regex,
+                                                         two_char_regex, one_char_regex,
                                                          java.delimiters_to_drop_verbose), token_list))
     return [w for lst in split_nested_list for w in lst]
 
@@ -55,23 +59,21 @@ def spl_verbose(token_list, context):
 
 characters = set(java.multiline_comments_tokens + java.two_character_tokens + java.two_char_verbose + java.one_character_tokens + java.one_char_verbose)
 
-def split_to_key_words_and_identifiers(token, multiline_comments_tokens,
-                                       two_char_delimiters, one_char_delimiter, to_drop):
-    multiline_comments_regex = create_regex_from_token_list(multiline_comments_tokens)
-    two_char_regex = create_regex_from_token_list(two_char_delimiters)
-    one_char_regex = create_regex_from_token_list(one_char_delimiter)
+def split_to_key_words_and_identifiers(token, multiline_comments_regex,
+                                       two_char_regex, one_char_regex, to_drop):
+
 
     if isinstance(token, ProcessableToken):
         raw_result = []
         result = []
         comment_tokens_separated = re.split(multiline_comments_regex, token.get_val())
         for st in comment_tokens_separated:
-            if st in multiline_comments_tokens:
+            if re.fullmatch(multiline_comments_regex, st):
                 raw_result.append(st)
             else:
                 two_char_tokens_separated = re.split(two_char_regex, st)
                 for str in two_char_tokens_separated:
-                    if str in java.two_character_tokens:
+                    if re.fullmatch(two_char_regex, str):
                         raw_result.append(str)
                     else:
                         one_char_token_separated = re.split(one_char_regex, str)
@@ -99,7 +101,7 @@ def split_to_key_words_and_identifiers(token, multiline_comments_tokens,
     elif isinstance(token, ProcessableTokenContainer):
         res = []
         for subtoken in token.get_subtokens():
-            res.extend(split_to_key_words_and_identifiers(subtoken, two_char_regex, one_char_regex, to_drop))
+            res.extend(split_to_key_words_and_identifiers(subtoken, multiline_comments_regex, two_char_regex, one_char_regex, to_drop))
         return res
     else:
         return [token]
