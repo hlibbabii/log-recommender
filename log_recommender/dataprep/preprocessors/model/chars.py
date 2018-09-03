@@ -1,12 +1,14 @@
-class NewLine(object):
-    def __str__(self):
-        return self.non_preprocessed_repr()
-
-    def __repr__(self):
-        return self.__str__()
-
+class SpecialChar(object):
     def __eq__(self, other):
         return other.__class__ == self.__class__
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__}>'
+
+
+class NewLine(SpecialChar):
+    def __str__(self):
+        return self.non_preprocessed_repr()
 
     def non_preprocessed_repr(self):
         return "\n"
@@ -15,15 +17,9 @@ class NewLine(object):
         return []
 
 
-class Tab(object):
+class Tab(SpecialChar):
     def __str__(self):
         return self.non_preprocessed_repr()
-
-    def __repr__(self):
-        return self.__str__()
-
-    def __eq__(self, other):
-        return other.__class__ == self.__class__
 
     def non_preprocessed_repr(self):
         return "\t"
@@ -32,56 +28,25 @@ class Tab(object):
         return []
 
 
-class Backslash(object):
+class Backslash(SpecialChar):
     def __str__(self):
         return "\\"
 
-    def __repr__(self):
-        return self.__str__()
 
-    def __eq__(self, other):
-        return other.__class__ == self.__class__
-
-
-class Quote(object):
+class Quote(SpecialChar):
     def __str__(self):
         return "\""
 
-    def __repr__(self):
-        return self.__str__()
 
-    def __eq__(self, other):
-        return other.__class__ == self.__class__
-
-
-class MultilineCommentStart(object):
+class MultilineCommentStart(SpecialChar):
     def __str__(self):
         return "/*"
 
-    def __repr__(self):
-        return self.__str__()
-
-    def __eq__(self, other):
-        return other.__class__ == self.__class__
-
-
-class MultilineCommentEnd(object):
+class MultilineCommentEnd(SpecialChar):
     def __str__(self):
         return "*/"
 
-    def __repr__(self):
-        return self.__str__()
 
-    def __eq__(self, other):
-        return other.__class__ == self.__class__
-
-
-class OneLineCommentStart(object):
+class OneLineCommentStart(SpecialChar):
     def __str__(self):
         return "//"
-
-    def __repr__(self):
-        return self.__str__()
-
-    def __eq__(self, other):
-        return other.__class__ == self.__class__
