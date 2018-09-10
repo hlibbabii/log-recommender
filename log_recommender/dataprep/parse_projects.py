@@ -40,31 +40,39 @@ def read_file_contents(file_path):
 
 
 def preprocess_and_write(params):
-    src_dir, dest_dir, subdir, chunk, preprocessing_param_dict, splitting_file = params
-    full_dest_dir = os.path.join(dest_dir, subdir)
-    path_to_preprocessed_file = os.path.join(full_dest_dir, f'preprocessed.{chunk}.parsed')
+    src_dir, dest_dir, train_test_valid, project, preprocessing_param_dict, splitting_file = params
+    full_dest_dir = os.path.join(dest_dir, train_test_valid)
+    path_to_preprocessed_file = os.path.join(full_dest_dir, f'{project}.parsed')
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir, exist_ok=True)
     if os.path.exists(path_to_preprocessed_file):
         logging.warning(f"File {path_to_preprocessed_file} already exists! Doing nothing.")
         return
-    dir_with_files_to_preprocess = os.path.join(src_dir, subdir, chunk)
+    dir_with_files_to_preprocess = os.path.join(src_dir, train_test_valid, project)
     if not os.path.exists(dir_with_files_to_preprocess):
         logging.error(f"Path {dir_with_files_to_preprocess} does not exist")
         exit(2)
+    filenames=[]
     with open(f'{path_to_preprocessed_file}.part', 'wb') as f:
         total_files = sum([f for f in java_file_mapper(dir_with_files_to_preprocess, lambda path: 1)])
-        logging.info(f"Preprocessing java file's from {dir_with_files_to_preprocess}. Files to process: {total_files}")
+        logging.info(f"Preprocessing java files from {dir_with_files_to_preprocess}. Files to process: {total_files}")
         pickle.dump(preprocessing_param_dict, f, pickle.HIGHEST_PROTOCOL)
         for ind, (lines_from_file, file_path) in enumerate(java_file_mapper(dir_with_files_to_preprocess, read_file_contents)):
             if (ind+1) % 100 == 0:
-                logging.info(f"[{subdir}/{chunk}] Parsed {ind+1} out of {total_files} files ({(ind+1)/float(total_files)*100:.2f}%)")
+                logging.info(f"[{train_test_valid}/{project}] Parsed {ind+1} out of {total_files} files ({(ind+1)/float(total_files)*100:.2f}%)")
             parsed = apply_preprocessors(lines_from_file, pp_params["preprocessors"], {
                 'interesting_context_words': [],
                 'splitting_file_location': splitting_file
             })
             pickle.dump(parsed, f, pickle.HIGHEST_PROTOCOL)
-    # remove .part to show that all raw files in this chunk have been preprocessed
+            filename=os.path.relpath(filepath, start=dir_with_files_to_preprocess)
+            filenames.append(filename)
+
+	with open(os.path.join(full_dest_dir, f'.{project}.filenames'), "w") as f:
+        for filename in filenames:
+            f.write(f"{filename}\n")
+			
+    # remove .part to show that all raw files in this project have been preprocessed
     os.rename(f'{path_to_preprocessed_file}.part', path_to_preprocessed_file)
 
 
@@ -107,8 +115,8 @@ if __name__ == '__main__':
 
     params = []
 
-    for _, subdir, chunk in get_two_levels_subdirs(raw_dataset_dir):
-        params.append((raw_dataset_dir, dest_dataset_dir, subdir, chunk, preprocessing_types_dict, args.splitting_file))
+    for _, train_test_valid, project in get_two_levels_subdirs(raw_dataset_dir):
+        params.append((raw_dataset_dir, dest_dataset_dir, train_test_valid, project, preprocessing_types_dict, args.splitting_file))
 
     files_total = len(params)
     current_file = 0
