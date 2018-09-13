@@ -11,7 +11,8 @@ class PreprocessingType(Enum):
     SPL = 'spl'
     SC_SPL = 'scspl'
     NUM_SPL = 'numspl'
-    NO_STR_COM = 'nocomstr'
+    NO_STR = 'nostr'
+    NO_COM = 'nocom'
     NO_NEWLINES_TABS = 'nonewlinestabs'
 
 
@@ -21,9 +22,9 @@ token_to_preprocessing_type_level_dict = {
     UnderscoreSplit: PreprocessingType.SPL,
     SameCaseSplit: PreprocessingType.SC_SPL,
     Number: PreprocessingType.NUM_SPL,
-    OneLineComment: PreprocessingType.NO_STR_COM,
-    MultilineComment: PreprocessingType.NO_STR_COM,
-    StringLiteral: PreprocessingType.NO_STR_COM,
+    OneLineComment: PreprocessingType.NO_COM,
+    MultilineComment: PreprocessingType.NO_COM,
+    StringLiteral: PreprocessingType.NO_STR,
     NewLine: PreprocessingType.NO_NEWLINES_TABS,
     Tab: PreprocessingType.NO_NEWLINES_TABS
 }

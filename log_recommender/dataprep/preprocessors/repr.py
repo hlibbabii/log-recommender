@@ -1,8 +1,20 @@
 from dataprep.preprocessors.model.split import NonDelimiterSplitContainer
 from dataprep.preprocessors.preprocessing_types import token_to_preprocessing_type_level_dict, always_repr, recursive
 
-
 def to_repr(preprocessing_params, token_list):
+    '''
+    Preprocesses token list according to given preprocessing params
+    :param preprocessing_params: e.g. {
+        'spl': True,
+        'numspl': True,
+        'nocom': False,
+        'nostr': False
+        'nonewlinestabs': False',
+        'scspl': True
+    }
+    :param token_list: list of tokens to be preprocessed
+    :return:
+    '''
     types_to_be_repr_dict = {k:preprocessing_params[v.value] for (k, v) in token_to_preprocessing_type_level_dict.items()
                              if v.value in preprocessing_params}
     repr_list = to_repr_list(types_to_be_repr_dict, token_list)
