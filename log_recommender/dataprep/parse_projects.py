@@ -65,13 +65,13 @@ def preprocess_and_write(params):
                 'splitting_file_location': splitting_file
             })
             pickle.dump(parsed, f, pickle.HIGHEST_PROTOCOL)
-            filename=os.path.relpath(filepath, start=dir_with_files_to_preprocess)
+            filename=os.path.relpath(file_path, start=dir_with_files_to_preprocess)
             filenames.append(filename)
 
-	with open(os.path.join(full_dest_dir, f'.{project}.filenames'), "w") as f:
+    with open(os.path.join(full_dest_dir, f'.{project}.filenames'), "w") as f:
         for filename in filenames:
             f.write(f"{filename}\n")
-			
+
     # remove .part to show that all raw files in this project have been preprocessed
     os.rename(f'{path_to_preprocessed_file}.part', path_to_preprocessed_file)
 
