@@ -10,7 +10,7 @@ from pickle import HIGHEST_PROTOCOL
 
 from dataprep import base_project_dir
 from dataprep.preprocessors.general import to_token_list
-from dataprep.preprocessors.preprocessing_types import token_to_preprocessing_type_level_dict
+from dataprep.preprocessors.preprocessing_types import PreprocessingType
 from dataprep.preprocessors.repr import to_repr
 
 PARSED_FILE_EXTENSION = "parsed"
@@ -121,6 +121,10 @@ def gen_dir_name(new_preprocessing_param_dict):
     return (yes + no + unknown)[:-1]
 
 
+def parse_preprocessing_params(preprocessing_types_str):
+    return {PreprocessingType(param.split('=')[0]): bool(int(param.split('=')[1])) for param in preprocessing_types_str.split(',')}
+
+
 if __name__ == '__main__':
     default_base_from = f'{base_project_dir}/nn-data/new_framework/'
     default_base_to = f'{base_project_dir}/nn-data/new_framework/'
@@ -144,13 +148,11 @@ if __name__ == '__main__':
         exit(3)
     logging.info(f"Reading parsed files from: {os.path.abspath(full_src_dir)}")
     with open(f'{full_src_dir}/preprocessing_types.json', 'r') as f:
-        old_preprocessing_params = json.load(f)
+        old_preprocessing_params_json = json.load(f)
+    old_preprocessing_params = {PreprocessingType(k): v for (k, v) in old_preprocessing_params_json.items()}
     logging.info(f"Old preprocessing params : {old_preprocessing_params}")
 
-    preprocessing_params = {param.split('=')[0]: bool(int(param.split('=')[1])) for param in args.preprocessing_types.split(',')}
-    for param in preprocessing_params.keys():
-        if param not in map(lambda x: x.value ,token_to_preprocessing_type_level_dict.values()):
-            raise ValueError(f"Invalid preprocessing type: {param}")
+    preprocessing_params = parse_preprocessing_params(args.preprocessing_types)
 
     new_preprocessing_types_dict, got_pure_repr = calc_new_preprocessing_types_dict(old_preprocessing_params,
                                                                                     preprocessing_params)

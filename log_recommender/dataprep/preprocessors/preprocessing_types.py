@@ -7,13 +7,13 @@ from dataprep.preprocessors.model.split import CamelCaseSplit, WithNumbersSplit,
 from dataprep.preprocessors.model.textcontainers import OneLineComment, MultilineComment, StringLiteral
 
 
-class PreprocessingType(Enum):
-    SPL = 'spl'
-    SC_SPL = 'scspl'
-    NUM_SPL = 'numspl'
-    NO_STR = 'nostr'
-    NO_COM = 'nocom'
-    NO_NEWLINES_TABS = 'nonewlinestabs'
+class PreprocessingType(str, Enum):
+    SPL: str = 'spl'
+    SC_SPL: str = 'scspl'
+    NUM_SPL: str = 'numspl'
+    NO_STR: str = 'nostr'
+    NO_COM: str = 'nocom'
+    NO_NEWLINES_TABS: str = 'nonewlinestabs'
 
 
 token_to_preprocessing_type_level_dict = {
@@ -28,9 +28,6 @@ token_to_preprocessing_type_level_dict = {
     NewLine: PreprocessingType.NO_NEWLINES_TABS,
     Tab: PreprocessingType.NO_NEWLINES_TABS
 }
-
-def get_preprocessing_types_set():
-    return list(set(token_to_preprocessing_type_level_dict.values()))
 
 recursive = [SameCaseSplit, CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, OneLineComment, MultilineComment, StringLiteral]
 always_repr = [ProcessableToken]

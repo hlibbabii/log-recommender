@@ -1,22 +1,38 @@
 from dataprep.preprocessors.model.split import NonDelimiterSplitContainer
-from dataprep.preprocessors.preprocessing_types import token_to_preprocessing_type_level_dict, always_repr, recursive
+from dataprep.preprocessors.preprocessing_types import token_to_preprocessing_type_level_dict, always_repr, recursive, \
+    PreprocessingType
+
+DEFAULT_NO_STR_NO_COM = {
+    PreprocessingType.SPL:    True, PreprocessingType.NUM_SPL:          True, PreprocessingType.NO_COM: True,
+    PreprocessingType.NO_STR: True, PreprocessingType.NO_NEWLINES_TABS: True, PreprocessingType.SC_SPL: False
+}
+
+DEFAULT_NO_COM = {
+    PreprocessingType.SPL:     True, PreprocessingType.NUM_SPL:          True, PreprocessingType.NO_COM: True,
+    PreprocessingType.NO_STR: False, PreprocessingType.NO_NEWLINES_TABS: True, PreprocessingType.SC_SPL: False
+}
+
+DEFAULT = {
+    PreprocessingType.SPL:     True, PreprocessingType.NUM_SPL:          True, PreprocessingType.NO_COM: False,
+    PreprocessingType.NO_STR: False, PreprocessingType.NO_NEWLINES_TABS: True, PreprocessingType.SC_SPL: False
+}
 
 def to_repr(preprocessing_params, token_list):
-    '''
+    """
     Preprocesses token list according to given preprocessing params
     :param preprocessing_params: e.g. {
-        'spl': True,
-        'numspl': True,
-        'nocom': False,
-        'nostr': False
-        'nonewlinestabs': False',
-        'scspl': True
+        PreprocessingType.SPL: True,
+        PreprocessingType.NUM_SPL: True,
+        PreprocessingType.NO_COM: False,
+        PreprocessingType.NO_STR: False
+        PreprocessingType.NO_NEWLINES_TABS: False',
+        PreprocessingType.SC_SPL: True
     }
     :param token_list: list of tokens to be preprocessed
     :return:
-    '''
-    types_to_be_repr_dict = {k:preprocessing_params[v.value] for (k, v) in token_to_preprocessing_type_level_dict.items()
-                             if v.value in preprocessing_params}
+    """
+    types_to_be_repr_dict = {k:preprocessing_params[v] for (k, v) in token_to_preprocessing_type_level_dict.items()
+                             if v in preprocessing_params}
     repr_list = to_repr_list(types_to_be_repr_dict, token_list)
     return repr_list
 
