@@ -7,9 +7,10 @@ import time
 from multiprocessing.pool import Pool
 from pathlib import Path
 
-from dataprep import base_project_dir
 from dataprep.preprocessors import apply_preprocessors
 from dataprep.preprocessors.preprocessing_types import PreprocessingType
+from local_properties import REWRITE_PARSED_FILE, DEFAULT_RAW_DATASETS_DIR, DEFAULT_PARSED_DATASETS_DIR, \
+    DEFAULT_PARSE_PROJECTS_ARGS
 from nn.preprocess_params import pp_params
 
 
@@ -45,7 +46,7 @@ def preprocess_and_write(params):
     path_to_preprocessed_file = os.path.join(full_dest_dir, f'{project}.parsed')
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir, exist_ok=True)
-    if os.path.exists(path_to_preprocessed_file):
+    if not REWRITE_PARSED_FILE and os.path.exists(path_to_preprocessed_file):
         logging.warning(f"File {path_to_preprocessed_file} already exists! Doing nothing.")
         return
     dir_with_files_to_preprocess = os.path.join(src_dir, train_test_valid, project)
@@ -82,17 +83,14 @@ def split_two_last_levels(root):
 
 
 if __name__ == '__main__':
-    default_base_from = f'{base_project_dir}/../raw_datasets/devanbu/data/'
-    default_base_to = f'{base_project_dir}/nn-data/new_framework/'
-
     parser = argparse.ArgumentParser()
-    parser.add_argument('--base-from',action='store', default=default_base_from)
-    parser.add_argument('--base-to',action='store', default=default_base_to)
+    parser.add_argument('--base-from',action='store', default=DEFAULT_RAW_DATASETS_DIR)
+    parser.add_argument('--base-to',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
     parser.add_argument('src', help="name of the 'raw' dataset")
     parser.add_argument('dest', help='destination for parsed files, recommended format <dataset name>/parsed')
     parser.add_argument('--splitting-file', action='store',
                         default='/home/hlib/thesis/log-recommender/nn-data/devanbu_split_no_tabs_under_2000/splits/split.txt')
-    args = parser.parse_known_args()
+    args = parser.parse_known_args(DEFAULT_PARSE_PROJECTS_ARGS)
     args = args[0]
 
     logging.basicConfig(level=logging.DEBUG)

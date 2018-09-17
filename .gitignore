@@ -21,3 +21,5 @@ classes.csv
 !/nn-data/no_replaced_identifier_split/TEXT.pkl
 !/nn-data/replaced_some_identifiers_00001/TEXT.pkl
 !/nn-data/replaced_some_identifiers_0005/TEXT.pkl
+
+local_properties.py

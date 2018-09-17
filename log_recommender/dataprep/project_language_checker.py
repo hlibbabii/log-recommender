@@ -7,6 +7,7 @@ from collections import defaultdict
 from dataprep import base_project_dir
 from dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
 from dataprep.preprocessors.noneng import isascii
+from local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS
 
 DEFAULT_MIN_FREQ_TO_BE_NON_ENG = 0.01
 DEFAULT_MIN_WORDS_TO_BE_NON_ENG = 5
@@ -66,17 +67,15 @@ def gen_stats(lang_to_percent_list):
 
 
 if __name__ == '__main__':
-    default_base_dataset_dir = f'{base_project_dir}/nn-data/new_framework/'
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--min-freq', type=float, default=f'{DEFAULT_MIN_FREQ_TO_BE_NON_ENG}')
     parser.add_argument('--min-words', type=int, default=f'{DEFAULT_MIN_WORDS_TO_BE_NON_ENG}')
     parser.add_argument('--min-chars', type=int, default=f'{DEFAULT_MIN_CHARS_TO_BE_NON_ENG}')
-    parser.add_argument('--base-dataset-dir', default=f'{default_base_dataset_dir}')
+    parser.add_argument('--base-dataset-dir', default=DEFAULT_PARSED_DATASETS_DIR)
     parser.add_argument('preprocessed_dataset', help='path to preprocessed dataset relative '
                                                      'to the one passed as --base-dataset-dir param')
 
-    args = parser.parse_args()
+    args = parser.parse_args(DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS)
 
     min_freq_to_be_non_eng = args.min_freq
     min_words_to_be_non_eng = args.min_words

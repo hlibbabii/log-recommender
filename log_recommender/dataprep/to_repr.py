@@ -8,10 +8,10 @@ from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import Pool
 from pickle import HIGHEST_PROTOCOL
 
-from dataprep import base_project_dir
 from dataprep.preprocessors.general import to_token_list
 from dataprep.preprocessors.preprocessing_types import PreprocessingType
 from dataprep.preprocessors.repr import to_repr
+from local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
 
 PARSED_FILE_EXTENSION = "parsed"
 PART_REPR_EXTENSION = "partrepr"
@@ -92,7 +92,6 @@ def preprocess_and_write(params):
         if os.path.exists(writer.get_full_dest_name()):
             logging.warning(f"File {writer.get_full_dest_name()} already exists! Doing nothing.")
             return
-
         with writer as w:
             if not got_pure_repr:
                 w.write(new_preprocessing_param_dict)
@@ -126,18 +125,15 @@ def parse_preprocessing_params(preprocessing_types_str):
 
 
 if __name__ == '__main__':
-    default_base_from = f'{base_project_dir}/nn-data/new_framework/'
-    default_base_to = f'{base_project_dir}/nn-data/new_framework/'
-
     parser = argparse.ArgumentParser()
-    parser.add_argument('--base-from',action='store', default=default_base_from)
-    parser.add_argument('--base-to',action='store', default=default_base_to)
-    parser.add_argument('src', action='store', help=f'path to the parsed dataset relative to {default_base_from}')
-    parser.add_argument('dest', action='store', help=f'destination for representation relative to {default_base_to}')
+    parser.add_argument('--base-from',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
+    parser.add_argument('--base-to',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
+    parser.add_argument('src', action='store', help=f'path to the parsed dataset')
+    parser.add_argument('dest', action='store', help=f'destination for representation')
     parser.add_argument('-p','--preprocessing-types', required=True, action='store', help='preprocessing params line, \n Example: '
                                                                       'spl=1,numspl=1,nostr=0,nocom=0,nonewlinestabs=0,scspl=1')
 
-    args = parser.parse_args()
+    args = parser.parse_args(DEFAULT_TO_REPR_ARGS)
 
 
     logging.basicConfig(level=logging.DEBUG)
