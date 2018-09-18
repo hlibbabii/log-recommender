@@ -13,6 +13,9 @@ from local_properties import REWRITE_PARSED_FILE, DEFAULT_RAW_DATASETS_DIR, DEFA
     DEFAULT_PARSE_PROJECTS_ARGS
 from nn.preprocess_params import pp_params
 
+EXTENSION = "parsed"
+FILENAMES_EXTENSION = "filenames"
+
 
 def get_two_levels_subdirs(dir):
     subdirs = next(os.walk(dir))[1]
@@ -43,7 +46,7 @@ def read_file_contents(file_path):
 def preprocess_and_write(params):
     src_dir, dest_dir, train_test_valid, project, preprocessing_param_dict, splitting_file = params
     full_dest_dir = os.path.join(dest_dir, train_test_valid)
-    path_to_preprocessed_file = os.path.join(full_dest_dir, f'{project}.parsed')
+    path_to_preprocessed_file = os.path.join(full_dest_dir, f'{project}.{EXTENSION}')
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir, exist_ok=True)
     if not REWRITE_PARSED_FILE and os.path.exists(path_to_preprocessed_file):
@@ -69,7 +72,7 @@ def preprocess_and_write(params):
             filename=os.path.relpath(file_path, start=dir_with_files_to_preprocess)
             filenames.append(filename)
 
-    with open(os.path.join(full_dest_dir, f'.{project}.filenames'), "w") as f:
+    with open(os.path.join(full_dest_dir, f'.{project}.{FILENAMES_EXTENSION}'), "w") as f:
         for filename in filenames:
             f.write(f"{filename}\n")
 

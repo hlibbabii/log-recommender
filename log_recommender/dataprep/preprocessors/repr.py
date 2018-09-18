@@ -2,7 +2,7 @@ from dataprep.preprocessors.model.split import NonDelimiterSplitContainer
 from dataprep.preprocessors.preprocessing_types import token_to_preprocessing_type_level_dict, always_repr, recursive, \
     PreprocessingType
 
-DEFAULT_NO_STR_NO_COM = {
+DEFAULT_NO_COM_NO_STR = {
     PreprocessingType.SPL:    True, PreprocessingType.NUM_SPL:          True, PreprocessingType.NO_COM: True,
     PreprocessingType.NO_STR: True, PreprocessingType.NO_NEWLINES_TABS: True, PreprocessingType.SC_SPL: False
 }
