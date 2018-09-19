@@ -5,7 +5,11 @@ import math
 import os
 import pickle
 import re
+import shutil
 from collections import defaultdict
+from multiprocessing.pool import Pool
+
+import psycopg2
 
 from dataprep import base_project_dir, parse_projects
 from dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
@@ -55,9 +59,9 @@ class LanguageChecker(object):
         total = len(word_list)
         total_uq = len(set(word_list))
         non_eng_uq = len(non_eng_unique)
-        return total, total_uq, non_eng, non_eng_uq , \
-               float(non_eng) / total if total != 0 else 0, \
-               float(non_eng_uq) /total_uq if total_uq != 0 else 0
+        return total, total_uq, non_eng, non_eng_uq \
+               ,float(non_eng) / total if total != 0 else 0 \
+               ,float(non_eng_uq) /total_uq if total_uq != 0 else 0
 
 
 def check_more_than_limit(lang_to_percent, total):
@@ -73,6 +77,105 @@ def gen_stats(lang_to_percent_list):
         gr[math.ceil(max_percent*100)] += 1
     gr.default_factory = None
     return gr
+
+
+def write_to_csv(file_stats):
+    with open(f'{base_project_dir}/generated_stats/langs.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(
+            ['Project', 'File', 'code total', 'code total uq', 'code noneng', 'code noneng uq', '%', '%(uq)',
+             'code + str total', 'code + str total uq', 'code + str noneng', 'code + str noneng uq', '%', '%(uq)',
+             'code + str + com total', 'code + str + com total uq', 'code + str + com noneng',
+             'code + str + com noneng uq', '%', '%(uq)'
+             ])
+        for row in file_stats:
+            writer.writerow(row)
+
+
+def get_project_name(file):
+    pattern = f'(.*).{parse_projects.EXTENSION}'
+    match = re.fullmatch(pattern, file)
+    if match is not None:
+        return match[1]
+    else:
+        raise AssertionError(f'File {file} does not match the pattern {pattern}')
+
+
+def calc_stats(file):
+    project_name = get_project_name(file)
+    filenames_file = f'.{project_name}.{parse_projects.FILENAMES_EXTENSION}'
+    file_stats = []
+    with open(os.path.join(path_to_dir_with_preprocessed_projects, file), 'rb') as f, \
+            open(os.path.join(path_to_dir_with_preprocessed_projects, filenames_file), 'r') as fn:
+        _ = pickle.load(f)  # preprocessing param dict
+        while True:
+            try:
+                token_list = pickle.load(f)
+
+                repr1 = to_token_list(to_repr(DEFAULT_NO_COM_NO_STR, token_list)).split()
+                only_code_stats = language_checker.calc_lang_stats(repr1)
+                repr2 = to_token_list(to_repr(DEFAULT_NO_COM, token_list)).split()
+                code_str_stats = language_checker.calc_lang_stats(repr2)
+                repr3 = to_token_list(to_repr(DEFAULT, token_list)).split()
+                code_str_com_stats = language_checker.calc_lang_stats(repr3)
+
+                filename = fn.readline()[:-1]
+                file_stats.append((project_name, filename, *only_code_stats, *code_str_stats, *code_str_com_stats))
+            except EOFError:
+                break
+    return file_stats
+
+def parsed_files_generator(path_to_dir_with_preprocessed_projects, persistent_chunk_tracker):
+    for file in os.listdir(path_to_dir_with_preprocessed_projects):
+        if file.startswith(".") or persistent_chunk_tracker.is_tracked(get_project_name(file)):
+            continue
+        yield file
+
+
+class PersistentChunkTracker(object):
+    def __init__(self):
+        self.dir = f'{base_project_dir}/generated_stats/~langs/'
+
+    def track(self, project_name):
+        open(f'{self.dir}/{project_name}', 'a').close()
+
+    def is_tracked(self, project_name):
+        return os.path.exists(f'{self.dir}/{project_name}')
+
+    def untrack_all(self):
+        if os.path.exists(self.dir):
+            shutil.rmtree(self.dir)
+
+    def is_tracking(self):
+        return os.path.exists(self.dir)
+
+    def start_tracking(self):
+        if not os.path.exists(self.dir):
+            os.makedirs(self.dir)
+
+
+class DAO(object):
+    def __init__(self):
+        conn = psycopg2.connect("dbname='logrec' "
+                                "user='logrec' "
+                                "host='logrec.cpdobqsbhnep.eu-central-1.rds.amazonaws.com' "
+                                "password='logrec'")
+        conn.set_session(autocommit=True)
+        self.cur = conn.cursor()
+
+    def save_row(self, row):
+        execute = self.cur.execute('INSERT INTO LANGSTATS (PROJECT, FILE, ' \
+                                   ' CODE_TOTAL, CODE_TOTAL_UQ, CODE_NON_ENG, CODE_NON_ENG_UQ, CODE_PERCENT, CODE_PERCENT_UQ,' \
+                                   ' CODE_STR_TOTAL, CODE_STR_TOTAL_UQ, CODE_STR_NON_ENG, CODE_STR_NON_ENG_UQ, CODE_STR_PERCENT, CODE_STR_PERCENT_UQ,' \
+                                   ' CODE_STR_COM_TOTAL, CODE_STR_COM_TOTAL_UQ, CODE_STR_COM_NON_ENG, CODE_STR_COM_NON_ENG_UQ, CODE_STR_COM_PERCENT, CODE_STR_COM_PERCENT_UQ) ' \
+                                   'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                                   row)
+
+    def delete_all_rows(self):
+        self.cur.execute("DELETE FROM LANGSTATS")
+
+    def rows_present(self):
+        return self.cur.execute("SELECT * FROM LANGSTATS")
 
 
 if __name__ == '__main__':
@@ -101,44 +204,29 @@ if __name__ == '__main__':
         logging.error(f"Path: {path_to_dir_with_preprocessed_projects} does not exist")
         exit(1)
 
+
     language_checker = LanguageChecker()
+    persistent_chunk_tracker = PersistentChunkTracker()
+    dao = DAO()
+    ALWAYS_REWRITE=True
 
-    non_english_files = []
-    all_files = []
-    for file in os.listdir(path_to_dir_with_preprocessed_projects):
-        if file.startswith("."):
-            continue
-        pattern = f'(.*).{parse_projects.EXTENSION}'
-        match = re.fullmatch(pattern, file)
-        if match is not None:
-            project_name = match[1]
-            filenames_file = f'.{project_name}.{parse_projects.FILENAMES_EXTENSION}'
-        else:
-            raise AssertionError(f'File {file} does not match the pattern {pattern}')
-        file_stats = []
-        with open(os.path.join(path_to_dir_with_preprocessed_projects, file), 'rb') as f, \
-                open(os.path.join(path_to_dir_with_preprocessed_projects, filenames_file), 'r') as fn:
-            _ = pickle.load(f) # preprocessing param dict
-            while True:
-                try:
-                    token_list = pickle.load(f)
+    if ALWAYS_REWRITE:
+        persistent_chunk_tracker.untrack_all()
+        dao.delete_all_rows()
+    elif not persistent_chunk_tracker.is_tracking() and dao.rows_present():
+        logging.info(f"Stats has already been generated!")
+        exit(0)
+    persistent_chunk_tracker.start_tracking()
 
-                    repr1 = to_token_list(to_repr(DEFAULT_NO_COM_NO_STR, token_list)).split()
-                    only_code_stats = language_checker.calc_lang_stats(repr1)
-                    repr2 = to_token_list(to_repr(DEFAULT_NO_COM, token_list)).split()
-                    code_str_stats = language_checker.calc_lang_stats(repr2)
-                    repr3 = to_token_list(to_repr(DEFAULT, token_list)).split()
-                    code_str_com_stats = language_checker.calc_lang_stats(repr3)
+    get_parsed_file_generator = lambda: parsed_files_generator(path_to_dir_with_preprocessed_projects, persistent_chunk_tracker)
+    total_projects = len([x for x in get_parsed_file_generator()])
+    logging.info(f"Total projects to process: {total_projects}")
+    with Pool() as pool:
+        results = pool.imap_unordered(calc_stats, get_parsed_file_generator())
+        for result in results:
+            for row in result:
+                dao.save_row(row)
+            project_name = result[0][0]
+            persistent_chunk_tracker.track(project_name)
+    persistent_chunk_tracker.untrack_all()
 
-                    filename = fn.readline()[:-1]
-                    file_stats.append((project_name, filename, *only_code_stats, *code_str_stats, *code_str_com_stats))
-                except EOFError:
-                    break
-        with open(f'{base_project_dir}/generated_stats/langs.csv', 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            writer.writerow(['Project', 'File', 'code total', 'code total uq', 'code noneng', 'code noneng uq', '%', '%(uq)',
-                    'code + str total', 'code + str total uq', 'code + str noneng', 'code + str noneng uq', '%', '%(uq)',
-                    'code + str + com total', 'code + str + com total uq', 'code + str + com noneng', 'code + str + com noneng uq', '%', '%(uq)'
-            ])
-            for row in file_stats:
-                writer.writerow(row)
