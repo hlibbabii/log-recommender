@@ -123,7 +123,7 @@ def calc_stats(file):
                 file_stats.append((project_name, filename, *only_code_stats, *code_str_stats, *code_str_com_stats))
             except EOFError:
                 break
-    return file_stats
+    return file_stats if file_stats else [(project_name)]
 
 def parsed_files_generator(path_to_dir_with_preprocessed_projects, persistent_chunk_tracker):
     for file in os.listdir(path_to_dir_with_preprocessed_projects):
@@ -221,12 +221,20 @@ if __name__ == '__main__':
     get_parsed_file_generator = lambda: parsed_files_generator(path_to_dir_with_preprocessed_projects, persistent_chunk_tracker)
     total_projects = len([x for x in get_parsed_file_generator()])
     logging.info(f"Total projects to process: {total_projects}")
+    counter = 0
     with Pool() as pool:
         results = pool.imap_unordered(calc_stats, get_parsed_file_generator())
         for result in results:
-            for row in result:
-                dao.save_row(row)
             project_name = result[0][0]
+            logging.info(f'Processed {project_name}: ({counter} out of {total_projects})')
+            counter += 1
+            for row in result:
+                if len(row) > 1:
+                    dao.save_row(row)
+                else:
+                    # project was empty
+                    logging.warning(f'No parsed files found in {project_name}')
+
             persistent_chunk_tracker.track(project_name)
     persistent_chunk_tracker.untrack_all()
 
