@@ -9,10 +9,10 @@ REWRITE_PARSED_FILE=True
 DEFAULT_RAW_DATASETS_DIR= f'{base_project_dir}/nn-data/test/'
 DEFAULT_PARSED_DATASETS_DIR= f'{base_project_dir}/nn-data/test/'
 
-DEFAULT_PARSE_PROJECTS_ARGS=['raw/test1', 'test1/parsed']
-DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS=["test1/repr/nocomstr_1_numspl_1_scspl_1_spl_1_nonewlinestabs_0/train"]
-DEFAULT_TO_REPR_ARGS=['--preprocessing-types', 'spl=1,numspl=1,nocom=0,nostr=1,nonewlinestabs=0,scspl=1',
-                              'test1/parsed', 'test1']
+DEFAULT_PARSE_PROJECTS_ARGS=[['raw/test1', 'test1/parsed']]
+DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS=[["test1/repr/nocomstr_1_numspl_1_scspl_1_spl_1_nonewlinestabs_0/train"]]
+DEFAULT_TO_REPR_ARGS=[['--preprocessing-types', 'spl=1,numspl=1,nocom=0,nostr=1,nonewlinestabs=0,scspl=1',
+                              'test1/parsed', 'test1']]
 ###################################################
 
 on vcs:

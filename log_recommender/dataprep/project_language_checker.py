@@ -187,7 +187,7 @@ if __name__ == '__main__':
     parser.add_argument('preprocessed_dataset', help='path to preprocessed dataset relative '
                                                      'to the one passed as --base-dataset-dir param')
 
-    args = parser.parse_args(DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS)
+    args = parser.parse_args(*DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS)
 
     min_freq_to_be_non_eng = args.min_freq
     min_words_to_be_non_eng = args.min_words

@@ -93,7 +93,7 @@ if __name__ == '__main__':
     parser.add_argument('dest', help='destination for parsed files, recommended format <dataset name>/parsed')
     parser.add_argument('--splitting-file', action='store',
                         default='/home/hlib/thesis/log-recommender/nn-data/devanbu_split_no_tabs_under_2000/splits/split.txt')
-    args = parser.parse_known_args(DEFAULT_PARSE_PROJECTS_ARGS)
+    args = parser.parse_known_args(*DEFAULT_PARSE_PROJECTS_ARGS)
     args = args[0]
 
     logging.basicConfig(level=logging.DEBUG)
