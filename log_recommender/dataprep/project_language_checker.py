@@ -4,6 +4,7 @@ import logging
 import math
 import os
 import pickle
+import random
 import re
 import shutil
 from collections import defaultdict
@@ -47,8 +48,7 @@ class LanguageChecker(object):
     def is_non_eng(self, word):
         return not isascii(word) or self.in_non_eng_word_set(word)
 
-
-    def calc_lang_stats(self, word_list):
+    def calc_lang_stats(self, word_list, include_samples):
         non_eng_unique=set()
         non_eng=0
         for word in word_list:
@@ -59,9 +59,12 @@ class LanguageChecker(object):
         total = len(word_list)
         total_uq = len(set(word_list))
         non_eng_uq = len(non_eng_unique)
-        return total, total_uq, non_eng, non_eng_uq \
-               ,float(non_eng) / total if total != 0 else 0 \
+        result = total, total_uq, non_eng, non_eng_uq \
+            ,float(non_eng) / total if total != 0 else 0 \
                ,float(non_eng_uq) /total_uq if total_uq != 0 else 0
+        if include_samples:
+            result = (*result, ",".join(random.sample(non_eng_unique, 10)))
+        return result
 
 
 def check_more_than_limit(lang_to_percent, total):
@@ -117,13 +120,13 @@ def calc_stats(file):
                 repr2 = to_token_list(to_repr(DEFAULT_NO_COM, token_list)).split()
                 code_str_stats = language_checker.calc_lang_stats(repr2)
                 repr3 = to_token_list(to_repr(DEFAULT, token_list)).split()
-                code_str_com_stats = language_checker.calc_lang_stats(repr3)
+                code_str_com_stats = language_checker.calc_lang_stats(repr3, True)
 
                 filename = fn.readline()[:-1]
                 file_stats.append((project_name, filename, *only_code_stats, *code_str_stats, *code_str_com_stats))
             except EOFError:
                 break
-    return file_stats if file_stats else [(project_name)]
+    return file_stats if file_stats else [[project_name]]
 
 def parsed_files_generator(path_to_dir_with_preprocessed_projects, persistent_chunk_tracker):
     for file in os.listdir(path_to_dir_with_preprocessed_projects):
@@ -164,7 +167,7 @@ class DAO(object):
         self.cur = conn.cursor()
 
     def save_row(self, row):
-        execute = self.cur.execute('INSERT INTO LANGSTATS (PROJECT, FILE, ' \
+        execute = self.cur.execute('INSERT INTO LANGSTATS_S (PROJECT, FILE, ' \
                                    ' CODE_TOTAL, CODE_TOTAL_UQ, CODE_NON_ENG, CODE_NON_ENG_UQ, CODE_PERCENT, CODE_PERCENT_UQ,' \
                                    ' CODE_STR_TOTAL, CODE_STR_TOTAL_UQ, CODE_STR_NON_ENG, CODE_STR_NON_ENG_UQ, CODE_STR_PERCENT, CODE_STR_PERCENT_UQ,' \
                                    ' CODE_STR_COM_TOTAL, CODE_STR_COM_TOTAL_UQ, CODE_STR_COM_NON_ENG, CODE_STR_COM_NON_ENG_UQ, CODE_STR_COM_PERCENT, CODE_STR_COM_PERCENT_UQ) ' \
@@ -172,10 +175,10 @@ class DAO(object):
                                    row)
 
     def delete_all_rows(self):
-        self.cur.execute("DELETE FROM LANGSTATS")
+        self.cur.execute("DELETE FROM LANGSTATS_S")
 
     def rows_present(self):
-        return self.cur.execute("SELECT * FROM LANGSTATS")
+        return self.cur.execute("SELECT * FROM LANGSTATS_S")
 
 
 if __name__ == '__main__':
