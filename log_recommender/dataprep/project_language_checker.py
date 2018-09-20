@@ -1,12 +1,10 @@
 import argparse
-import csv
 import logging
 import math
 import os
 import pickle
 import random
 import re
-import shutil
 from collections import defaultdict
 from multiprocessing.pool import Pool
 
@@ -85,19 +83,6 @@ def gen_stats(lang_to_percent_list):
     return gr
 
 
-def write_to_csv(file_stats):
-    with open(f'{base_project_dir}/generated_stats/langs.csv', 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(
-            ['Project', 'File', 'code total', 'code total uq', 'code noneng', 'code noneng uq', '%', '%(uq)',
-             'code + str total', 'code + str total uq', 'code + str noneng', 'code + str noneng uq', '%', '%(uq)',
-             'code + str + com total', 'code + str + com total uq', 'code + str + com noneng',
-             'code + str + com noneng uq', '%', '%(uq)'
-             ])
-        for row in file_stats:
-            writer.writerow(row)
-
-
 def get_project_name(file):
     pattern = f'(.*).{parse_projects.EXTENSION}'
     match = re.fullmatch(pattern, file)
@@ -131,37 +116,17 @@ def calc_stats(file):
                 break
     return file_stats if file_stats else [[project_name]]
 
-def parsed_files_generator(path_to_dir_with_preprocessed_projects, persistent_chunk_tracker):
+
+def parsed_files_generator(path_to_dir_with_preprocessed_projects, dao):
     for file in os.listdir(path_to_dir_with_preprocessed_projects):
-        if file.startswith(".") or persistent_chunk_tracker.is_tracked(get_project_name(file)):
+        if file.startswith(".") or get_project_name(file) in dao.processed_projects_cache:
             continue
         yield file
 
 
-class PersistentChunkTracker(object):
-    def __init__(self):
-        self.dir = f'{base_project_dir}/generated_stats/~langs/'
-
-    def track(self, project_name):
-        open(f'{self.dir}/{project_name}', 'a').close()
-
-    def is_tracked(self, project_name):
-        return os.path.exists(f'{self.dir}/{project_name}')
-
-    def untrack_all(self):
-        if os.path.exists(self.dir):
-            shutil.rmtree(self.dir)
-
-    def is_tracking(self):
-        return os.path.exists(self.dir)
-
-    def start_tracking(self):
-        if not os.path.exists(self.dir):
-            os.makedirs(self.dir)
-
-
 class DAO(object):
     TABLE = 'LANGSTATS'
+    PROJECTS_TABLE = 'PROJECTS'
 
     def __init__(self):
         conn = psycopg2.connect("dbname='logrec' "
@@ -170,20 +135,35 @@ class DAO(object):
                                 "password='logrec'")
         conn.set_session(autocommit=True)
         self.cur = conn.cursor()
+        self.processed_projects_cache = self.__get_processed_projects()
+        self.created_projects = self.__get_created_projects()
 
     def save_row(self, row):
-        execute = self.cur.execute(f'INSERT INTO {DAO.TABLE} (PROJECT, FILE, ' \
-                                   ' CODE_TOTAL, CODE_TOTAL_UQ, CODE_NON_ENG, CODE_NON_ENG_UQ, CODE_PERCENT, CODE_PERCENT_UQ,' \
+        project = row[0]
+        if project not in self.created_projects:
+            self.cur.execute(f"INSERT INTO {DAO.PROJECTS_TABLE} (PROJECT, PROCESSED) VALUES (%s, FALSE)", (project,))
+            self.created_projects.append(project)
+        self.cur.execute(f'INSERT INTO {DAO.TABLE} (PROJECT, FILE, ' \
+                         ' CODE_TOTAL, CODE_TOTAL_UQ, CODE_NON_ENG, CODE_NON_ENG_UQ, CODE_PERCENT, CODE_PERCENT_UQ,' \
                                    ' CODE_STR_TOTAL, CODE_STR_TOTAL_UQ, CODE_STR_NON_ENG, CODE_STR_NON_ENG_UQ, CODE_STR_PERCENT, CODE_STR_PERCENT_UQ,' \
                                    ' CODE_STR_COM_TOTAL, CODE_STR_COM_TOTAL_UQ, CODE_STR_COM_NON_ENG, CODE_STR_COM_NON_ENG_UQ, CODE_STR_COM_PERCENT, CODE_STR_COM_PERCENT_UQ, SAMPLE) ' \
                                    'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
                                    row)
 
-    def delete_all_rows(self):
-        self.cur.execute(f"DELETE FROM {DAO.TABLE }")
+    def purge(self):
+        self.cur.execute(f"DELETE FROM {DAO.PROJECTS_TABLE}")
 
-    def rows_present(self):
-        return self.cur.execute(f"SELECT * FROM {DAO.TABLE}")
+    def save_processed_project(self, project):
+        self.cur.execute(f"UPDATE {DAO.PROJECTS_TABLE} SET PROCESSED=TRUE where PROJECT=%s", (project,))
+        self.processed_projects_cache.append(project)
+
+    def __get_processed_projects(self):
+        self.cur.execute(f"SELECT PROJECT from {DAO.PROJECTS_TABLE} where PROCESSED = TRUE")
+        return list(map(lambda x: x[0], self.cur.fetchall()))
+
+    def __get_created_projects(self):
+        self.cur.execute(f"SELECT PROJECT from {DAO.PROJECTS_TABLE}")
+        return list(map(lambda x: x[0], self.cur.fetchall()))
 
 
 if __name__ == '__main__':
@@ -214,19 +194,14 @@ if __name__ == '__main__':
 
 
     language_checker = LanguageChecker()
-    persistent_chunk_tracker = PersistentChunkTracker()
     dao = DAO()
     ALWAYS_REWRITE = False
 
     if ALWAYS_REWRITE:
-        persistent_chunk_tracker.untrack_all()
-        dao.delete_all_rows()
-    elif not persistent_chunk_tracker.is_tracking() and dao.rows_present():
-        logging.info(f"Stats has already been generated!")
-        exit(0)
-    persistent_chunk_tracker.start_tracking()
+        logging.info("Purging db...")
+        dao.purge()
 
-    get_parsed_file_generator = lambda: parsed_files_generator(path_to_dir_with_preprocessed_projects, persistent_chunk_tracker)
+    get_parsed_file_generator = lambda: parsed_files_generator(path_to_dir_with_preprocessed_projects, dao)
     total_projects = len([x for x in get_parsed_file_generator()])
     logging.info(f"Total projects to process: {total_projects}")
     counter = 0
@@ -236,16 +211,13 @@ if __name__ == '__main__':
             project_name = result[0][0]
             logging.info(f'Processed {project_name}: ({counter} out of {total_projects})')
             counter += 1
-            for row in result:
-                if len(row) > 1:
+            if len(result) > 1 or len(result[0]) > 1:
+                for row in result:
                     try:
                         dao.save_row(row)
-                    except:
-                        pass
-                else:
-                    # project was empty
-                    logging.warning(f'No parsed files found in {project_name}')
-
-            persistent_chunk_tracker.track(project_name)
-    persistent_chunk_tracker.untrack_all()
-
+                    except Exception as ex:
+                        print(ex)
+            else:
+                # project was empty
+                logging.warning(f'No parsed files found in {project_name}')
+            dao.save_processed_project(project_name)
