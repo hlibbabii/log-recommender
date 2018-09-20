@@ -181,7 +181,7 @@ class DAO(object):
         self.cur.execute(f"DELETE FROM {DAO.TABLE }")
 
     def rows_present(self):
-        return self.cur.execute(f"SELECT * FROM {DAO.Table}")
+        return self.cur.execute(f"SELECT * FROM {DAO.TABLE}")
 
 
 if __name__ == '__main__':
