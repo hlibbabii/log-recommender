@@ -32,8 +32,10 @@ def create_non_eng_word_set(dicts_dir, english_dict, min_chars):
             for line in f:
                 word = re.split("[/\t]", line)[0]  # splitting by tabs and slashes
                 word = word.lower()
+                if word[-1] == '\n':
+                    word = word[:-1]
                 if word not in english_dict and len(word) >= min_chars:
-                    non_eng_words.add(word if word[-1] != '\n' else word[:-1])
+                    non_eng_words.add(word)
     return non_eng_words
 
 class LanguageChecker(object):
@@ -159,7 +161,7 @@ class PersistentChunkTracker(object):
 
 
 class DAO(object):
-    TABLE = 'LANGSTATS_T'
+    TABLE = 'LANGSTATS'
 
     def __init__(self):
         conn = psycopg2.connect("dbname='logrec' "
