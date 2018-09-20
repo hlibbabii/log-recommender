@@ -67,3 +67,10 @@ diversifications
 todo
 todos
 vals
+goto
+iter
+conf
+mojo
+repos
+makefile
+organisation
