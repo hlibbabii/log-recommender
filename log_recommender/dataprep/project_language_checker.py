@@ -24,15 +24,16 @@ DEFAULT_MIN_WORDS_TO_BE_NON_ENG = 5
 DEFAULT_MIN_CHARS_TO_BE_NON_ENG=4
 
 
-def create_non_eng_word_set(dicts_dir, english_general_dict, min_chars):
+def create_non_eng_word_set(dicts_dir, english_dict, min_chars):
     dict_files_names = [f for f in os.listdir(dicts_dir)]
     non_eng_words=set()
     for dict_file_name in dict_files_names:
         with open(os.path.join(dicts_dir,dict_file_name), 'r') as f:
             for line in f:
-                word = line.split('/')[0]
-                if word not in english_general_dict and len(word) >= min_chars:
-                    non_eng_words.add(word)
+                word = re.split("[/\t]", line)[0]  # splitting by tabs and slashes
+                word = word.lower()
+                if word not in english_dict and len(word) >= min_chars:
+                    non_eng_words.add(word if word[-1] != '\n' else word[:-1])
     return non_eng_words
 
 class LanguageChecker(object):
@@ -46,9 +47,9 @@ class LanguageChecker(object):
         return word in self.non_eng_word_set
 
     def is_non_eng(self, word):
-        return not isascii(word) or self.in_non_eng_word_set(word)
+        return not isascii(word) or self.in_non_eng_word_set(word.lower())
 
-    def calc_lang_stats(self, word_list, include_samples):
+    def calc_lang_stats(self, word_list, include_sample=False):
         non_eng_unique=set()
         non_eng=0
         for word in word_list:
@@ -62,8 +63,8 @@ class LanguageChecker(object):
         result = total, total_uq, non_eng, non_eng_uq \
             ,float(non_eng) / total if total != 0 else 0 \
                ,float(non_eng_uq) /total_uq if total_uq != 0 else 0
-        if include_samples:
-            result = (*result, ",".join(random.sample(non_eng_unique, 10)))
+        if include_sample:
+            result = (*result, ",".join(random.sample(non_eng_unique, min(len(non_eng_unique), 15))))
         return result
 
 
@@ -120,7 +121,7 @@ def calc_stats(file):
                 repr2 = to_token_list(to_repr(DEFAULT_NO_COM, token_list)).split()
                 code_str_stats = language_checker.calc_lang_stats(repr2)
                 repr3 = to_token_list(to_repr(DEFAULT, token_list)).split()
-                code_str_com_stats = language_checker.calc_lang_stats(repr3, True)
+                code_str_com_stats = language_checker.calc_lang_stats(repr3, include_sample=True)
 
                 filename = fn.readline()[:-1]
                 file_stats.append((project_name, filename, *only_code_stats, *code_str_stats, *code_str_com_stats))
@@ -158,6 +159,8 @@ class PersistentChunkTracker(object):
 
 
 class DAO(object):
+    TABLE = 'LANGSTATS_T'
+
     def __init__(self):
         conn = psycopg2.connect("dbname='logrec' "
                                 "user='logrec' "
@@ -167,18 +170,18 @@ class DAO(object):
         self.cur = conn.cursor()
 
     def save_row(self, row):
-        execute = self.cur.execute('INSERT INTO LANGSTATS_S (PROJECT, FILE, ' \
+        execute = self.cur.execute(f'INSERT INTO {DAO.TABLE} (PROJECT, FILE, ' \
                                    ' CODE_TOTAL, CODE_TOTAL_UQ, CODE_NON_ENG, CODE_NON_ENG_UQ, CODE_PERCENT, CODE_PERCENT_UQ,' \
                                    ' CODE_STR_TOTAL, CODE_STR_TOTAL_UQ, CODE_STR_NON_ENG, CODE_STR_NON_ENG_UQ, CODE_STR_PERCENT, CODE_STR_PERCENT_UQ,' \
-                                   ' CODE_STR_COM_TOTAL, CODE_STR_COM_TOTAL_UQ, CODE_STR_COM_NON_ENG, CODE_STR_COM_NON_ENG_UQ, CODE_STR_COM_PERCENT, CODE_STR_COM_PERCENT_UQ) ' \
-                                   'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                                   ' CODE_STR_COM_TOTAL, CODE_STR_COM_TOTAL_UQ, CODE_STR_COM_NON_ENG, CODE_STR_COM_NON_ENG_UQ, CODE_STR_COM_PERCENT, CODE_STR_COM_PERCENT_UQ, SAMPLE) ' \
+                                   'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
                                    row)
 
     def delete_all_rows(self):
-        self.cur.execute("DELETE FROM LANGSTATS_S")
+        self.cur.execute(f"DELETE FROM {DAO.TABLE }")
 
     def rows_present(self):
-        return self.cur.execute("SELECT * FROM LANGSTATS_S")
+        return self.cur.execute(f"SELECT * FROM {DAO.Table}")
 
 
 if __name__ == '__main__':
@@ -211,7 +214,7 @@ if __name__ == '__main__':
     language_checker = LanguageChecker()
     persistent_chunk_tracker = PersistentChunkTracker()
     dao = DAO()
-    ALWAYS_REWRITE=True
+    ALWAYS_REWRITE = False
 
     if ALWAYS_REWRITE:
         persistent_chunk_tracker.untrack_all()
@@ -233,7 +236,10 @@ if __name__ == '__main__':
             counter += 1
             for row in result:
                 if len(row) > 1:
-                    dao.save_row(row)
+                    try:
+                        dao.save_row(row)
+                    except:
+                        pass
                 else:
                     # project was empty
                     logging.warning(f'No parsed files found in {project_name}')

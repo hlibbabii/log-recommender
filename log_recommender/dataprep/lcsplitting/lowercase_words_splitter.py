@@ -234,12 +234,12 @@ def get_splittings(words_to_split, freqs, general_dict, non_eng_dicts, cache_fil
 
 
 def load_english_dict(path_to_dict_dir):
-    general_dict = {}
+    english_dict = set()
     for file in os.listdir(path_to_dict_dir):
         with open(f'{path_to_dict_dir}/{file}', 'r') as f:
             for line in f:
-                general_dict[line[:-1].lower()] = 1
-    return general_dict
+                english_dict.add(line[:-1].lower())
+    return english_dict
 
 
 def load_non_english_dicts(path_to_dicts):
