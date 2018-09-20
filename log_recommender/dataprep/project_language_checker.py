@@ -15,7 +15,8 @@ from dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
 from dataprep.preprocessors.general import to_token_list
 from dataprep.preprocessors.noneng import isascii
 from dataprep.preprocessors.repr import DEFAULT_NO_COM_NO_STR, to_repr, DEFAULT, DEFAULT_NO_COM
-from local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS
+from local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS, DB_DBNAME, DB_USER, \
+    DB_HOST, DB_PASSWORD
 
 DEFAULT_MIN_FREQ_TO_BE_NON_ENG = 0.01
 DEFAULT_MIN_WORDS_TO_BE_NON_ENG = 5
@@ -129,10 +130,7 @@ class DAO(object):
     PROJECTS_TABLE = 'PROJECTS'
 
     def __init__(self):
-        conn = psycopg2.connect("dbname='logrec' "
-                                "user='logrec' "
-                                "host='logrec.cpdobqsbhnep.eu-central-1.rds.amazonaws.com' "
-                                "password='logrec'")
+        conn = psycopg2.connect(f"dbname='{DB_DBNAME}' user='{DB_USER}' host='{DB_HOST}' password='{DB_PASSWORD}'")
         conn.set_session(autocommit=True)
         self.cur = conn.cursor()
         self.processed_projects_cache = self.__get_processed_projects()
