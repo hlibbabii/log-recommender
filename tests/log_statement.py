@@ -1,7 +1,5 @@
 import unittest
 
-import log_recommender.log_statement as ls
-
 __author__ = 'hlib'
 
 text = '''
@@ -22,7 +20,6 @@ text2 = '''
 
 # print(filter_out_1_and_2_char_tokens(split_to_key_words_and_identifiers(text)))
 print(text)
-print(ls.spl_verbose(text))
 
 if __name__ == '__main__':
     unittest.main()
