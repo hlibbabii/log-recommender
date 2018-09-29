@@ -8,15 +8,13 @@ import re
 from collections import defaultdict
 from multiprocessing.pool import Pool
 
-import psycopg2
-
 from dataprep import base_project_dir, parse_projects
+from dataprep.lang.dao import DAO
 from dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
 from dataprep.preprocessors.general import to_token_list
 from dataprep.preprocessors.noneng import isascii
 from dataprep.preprocessors.repr import DEFAULT_NO_COM_NO_STR, to_repr, DEFAULT, DEFAULT_NO_COM
-from local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS, DB_DBNAME, DB_USER, \
-    DB_HOST, DB_PASSWORD
+from local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS
 
 DEFAULT_MIN_FREQ_TO_BE_NON_ENG = 0.01
 DEFAULT_MIN_WORDS_TO_BE_NON_ENG = 5
@@ -123,45 +121,6 @@ def parsed_files_generator(path_to_dir_with_preprocessed_projects, dao):
         if file.startswith(".") or get_project_name(file) in dao.processed_projects_cache:
             continue
         yield file
-
-
-class DAO(object):
-    TABLE = 'LANGSTATS'
-    PROJECTS_TABLE = 'PROJECTS'
-
-    def __init__(self):
-        conn = psycopg2.connect(f"dbname='{DB_DBNAME}' user='{DB_USER}' host='{DB_HOST}' password='{DB_PASSWORD}'")
-        conn.set_session(autocommit=True)
-        self.cur = conn.cursor()
-        self.processed_projects_cache = self.__get_processed_projects()
-        self.created_projects = self.__get_created_projects()
-
-    def save_row(self, row):
-        project = row[0]
-        if project not in self.created_projects:
-            self.cur.execute(f"INSERT INTO {DAO.PROJECTS_TABLE} (PROJECT, PROCESSED) VALUES (%s, FALSE)", (project,))
-            self.created_projects.append(project)
-        self.cur.execute(f'INSERT INTO {DAO.TABLE} (PROJECT, FILE, ' \
-                         ' CODE_TOTAL, CODE_TOTAL_UQ, CODE_NON_ENG, CODE_NON_ENG_UQ, CODE_PERCENT, CODE_PERCENT_UQ,' \
-                                   ' CODE_STR_TOTAL, CODE_STR_TOTAL_UQ, CODE_STR_NON_ENG, CODE_STR_NON_ENG_UQ, CODE_STR_PERCENT, CODE_STR_PERCENT_UQ,' \
-                                   ' CODE_STR_COM_TOTAL, CODE_STR_COM_TOTAL_UQ, CODE_STR_COM_NON_ENG, CODE_STR_COM_NON_ENG_UQ, CODE_STR_COM_PERCENT, CODE_STR_COM_PERCENT_UQ, SAMPLE) ' \
-                                   'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
-                                   row)
-
-    def purge(self):
-        self.cur.execute(f"DELETE FROM {DAO.PROJECTS_TABLE}")
-
-    def save_processed_project(self, project):
-        self.cur.execute(f"UPDATE {DAO.PROJECTS_TABLE} SET PROCESSED=TRUE where PROJECT=%s", (project,))
-        self.processed_projects_cache.append(project)
-
-    def __get_processed_projects(self):
-        self.cur.execute(f"SELECT PROJECT from {DAO.PROJECTS_TABLE} where PROCESSED = TRUE")
-        return list(map(lambda x: x[0], self.cur.fetchall()))
-
-    def __get_created_projects(self):
-        self.cur.execute(f"SELECT PROJECT from {DAO.PROJECTS_TABLE}")
-        return list(map(lambda x: x[0], self.cur.fetchall()))
 
 
 if __name__ == '__main__':
