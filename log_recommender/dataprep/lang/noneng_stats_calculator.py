@@ -178,3 +178,12 @@ if __name__ == '__main__':
                 # project was empty
                 logging.warning(f'No parsed files found in {project_name}')
             dao.save_processed_project(project_name)
+
+    params = (0.006, 2.01, 2.01, 0.019, 3.939599999999999, 2.01)
+    non_eng_projects = dao.select_noneng_projects(*params)
+    noneng_projects_file = f'{args.base_dataset_dir}/noneng-projects.txt'
+    logging.info(f"Writing non-english projects list to {noneng_projects_file}")
+    with open(noneng_projects_file, 'w') as f:
+        f.write(str(params) + '\n')
+        for p in non_eng_projects:
+            f.write(p + '\n')

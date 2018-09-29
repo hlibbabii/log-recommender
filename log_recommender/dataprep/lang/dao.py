@@ -33,6 +33,12 @@ class DAO(object):
         self.cur.execute(f"UPDATE {DAO.PROJECTS_TABLE} SET PROCESSED=TRUE where PROJECT=%s", (project,))
         self.processed_projects_cache.append(project)
 
+    def select_noneng_projects(self, code_percent, code_noneng, code_noneng_uq, code_str_percent, code_str_noneng,
+                               code_str_noneng_uq):
+        self.cur.execute(
+            f"select concat('test/', project,'/', file) as fullpath from {DAO.TABLE} where ((code_percent > {code_percent} and code_non_eng > {code_noneng} and code_non_eng_uq > {code_noneng_uq}) or (code_str_percent > {code_str_percent} and code_str_non_eng > {code_str_noneng} and code_str_non_eng_uq > {code_str_noneng_uq}))")
+        return list(map(lambda x: x[0], self.cur.fetchall()))
+
     def __get_processed_projects(self):
         self.cur.execute(f"SELECT PROJECT from {DAO.PROJECTS_TABLE} where PROCESSED = TRUE")
         return list(map(lambda x: x[0], self.cur.fetchall()))
