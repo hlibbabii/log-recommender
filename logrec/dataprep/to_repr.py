@@ -133,7 +133,8 @@ if __name__ == '__main__':
     parser.add_argument('-p','--preprocessing-types', required=True, action='store', help='preprocessing params line, \n Example: '
                                                                       'spl=1,numspl=1,nostr=0,nocom=0,nonewlinestabs=0,scspl=1')
 
-    args = parser.parse_args(*DEFAULT_TO_REPR_ARGS)
+    args = parser.parse_known_args(*DEFAULT_TO_REPR_ARGS)
+    args = args[0]
 
 
     logging.basicConfig(level=logging.DEBUG)
