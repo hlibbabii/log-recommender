@@ -1,11 +1,10 @@
 import argparse
 import logging
-import math
 import os
 import pickle
 import random
 import re
-from collections import defaultdict
+from functools import partial
 from multiprocessing.pool import Pool
 
 from dataprep import base_project_dir, parse_projects
@@ -16,31 +15,16 @@ from dataprep.preprocessors.noneng import isascii
 from dataprep.preprocessors.repr import DEFAULT_NO_COM_NO_STR, to_repr, DEFAULT, DEFAULT_NO_COM
 from local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS
 
-DEFAULT_MIN_FREQ_TO_BE_NON_ENG = 0.01
-DEFAULT_MIN_WORDS_TO_BE_NON_ENG = 5
-DEFAULT_MIN_CHARS_TO_BE_NON_ENG=4
-
-
-def create_non_eng_word_set(dicts_dir, english_dict, min_chars):
-    dict_files_names = [f for f in os.listdir(dicts_dir)]
-    non_eng_words=set()
-    for dict_file_name in dict_files_names:
-        with open(os.path.join(dicts_dir,dict_file_name), 'r') as f:
-            for line in f:
-                word = re.split("[/\t]", line)[0]  # splitting by tabs and slashes
-                word = word.lower()
-                if word[-1] == '\n':
-                    word = word[:-1]
-                if word not in english_dict and len(word) >= min_chars:
-                    non_eng_words.add(word)
-    return non_eng_words
 
 class LanguageChecker(object):
-    def __init__(self):
+    DEFAULT_MIN_CHARS_TO_BE_NON_ENG = 4
+
+    def __init__(self, path_to_general_english_dict, path_to_non_eng_dicts):
         logging.info("Loading english dictionary")
         english_general_dict = load_english_dict(path_to_general_english_dict)
         logging.info("Loading non-english dictionaries")
-        self.non_eng_word_set = create_non_eng_word_set(path_to_non_eng_dicts, english_general_dict, min_chars_to_be_non_eng)
+        self.non_eng_word_set = self.__create_non_eng_word_set(path_to_non_eng_dicts, english_general_dict,
+                                                               LanguageChecker.DEFAULT_MIN_CHARS_TO_BE_NON_ENG)
 
     def in_non_eng_word_set(self, word):
         return word in self.non_eng_word_set
@@ -66,20 +50,19 @@ class LanguageChecker(object):
             result = (*result, ",".join(random.sample(non_eng_unique, min(len(non_eng_unique), 15))))
         return result
 
-
-def check_more_than_limit(lang_to_percent, total):
-    for v in lang_to_percent.values():
-        if v > min_freq_to_be_non_eng and total * v > min_words_to_be_non_eng:
-            return True
-    return False
-
-def gen_stats(lang_to_percent_list):
-    gr = defaultdict(int)
-    for lang_to_percent in lang_to_percent_list:
-        max_percent = max(lang_to_percent.values()) if lang_to_percent else .0
-        gr[math.ceil(max_percent*100)] += 1
-    gr.default_factory = None
-    return gr
+    def __create_non_eng_word_set(self, dicts_dir, english_dict, min_chars):
+        dict_files_names = [f for f in os.listdir(dicts_dir)]
+        non_eng_words = set()
+        for dict_file_name in dict_files_names:
+            with open(os.path.join(dicts_dir, dict_file_name), 'r') as f:
+                for line in f:
+                    word = re.split("[/\t]", line)[0]  # splitting by tabs and slashes
+                    word = word.lower()
+                    if word[-1] == '\n':
+                        word = word[:-1]
+                    if word not in english_dict and len(word) >= min_chars:
+                        non_eng_words.add(word)
+        return non_eng_words
 
 
 def get_project_name(file):
@@ -91,7 +74,7 @@ def get_project_name(file):
         raise AssertionError(f'File {file} does not match the pattern {pattern}')
 
 
-def calc_stats(file):
+def calc_stats(lang_checker, path_to_dir_with_preprocessed_projects, file):
     project_name = get_project_name(file)
     filenames_file = f'.{project_name}.{parse_projects.FILENAMES_EXTENSION}'
     file_stats = []
@@ -103,11 +86,11 @@ def calc_stats(file):
                 token_list = pickle.load(f)
 
                 repr1 = to_token_list(to_repr(DEFAULT_NO_COM_NO_STR, token_list)).split()
-                only_code_stats = language_checker.calc_lang_stats(repr1)
+                only_code_stats = lang_checker.calc_lang_stats(repr1)
                 repr2 = to_token_list(to_repr(DEFAULT_NO_COM, token_list)).split()
-                code_str_stats = language_checker.calc_lang_stats(repr2)
+                code_str_stats = lang_checker.calc_lang_stats(repr2)
                 repr3 = to_token_list(to_repr(DEFAULT, token_list)).split()
-                code_str_com_stats = language_checker.calc_lang_stats(repr3, include_sample=True)
+                code_str_com_stats = lang_checker.calc_lang_stats(repr3, include_sample=True)
 
                 filename = fn.readline()[:-1]
                 file_stats.append((project_name, filename, *only_code_stats, *code_str_stats, *code_str_com_stats))
@@ -123,20 +106,13 @@ def parsed_files_generator(path_to_dir_with_preprocessed_projects, dao):
         yield file
 
 
-if __name__ == '__main__':
+def run():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--min-freq', type=float, default=f'{DEFAULT_MIN_FREQ_TO_BE_NON_ENG}')
-    parser.add_argument('--min-words', type=int, default=f'{DEFAULT_MIN_WORDS_TO_BE_NON_ENG}')
-    parser.add_argument('--min-chars', type=int, default=f'{DEFAULT_MIN_CHARS_TO_BE_NON_ENG}')
     parser.add_argument('--base-dataset-dir', default=DEFAULT_PARSED_DATASETS_DIR)
     parser.add_argument('preprocessed_dataset', help='path to preprocessed dataset relative '
                                                      'to the one passed as --base-dataset-dir param')
 
     args = parser.parse_args(*DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS)
-
-    min_freq_to_be_non_eng = args.min_freq
-    min_words_to_be_non_eng = args.min_words
-    min_chars_to_be_non_eng = args.min_chars
 
     path_to_dicts = f"{base_project_dir}/dicts/"
     path_to_non_eng_dicts = f"{path_to_dicts}/non-eng"
@@ -149,8 +125,7 @@ if __name__ == '__main__':
         logging.error(f"Path: {path_to_dir_with_preprocessed_projects} does not exist")
         exit(1)
 
-
-    language_checker = LanguageChecker()
+    language_checker = LanguageChecker(path_to_general_english_dict, path_to_non_eng_dicts)
     dao = DAO()
     ALWAYS_REWRITE = False
 
@@ -163,7 +138,8 @@ if __name__ == '__main__':
     logging.info(f"Total projects to process: {total_projects}")
     counter = 0
     with Pool() as pool:
-        results = pool.imap_unordered(calc_stats, get_parsed_file_generator())
+        results = pool.imap_unordered(partial(calc_stats, language_checker, path_to_dir_with_preprocessed_projects),
+                                      get_parsed_file_generator())
         for result in results:
             project_name = result[0][0]
             logging.info(f'Processed {project_name}: ({counter} out of {total_projects})')
@@ -187,3 +163,7 @@ if __name__ == '__main__':
         f.write(str(params) + '\n')
         for p in non_eng_projects:
             f.write(p + '\n')
+
+
+if __name__ == '__main__':
+    run()
