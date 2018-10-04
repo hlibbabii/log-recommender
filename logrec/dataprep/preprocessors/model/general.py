@@ -83,3 +83,5 @@ class NonEng(object):
     def to_repr(self):
         return self.preprocessed_repr()
 
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.str == other.str

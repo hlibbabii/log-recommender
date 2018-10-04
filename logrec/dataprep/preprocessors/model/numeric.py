@@ -17,10 +17,16 @@ class Number(object):
     def preprocessed_repr(self):
         return [(w.preprocessed_repr() if isinstance(w, SpecialNumberChar) else str(w)) for w in self.parts_of_number]
 
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.parts_of_number == other.parts_of_number
+
 
 class SpecialNumberChar(object):
     def __repr__(self):
         return f'{self.__class__.__name__}'
+
+    def __eq__(self, other):
+        return self.__class__ == other.__class__
 
 
 class E(SpecialNumberChar):
