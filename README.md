@@ -25,6 +25,8 @@ and their parsing, preprocessing etc.
 
 #### Filtering out non-English projects
 
+TODO: explain current algorithm
+
 #### Tokenization
 
 #### Basic splitting
@@ -32,19 +34,29 @@ Camel case and snake case splitting is done here
 
 - camelCase -> camel case
 - snake_case -> snake case
+- splitting with numbers: cpp2java -> cpp 2 java
+- number splitting: 123e-1 -> 1 2 3 <e> - 1
 
 #### Same case splitting
 
 samecasesplitting -> same case splitting
 
+TODO: explain current algorithm
+
+**Other approaches**: 
+
 #### Typo Fixing
 Misspelled words increase the vocabulary size and make code less understandable.
+
+TODO: explain current algorithm
+
+**Other approaches**: 
 
 ### Language model building
 
 #### Improvements
 ##### Cache Component :heavy_check_mark:
-##### 
+##### Read input in 2 directions
 
 ### Applying language model to logging
 - Sequence to sequence translation
@@ -54,4 +66,6 @@ Misspelled words increase the vocabulary size and make code less understandable.
 ** TBD **
 
 ## Implementation details
+** TBD **
 ## Updating this README
+** TBD **
