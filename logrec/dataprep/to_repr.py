@@ -131,7 +131,7 @@ if __name__ == '__main__':
     parser.add_argument('src', action='store', help=f'path to the parsed dataset')
     parser.add_argument('dest', action='store', help=f'destination for representation')
     parser.add_argument('-p','--preprocessing-types', required=True, action='store', help='preprocessing params line, \n Example: '
-                                                                      'spl=1,numspl=1,nostr=0,nocom=0,nonewlinestabs=0,scspl=1')
+                                                                                          'spl=1,numspl=1,nostr=0,nocom=0,nonewlinestabs=0,scspl=1,en_only=1')
 
     args = parser.parse_known_args(*DEFAULT_TO_REPR_ARGS)
     args = args[0]

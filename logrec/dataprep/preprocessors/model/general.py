@@ -72,7 +72,7 @@ class NonEng(object):
         # raise NotImplementedError("We don't support non preprocessed representation of NonEng, i.e. non-english tokens")
 
     def preprocessed_repr(self):
-        return placeholders['non_ascii']
+        return placeholders['non_eng']
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.str})'

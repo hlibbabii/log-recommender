@@ -1,7 +1,7 @@
 from enum import Enum
 
 from dataprep.preprocessors.model.chars import NewLine, Tab
-from dataprep.preprocessors.model.general import ProcessableToken
+from dataprep.preprocessors.model.general import ProcessableToken, NonEng
 from dataprep.preprocessors.model.numeric import Number
 from dataprep.preprocessors.model.split import CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, SameCaseSplit
 from dataprep.preprocessors.model.textcontainers import OneLineComment, MultilineComment, StringLiteral
@@ -27,7 +27,8 @@ token_to_preprocessing_type_level_dict = {
     MultilineComment: PreprocessingType.NO_COM,
     StringLiteral: PreprocessingType.NO_STR,
     NewLine: PreprocessingType.NO_NEWLINES_TABS,
-    Tab: PreprocessingType.NO_NEWLINES_TABS
+    Tab: PreprocessingType.NO_NEWLINES_TABS,
+    NonEng: PreprocessingType.EN_ONLY,
 }
 
 recursive = [SameCaseSplit, CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, OneLineComment, MultilineComment, StringLiteral]

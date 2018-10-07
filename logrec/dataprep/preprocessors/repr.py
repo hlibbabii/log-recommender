@@ -1,4 +1,6 @@
+from dataprep.preprocessors.model.general import NonEng
 from dataprep.preprocessors.model.split import NonDelimiterSplitContainer
+from dataprep.preprocessors.model.textcontainers import TextContainer
 from dataprep.preprocessors.preprocessing_types import token_to_preprocessing_type_level_dict, always_repr, recursive, \
     PreprocessingType
 
@@ -47,7 +49,11 @@ def to_repr_list(types_to_be_repr_dict, token_list):
 
 def to_repr_token(types_to_be_repr_dict, token):
     clazz = type(token)
-    if clazz in always_repr:
+    if clazz in types_to_be_repr_dict and not types_to_be_repr_dict[clazz] \
+            and NonEng in types_to_be_repr_dict and issubclass(clazz, TextContainer) \
+            and token.has_non_eng_contents():
+        return token.non_eng_contents()
+    elif clazz in always_repr:
         return token.to_repr()
     elif clazz in types_to_be_repr_dict:
         if types_to_be_repr_dict[clazz]:
