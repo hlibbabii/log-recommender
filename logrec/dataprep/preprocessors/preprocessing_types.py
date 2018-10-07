@@ -14,6 +14,7 @@ class PreprocessingType(str, Enum):
     NO_STR: str = 'nostr'
     NO_COM: str = 'nocom'
     NO_NEWLINES_TABS: str = 'nonewlinestabs'
+    EN_ONLY: str = 'en_only'
 
 
 token_to_preprocessing_type_level_dict = {
@@ -30,4 +31,4 @@ token_to_preprocessing_type_level_dict = {
 }
 
 recursive = [SameCaseSplit, CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, OneLineComment, MultilineComment, StringLiteral]
-always_repr = [ProcessableToken]
+always_repr = [ProcessableToken]  # types that are resolved even if prep param set is empty

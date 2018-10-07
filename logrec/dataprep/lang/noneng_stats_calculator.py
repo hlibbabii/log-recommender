@@ -7,11 +7,10 @@ import re
 from functools import partial
 from multiprocessing.pool import Pool
 
-from dataprep import base_project_dir, parse_projects
+from dataprep import parse_projects, path_to_non_eng_dicts, path_to_eng_dicts
 from dataprep.lang.dao import DAO
 from dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
 from dataprep.preprocessors.general import to_token_list
-from dataprep.preprocessors.noneng import isascii
 from dataprep.preprocessors.repr import DEFAULT_NO_COM_NO_STR, to_repr, DEFAULT, DEFAULT_NO_COM
 from local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS
 
@@ -30,7 +29,7 @@ class LanguageChecker(object):
         return word in self.non_eng_word_set
 
     def is_non_eng(self, word):
-        return not isascii(word) or self.in_non_eng_word_set(word.lower())
+        return not self.__isascii(word) or self.in_non_eng_word_set(word.lower())
 
     def calc_lang_stats(self, word_list, include_sample=False):
         non_eng_unique=set()
@@ -63,6 +62,13 @@ class LanguageChecker(object):
                     if word not in english_dict and len(word) >= min_chars:
                         non_eng_words.add(word)
         return non_eng_words
+
+    def __isascii(self, str):
+        try:
+            str.encode('ascii')
+            return True
+        except UnicodeEncodeError:
+            return False
 
 
 def get_project_name(file):
@@ -114,10 +120,6 @@ def run():
 
     args = parser.parse_args(*DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS)
 
-    path_to_dicts = f"{base_project_dir}/dicts/"
-    path_to_non_eng_dicts = f"{path_to_dicts}/non-eng"
-    path_to_general_english_dict = f'{path_to_dicts}/eng'
-
     path_to_dir_with_preprocessed_projects = f'{args.base_dataset_dir}/{args.preprocessed_dataset}'
 
     logging.basicConfig(level=logging.DEBUG)
@@ -125,7 +127,7 @@ def run():
         logging.error(f"Path: {path_to_dir_with_preprocessed_projects} does not exist")
         exit(1)
 
-    language_checker = LanguageChecker(path_to_general_english_dict, path_to_non_eng_dicts)
+    language_checker = LanguageChecker(path_to_eng_dicts, path_to_non_eng_dicts)
     dao = DAO()
     ALWAYS_REWRITE = False
 

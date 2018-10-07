@@ -1,31 +1,17 @@
-from functools import partial
-
+from dataprep import path_to_eng_dicts, path_to_non_eng_dicts
+from dataprep.lang.noneng_stats_calculator import LanguageChecker
 from dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer, NonEng
 from dataprep.preprocessors.model.split import NonDelimiterSplitContainer
 
-
-def isascii(str):
-    try:
-        str.encode('ascii')
-        return True
-    except UnicodeEncodeError:
-        return False
-
-def mark_noneng(eng_dict, non_eng_dict, token):
-    str = token.get_val()
-    is_non_eng = not isascii(str)
-    return NonEng(str) if is_non_eng else token
-
+lang_checker = LanguageChecker(path_to_eng_dicts, path_to_non_eng_dicts)
 
 def mark(token_list, context):
-    # eng_dict = load_english_dict(f'{base_project_dir}/dicts/eng')
-    eng_dict = None
-    # non_eng_dict = load_non_english_dicts(f'{base_project_dir}/dicts/non-eng')
-    non_eng_dict = None
-
-    return [apply_operation_to_token(token, partial(mark_noneng, eng_dict, non_eng_dict)) for token in token_list]
+    return [
+        apply_operation_to_token(token, lambda t: NonEng(t.get_val()) if lang_checker.is_non_eng(t.get_val()) else t)
+        for token in token_list]
 
 
+# TODO merge this with similar function in split.py
 def apply_operation_to_token(token, func):
     if isinstance(token, ProcessableToken):
         return func(token)
