@@ -6,7 +6,7 @@ from dataprep.preprocessors.model.chars import MultilineCommentStart, MultilineC
 from dataprep.preprocessors.model.general import ProcessableToken
 
 
-class JavaParserTest(unittest.TestCase):
+class GeneralTest(unittest.TestCase):
     def test_split_verbose1(self):
         text = '''
 long[] lovely_longs = {/* there should be some longs here*/};
@@ -97,3 +97,7 @@ _operations
                     ProcessableToken("_operations"), '\n']
 
         self.assertEqual(expected, actual)
+
+
+if __name__ == '__main__':
+    unittest.main()

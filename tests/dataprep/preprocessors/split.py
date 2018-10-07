@@ -4,7 +4,7 @@ from dataprep.preprocessors.model.textcontainers import OneLineComment, Multilin
 from dataprep.preprocessors.split import *
 
 
-class JavaParserTest(unittest.TestCase):
+class SplitTest(unittest.TestCase):
     def test_camel_case_split(self):
         token = OneLineComment([UnderscoreSplit(
             [ProcessableToken("test"), ProcessableToken("MyClass")])])
@@ -71,3 +71,7 @@ class JavaParserTest(unittest.TestCase):
         expected = CamelCaseSplit([ProcessableToken("mylovelyclass")], False)
 
         self.assertEqual(actual, expected)
+
+
+if __name__ == '__main__':
+    unittest.main()

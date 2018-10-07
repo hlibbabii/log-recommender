@@ -28,3 +28,7 @@ class PreprocessTest(unittest.TestCase):
         actual = apply_preprocessors(inp, pp_params["preprocessors"], {'interesting_context_words': []})
 
         self.assertEqual(repr(expected)[1:-1] + "\n", actual)
+
+
+if __name__ == '__main__':
+    unittest.main()
