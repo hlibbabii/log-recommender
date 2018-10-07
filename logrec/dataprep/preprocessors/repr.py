@@ -54,6 +54,7 @@ def to_repr_token(types_to_be_repr_dict, token):
             repr = token.preprocessed_repr()
         else:
             repr = token.non_preprocessed_repr()
+
         if clazz in recursive and isinstance(repr, list):
             return to_repr_list(types_to_be_repr_dict, repr)
         elif clazz in recursive:
