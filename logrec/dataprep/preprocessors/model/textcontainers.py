@@ -10,7 +10,7 @@ class TextContainer(ProcessableTokenContainer):
     def __calc_non_eng_percent(cls, tokens):
         total = len(tokens)
         non_eng = sum(map(lambda x: isinstance(x, NonEng), tokens))
-        return float(non_eng) / total, non_eng
+        return float(non_eng) / total if total != 0 else 0.0, non_eng
 
     def __init__(self, tokens):
         super().__init__(tokens)
