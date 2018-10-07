@@ -50,8 +50,8 @@ def to_repr_list(types_to_be_repr_dict, token_list):
 def to_repr_token(types_to_be_repr_dict, token):
     clazz = type(token)
     if clazz in types_to_be_repr_dict and not types_to_be_repr_dict[clazz] \
-            and NonEng in types_to_be_repr_dict and issubclass(clazz, TextContainer) \
-            and token.has_non_eng_contents():
+            and NonEng in types_to_be_repr_dict and types_to_be_repr_dict[NonEng] \
+            and issubclass(clazz, TextContainer) and token.has_non_eng_contents():
         return token.non_eng_contents()
     elif clazz in always_repr:
         return token.to_repr()
