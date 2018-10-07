@@ -19,18 +19,35 @@ that getting source code as input suggests different kind of information related
 - [log-recommender-cli](https://github.com/hlibbabii/log-recommender-cli): a command line tool for managing datasets 
 and their parsing, preprocessing etc.
 
-### Data Gathering
+## Data Gathering
 
-### Data Preprocessing
+[Mining source code repositories at massive scale using language modeling. M Allamanis, C Sutton](https://dl.acm.org/citation.cfm?id=2487127)
 
-#### Filtering out non-English projects
+## Data Preprocessing
 
-TODO: explain current algorithm
+#### Filtering out non-English files and replacing remaining non-English words with a placeholder
+
+Files that contain more non-English words than a certain threshold are removed (This threshould is different for identifiers, comments, string literals). The thresholds are identified empirically.
+In the files that remained, non-English words are replaced with '<non-English>' placeholder.
+
+The world is non-English if:
+
+- it is not found in the English dictionaries **AND**
+- It is found in at least one of Non-English Dictionaries **AND**
+- It has more than 3 letters
+
+**OR**
+
+- It contains Unicode characters (At the moment for simplicity words like **Café** and **Naїve** are considered non-English)
+
+##### Dictionaries Used:
+**TBD**
 
 #### Tokenization
+**TBD**
 
 #### Basic splitting
-Camel case and snake case splitting is done here
+Splitting using a few trivial algorithms
 
 - camelCase -> camel case
 - snake_case -> snake case
@@ -41,31 +58,38 @@ Camel case and snake case splitting is done here
 
 samecasesplitting -> same case splitting
 
-TODO: explain current algorithm
 
-**Other approaches**: 
+
+Related papers:
+[Splitting source code identifiers using Bidirectional LSTM Recurrent Neural Network](https://arxiv.org/abs/1805.11651)
+check this approach against our manually tagged data.
+
 
 #### Typo Fixing
-Misspelled words increase the vocabulary size and make code less understandable.
+Misspelled words also increase the vocabulary size.
+Currently done based on heuristic used for same case splitting
 
-TODO: explain current algorithm
+Related papers: 
 
-**Other approaches**: 
+## Language model building
 
-### Language model building
+-Experimenting with params :heavy_check_mark:
 
 #### Improvements
 ##### Cache Component :heavy_check_mark:
 ##### Read input in 2 directions
 
-### Applying language model to logging
+## Applying language model to logging
 - Sequence to sequence translation
-- Retraining the last layers of language model to create a classifier 
+- Retraining the last layers of language model to create a classifier
 
-### IntelliJ plugin building
-** TBD **
+**Questions**:
+
+- Do we need to modify our language at all? It should have learned logging already.
+- Do we need to preprocess log statement somehow during parsing, to make it easier for the model to be trained (the way log-extractor worked)
+
+## IntelliJ plugin building
+**TBD**
 
 ## Implementation details
-** TBD **
-## Updating this README
-** TBD **
+**TBD**
