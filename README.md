@@ -38,7 +38,7 @@ The world is non-English if:
 
 **OR**
 
-- It contains Unicode characters (At the moment for simplicity words like **Café** and **Naїve** are considered non-English)
+- It contains Unicode characters (At the moment for simplicity words like *Café* and *Naїve* are considered non-English)
 
 ##### Dictionaries Used:
 **TBD**
@@ -49,27 +49,27 @@ The world is non-English if:
 #### Basic splitting
 Splitting using a few trivial algorithms
 
-- camelCase -> camel case
-- snake_case -> snake case
-- splitting with numbers: cpp2java -> cpp 2 java
-- number splitting: 123e-1 -> 1 2 3 <e> - 1
+- `camelCase` -> `camel case`
+- `snake_case` -> `snake case`
+- splitting with numbers: `cpp2java` -> `cpp 2 java`
+- number splitting: `123e-1` -> `1 2 3 <e> - 1`
 
 #### Same case splitting
 
-samecasesplitting -> same case splitting
-
-
+`samecasesplitting` -> `same case splitting` 
 
 Related papers:
 [Splitting source code identifiers using Bidirectional LSTM Recurrent Neural Network](https://arxiv.org/abs/1805.11651)
-check this approach against our manually tagged data.
+- check this approach against our manually tagged data.
 
 
 #### Typo Fixing
 Misspelled words also increase the vocabulary size.
-Currently done based on heuristic used for same case splitting
+
+Currently done based on heuristic used for same case splitting as well as Levenstein dsitance between a word and possible fixes.
 
 Related papers: 
+**TBD**
 
 ## Language model building
 
