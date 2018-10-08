@@ -2,9 +2,9 @@
 
 This is a project for a master thesis with a title "Supporting logging activities by mining software repositories"
 
-## General Idea
+## General Goal
 
-The general idea is using a large number of projects from github to create a model 
+The general goal is using a large number of projects from github to create a model 
 that getting source code as input suggests different kind of information related to logging 
 (e.g. place in code to put a logging statement, the text of the logging statement, log level etc.)
 
@@ -58,18 +58,26 @@ Splitting using a few trivial algorithms
 
 `samecasesplitting` -> `same case splitting` 
 
+Currently, a heuristic that chooses a splitting amoung the set of all possible splittings is uded. The heuristic favours splittings with the following properties: 
+- resulting subwords should occur individually as often as possible in the dataset
+- the length of the subwords should be close to the average length of words in vocabulary (~ 5 in our case) with more penalty for shorter words
+
 Related papers:
 [Splitting source code identifiers using Bidirectional LSTM Recurrent Neural Network](https://arxiv.org/abs/1805.11651)
-- check this approach against our manually tagged data.
+- check this approach against our manually tagged data (manually_tagged_splittings.txt).
 
 
 #### Typo Fixing
 Misspelled words also increase the vocabulary size.
 
-Currently done based on heuristic used for same case splitting as well as Levenstein dsitance between a word and possible fixes.
+Currently done based on the heuristic used for same case splitting as well as Levenstein dsitance between a word and possible fixes.
 
 Related papers: 
 **TBD**
+
+#### Data preprocessing improvements (ordered by priority)
+- Resolving unicode decode errors
+- Consider words like *Café* and *Naїve* English
 
 ## Language model building
 
