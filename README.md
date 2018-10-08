@@ -28,7 +28,7 @@ and their parsing, preprocessing etc.
 #### Filtering out non-English files and replacing remaining non-English words with a placeholder
 
 Files that contain more non-English words than a certain threshold are removed (This threshould is different for identifiers, comments, string literals). The thresholds are identified empirically.
-In the files that remained, non-English words are replaced with '<non-English>' placeholder.
+In the files that remained, non-English words are replaced with a <non-English> placeholder. Blocks of non-English text are replacedc with a <non-eng-contents> placeholder, e.g. in comments or strign literals
 
 The world is non-English if:
 
