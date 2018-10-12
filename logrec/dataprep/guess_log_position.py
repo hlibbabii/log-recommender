@@ -1,9 +1,9 @@
 import argparse
 import os
 
-from dataprep.preprocessors import apply_preprocessors
-from dataprep.preprocessors.general import to_token_list
-from util import io_utils
+from logrec.dataprep.preprocessors import apply_preprocessors
+from logrec.dataprep.preprocessors.general import to_token_list
+from logrec.util import io_utils
 
 LOG_PLACEHOLDER = "<LOG>"
 

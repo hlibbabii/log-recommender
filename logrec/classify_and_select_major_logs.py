@@ -4,7 +4,8 @@ import argparse
 import logging
 from operator import attrgetter
 from random import shuffle
-from util import io_utils
+
+from logrec.util import io_utils
 
 __author__ = 'hlib'
 

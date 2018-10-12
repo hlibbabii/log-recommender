@@ -1,7 +1,7 @@
-from dataprep import path_to_eng_dicts, path_to_non_eng_dicts
-from dataprep.lang.noneng_stats_calculator import LanguageChecker
-from dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer, NonEng
-from dataprep.preprocessors.model.split import NonDelimiterSplitContainer
+from logrec.dataprep import path_to_eng_dicts, path_to_non_eng_dicts
+from logrec.dataprep.lang.noneng_stats_calculator import LanguageChecker
+from logrec.dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer, NonEng
+from logrec.dataprep.preprocessors.model.split import NonDelimiterSplitContainer
 
 lang_checker = LanguageChecker(path_to_eng_dicts, path_to_non_eng_dicts)
 

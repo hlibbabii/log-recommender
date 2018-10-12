@@ -1,5 +1,6 @@
 import argparse
-from util import io_utils
+
+from logrec.util import io_utils
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -7,11 +7,11 @@ import time
 from multiprocessing.pool import Pool
 from pathlib import Path
 
-from dataprep.preprocessors import apply_preprocessors
-from dataprep.preprocessors.preprocessing_types import PreprocessingType
-from local_properties import REWRITE_PARSED_FILE, DEFAULT_RAW_DATASETS_DIR, DEFAULT_PARSED_DATASETS_DIR, \
+from logrec.dataprep.preprocessors import apply_preprocessors
+from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingType
+from logrec.local_properties import REWRITE_PARSED_FILE, DEFAULT_RAW_DATASETS_DIR, DEFAULT_PARSED_DATASETS_DIR, \
     DEFAULT_PARSE_PROJECTS_ARGS
-from nn.preprocess_params import pp_params
+from logrec.nn.preprocess_params import pp_params
 
 EXTENSION = "parsed"
 FILENAMES_EXTENSION = "filenames"

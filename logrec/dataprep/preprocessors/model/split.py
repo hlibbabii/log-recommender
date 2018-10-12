@@ -1,5 +1,5 @@
-from dataprep.preprocessors.model.general import ProcessableTokenContainer
-from dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.preprocessors.model.general import ProcessableTokenContainer
+from logrec.dataprep.preprocessors.model.placeholders import placeholders
 
 
 class SplitContainer(ProcessableTokenContainer):

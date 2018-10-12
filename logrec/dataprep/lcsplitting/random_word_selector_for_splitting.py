@@ -3,7 +3,7 @@ import random
 import re
 from collections import defaultdict
 
-from dataprep import base_project_dir
+from logrec.dataprep import base_project_dir
 
 base_dataset_dir = f'{base_project_dir}/nn-data/devanbu_no_replaced_identifier_split_no_tabs_new_splits3_under_5000_15_percent/'
 path_to_labeled_data = f'{base_dataset_dir}/sample.txt'

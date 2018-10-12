@@ -3,12 +3,12 @@ import logging
 from collections import defaultdict
 from pprint import pprint
 
-from dataprep import base_project_dir
-from dataprep.lcsplitting.lowercase_words_splitter import get_splittings, load_english_dict
-from dataprep.lcsplitting.param_mutator import ParamMutator
-from dataprep.lcsplitting.typo_fixer import is_typo
 from fastai.imports import tqdm
-from nn.params import nn_params
+from logrec.dataprep import base_project_dir
+from logrec.dataprep.lcsplitting.lowercase_words_splitter import get_splittings, load_english_dict
+from logrec.dataprep.lcsplitting.param_mutator import ParamMutator
+from logrec.dataprep.lcsplitting.typo_fixer import is_typo
+from logrec.nn.params import nn_params
 
 logging.basicConfig(level=logging.INFO)
 

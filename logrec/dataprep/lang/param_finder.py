@@ -1,5 +1,5 @@
-from dataprep import base_project_dir
-from dataprep.lcsplitting.param_mutator import ParamMutator
+from logrec.dataprep import base_project_dir
+from logrec.dataprep.lcsplitting.param_mutator import ParamMutator
 
 file160 = f'{base_project_dir}/160.json'
 

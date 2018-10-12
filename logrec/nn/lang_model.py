@@ -25,7 +25,7 @@ from fastai.core import USE_GPU
 from fastai.nlp import LanguageModelData, seq2seq_reg
 from fastai import metrics
 from torchtext import data
-from nn.utils import to_test_mode, back_to_train_mode, beautify_text, gen_text
+from logrec.nn.utils import to_test_mode, back_to_train_mode, beautify_text, gen_text
 
 # for some reason this import should go here to avoid error
 

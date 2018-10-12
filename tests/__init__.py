@@ -1,5 +1,3 @@
-__author__ = 'hlib'
-
 import os
 import sys
 

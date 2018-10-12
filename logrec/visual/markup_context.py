@@ -1,5 +1,6 @@
 import os
-from util import io_utils
+
+from logrec.util import io_utils
 
 PATH_TO_CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 MARKED_UP_CONTEXTS_FILE=PATH_TO_CURRENT_DIR + '/../marked_up_contexts.txt'

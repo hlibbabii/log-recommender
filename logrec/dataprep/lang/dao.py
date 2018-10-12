@@ -1,6 +1,6 @@
 import psycopg2
 
-from local_properties import DB_DBNAME, DB_USER, DB_HOST, DB_PASSWORD
+from logrec.local_properties import DB_DBNAME, DB_USER, DB_HOST, DB_PASSWORD
 
 
 class DAO(object):

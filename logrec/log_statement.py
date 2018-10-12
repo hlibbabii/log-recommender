@@ -1,6 +1,7 @@
 import sys
 
-from preprocessors import replace_4whitespaces_with_tabs, camel_case_split, spl_verbose, apply_preprocessors
+from logrec.dataprep.preprocessors import apply_preprocessors
+from logrec.dataprep.preprocessors.general import replace_4whitespaces_with_tabs, spl_verbose
 
 __author__ = 'hlib'
 

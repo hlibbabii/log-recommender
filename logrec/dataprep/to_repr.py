@@ -8,10 +8,10 @@ from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import Pool
 from pickle import HIGHEST_PROTOCOL
 
-from dataprep.preprocessors.general import to_token_list
-from dataprep.preprocessors.preprocessing_types import PreprocessingType
-from dataprep.preprocessors.repr import to_repr
-from local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
+from logrec.dataprep.preprocessors.general import to_token_list
+from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingType
+from logrec.dataprep.preprocessors.repr import to_repr
+from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
 
 PARSED_FILE_EXTENSION = "parsed"
 PART_REPR_EXTENSION = "partrepr"

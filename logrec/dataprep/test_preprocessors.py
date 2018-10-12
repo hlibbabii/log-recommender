@@ -1,7 +1,7 @@
 # import deepdiff
 #
-# from dataprep.preprocessors.core import apply_preprocessors
-# from nn.preprocess_params import pp_params
+# from logrec.dataprep.preprocessors.core import apply_preprocessors
+# from logrec.nn.preprocess_params import pp_params
 #
 # text2 = '''
 # _my_favoRite_ints_

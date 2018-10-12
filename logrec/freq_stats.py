@@ -1,10 +1,11 @@
 import argparse
-from collections import Counter
+import itertools
 import logging
 import operator
-import itertools
-from classify_and_select_major_logs import get_top_projects_by_log_number
-from util import io_utils
+from collections import Counter
+
+from logrec.classify_and_select_major_logs import get_top_projects_by_log_number
+from logrec.util import io_utils
 
 __author__ = 'hlib'
 

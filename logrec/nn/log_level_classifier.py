@@ -1,17 +1,16 @@
 import logging
 from functools import partial
+
+import dill as pickle
+import numpy as np
 import torch
 
 from fastai.lm_rnn import seq2seq_reg
 from fastai.metrics import accuracy
 from fastai.nlp import TextData
-
-import dill as pickle
-import numpy as np
-
-from nn.classifier_params import LEVEL_LABEL, nn_params
-from nn.context_datasets import ContextsDataset
-from nn.utils import to_test_mode, output_predictions, back_to_train_mode
+from logrec.nn.classifier_params import LEVEL_LABEL, nn_params
+from logrec.nn.context_datasets import ContextsDataset
+from logrec.nn.utils import to_test_mode, output_predictions, back_to_train_mode
 
 logging.basicConfig(level=logging.DEBUG)
 

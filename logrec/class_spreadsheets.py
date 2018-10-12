@@ -1,6 +1,7 @@
 import csv
 import logging
-from util import io_utils
+
+from logrec.util import io_utils
 
 
 def write_to_classification_spreadsheet(dir_name, logs):

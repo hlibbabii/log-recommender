@@ -1,9 +1,10 @@
 import unittest
 
-from dataprep.preprocessors.general import spl_verbose
-from dataprep.preprocessors.model.chars import MultilineCommentStart, MultilineCommentEnd, OneLineCommentStart, Quote, \
+from logrec.dataprep.preprocessors.general import spl_verbose
+from logrec.dataprep.preprocessors.model.chars import MultilineCommentStart, MultilineCommentEnd, OneLineCommentStart, \
+    Quote, \
     Backslash, Tab
-from dataprep.preprocessors.model.general import ProcessableToken
+from logrec.dataprep.preprocessors.model.general import ProcessableToken
 
 
 class GeneralTest(unittest.TestCase):

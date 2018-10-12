@@ -1,4 +1,4 @@
-from nn.lang_model import Mode
+from logrec.nn.lang_model import Mode
 
 nn_params = {
     'path_to_data': '../../nn-data/',

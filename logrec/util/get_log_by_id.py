@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from util import io_utils
+from logrec.util import io_utils
 
 __author__ = 'hlib'
 

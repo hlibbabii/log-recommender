@@ -1,7 +1,8 @@
-from dataprep.preprocessors.model.general import NonEng
-from dataprep.preprocessors.model.split import NonDelimiterSplitContainer
-from dataprep.preprocessors.model.textcontainers import TextContainer
-from dataprep.preprocessors.preprocessing_types import token_to_preprocessing_type_level_dict, always_repr, recursive, \
+from logrec.dataprep.preprocessors.model.general import NonEng
+from logrec.dataprep.preprocessors.model.split import NonDelimiterSplitContainer
+from logrec.dataprep.preprocessors.model.textcontainers import TextContainer
+from logrec.dataprep.preprocessors.preprocessing_types import token_to_preprocessing_type_level_dict, always_repr, \
+    recursive, \
     PreprocessingType
 
 DEFAULT_NO_COM_NO_STR = {

@@ -2,9 +2,9 @@ import logging
 import re
 
 #################   Multitoken list  level    #######
-from dataprep.preprocessors import java
-from dataprep.preprocessors.general import spl, spl_verbose
-from dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.preprocessors import java
+from logrec.dataprep.preprocessors.general import spl, spl_verbose
+from logrec.dataprep.preprocessors.model.placeholders import placeholders
 
 
 def replace_variable_place_holders(multitoken_list):

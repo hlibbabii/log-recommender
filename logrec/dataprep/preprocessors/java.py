@@ -1,12 +1,13 @@
 import logging
 import re
 
-from dataprep.preprocessors.model.chars import MultilineCommentStart, MultilineCommentEnd, OneLineCommentStart, NewLine, \
+from logrec.dataprep.preprocessors.model.chars import MultilineCommentStart, MultilineCommentEnd, OneLineCommentStart, \
+    NewLine, \
     Backslash, Quote
-from dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer
-from dataprep.preprocessors.model.numeric import Number, D, F, L, DecimalPoint, HexStart, E
-from dataprep.preprocessors.model.placeholders import placeholders
-from dataprep.preprocessors.model.textcontainers import MultilineComment, StringLiteral, OneLineComment
+from logrec.dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer
+from logrec.dataprep.preprocessors.model.numeric import Number, D, F, L, DecimalPoint, HexStart, E
+from logrec.dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.preprocessors.model.textcontainers import MultilineComment, StringLiteral, OneLineComment
 
 START_MULTILINE_COMMENT = MultilineCommentStart()
 END_MULTILINE_COMMENT = MultilineCommentEnd()

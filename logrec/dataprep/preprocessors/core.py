@@ -6,7 +6,7 @@ def names_to_functions(pp_names):
     pps = []
     for name in pp_names:
         file_name, func_name = name[0:name.rindex(".")], name[name.rindex(".")+1:]
-        file = importlib.import_module('dataprep.preprocessors.' + file_name)
+        file = importlib.import_module('logrec.dataprep.preprocessors.' + file_name)
         func = getattr(file, func_name)
         pps.append(func)
     return pps

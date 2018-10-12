@@ -7,8 +7,8 @@ from multiprocessing.pool import Pool
 from operator import itemgetter
 from random import shuffle
 
-from dataprep import base_project_dir
 from fastai.imports import tqdm
+from logrec.dataprep import base_project_dir
 
 logging.basicConfig(level=logging.INFO)
 

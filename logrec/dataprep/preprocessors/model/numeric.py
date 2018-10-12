@@ -1,4 +1,4 @@
-from dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.preprocessors.model.placeholders import placeholders
 
 
 class Number(object):

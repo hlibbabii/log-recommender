@@ -1,7 +1,11 @@
 import unittest
+from functools import partial
 
-from dataprep.preprocessors.model.textcontainers import OneLineComment, MultilineComment, StringLiteral
-from dataprep.preprocessors.split import *
+from logrec.dataprep.preprocessors.model.general import ProcessableToken
+from logrec.dataprep.preprocessors.model.split import UnderscoreSplit, CamelCaseSplit, WithNumbersSplit, SameCaseSplit
+from logrec.dataprep.preprocessors.model.textcontainers import OneLineComment, MultilineComment, StringLiteral
+from logrec.dataprep.preprocessors.split import apply_splitting_to_token, split_string_camel_case, \
+    split_string_underscore, split_string_with_numbers, split_string_same_case
 
 
 class SplitTest(unittest.TestCase):

@@ -1,7 +1,9 @@
 import argparse
 import logging
+
 from numpy import genfromtxt
-from util import io_utils
+
+from logrec.util import io_utils
 
 
 def run_hierarchical_clustering(log_vectors, first_words_vector, contexts, metric_function):
