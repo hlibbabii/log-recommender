@@ -1,0 +1,10 @@
+language: python
+python:
+  - "3.6"
+install:
+  - git clone https://github.com/hlibbabii/fastai
+  - cd fastai
+  - conda env create -f environment.yml
+  - cd ..
+script:
+  - python -m unittest discover -v -s "tests" -p "*.py"
