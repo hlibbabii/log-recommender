@@ -1,13 +1,12 @@
 import psycopg2
 
-from logrec.local_properties import DB_DBNAME, DB_USER, DB_HOST, DB_PASSWORD
-
 
 class DAO(object):
     TABLE = 'LANGSTATS'
     PROJECTS_TABLE = 'PROJECTS'
 
     def __init__(self):
+        from logrec.local_properties import DB_DBNAME, DB_USER, DB_HOST, DB_PASSWORD
         conn = psycopg2.connect(f"dbname='{DB_DBNAME}' user='{DB_USER}' host='{DB_HOST}' password='{DB_PASSWORD}'")
         conn.set_session(autocommit=True)
         self.cur = conn.cursor()

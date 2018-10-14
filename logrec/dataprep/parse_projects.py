@@ -9,8 +9,6 @@ from pathlib import Path
 
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingType
-from logrec.local_properties import REWRITE_PARSED_FILE, DEFAULT_RAW_DATASETS_DIR, DEFAULT_PARSED_DATASETS_DIR, \
-    DEFAULT_PARSE_PROJECTS_ARGS
 from logrec.nn.preprocess_params import pp_params
 
 EXTENSION = "parsed"
@@ -44,6 +42,8 @@ def read_file_contents(file_path):
 
 
 def preprocess_and_write(params):
+    from logrec.local_properties import REWRITE_PARSED_FILE
+
     src_dir, dest_dir, train_test_valid, project, preprocessing_param_dict, splitting_file = params
     full_dest_dir = os.path.join(dest_dir, train_test_valid)
     path_to_preprocessed_file = os.path.join(full_dest_dir, f'{project}.{EXTENSION}')
@@ -86,6 +86,9 @@ def split_two_last_levels(root):
 
 
 if __name__ == '__main__':
+    from logrec.local_properties import DEFAULT_RAW_DATASETS_DIR, DEFAULT_PARSED_DATASETS_DIR, \
+        DEFAULT_PARSE_PROJECTS_ARGS
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--base-from',action='store', default=DEFAULT_RAW_DATASETS_DIR)
     parser.add_argument('--base-to',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
