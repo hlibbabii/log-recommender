@@ -76,6 +76,9 @@ class ClusteringTree(object):
         else:
             return self.left_tree.get_all_leaf_payloads() + self.right_tree.get_all_leaf_payloads()
 
+    def __eq__(self, other):
+        return self.payload == other.payload and self.left_tree == other.left_tree and self.right_tree == other.right_tree
+
 
 def tree_from_dendrogram(dendrogram):
     n_leaves = len(dendrogram) + 1
