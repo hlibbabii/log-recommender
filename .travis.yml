@@ -1,4 +1,4 @@
-qlanguage: python
+language: python
 python:
   - "3.6"
 before_install:
@@ -18,8 +18,8 @@ before_install:
 install:
   # Useful for debugging any issues with conda
   - conda info -a
-  - git clone https://github.com/hlibbabii/fastai
-  - cd fastai
+  - git clone https://github.com/hlibbabii/fastai fastai-fork
+  - cd fastai-fork
   - conda env create -f environment.yml
   - conda activate fastai
   - cd ..
