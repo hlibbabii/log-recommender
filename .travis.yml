@@ -18,10 +18,9 @@ before_install:
 install:
   # Useful for debugging any issues with conda
   - conda info -a
-  - git clone https://github.com/hlibbabii/fastai fastai-fork
-  - cd fastai-fork
+  - git clone https://github.com/hlibbabii/fastai $TRAVIS_BUILD_DIR/fastai-fork
+  - cd $TRAVIS_BUILD_DIR/fastai-fork
   - conda env create -f environment.yml
   - conda activate fastai
-  - cd ..
 script:
   - python -m unittest discover -v -s "tests" -p "*.py"
