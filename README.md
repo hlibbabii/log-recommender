@@ -78,7 +78,7 @@ Related papers:
 **TBD**
 
 #### Data preprocessing improvements (ordered by priority)
-- Resolving unicode decode errors
+- Resolving unicode decode errors [Issue link](https://github.com/hlibbabii/log-recommender/issues/15)
 - Consider words like *Café* and *Naїve* English
 
 ## Language model building
