@@ -1,5 +1,7 @@
 # log-recommender
 
+[![Build Status](https://travis-ci.org/hlibbabii/log-recommender.svg?branch=master)](https://travis-ci.org/hlibbabii/log-recommender)
+
 This is a project for a master thesis with a title "Supporting logging activities by mining software repositories"
 
 ## General Goal
