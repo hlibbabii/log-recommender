@@ -9,6 +9,8 @@ from time import time
 import deepdiff
 import matplotlib
 
+from logrec.langmodel.utils import to_test_mode, gen_text, beautify_text, back_to_train_mode
+
 matplotlib.use('Agg')
 
 import logging
@@ -25,7 +27,6 @@ from fastai.core import USE_GPU
 from fastai.nlp import LanguageModelData, seq2seq_reg
 from fastai import metrics
 from torchtext import data
-from logrec.nn.utils import to_test_mode, back_to_train_mode, beautify_text, gen_text
 
 # for some reason this import should go here to avoid error
 

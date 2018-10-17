@@ -5,7 +5,7 @@ from operator import attrgetter
 
 from logrec.classify_and_select_major_logs import select_logs_from_major_classes
 from logrec.dataprep.preprocessors import apply_preprocessors
-from logrec.nn.preprocess_params import pp_params
+from logrec.dataprep.preprocess_params import pp_params
 from logrec.util import io_utils
 
 

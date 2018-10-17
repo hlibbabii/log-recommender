@@ -80,14 +80,15 @@ def write_sample_to_files(length_to_words_dict, original_to_labeled_data, file):
             f.write(f'{w}\n')
 
 
-dict = get_dict(vocab_file)
-dict_stats = {k: len(v) for k, v in dict.items()}
-dict_stats_log_proportional = log_proportional(dict_stats, 5, 1000)
+if __name__ == '__main__':
+    dict = get_dict(vocab_file)
+    dict_stats = {k: len(v) for k, v in dict.items()}
+    dict_stats_log_proportional = log_proportional(dict_stats, 5, 1000)
 
-already_selected_words, key_to_labeled_data = get_already_selected_words()
+    already_selected_words, key_to_labeled_data = get_already_selected_words()
 
-selected_words = randomly_select_words_from_dict(dict, already_selected_words)
+    selected_words = randomly_select_words_from_dict(dict, already_selected_words)
 
-write_sample_to_files(selected_words, key_to_labeled_data, path_to_labeled_data2)
+    write_sample_to_files(selected_words, key_to_labeled_data, path_to_labeled_data2)
 
-print_dict_diffs({k: len(v) for k, v in already_selected_words.items()}, dict_stats_log_proportional)
+    print_dict_diffs({k: len(v) for k, v in already_selected_words.items()}, dict_stats_log_proportional)

@@ -7,7 +7,7 @@ from Levenshtein.StringMatcher import StringMatcher
 from tqdm import tqdm
 
 from logrec.dataprep import base_project_dir
-from logrec.dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
+from logrec.dataprep.split.samecase.splitter import load_english_dict
 
 
 def get_words_of_almost_same_length(word):

@@ -5,10 +5,10 @@ from pprint import pprint
 
 from fastai.imports import tqdm
 from logrec.dataprep import base_project_dir
-from logrec.dataprep.lcsplitting.lowercase_words_splitter import get_splittings, load_english_dict
-from logrec.dataprep.lcsplitting.param_mutator import ParamMutator
-from logrec.dataprep.lcsplitting.typo_fixer import is_typo
-from logrec.nn.params import nn_params
+from logrec.dataprep.split.samecase.splitter import load_english_dict, get_splittings
+from logrec.langmodel.params import nn_params
+from logrec.util.param_mutator import ParamMutator
+from logrec.dataprep.split.samecase.typo_fixer import is_typo
 
 logging.basicConfig(level=logging.INFO)
 
@@ -42,19 +42,6 @@ def assert_typo(split_line):
 def assert_non_split(split_line):
     if len(split_line) != 2:
         raise AssertionError(f"There should 2 entries in this line: {split_line}")
-
-
-types_to_convertion_assertions = {
-    'spl': assert_split,
-    'nonspl': assert_non_split,
-    'rnd': assert_non_split,
-    'typo': assert_typo
-}
-
-lang_code_list = ['de', 'sp', 'pt', 'fr', 'sv', 'da', 'nl', 'fi', 'hr', 'et']
-
-for lang_code in lang_code_list:
-    types_to_convertion_assertions[lang_code] = assert_non_split
 
 
 def check_line(split_line):
@@ -132,46 +119,10 @@ def compute_error_stats(split_actual, nonsplit_actual, split_expected, nonsplit_
                       fns=fns,
                       not_the_same=not_the_same)
 
-
-data = []
-stats = defaultdict(list)
-words_to_split = {}
-sample_word_length_stats = defaultdict(int)
-with open(path_to_labeled_data, 'r') as f:
-    for line in f:
-        split_line = line[:-1].split('|')
-        check_line(split_line)
-        type = split_line[1]
-        original_word = split_line[0]
-        stats[type].append((original_word, split_line[2]) if type == 'spl' else original_word)
-        if type == 'spl' or type == 'nonspl':
-            words_to_split[original_word] = type
-        sample_word_length_stats[len(original_word)] += 1
-sample_word_length_stats.default_factory = None
-
-
 def print_different_token_types_stats(stats):
     pprint(stats)
     for s, lst in stats.items():
         print(f'{s} -- {len(lst)}')
-
-
-print_different_token_types_stats(stats)
-
-dataset_name = nn_params["dataset_name"]
-path_to_dataset = f'{nn_params["path_to_data"]}/{dataset_name}'
-path_to_splits = f'{path_to_dataset}/splits'
-
-general_dict = load_english_dict(f'{base_project_dir}/dicts/eng')
-
-possibel_var_values, (keys, mutations) = ParamMutator(
-    [{'name': 'alpha', 'start': 0.1, 'end': 1000000.0, 'plus_or_mult': 'mult', 'koef': 2.0},
-     {'name': 'beta', 'start': 1.0, 'end': 1000.0, 'plus_or_mult': 'mult', 'koef': 1.2},
-     {'name': 'gamma', 'start': 0.1, 'end': 1000000.0, 'plus_or_mult': 'mult', 'koef': 2.0},
-     {'name': 'lambda_', 'start': 1.0, 'end': 6.0, 'plus_or_mult': 'plus', 'koef': 1.15},
-     {'name': 'theta', 'start': 1.0, 'end': 6.0, 'plus_or_mult': 'plus', 'koef': 1.15},
-     {'name': 'd', 'start': 1.0, 'end': 100.0, 'plus_or_mult': 'mult', 'koef': 1.5}]) \
-    .mutate(5000, 1000)
 
 
 def convert_to_params(keys, mutations):
@@ -181,40 +132,86 @@ def convert_to_params(keys, mutations):
     return res
 
 
-freqs = {}
-with open(f'{path_to_dataset}/vocab.txt', 'r') as f:
-    for l in f:
-        line = l.split(" ")
-        freqs[line[0]] = int(line[1])
+if __name__ == '__name__':
+    types_to_convertion_assertions = {
+        'spl': assert_split,
+        'nonspl': assert_non_split,
+        'rnd': assert_non_split,
+        'typo': assert_typo
+    }
 
-print(possibel_var_values)
-print("======================")
-pprint(mutations)
-print("======================")
-with open(path_to_mutations, 'w', newline='') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    params = convert_to_params(keys, mutations)
-    # params = [{
-    #     'alpha': 9.0,
-    #     'beta': 5.0,
-    #     'gamma': 3.0,
-    #     'lambda_': 2.0,
-    #     'theta': 2.0,
-    #     'd': 10.0
-    # }]
-    n_iter = len(mutations)
-    # n_iter=1
-    for ind, params in tqdm(enumerate(params), total=n_iter):
-        transformed, nontransformed, possible_typos = get_splittings(
-            words_to_split.keys(),
-            freqs, general_dict, params)
+    lang_code_list = ['de', 'sp', 'pt', 'fr', 'sv', 'da', 'nl', 'fi', 'hr', 'et']
 
-        error_stats = compute_error_stats({k: v["subwords_set"] for k, v in transformed.items()}, nontransformed,
-                                          {k: v for k, v in stats['spl']}, stats['nonspl'])
+    for lang_code in lang_code_list:
+        types_to_convertion_assertions[lang_code] = assert_non_split
 
-        print(f'Param set # {ind}')
-        pprint(params)
-        pprint(error_stats)
-        print('====================================')
+    data = []
+    stats = defaultdict(list)
+    words_to_split = {}
+    sample_word_length_stats = defaultdict(int)
+    with open(path_to_labeled_data, 'r') as f:
+        for line in f:
+            split_line = line[:-1].split('|')
+            check_line(split_line)
+            type = split_line[1]
+            original_word = split_line[0]
+            stats[type].append((original_word, split_line[2]) if type == 'spl' else original_word)
+            if type == 'spl' or type == 'nonspl':
+                words_to_split[original_word] = type
+            sample_word_length_stats[len(original_word)] += 1
+    sample_word_length_stats.default_factory = None
 
-        writer.writerow(list(params.values()) + list(error_stats.get_short_stats().values()))
+    print_different_token_types_stats(stats)
+
+    dataset_name = nn_params["dataset_name"]
+    path_to_dataset = f'{nn_params["path_to_data"]}/{dataset_name}'
+    path_to_splits = f'{path_to_dataset}/splits'
+
+    general_dict = load_english_dict(f'{base_project_dir}/dicts/eng')
+
+    possibel_var_values, (keys, mutations) = ParamMutator(
+        [{'name': 'alpha', 'start': 0.1, 'end': 1000000.0, 'plus_or_mult': 'mult', 'koef': 2.0},
+         {'name': 'beta', 'start': 1.0, 'end': 1000.0, 'plus_or_mult': 'mult', 'koef': 1.2},
+         {'name': 'gamma', 'start': 0.1, 'end': 1000000.0, 'plus_or_mult': 'mult', 'koef': 2.0},
+         {'name': 'lambda_', 'start': 1.0, 'end': 6.0, 'plus_or_mult': 'plus', 'koef': 1.15},
+         {'name': 'theta', 'start': 1.0, 'end': 6.0, 'plus_or_mult': 'plus', 'koef': 1.15},
+         {'name': 'd', 'start': 1.0, 'end': 100.0, 'plus_or_mult': 'mult', 'koef': 1.5}]) \
+        .mutate(5000, 1000)
+
+    freqs = {}
+    with open(f'{path_to_dataset}/vocab.txt', 'r') as f:
+        for l in f:
+            line = l.split(" ")
+            freqs[line[0]] = int(line[1])
+
+    print(possibel_var_values)
+    print("======================")
+    pprint(mutations)
+    print("======================")
+    with open(path_to_mutations, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        params = convert_to_params(keys, mutations)
+        # params = [{
+        #     'alpha': 9.0,
+        #     'beta': 5.0,
+        #     'gamma': 3.0,
+        #     'lambda_': 2.0,
+        #     'theta': 2.0,
+        #     'd': 10.0
+        # }]
+        n_iter = len(mutations)
+        # n_iter=1
+        for ind, params in tqdm(enumerate(params), total=n_iter):
+            transformed, nontransformed, possible_typos = get_splittings(
+                words_to_split.keys(),
+                freqs, general_dict, params)
+
+            error_stats = compute_error_stats({k: v["subwords_set"] for k, v in transformed.items()}, nontransformed,
+                                              {k: v for k, v in stats['spl']}, stats['nonspl'])
+
+            print(f'Param set # {ind}')
+            pprint(params)
+            pprint(error_stats)
+            print('====================================')
+
+            writer.writerow(list(params.values()) + list(error_stats.get_short_stats().values()))

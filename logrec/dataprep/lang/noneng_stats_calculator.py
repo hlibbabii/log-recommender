@@ -9,9 +9,9 @@ from multiprocessing.pool import Pool
 
 from logrec.dataprep import parse_projects, path_to_non_eng_dicts, path_to_eng_dicts
 from logrec.dataprep.lang.dao import DAO
-from logrec.dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
 from logrec.dataprep.preprocessors.general import to_token_list
 from logrec.dataprep.preprocessors.repr import DEFAULT_NO_COM_NO_STR, to_repr, DEFAULT, DEFAULT_NO_COM
+from logrec.dataprep.split.samecase.splitter import load_english_dict
 
 
 class LanguageChecker(object):

@@ -9,7 +9,7 @@ from pathlib import Path
 
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingType
-from logrec.nn.preprocess_params import pp_params
+from logrec.dataprep.preprocess_params import pp_params
 
 EXTENSION = "parsed"
 FILENAMES_EXTENSION = "filenames"
