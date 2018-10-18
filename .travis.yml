@@ -28,3 +28,7 @@ install:
   - conda env update -f environment.yml
 script:
   - python -m unittest discover -v -s "tests" -p "*.py"
+# blocklist
+branches:
+  except:
+  - readme
