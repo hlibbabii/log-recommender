@@ -79,7 +79,7 @@ Related papers:
 
 #### Data preprocessing improvements (ordered by priority)
 - Resolving unicode decode errors [(Issue link)](https://github.com/hlibbabii/log-recommender/issues/15)
-- Consider words like *Café* and *Naїve* English
+- Consider words like *Café* and *Naїve* English [(Issue link)](https://github.com/hlibbabii/log-recommender/issues/16)
 
 ## Language model building
 
