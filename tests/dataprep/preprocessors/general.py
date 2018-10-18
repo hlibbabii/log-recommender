@@ -99,6 +99,19 @@ _operations
 
         self.assertEqual(expected, actual)
 
+    def test_split_verbose_log_statement(self):
+        text = '''
+logger.info("The value is " + val);
+'''
+        actual = spl_verbose([ProcessableToken(text)], None)
+
+        expected = ['\n', ProcessableToken("logger"), '.', ProcessableToken("info"),
+                    '(', Quote(), ProcessableToken("The"), ProcessableToken("value"), ProcessableToken("is"), Quote(),
+                    '+', ProcessableToken('val'), ')', ';', '\n',
+                    ]
+
+        self.assertEqual(expected, actual)
+
 
 if __name__ == '__main__':
     unittest.main()
