@@ -1,5 +1,7 @@
 # log-recommender
 
+[![Build Status](https://travis-ci.org/hlibbabii/log-recommender.svg?branch=master)](https://travis-ci.org/hlibbabii/log-recommender)
+
 This is a project for a master thesis with a title "Supporting logging activities by mining software repositories"
 
 ## General Goal
@@ -76,7 +78,7 @@ Related papers:
 **TBD**
 
 #### Data preprocessing improvements (ordered by priority)
-- Resolving unicode decode errors
+- Resolving unicode decode errors [(Issue link)](https://github.com/hlibbabii/log-recommender/issues/15)
 - Consider words like *Café* and *Naїve* English
 
 ## Language model building
