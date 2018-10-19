@@ -1,3 +1,5 @@
+from nn.lang_model import Mode
+
 nn_params = {
     'path_to_data': '../../nn-data/',
     'dataset_name': 'few-data',
