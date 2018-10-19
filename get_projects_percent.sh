@@ -13,8 +13,9 @@ function cpppp() {
         CURR_FOLDER="$TO/$CURR_NUMBER"
     fi
     [[ -d "$CURR_FOLDER" ]] || mkdir "$CURR_FOLDER"
-
-    cp -r "$FROM" "$TO/$CURR_NUMBER"
+    
+    echo "Copying from $FROM to $CURR_FOLDER"
+    cp -r "$FROM" "$CURR_FOLDER"
 }
 export -f cpppp
 
