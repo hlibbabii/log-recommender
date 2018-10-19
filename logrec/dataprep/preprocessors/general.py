@@ -2,12 +2,13 @@ import itertools
 import re
 
 ###############   File lines level   ###########
-from dataprep.preprocessors import java
-from dataprep.preprocessors.model.chars import NewLine, MultilineCommentEnd, MultilineCommentStart, OneLineCommentStart, \
+from logrec.dataprep.preprocessors import java
+from logrec.dataprep.preprocessors.model.chars import NewLine, MultilineCommentEnd, MultilineCommentStart, \
+    OneLineCommentStart, \
     Quote, Backslash, Tab
-from dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer
-from dataprep.preprocessors.model.placeholders import placeholders
-from dataprep.preprocessors.util import create_regex_from_token_list
+from logrec.dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer
+from logrec.dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.preprocessors.util import create_regex_from_token_list
 
 
 def lines_to_one_lines_with_newlines(lines, context):

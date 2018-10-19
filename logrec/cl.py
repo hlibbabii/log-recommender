@@ -1,6 +1,7 @@
 import argparse
 import logging
-from util import io_utils
+
+from logrec.util import io_utils
 
 
 def get_significant_words(word_list, func):

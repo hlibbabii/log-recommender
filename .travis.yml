@@ -1,0 +1,34 @@
+language: python
+python:
+  - "3.6"
+env:
+  - THESIS_DIR="$TRAVIS_BUILD_DIR/.."
+before_install:
+  - sudo apt-get update
+  # We do this conditionally because it saves us some downloading if the
+  # version is the same.
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    fi
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - . /home/travis/miniconda/etc/profile.d/conda.sh
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+install:
+  # Useful for debugging any issues with conda
+  - conda info -a
+  - git clone https://github.com/hlibbabii/fastai $THESIS_DIR/fastai-fork
+  - cd $THESIS_DIR/fastai-fork
+  - conda env create -f environment.yml
+  - conda activate fastai
+  - cd $TRAVIS_BUILD_DIR
+  - conda env update -f environment.yml
+script:
+  - python -m unittest discover -v -s "tests" -p "*.py"
+# blocklist
+branches:
+  except:
+  - readme

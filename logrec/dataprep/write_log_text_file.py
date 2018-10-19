@@ -2,7 +2,7 @@ import argparse
 import collections
 import os
 
-from util import io_utils
+from logrec.util import io_utils
 
 
 class FileDefaultDict(collections.defaultdict):

@@ -1,10 +1,12 @@
 # log-recommender
 
+[![Build Status](https://travis-ci.org/hlibbabii/log-recommender.svg?branch=master)](https://travis-ci.org/hlibbabii/log-recommender)
+
 This is a project for a master thesis with a title "Supporting logging activities by mining software repositories"
 
-## General Idea
+## General Goal
 
-The general idea is using a large number of projects from github to create a model 
+The general goal is using a large number of projects from github to create a model 
 that getting source code as input suggests different kind of information related to logging 
 (e.g. place in code to put a logging statement, the text of the logging statement, log level etc.)
 
@@ -19,53 +21,85 @@ that getting source code as input suggests different kind of information related
 - [log-recommender-cli](https://github.com/hlibbabii/log-recommender-cli): a command line tool for managing datasets 
 and their parsing, preprocessing etc.
 
-### Data Gathering
+## Data Gathering
 
-### Data Preprocessing
+[Mining source code repositories at massive scale using language modeling. M Allamanis, C Sutton](https://dl.acm.org/citation.cfm?id=2487127)
 
-#### Filtering out non-English projects
+## Data Preprocessing
 
-TODO: explain current algorithm
+#### Filtering out non-English files and replacing remaining non-English words with a placeholder
+
+Files that contain more non-English words than a certain threshold are removed (This threshould is different for identifiers, comments, string literals). The thresholds are identified empirically.
+In the files that remained, non-English words are replaced with a <non-English> placeholder. Blocks of non-English text are replacedc with a <non-eng-contents> placeholder, e.g. in comments or strign literals
+
+The world is non-English if:
+
+- it is not found in the English dictionaries **AND**
+- It is found in at least one of Non-English Dictionaries **AND**
+- It has more than 3 letters
+
+**OR**
+
+- It contains Unicode characters (At the moment for simplicity words like *Café* and *Naїve* are considered non-English)
+
+##### Dictionaries Used:
+**TBD**
 
 #### Tokenization
+**TBD**
 
 #### Basic splitting
-Camel case and snake case splitting is done here
+Splitting using a few trivial algorithms
 
-- camelCase -> camel case
-- snake_case -> snake case
-- splitting with numbers: cpp2java -> cpp 2 java
-- number splitting: 123e-1 -> 1 2 3 <e> - 1
+- `camelCase` -> `camel case`
+- `snake_case` -> `snake case`
+- splitting with numbers: `cpp2java` -> `cpp 2 java`
+- number splitting: `123e-1` -> `1 2 3 <e> - 1`
 
 #### Same case splitting
 
-samecasesplitting -> same case splitting
+`samecasesplitting` -> `same case splitting` 
 
-TODO: explain current algorithm
+Currently, a heuristic that chooses a splitting amoung the set of all possible splittings is uded. The heuristic favours splittings with the following properties: 
+- resulting subwords should occur individually as often as possible in the dataset
+- the length of the subwords should be close to the average length of words in vocabulary (~ 5 in our case) with more penalty for shorter words
 
-**Other approaches**: 
+Related papers:
+[Splitting source code identifiers using Bidirectional LSTM Recurrent Neural Network](https://arxiv.org/abs/1805.11651)
+- check this approach against our manually tagged data (manually_tagged_splittings.txt).
+
 
 #### Typo Fixing
-Misspelled words increase the vocabulary size and make code less understandable.
+Misspelled words also increase the vocabulary size.
 
-TODO: explain current algorithm
+Currently done based on the heuristic used for same case splitting as well as Levenstein dsitance between a word and possible fixes.
 
-**Other approaches**: 
+Related papers: 
+**TBD**
 
-### Language model building
+#### Data preprocessing improvements (ordered by priority)
+- Resolving unicode decode errors [(Issue link)](https://github.com/hlibbabii/log-recommender/issues/15)
+- Consider words like *Café* and *Naїve* English [(Issue link)](https://github.com/hlibbabii/log-recommender/issues/16)
+
+## Language model building
+
+-Experimenting with params :heavy_check_mark:
 
 #### Improvements
 ##### Cache Component :heavy_check_mark:
 ##### Read input in 2 directions
 
-### Applying language model to logging
+## Applying language model to logging
 - Sequence to sequence translation
-- Retraining the last layers of language model to create a classifier 
+- Retraining the last layers of language model to create a classifier
 
-### IntelliJ plugin building
-** TBD **
+**Questions**:
+
+- Do we need to modify our language at all? It should have learned logging already.
+- Do we need to preprocess log statement somehow during parsing, to make it easier for the model to be trained (the way log-extractor worked)
+
+## IntelliJ plugin building
+**TBD**
 
 ## Implementation details
-** TBD **
-## Updating this README
-** TBD **
+**TBD**

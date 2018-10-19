@@ -5,3 +5,4 @@ dependencies:
 - fastcluster
 - google-api-python-client
 - httplib2
+- deepdiff

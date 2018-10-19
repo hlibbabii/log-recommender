@@ -7,12 +7,11 @@ import re
 from functools import partial
 from multiprocessing.pool import Pool
 
-from dataprep import parse_projects, path_to_non_eng_dicts, path_to_eng_dicts
-from dataprep.lang.dao import DAO
-from dataprep.lcsplitting.lowercase_words_splitter import load_english_dict
-from dataprep.preprocessors.general import to_token_list
-from dataprep.preprocessors.repr import DEFAULT_NO_COM_NO_STR, to_repr, DEFAULT, DEFAULT_NO_COM
-from local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS
+from logrec.dataprep import parse_projects, path_to_non_eng_dicts, path_to_eng_dicts
+from logrec.dataprep.lang.dao import DAO
+from logrec.dataprep.preprocessors.general import to_token_list
+from logrec.dataprep.preprocessors.repr import DEFAULT_NO_COM_NO_STR, to_repr, DEFAULT, DEFAULT_NO_COM
+from logrec.dataprep.split.samecase.splitter import load_english_dict
 
 
 class LanguageChecker(object):
@@ -113,6 +112,8 @@ def parsed_files_generator(path_to_dir_with_preprocessed_projects, dao):
 
 
 def run():
+    from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--base-dataset-dir', default=DEFAULT_PARSED_DATASETS_DIR)
     parser.add_argument('preprocessed_dataset', help='path to preprocessed dataset relative '

@@ -1,17 +1,16 @@
 import logging
 from functools import partial
+
+import dill as pickle
+import numpy as np
 import torch
 
 from fastai.lm_rnn import seq2seq_reg
 from fastai.metrics import accuracy
 from fastai.nlp import TextData
-
-import dill as pickle
-import numpy as np
-
-from nn.classifier_params import LEVEL_LABEL, nn_params
-from nn.context_datasets import ContextsDataset
-from nn.utils import to_test_mode, output_predictions, back_to_train_mode
+from logrec.classifier.classifier_params import LEVEL_LABEL, nn_params
+from logrec.classifier.context_datasets import ContextsDataset
+from logrec.langmodel.utils import to_test_mode, output_predictions, back_to_train_mode
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -86,30 +85,31 @@ def get_text_classifier_model(text_field, level_label, model_name, pretrained_la
     return rnn_learner
 
 
-text_field = pickle.load(open(f'{path_to_data}/{pretrained_lang_model_name}/TEXT.pkl', 'rb'))
-learner = get_text_classifier_model(text_field, LEVEL_LABEL,
-                                    model_name=pretrained_lang_model_name + '_classifier',
-                                    pretrained_lang_model_name=pretrained_lang_model_name)
+if __name__ == '__main__':
+    text_field = pickle.load(open(f'{path_to_data}/{pretrained_lang_model_name}/TEXT.pkl', 'rb'))
+    learner = get_text_classifier_model(text_field, LEVEL_LABEL,
+                                        model_name=pretrained_lang_model_name + '_classifier',
+                                        pretrained_lang_model_name=pretrained_lang_model_name)
 
-m=learner.model
-to_test_mode(m)
+    m = learner.model
+    to_test_mode(m)
 
-# logging.info(f'Accuracy is {accuracy_np(*learner.predict_with_targs())}')
+    # logging.info(f'Accuracy is {accuracy_np(*learner.predict_with_targs())}')
 
-with open(f'{path_to_data}/{pretrained_lang_model_name}/test/contexts.src', 'r') as f:
-    counter = 0
-    for line in f:
-        if counter > 30:
-            break
-        counter += 1
-        print(f'{counter}\n')
-        output_predictions(m, text_field, LEVEL_LABEL, line, 3)
+    with open(f'{path_to_data}/{pretrained_lang_model_name}/test/contexts.src', 'r') as f:
+        counter = 0
+        for line in f:
+            if counter > 30:
+                break
+            counter += 1
+            print(f'{counter}\n')
+            output_predictions(m, text_field, LEVEL_LABEL, line, 3)
 
-back_to_train_mode(m, bs)
+    back_to_train_mode(m, bs)
 
-#plotting confusion matrix
-# preds = np.argmax(probs, axis=1)
-# probs = probs[:,1]
-# from sklearn.metrics import confusion_matrix
-# cm = confusion_matrix(y, preds)
-# plot_confusion_matrix(cm, data.classes)
+    # plotting confusion matrix
+    # preds = np.argmax(probs, axis=1)
+    # probs = probs[:,1]
+    # from sklearn.metrics import confusion_matrix
+    # cm = confusion_matrix(y, preds)
+    # plot_confusion_matrix(cm, data.classes)

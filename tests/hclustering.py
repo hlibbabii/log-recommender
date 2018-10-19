@@ -1,5 +1,4 @@
-from deepdiff import DeepDiff
-from cluster.hclustering import ClusteringTree, tree_from_dendrogram, break_into_multiple_trees_by_wfs, jaccard
+from logrec.cluster.hclustering import ClusteringTree, tree_from_dendrogram, break_into_multiple_trees_by_wfs, jaccard
 
 __author__ = 'hlib'
 
@@ -14,7 +13,7 @@ class HClusteringTest(unittest.TestCase):
 
         actual = tree_from_dendrogram(dendrogram)
 
-        self.assertEqual(DeepDiff(expected, actual), {})
+        self.assertEqual(expected, actual)
 
     def test_tree_from_dendrogram_simple(self):
 
@@ -26,6 +25,8 @@ class HClusteringTest(unittest.TestCase):
         )
 
         actual = tree_from_dendrogram(dendrogram)
+
+        self.assertEqual(expected, actual)
 
     def test_tree_from_dendrogram_medium(self):
 
@@ -43,9 +44,7 @@ class HClusteringTest(unittest.TestCase):
 
         actual = tree_from_dendrogram(dendrogram)
 
-        self.assertEqual(DeepDiff(expected, actual), {})
-
-        self.assertEqual(DeepDiff(expected, actual), {})
+        self.assertEqual(expected, actual)
 
     def test_break_into_multiple_trees_by_wfs_trivial(self):
         tree = ClusteringTree.node(10,
@@ -61,7 +60,7 @@ class HClusteringTest(unittest.TestCase):
 
         actual = break_into_multiple_trees_by_wfs(tree, 1)
 
-        self.assertEqual(DeepDiff(expected, actual), {})
+        self.assertEqual(expected, actual)
 
     def test_break_into_multiple_trees_by_wfs_simple(self):
         tree = ClusteringTree.node(10,
@@ -84,7 +83,7 @@ class HClusteringTest(unittest.TestCase):
 
         actual = break_into_multiple_trees_by_wfs(tree, 2)
 
-        self.assertEqual(DeepDiff(expected, actual), {})
+        self.assertEqual(expected, actual)
 
     def test_break_into_multiple_trees_by_wfs_equal(self):
         tree = ClusteringTree.node(14,
@@ -111,7 +110,7 @@ class HClusteringTest(unittest.TestCase):
 
         actual = break_into_multiple_trees_by_wfs(tree, 4)
 
-        self.assertEqual(DeepDiff(expected, actual), {})
+        self.assertEqual(expected, actual)
 
     def test_get_all_leaf_payloads(self):
         tree = ClusteringTree.node(10,
@@ -127,7 +126,7 @@ class HClusteringTest(unittest.TestCase):
 
         actual = tree.get_all_leaf_payloads()
 
-        self.assertEqual(DeepDiff(expected, actual), {})
+        self.assertEqual(expected, actual)
 
     def test_jaccard_simple(self):
         v1 = [0, 0, 1, 1, 1]

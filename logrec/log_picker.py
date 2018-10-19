@@ -5,8 +5,8 @@ from random import randint
 
 from sortedcontainers import SortedList
 
-from util import io_utils
-from util.util import without_duplicates
+from logrec.util import io_utils
+from logrec.util.util import without_duplicates
 
 __author__ = 'hlib'
 

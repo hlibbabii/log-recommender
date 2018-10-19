@@ -4,8 +4,8 @@ import re
 import time
 from functools import partial
 
-from dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer
-from dataprep.preprocessors.model.split import CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, \
+from logrec.dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer
+from logrec.dataprep.preprocessors.model.split import CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, \
     NonDelimiterSplitContainer, SameCaseSplit
 
 

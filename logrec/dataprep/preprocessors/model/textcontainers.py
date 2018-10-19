@@ -1,5 +1,5 @@
-from dataprep.preprocessors.model.general import ProcessableTokenContainer, NonEng
-from dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.preprocessors.model.general import ProcessableTokenContainer, NonEng
+from logrec.dataprep.preprocessors.model.placeholders import placeholders
 
 
 class TextContainer(ProcessableTokenContainer):

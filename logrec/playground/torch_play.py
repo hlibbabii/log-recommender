@@ -32,17 +32,6 @@ class EmbeddingDot(nn.Module):
         x = self.dropout2(F.relu(self.lin1(x)))
         return F.sigmoid(self.lin2(x)) * 4 + 1
 
-b = T([[1, 1],
-       [0, 0]])
-
-dot = EmbeddingDot(2, 3)
-print(dot.forward(b, []))
-
-#print(dot.model)
-# print([a for a in dot.parameters()])
-#
-# print(dot.forward(b, []))
-# print([a for a in dot.parameters()])
 
 class MyRnn(nn.Module):
     def __init__(self, es, hl, n_classes):
@@ -59,5 +48,19 @@ class MyRnn(nn.Module):
         outputs, hiddens = self.rnn(x, hiddens)
         return F.softmax(self.linear(outputs), -1)
 
-rnn = MyRnn(3,10,4)
-rnn.forward(T([1,2]), T([0,0]))
+
+if __name__ == '__main__':
+    b = T([[1, 1],
+           [0, 0]])
+
+    dot = EmbeddingDot(2, 3)
+    print(dot.forward(b, []))
+
+    # print(dot.model)
+    # print([a for a in dot.parameters()])
+    #
+    # print(dot.forward(b, []))
+    # print([a for a in dot.parameters()])
+
+    rnn = MyRnn(3, 10, 4)
+    rnn.forward(T([1, 2]), T([0, 0]))

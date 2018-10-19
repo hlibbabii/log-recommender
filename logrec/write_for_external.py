@@ -3,10 +3,10 @@ import logging
 import os
 from operator import attrgetter
 
-from classify_and_select_major_logs import select_logs_from_major_classes
-from util import io_utils
-from preprocess_params import pp_params
-from preprocessors import apply_preprocessors
+from logrec.classify_and_select_major_logs import select_logs_from_major_classes
+from logrec.dataprep.preprocessors import apply_preprocessors
+from logrec.dataprep.preprocess_params import pp_params
+from logrec.util import io_utils
 
 
 def write_log_context_to_corpus_file(preprocessed_logs, output_filename, context_lines_to_consider):

@@ -1,13 +1,15 @@
 import argparse
-from copy import deepcopy
 import csv
-from random import shuffle
 import itertools
+from copy import deepcopy
+from random import shuffle
+
 import numpy
 from numpy.core.multiarray import ndarray
-from cluster.hclustering import get_first_words, jaccard
-from util.io_utils import load_classes
-from util import io_utils
+
+from logrec.cluster.hclustering import get_first_words, jaccard
+from logrec.util import io_utils
+from logrec.util.io_utils import load_classes
 
 __author__ = 'hlib'
 

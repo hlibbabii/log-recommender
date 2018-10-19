@@ -2,13 +2,15 @@ import argparse
 import json
 import logging
 import os
+import sys
 from math import log
 from multiprocessing.pool import Pool
 from operator import itemgetter
 from random import shuffle
 
-from dataprep import base_project_dir
+print(sys.path)
 from fastai.imports import tqdm
+from logrec.dataprep import base_project_dir
 
 logging.basicConfig(level=logging.INFO)
 

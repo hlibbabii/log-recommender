@@ -1,13 +1,13 @@
 import unittest
 
-from dataprep.preprocessors.model.chars import NewLine, Tab
-from dataprep.preprocessors.model.general import ProcessableToken, NonEng
-from dataprep.preprocessors.model.numeric import Number, DecimalPoint
-from dataprep.preprocessors.model.split import UnderscoreSplit, CamelCaseSplit, WithNumbersSplit
-from dataprep.preprocessors.model.textcontainers import OneLineComment, StringLiteral, MultilineComment
+from logrec.dataprep.preprocessors.model.chars import NewLine, Tab
+from logrec.dataprep.preprocessors.model.general import ProcessableToken, NonEng
+from logrec.dataprep.preprocessors.model.numeric import Number, DecimalPoint
+from logrec.dataprep.preprocessors.model.split import UnderscoreSplit, CamelCaseSplit, WithNumbersSplit
+from logrec.dataprep.preprocessors.model.textcontainers import OneLineComment, StringLiteral, MultilineComment
 # TODO write explanations with normal strings
-from dataprep.preprocessors.preprocessing_types import PreprocessingType
-from dataprep.preprocessors.repr import to_repr
+from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingType
+from logrec.dataprep.preprocessors.repr import to_repr
 
 
 class TeprTest(unittest.TestCase):

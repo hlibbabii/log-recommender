@@ -1,12 +1,12 @@
 import unittest
 
-from dataprep.preprocessors.model.chars import OneLineCommentStart, NewLine, MultilineCommentEnd, \
+from logrec.dataprep.preprocessors.model.chars import OneLineCommentStart, NewLine, MultilineCommentEnd, \
     MultilineCommentStart
-from dataprep.preprocessors.model.general import ProcessableToken, NonEng
-from dataprep.preprocessors.model.split import UnderscoreSplit, CamelCaseSplit, WithNumbersSplit
-from dataprep.preprocessors.model.textcontainers import OneLineComment, StringLiteral, MultilineComment
+from logrec.dataprep.preprocessors.model.general import ProcessableToken, NonEng
+from logrec.dataprep.preprocessors.model.split import UnderscoreSplit, CamelCaseSplit, WithNumbersSplit
+from logrec.dataprep.preprocessors.model.textcontainers import OneLineComment, StringLiteral, MultilineComment
 # TODO write explanations with normal strings
-from dataprep.preprocessors.noneng import mark
+from logrec.dataprep.preprocessors.noneng import mark
 
 
 class NonengTest(unittest.TestCase):

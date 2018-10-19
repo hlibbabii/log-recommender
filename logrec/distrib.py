@@ -1,5 +1,6 @@
 import logging
-from util import io_utils
+
+from logrec.util import io_utils
 
 
 def calculate_log_level_freqs_by_first_word_cathegory(classified_logs, keys):

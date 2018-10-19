@@ -1,7 +1,9 @@
 import argparse
 import logging
+
 from numpy import genfromtxt
-from util import io_utils
+
+from logrec.util import io_utils
 
 
 def run_hierarchical_clustering(log_vectors, first_words_vector, contexts, metric_function):
@@ -73,6 +75,9 @@ class ClusteringTree(object):
             return [self.payload]
         else:
             return self.left_tree.get_all_leaf_payloads() + self.right_tree.get_all_leaf_payloads()
+
+    def __eq__(self, other):
+        return self.payload == other.payload and self.left_tree == other.left_tree and self.right_tree == other.right_tree
 
 
 def tree_from_dendrogram(dendrogram):

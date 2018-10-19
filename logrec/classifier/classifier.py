@@ -4,11 +4,13 @@ from time import time
 
 import deepdiff
 import matplotlib
+
+from logrec.langmodel.utils import output_predictions, back_to_train_mode, to_test_mode
+
 matplotlib.use('Agg')
 
-from nn.log_loc_dataset import LogLocationDataset
-from nn.classifier_params import nn_params, Mode
-from nn.utils import output_predictions, back_to_train_mode, to_test_mode
+from logrec.classifier.log_loc_dataset import LogLocationDataset
+from logrec.classifier.classifier_params import nn_params, Mode
 
 
 import logging

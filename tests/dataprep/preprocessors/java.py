@@ -1,11 +1,11 @@
 import unittest
 
-from dataprep.preprocessors.java import process_comments_and_str_literals
-from dataprep.preprocessors.model.chars import OneLineCommentStart, NewLine, Quote, MultilineCommentEnd, \
+from logrec.dataprep.preprocessors.java import process_comments_and_str_literals
+from logrec.dataprep.preprocessors.model.chars import OneLineCommentStart, NewLine, Quote, MultilineCommentEnd, \
     MultilineCommentStart
-from dataprep.preprocessors.model.general import ProcessableToken
-from dataprep.preprocessors.model.split import UnderscoreSplit, CamelCaseSplit
-from dataprep.preprocessors.model.textcontainers import OneLineComment, StringLiteral, MultilineComment
+from logrec.dataprep.preprocessors.model.general import ProcessableToken
+from logrec.dataprep.preprocessors.model.split import UnderscoreSplit, CamelCaseSplit
+from logrec.dataprep.preprocessors.model.textcontainers import OneLineComment, StringLiteral, MultilineComment
 
 
 # TODO write explanations with normal strings
