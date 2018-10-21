@@ -26,8 +26,10 @@ class VocabMerger(object):
         new_words = [v for v in vocab if v not in self.merged_vocabs]
         logging.debug(f"New words: {list(new_words)[:10]} ...")
         self.merged_vocabs = self.merged_vocabs + vocab
-        self.sizes.append(len(self.merged_vocabs))
+        cur_vocab_size = len(self.merged_vocabs)
+        self.sizes.append(cur_vocab_size)
         self.non_eng.append(self.merged_vocabs[placeholders['non_eng']])
+        logging.info(f"Current vocab size: {cur_vocab_size}")
 
     def write_stats(self, path_to_stats_file):
         stats = self.__generate_stats()
