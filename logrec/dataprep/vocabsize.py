@@ -2,8 +2,10 @@ import argparse
 import logging
 import os
 import time
+from collections import Counter
 from multiprocessing.pool import Pool
 
+from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.to_repr import REPR_EXTENSION
 from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_VOCABSIZE_ARGS
 
@@ -13,23 +15,32 @@ class VocabMerger(object):
 
     def __init__(self):
         self.sizes = []
-        self.merged_vocabs = set()
+        self.non_eng = []
+        self.merged_vocabs = Counter()
+        self.words = {}
 
     def merge(self, vocab):
-        if not isinstance(vocab, set):
-            raise TypeError(f'Vocab must be a set, but is {type(vocab)}')
+        if not isinstance(vocab, Counter):
+            raise TypeError(f'Vocab must be a Counter, but is {type(vocab)}')
 
-        new_words = vocab.difference(self.merged_vocabs)
+        new_words = [v for v in vocab if v not in self.merged_vocabs]
         logging.debug(f"New words: {list(new_words)[:10]} ...")
-        self.merged_vocabs = self.merged_vocabs.union(vocab)
+        self.merged_vocabs = self.merged_vocabs + vocab
         self.sizes.append(len(self.merged_vocabs))
+        self.non_eng.append(self.merged_vocabs[placeholders['non_eng']])
 
     def write_stats(self, path_to_stats_file):
         stats = self.__generate_stats()
         with open(path_to_stats_file, 'w') as f:
-            f.write(f"{str(self.sizes[-1])}\n")
+            f.write(f"{str(self.sizes[-1])} {str(self.non_eng[-1])}\n")
             for line in stats:
-                f.write(f"{line[0]} {line[1]}\n")
+                f.write(f"{line[0]} {line[1]} {line[2]}\n")
+
+    def write_vocab(self, path_to_vocab_file):
+        sorted_vocab = sorted(self.merged_vocabs.items(), key=lambda x: x[1], reverse=True)
+        with open(path_to_vocab_file, 'w') as f:
+            for entry in sorted_vocab:
+                f.write(f'{entry[0]} {entry[1]}\n')
 
     def __generate_stats(self):
         total = len(self.sizes)
@@ -37,7 +48,10 @@ class VocabMerger(object):
         for percent in self.DEFAULT_PERCENTS:
             n_files = int(percent * total)
             exact_percent = float(n_files) / total
-            stats.append((exact_percent, self.sizes[n_files - 1] if n_files > 0 else 0))
+            stats.append((exact_percent,
+                          self.sizes[n_files - 1] if n_files > 0 else 0,
+                          self.non_eng[n_files - 1] if n_files > 0 else 0
+                          ))
         return stats
 
 
@@ -60,14 +74,13 @@ def get_all_files(full_src_dir):
 
 
 def get_vocab(path_to_file):
-    vocab = set()
+    vocab = Counter()
     with open(path_to_file, 'r') as f:
         for line in f:
             if line[-1] == '\n':
                 line = line[:-1]
             split = line.split(' ')
-            for word in split:
-                vocab.add(word)
+            vocab.update(split)
     return vocab
 
 
@@ -106,3 +119,4 @@ if __name__ == '__main__':
                          f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
 
     vocab_merger.write_stats(f'{full_src_dir}/vocabsize')
+    vocab_merger.write_vocab(f'{full_src_dir}/vocab')
