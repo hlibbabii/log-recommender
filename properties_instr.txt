@@ -2,7 +2,7 @@ local.properties.py:
 
 locally:
 ##################################################
-from dataprep import base_project_dir
+from logrec.dataprep import base_project_dir
 
 REWRITE_PARSED_FILE=True
 
@@ -13,6 +13,7 @@ DEFAULT_PARSE_PROJECTS_ARGS=[['raw/test1', 'test1/parsed']]
 DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS=[["test1/repr/nocomstr_1_numspl_1_scspl_1_spl_1_nonewlinestabs_0/train"]]
 DEFAULT_TO_REPR_ARGS=[['--preprocessing-types', 'spl=1,numspl=1,nocom=0,nostr=1,nonewlinestabs=0,scspl=1',
                               'test1/parsed', 'test1']]
+DEFAULT_VOCABSIZE_ARGS=[['test1/repr/en_only_1_numspl_1_scspl_1_spl_1_nocom_0_nonewlinestabs_0_nostr_0/train']]
 
 DB_DBNAME='logrec'
 DB_USER='logrec'
@@ -22,7 +23,7 @@ DB_PASSWORD='<password>'
 
 on vcs:
 ##################################################
-from dataprep import base_project_dir
+from logrec.dataprep import base_project_dir
 
 REWRITE_PARSED_FILE=False
 
@@ -32,6 +33,7 @@ DEFAULT_PARSED_DATASETS_DIR= f'{base_project_dir}/nn-data/new_framework/'
 DEFAULT_PARSE_PROJECTS_ARGS=[]
 DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS=[]
 DEFAULT_TO_REPR_ARGS=[]
+DEFAULT_VOCABSIZE_ARGS=[]
 
 DB_DBNAME='logrec'
 DB_USER='logrec'
