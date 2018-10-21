@@ -2,7 +2,7 @@ local.properties.py:
 
 locally:
 ##################################################
-from dataprep import base_project_dir
+from logrec.dataprep import base_project_dir
 
 REWRITE_PARSED_FILE=True
 
@@ -23,7 +23,7 @@ DB_PASSWORD='<password>'
 
 on vcs:
 ##################################################
-from dataprep import base_project_dir
+from logrec.dataprep import base_project_dir
 
 REWRITE_PARSED_FILE=False
 
