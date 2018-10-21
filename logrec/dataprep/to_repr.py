@@ -167,9 +167,12 @@ if __name__ == '__main__':
         gen_dir_name_from_verb_param += '_'
 
     full_dest_dir = f'{args.base_to}/{args.dest}/{"repr" if got_pure_repr else "partrepr"}/{gen_dir_name_from_verb_param}'
+    full_metadata_dir = f'{args.base_to}/{args.dest}/metadata/{gen_dir_name_from_verb_param}'
     logging.info(f"Writing preprocessed files to {os.path.abspath(full_dest_dir)}")
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir)
+    if not os.path.exists(full_metadata_dir):
+        os.makedirs(full_metadata_dir)
 
     with open(f'{full_dest_dir}/preprocessing_types.json', "w") as f:
         json.dump(new_preprocessing_types_dict, f)
