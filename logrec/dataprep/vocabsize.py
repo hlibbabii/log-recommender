@@ -127,7 +127,7 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG)
 
-    full_src_dir = f'{args.base_from}/{args.dataset}/repr/{args.repr}'
+    full_src_dir = f'{args.base_from}/{args.dataset}/repr/{args.repr}/train'
     full_metadata_dir = f'{args.base_from}/{args.dataset}/metadata/{args.repr}'
 
     if not os.path.exists(full_src_dir):
