@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import pickle
 import time
 from collections import Counter
 from multiprocessing.pool import Pool
@@ -12,17 +13,25 @@ from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_VOCABSI
 
 class VocabMerger(object):
     DEFAULT_PERCENTS = [0.01, 0.02, 0.05, 0.15, 0.5, 0.95, 1.0]
+    DUMP_TO_DISK_EVERY = 100
+    CLASS_VERSION = 1
 
-    def __init__(self):
+    def __init__(self, path_to_dump):
+        self.path_to_dump = path_to_dump
         self.sizes = []
         self.non_eng = []
         self.merged_vocabs = Counter()
-        self.words = {}
+        self.seen_files = []
 
-    def merge(self, vocab):
+    def __dump_to_file(self):
+        pickle.dump(self, open(self.path_to_dump, 'wb'))
+
+    def merge(self, vocab, file_id):
         start = time.time()
         if not isinstance(vocab, Counter):
             raise TypeError(f'Vocab must be a Counter, but is {type(vocab)}')
+        if file_id in self.seen_files:
+            raise AssertionError("File already seen!")
 
         new_words = [v for v in vocab if v not in self.merged_vocabs]
         logging.debug(f"New words: {list(new_words)[:10]} ...")
@@ -31,6 +40,10 @@ class VocabMerger(object):
         self.sizes.append(cur_vocab_size)
         self.non_eng.append(self.merged_vocabs[placeholders['non_eng']])
         logging.info(f"Merging took {time.time() - start} s, current vocab size: {cur_vocab_size}")
+        self.seen_files.append(file_id)
+
+        if len(self.seen_files) % self.DUMP_TO_DISK_EVERY == 0:
+            self.__dump_to_file()
 
     def write_stats(self, path_to_stats_file):
         stats = self.__generate_stats()
@@ -56,6 +69,9 @@ class VocabMerger(object):
                           self.non_eng[n_files - 1] if n_files > 0 else 0
                           ))
         return stats
+
+    def get_seen_files(self):
+        return self.seen_files
 
 
 def calc_total_files(full_src_dir):
@@ -84,8 +100,17 @@ def get_vocab(path_to_file):
                 line = line[:-1]
             split = line.split(' ')
             vocab.update(split)
-    return vocab
+    return (vocab, path_to_file)
 
+
+def create_vocab_merger(path_to_dump):
+    if (os.path.exists(path_to_dump)):
+        vocab_merger = pickle.load(open(path_to_dump, 'rb'))
+        if not isinstance(vocab_merger, VocabMerger):
+            raise TypeError(f"Object {str(vocab_merger)} must be VocabMerger version {vocab_merger.VERSION}")
+        return vocab_merger
+    else:
+        return VocabMerger(path_to_dump)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -110,13 +135,14 @@ if __name__ == '__main__':
         logging.warning("No preprocessed files found.")
         exit(4)
     files_total = len(all_files)
-    current_file = 0
     start_time = time.time()
-    vocab_merger = VocabMerger()
+    vocab_merger = create_vocab_merger(f'{full_metadata_dir}/part_vocab.pkl')
+    seen_files = vocab_merger.get_seen_files()
+    current_file = len(seen_files)
     with Pool() as pool:
-        it = pool.imap_unordered(get_vocab, all_files)
-        for vocab in it:
-            vocab_merger.merge(vocab)
+        it = pool.imap_unordered(get_vocab, [f for f in all_files if f not in seen_files])
+        for vocab, path_to_file in it:
+            vocab_merger.merge(vocab, path_to_file)
             current_file += 1
             logging.info(f"Processed {current_file} out of {files_total}")
             time_elapsed = time.time() - start_time
