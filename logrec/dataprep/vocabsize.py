@@ -129,9 +129,15 @@ if __name__ == '__main__':
 
     full_src_dir = f'{args.base_from}/{args.dataset}/repr/{args.repr}'
     full_metadata_dir = f'{args.base_from}/{args.dataset}/metadata/{args.repr}'
+
     if not os.path.exists(full_src_dir):
         logging.error(f"Dir does not exist: {full_src_dir}")
         exit(3)
+
+    if os.path.exists(f'{full_metadata_dir}/vocabsize'):
+        logging.warning(f"File already exists: {full_metadata_dir}/vocabsize. Doing nothing.")
+        exit(0)
+
     logging.info(f"Reading files from: {os.path.abspath(full_src_dir)}")
 
     all_files = get_all_files(full_src_dir)
