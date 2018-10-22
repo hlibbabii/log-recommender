@@ -64,6 +64,21 @@ Currently, a heuristic that chooses a splitting amoung the set of all possible s
 - resulting subwords should occur individually as often as possible in the dataset
 - the length of the subwords should be close to the average length of words in vocabulary (~ 5 in our case) with more penalty for shorter words
 
+##### Steps
+
+1. The vocabulary of alamanis dataset is calculated as following
+`lorec vocab build en_100_percent 1101001`
+- camelcase and undercase splitting is done
+- splitting of numerals is done
+- string and comments are NOT removed
+- non-English words are removed
+
+1. The resulting vocabulary is used as input file (`{base_project_dir}/vocab`) to splitting algorithm (`logrec/split/samecase/splitter.py`)
+
+1. The algorithm produces `splitting.txt` file.
+
+1. Parsing-preprocessing framework uses `splitting.txt` for splitting
+
 Related papers:
 [Splitting source code identifiers using Bidirectional LSTM Recurrent Neural Network](https://arxiv.org/abs/1805.11651)
 - check this approach against our manually tagged data (manually_tagged_splittings.txt).
