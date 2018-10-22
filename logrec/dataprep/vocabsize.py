@@ -20,6 +20,7 @@ class VocabMerger(object):
         self.words = {}
 
     def merge(self, vocab):
+        start = time.time()
         if not isinstance(vocab, Counter):
             raise TypeError(f'Vocab must be a Counter, but is {type(vocab)}')
 
@@ -29,7 +30,7 @@ class VocabMerger(object):
         cur_vocab_size = len(self.merged_vocabs)
         self.sizes.append(cur_vocab_size)
         self.non_eng.append(self.merged_vocabs[placeholders['non_eng']])
-        logging.info(f"Current vocab size: {cur_vocab_size}")
+        logging.info(f"Merging took {time.time() - start} s, current vocab size: {cur_vocab_size}")
 
     def write_stats(self, path_to_stats_file):
         stats = self.__generate_stats()
