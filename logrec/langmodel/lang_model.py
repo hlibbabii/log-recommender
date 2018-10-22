@@ -249,8 +249,9 @@ def train_model(rnn_learner, path_to_dataset, model_name):
 if __name__ =='__main__':
     parser = ArgumentParser()
     parser.add_argument("params_file")
-    args = parser.parse_args(["params"])
+    args = parser.parse_args()
     params = importlib.import_module(args.params_file)
+    logging.info(f"Using params: {params.nn_params}")
 
     nn_arch = params.nn_params['arch']
     nn_testing = params.nn_params['testing']
@@ -261,7 +262,10 @@ if __name__ =='__main__':
 
     path_to_dataset = f'{params.nn_params["path_to_data"]}/{params.nn_params["dataset_name"]}'
     force_rerun = False
-    if params.nn_params['mode'] == Mode.VOCAB_BUILDING.value:
+    md=params.nn_params['mode']
+    logging.info(f"Mode: {md}")
+    if md == Mode.VOCAB_BUILDING.value:
+        logging.info("Vocab building mode.")
         learner, text_field, model_trained = get_model("vocab", only_build_vocab=True)
         logging.info("Vocab is built.")
         exit(0)
