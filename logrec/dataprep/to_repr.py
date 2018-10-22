@@ -108,17 +108,15 @@ def preprocess_and_write(params):
 
 
 def gen_dir_name(new_preprocessing_param_dict):
-    yes = ""
-    no = ""
-    unknown = ""
-    for (k,v) in sorted(new_preprocessing_param_dict.items()):
-        if v is None:
-            unknown += (k + "_unk_")
-        elif v:
-            yes += (k + "_1_")
+    name = ""
+    for k in PreprocessingType:
+        if new_preprocessing_param_dict[k] is None:
+            name += "_"
+        elif new_preprocessing_param_dict[k]:
+            name += "1"
         else:
-            no += (k + "_0_")
-    return (yes + no + unknown)[:-1]
+            name += "0"
+    return name
 
 
 def parse_preprocessing_params(preprocessing_types_str):

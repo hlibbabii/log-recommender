@@ -9,11 +9,11 @@ from logrec.dataprep.preprocessors.model.textcontainers import OneLineComment, M
 
 class PreprocessingType(str, Enum):
     SPL: str = 'spl'
-    SC_SPL: str = 'scspl'
     NUM_SPL: str = 'numspl'
-    NO_STR: str = 'nostr'
-    NO_COM: str = 'nocom'
+    SC_SPL: str = 'scspl'
     NO_NEWLINES_TABS: str = 'nonewlinestabs'
+    NO_COM: str = 'nocom'
+    NO_STR: str = 'nostr'
     EN_ONLY: str = 'en_only'
 
 
