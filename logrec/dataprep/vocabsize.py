@@ -151,3 +151,4 @@ if __name__ == '__main__':
 
     vocab_merger.write_stats(f'{full_metadata_dir}/vocabsize')
     vocab_merger.write_vocab(f'{full_metadata_dir}/vocab')
+    os.remove(f'{full_metadata_dir}/part_vocab.pkl')
