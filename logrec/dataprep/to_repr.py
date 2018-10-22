@@ -1,4 +1,5 @@
 import argparse
+import gzip
 import json
 import logging
 import os
@@ -80,7 +81,7 @@ def preprocess_and_write(params):
         exit(2)
 
     logging.info(f"Preprocessing parsed file {src_file}")
-    with open(src_file, 'rb') as i:
+    with gzip.GzipFile(src_file, 'rb') as i:
         preprocessing_param_dict = pickle.load(i)
         if old_preprocessing_params != preprocessing_param_dict:
             logging.error(f"File {src_file} was expected to have preprocessing params "

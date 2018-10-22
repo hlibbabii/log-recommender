@@ -1,4 +1,5 @@
 import argparse
+import gzip
 import json
 import logging
 import os
@@ -57,7 +58,7 @@ def preprocess_and_write(params):
         logging.error(f"Path {dir_with_files_to_preprocess} does not exist")
         exit(2)
     filenames=[]
-    with open(f'{path_to_preprocessed_file}.part', 'wb') as f:
+    with gzip.GzipFile(f'{path_to_preprocessed_file}.part', 'wb') as f:
         total_files = sum([f for f in java_file_mapper(dir_with_files_to_preprocess, lambda path: 1)])
         logging.info(f"Preprocessing java files from {dir_with_files_to_preprocess}. Files to process: {total_files}")
         pickle.dump(preprocessing_param_dict, f, pickle.HIGHEST_PROTOCOL)
