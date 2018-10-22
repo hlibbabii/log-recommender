@@ -1,85 +1,52 @@
-<cc_sep> 163032283
-. 81755298
-) 72581006
-( 72577118
-; 58225452
-<capital> 35135362
-, 26744363
-} 22048611
-{ 22045959
-= 19589046
-<us_sep> 17980292
 get 14766540
-<str_literal> 13856222
-<comment> 13314699
-0 12068922
 public 10550686
 string 8888660
-1 8487676
 import 8185490
 new 7801339
 return 7051814
 if 6670673
-2 5897424
 set 5602631
-+ 5592521
  5534744
 int 5321807
 null 4921233
 exception 4570772
 name 4548795
 org 4534140
-[ 4336700
-] 4336661
 void 4262044
 i 4193062
-< 4100852
 type 4057095
 class 3905433
 final 3853462
 this 3666068
 private 3540349
-> 3366593
-3 3312365
 value 3195147
 static 3110291
 list 3069600
 id 2913174
-4 2776077
 add 2739251
 java 2726819
 e 2693211
 object 2663035
-@ 2600653
-== 2450807
 test 2410065
-5 2323303
 assert 2264646
 is 2246947
 to 2219420
 file 2146594
 data 2073228
 boolean 2060640
-6 1969582
-: 1952252
 element 1895012
 util 1849461
 m 1836518
-!= 1836053
 equals 1833194
-8 1803397
 map 1795000
 throws 1736269
 node 1728477
 context 1716599
 true 1708644
 key 1692399
-7 1670533
 package 1621622
 else 1616120
-9 1607540
 for 1574623
-- 1532780
 event 1528687
 result 1516796
 false 1493035
@@ -99,13 +66,11 @@ x 1282305
 f 1267788
 byte 1224747
 j 1199747
-<0x> 1189996
 stream 1165284
 xml 1156022
 item 1153238
 long 1143690
 model 1134620
-<ect> 1131513
 request 1113392
 protected 1108013
 path 1106218
@@ -121,25 +86,19 @@ state 1040079
 t 1028494
 info 1008231
 property 1002678
-' 984768
 eclipse 959620
 append 955644
-&& 939536
 types 937577
-! 926650
 in 926360
 try 925611
 catch 922964
 throw 913269
 group 909219
-<dec_point> 907794
 listener 902406
 manager 892407
 default 867184
 attribute 862606
-* 859714
 instance 857715
-++ 853802
 user 845534
 resource 836449
 time 834580
@@ -160,7 +119,6 @@ method 774654
 client 771312
 table 758798
 double 751545
-? 750104
 buffer 746801
 token 743379
 of 736635
@@ -211,7 +169,6 @@ instanceof 577525
 filter 577483
 line 575778
 break 565808
-|| 565038
 abstract 564137
 entity 562139
 server 561583
@@ -233,7 +190,6 @@ stack 514901
 page 512847
 from 504756
 column 500581
-<non_eng> 498604
 configuration 487660
 version 481230
 session 478228
@@ -269,7 +225,6 @@ l 418857
 selection 418244
 expression 411569
 json 408180
-\' 406760
 constants 403614
 values 398589
 println 398173
@@ -292,7 +247,6 @@ args 374328
 editor 373898
 obj 372736
 panel 367655
-<f> 367534
 container 364752
 internal 361693
 debug 360757
@@ -310,7 +264,6 @@ height 344181
 point 343841
 store 343185
 call 340634
-<l> 338995
 bytes 338915
 k 338781
 mode 338634
@@ -353,14 +306,12 @@ mock 287917
 short 287808
 repository 287179
 msg 286505
->> 286053
 db 286009
 contains 285999
 options 285990
 common 285978
 descriptor 285926
 params 285348
-/ 284194
 dir 282862
 argument 282290
 junit 281000
@@ -368,7 +319,6 @@ template 280624
 names 279999
 g 279400
 illegal 278558
-+= 278042
 init 277831
 expected 276697
 build 272667
@@ -399,7 +349,6 @@ control 248730
 schema 248451
 attributes 246385
 meta 246081
-& 245111
 delete 242954
 binding 242828
 domain 242820
@@ -421,7 +370,6 @@ loader 231626
 h 231343
 window 230476
 do 230024
-F 228893
 open 228628
 display 227525
 left 227133
@@ -445,7 +393,6 @@ sub 213569
 frame 212027
 u 211975
 changed 211301
->= 210716
 body 210566
 val 209736
 controller 208096
@@ -495,7 +442,6 @@ registry 175951
 tab 175700
 bar 175608
 dom 175210
-\\ 174066
 cursor 173988
 preference 173410
 variable 173349
@@ -547,7 +493,6 @@ that 154493
 big 153644
 character 153241
 select 152592
-<= 152533
 ctx 151884
 up 151320
 role 151253
@@ -577,7 +522,6 @@ space 143861
 nodes 143732
 flow 143416
 storage 142141
--- 141917
 visit 141905
 substring 141654
 it 141570
@@ -594,7 +538,6 @@ env 137548
 os 137411
 packet 137310
 total 137232
-| 136455
 mouse 136380
 the 136071
 support 135923
@@ -695,7 +638,6 @@ diagram 106462
 declaration 106453
 listeners 106375
 props 106139
-<< 105728
 sort 105512
 iter 105425
 language 105418
@@ -736,7 +678,6 @@ sample 99492
 interval 99489
 only 99298
 direct 99191
-" 99132
 cluster 98945
 serial 98940
 contact 98746
@@ -959,10 +900,8 @@ drop 67957
 comp 67834
 connector 67755
 warn 67674
-<d> 67542
 priority 67465
 alias 67399
-E 66901
 flush 66894
 workbench 66879
 bukkit 66840
@@ -987,12 +926,10 @@ geoid 64882
 qname 64871
 animation 64740
 commands 64710
-C 64699
 ldap 64683
 mule 64612
 criteria 64579
 addr 64491
-A 64398
 inner 64394
 decl 64183
 descriptors 64150
@@ -1005,7 +942,6 @@ bitmap 63737
 failure 63716
 bus 63700
 absolute 63650
-** 63586
 track 63553
 saved 63329
 skip 63205
@@ -1031,10 +967,8 @@ matches 61101
 eef 61053
 prev 61004
 plugins 60973
-D 60933
 metrics 60899
 jdt 60891
-B 60779
 inet 60630
 created 60590
 prepare 60545
@@ -1067,7 +1001,6 @@ coord 58683
 xhtml 58514
 mark 58479
 zip 58445
-% 58412
 choice 58402
 head 58353
 br 58288
@@ -1303,7 +1236,6 @@ family 42747
 used 42708
 blob 42640
 existing 42620
--= 42573
 ac 42500
 association 42456
 compound 42433
@@ -1344,7 +1276,6 @@ revision 41050
 openflexo 41023
 repo 40901
 processing 40892
-|= 40875
 toolkit 40740
 answer 40708
 speed 40646
@@ -1381,7 +1312,6 @@ zoom 39089
 safe 39076
 dot 39055
 pixels 38961
-^ 38878
 arr 38871
 classpath 38871
 angle 38860
@@ -1588,7 +1518,6 @@ cycle 31185
 loaded 31164
 partial 31150
 calc 31091
-<e> 31074
 reporter 30989
 video 30973
 broker 30934
@@ -1976,7 +1905,6 @@ windows 21543
 bs 21541
 en 21476
 resume 21463
-# 21422
 clock 21374
 formula 21371
 compression 21367
@@ -2092,9 +2020,7 @@ baos 19509
 diagnostics 19488
 wo 19466
 wave 19465
-$ 19456
 minus 19452
-*= 19390
 xsd 19378
 players 19367
 shortcut 19344
@@ -2127,7 +2053,6 @@ translator 19041
 lhs 19023
 balance 19011
 grails 18997
-~ 18983
 minor 18966
 ticket 18946
 secondary 18937
@@ -2440,7 +2365,6 @@ fr 15159
 alibaba 15154
 mv 15145
 dialogs 15139
-&= 15132
 cup 15129
 replication 15128
 mesh 15116
@@ -2841,7 +2765,6 @@ sections 11711
 saml 11689
 zookeeper 11667
 regexp 11663
-// 11662
 fragments 11659
 gravity 11649
 decoded 11648
@@ -3373,7 +3296,6 @@ critical 8756
 hold 8755
 yellow 8749
 opennaas 8744
-^= 8743
 proguard 8724
 nano 8722
 captcha 8722
@@ -3397,7 +3319,6 @@ sqlserver 8633
 third 8630
 finer 8628
 pat 8628
-cup$parser$stack 8628
 xx 8626
 broadleafcommerce 8626
 itemstack 8619
@@ -3728,7 +3649,6 @@ subclass 7349
 openstack 7343
 news 7340
 jbi 7338
-/= 7335
 weights 7335
 guvnor 7329
 scrollbar 7326
@@ -4143,7 +4063,6 @@ joint 5951
 james 5951
 opening 5949
 monster 5949
-arg$ 5944
 ruler 5942
 provides 5940
 iio 5930
@@ -4393,7 +4312,6 @@ gm 5304
 failover 5296
 ending 5294
 wp 5294
-cup$parser$top 5293
 enemy 5291
 lava 5280
 aligned 5277
@@ -5131,7 +5049,6 @@ vraptor 3934
 sencha 3933
 ime 3932
 submenu 3926
-cup$parser$result 3925
 invid 3925
 hatchet 3922
 rng 3917
@@ -5610,7 +5527,6 @@ mono 3320
 votes 3316
 revalidate 3315
 blitz 3315
-cup$x 3314
 website 3313
 classifiers 3313
 pong 3312
@@ -6005,7 +5921,6 @@ lin 2931
 ndg 2931
 yi 2927
 renamed 2926
-/* 2925
 inited 2924
 tinkerpop 2924
 adder 2924
@@ -6314,7 +6229,6 @@ resolving 2661
 sale 2660
 uids 2659
 characteristics 2658
-v$ 2658
 particles 2655
 rabbit 2655
 ansi 2654
@@ -6997,7 +6911,6 @@ substitutions 2127
 gemfire 2127
 collected 2126
 organizational 2126
-node$state 2126
 ruleset 2125
 negated 2125
 nodeset 2125
@@ -7439,7 +7352,6 @@ lx 1891
 mate 1890
 jscomp 1889
 logid 1889
-$runtime 1889
 male 1888
 bearing 1888
 unhandled 1887
@@ -7455,7 +7367,6 @@ ymin 1884
 drone 1884
 optionals 1882
 backed 1881
-parser$stack 1881
 cwc 1880
 made 1879
 described 1879
@@ -7806,7 +7717,6 @@ hyperic 1712
 denom 1712
 dss 1712
 jinx 1712
-v$g$ 1712
 banks 1711
 planes 1711
 orderings 1711
@@ -7898,7 +7808,6 @@ oob 1672
 pri 1672
 symb 1672
 ogl 1672
-parser$top 1672
 valgrind 1672
 exiting 1671
 fourth 1670
@@ -8255,7 +8164,6 @@ regs 1529
 sut 1528
 unscaled 1528
 london 1528
-%= 1527
 bytestream 1527
 ncia 1526
 phasor 1526
@@ -8798,7 +8706,6 @@ kiv 1339
 thaiopensource 1339
 crosby 1338
 advised 1338
-$so 1338
 fcp 1337
 jitter 1336
 flipper 1336
@@ -9015,7 +8922,6 @@ msec 1275
 tbx 1275
 pangool 1275
 animotron 1275
-$method 1275
 mirrors 1274
 rerun 1274
 torrents 1274
@@ -9796,7 +9702,6 @@ efv 1075
 ifa 1074
 breaking 1074
 cwd 1074
-value$ 1074
 muni 1074
 colorizer 1073
 tns 1073
@@ -9923,7 +9828,6 @@ unconditional 1046
 reasoner 1046
 stickiness 1046
 uia 1046
-match$ 1046
 obstacle 1045
 sized 1045
 duff 1045
@@ -10190,7 +10094,6 @@ differ 990
 jdl 990
 ewah 990
 surveys 990
-is$final 990
 assure 989
 adornment 989
 residual 989
@@ -10276,7 +10179,6 @@ gy 974
 changesets 974
 emailcommon 974
 rowspan 974
-$ex 974
 twitlogic 974
 keepalive 973
 dname 973
@@ -10449,7 +10351,6 @@ chestplate 939
 tuning 939
 blah 939
 scrollpane 939
-$in 939
 openxmlformats 939
 filterfw 939
 dempsy 939
@@ -10723,7 +10624,6 @@ geogit 893
 tabindex 892
 ddf 892
 nominanuda 892
-$self 892
 buzz 891
 gcd 891
 ipde 891
@@ -10780,7 +10680,6 @@ plurals 883
 variety 883
 tulskiy 883
 userportal 883
-$symbol 882
 rotator 882
 ladder 882
 stair 882
@@ -11204,7 +11103,6 @@ suitable 819
 jredis 819
 norms 819
 expreval 818
-$result 818
 eobjectflatcomboviewer 818
 multiplexer 817
 manually 817
@@ -11539,7 +11437,6 @@ fto 770
 fmrc 770
 xtremeware 770
 iudex 770
-cup$bio 770
 mwtests 770
 inherits 769
 lam 769
@@ -11554,7 +11451,6 @@ mage 768
 labeling 768
 pptp 768
 mtrackj 768
-parser$result 768
 ebmwebsourcing 768
 simpleserver 768
 zoomed 767
@@ -11989,7 +11885,6 @@ matrices 715
 rtree 715
 pheno 715
 objectmodel 715
-$ai 715
 authorisation 714
 discussion 714
 yo 714
@@ -12167,7 +12062,6 @@ dwarf 695
 grained 695
 shoebill 695
 cagrid 695
-$relationship 695
 urlencoded 694
 nodename 694
 specimen 694
@@ -12461,7 +12355,6 @@ surt 664
 superinterfaces 664
 mspsim 664
 rapidftr 664
-$assert 664
 netswitch 664
 lever 663
 orbit 663
@@ -12957,7 +12850,6 @@ yyinitial 615
 cop 615
 eql 615
 pinyin 615
-$param 615
 faulttolerance 615
 securesms 615
 administer 614
@@ -13194,7 +13086,6 @@ gnip 593
 xobotos 593
 sodium 592
 lcl 592
-` 592
 unschedule 592
 ccc 592
 dmr 592
@@ -13628,7 +13519,6 @@ tudelft 553
 simplification 553
 emblem 553
 oda 553
-cup$parser 553
 framerate 552
 encapsulate 552
 panic 552
@@ -13960,7 +13850,6 @@ cset 524
 sbuffer 524
 wireformat 524
 trilen 524
-$out 524
 relationgroups 524
 specgroups 524
 spechierarchyroots 524
@@ -14490,7 +14379,6 @@ wow 485
 advisors 485
 inflight 485
 dya 485
-$value 485
 springside 485
 sander 485
 blogs 484
@@ -14628,7 +14516,6 @@ mybatis 477
 smartsnip 477
 transcodings 477
 datastax 477
-v$el$ 477
 asseteditor 477
 ridden 476
 integerv 476
@@ -14681,7 +14568,6 @@ channelserver 474
 endx 473
 longvarbinary 473
 oname 473
-$f 473
 hfs 473
 acv 473
 jargon 473
@@ -15041,7 +14927,6 @@ pobj 450
 metro 450
 memcheck 450
 rjs 450
-$entity 450
 quark 450
 visualid 450
 xcri 450
@@ -16120,7 +16005,6 @@ rancid 392
 nbhm 392
 wodclipse 392
 slurm 392
-$attrs 392
 bender 391
 icmplt 391
 uninit 391
@@ -16408,7 +16292,6 @@ typecast 379
 sdrf 379
 reactant 379
 compilers 379
-$attribute 379
 deleg 379
 quantthresh 379
 medians 379
@@ -16636,7 +16519,6 @@ infohash 368
 autoincrement 368
 dslmeinte 368
 mereflect 368
-$rh 368
 nodelay 367
 defvalue 367
 determinate 367
@@ -17222,7 +17104,6 @@ tattrname 345
 charting 345
 getslice 345
 ndk 345
-$this 345
 diskmanager 345
 ailment 345
 cdmi 345
@@ -17959,7 +17840,6 @@ dii 316
 wavelets 316
 prtry 316
 jns 316
-cup$stack 316
 qw 315
 nijikokun 315
 ipojo 315
@@ -18926,7 +18806,6 @@ hotpotato 284
 izk 284
 schemaforschema 284
 classif 284
-result$ 284
 upcaster 284
 amcgala 284
 myswap 284
@@ -19184,7 +19063,6 @@ superfile 277
 routebox 277
 marcelsauer 277
 detourgames 277
-cup$twig 277
 patternity 277
 fulliname 277
 goodies 276
@@ -19277,7 +19155,6 @@ floordiv 274
 picojava 274
 kercoin 274
 singlecompositionview 274
-iterable$impl 274
 anddev 273
 healing 273
 sizeable 273
@@ -19372,7 +19249,6 @@ globe 271
 boa 271
 dumping 271
 mirage 271
-\x0c 271
 rbw 271
 wikis 271
 vdata 271
@@ -19894,7 +19770,6 @@ trus 257
 projectcode 257
 measles 257
 dynamicity 257
-list$ 257
 percolation 257
 embeddedvalue 257
 srem 256
@@ -20074,7 +19949,6 @@ exprlist 252
 evar 252
 keyfile 252
 cannon 252
-name$ 252
 existant 252
 totalsize 252
 echoed 252
@@ -20770,7 +20644,6 @@ interactable 235
 pxe 235
 xmdiff 235
 ymdiff 235
-in$circle 235
 wiserver 235
 kamols 235
 pheromone 235
@@ -22117,7 +21990,6 @@ stru 206
 nedadminconsole 206
 lwes 206
 cppapprox 206
-scala$xml 206
 bucketted 206
 resourceindex 206
 wuntee 206
@@ -22326,7 +22198,6 @@ arcticdrakefox 202
 wolfbot 202
 fptr 202
 xcert 202
-$state 202
 lateralgm 202
 queryexplorer 202
 scaenicus 202
@@ -22982,7 +22853,6 @@ insured 190
 rul 190
 tta 190
 classinfo 190
-data$ 190
 nvertex 190
 iimport 190
 tright 190
@@ -23117,7 +22987,6 @@ snaccmd 188
 xlint 188
 subresources 188
 boxe 188
-$gson$types 188
 omsbox 188
 eic 188
 sapprogramflowobject 188
@@ -23672,7 +23541,6 @@ unbalanced 178
 qualifies 178
 hiddens 178
 indep 178
-$package 178
 bitpos 178
 hexagonal 178
 disambiguate 178
@@ -24506,7 +24374,6 @@ seyren 167
 colorset 167
 postcredits 167
 trxns 167
-$local 167
 etsy 166
 gatekeeper 166
 reorganize 166
@@ -24848,7 +24715,6 @@ germanic 162
 msgtype 162
 prestart 162
 imb 162
-schema$ 162
 numbits 162
 sensorid 162
 unambiguous 162
@@ -24961,7 +24827,6 @@ osa 161
 ecgs 161
 jjstates 161
 emailpreview 161
-$next 161
 lqfb 161
 choreo 161
 medals 161
@@ -24972,8 +24837,6 @@ racob 161
 seblsrcinfo 161
 creditslog 161
 magicmarket 161
-$uri 161
-$qname 161
 teste 160
 pla 160
 colebans 160
@@ -25056,7 +24919,6 @@ twunches 160
 rcse 160
 birkettenterprise 160
 nclel 160
-$rm 160
 extgroupids 160
 etei 160
 rgbvalue 159
@@ -25156,7 +25018,6 @@ bijected 158
 quadrilateral 158
 headsets 158
 suppressing 158
-$fetch 158
 resolv 158
 interpretor 158
 pentomino 158
@@ -25186,7 +25047,6 @@ ballproject 158
 happytap 158
 rockeat 158
 nachos 158
-empty$ 158
 inocybe 158
 dhnd 158
 rtk 157
@@ -25562,7 +25422,6 @@ helped 153
 tablib 153
 loi 153
 failuredetector 153
-$e 153
 deploymentadmin 153
 lies 153
 xfrm 153
@@ -25964,8 +25823,6 @@ jewel 148
 transponder 148
 warped 148
 equipments 148
-$$$setup 148
-ui$$$ 148
 regalandroid 148
 oldchar 148
 sage 148
@@ -25982,7 +25839,6 @@ centerx 148
 yfor 148
 mifier 148
 dejavu 148
-$name 148
 guiwuu 148
 penultimate 148
 ecode 148
@@ -26273,7 +26129,6 @@ zhuikov 145
 aleksandr 145
 macroargument 145
 sapstructurefield 145
-var$ 145
 codi 145
 simplefeatures 145
 opxml 145
@@ -26681,7 +26536,6 @@ forma 140
 borderwidth 140
 encodation 140
 decimate 140
-cup$parser$actions 140
 chameleon 140
 clobber 140
 gemf 140
@@ -27194,8 +27048,6 @@ pws 134
 xtile 134
 swidth 134
 enablements 134
-$$$load 134
-text$$$ 134
 cjc 134
 chd 134
 consp 134
@@ -27862,7 +27714,6 @@ idmsc 128
 odotettu 128
 threedstyle 128
 esgf 128
-$title 128
 astex 128
 cfscript 128
 dtdrl 128
@@ -28040,8 +27891,6 @@ compensating 126
 webhdfs 126
 kvoffsets 126
 pond 126
-createdby$ 126
-createdon$ 126
 usi 126
 pathinfo 126
 whens 126
@@ -28065,7 +27914,6 @@ soapproxy 126
 eigencuts 126
 geometryless 126
 finescale 126
-$gson$preconditions 126
 queryhandler 126
 noneable 126
 deliverytools 126
@@ -28143,7 +27991,6 @@ xedif 125
 cref 125
 servershell 125
 pdom 125
-$class 125
 suposecli 125
 descendantorself 125
 rhandler 125
@@ -29168,7 +29015,6 @@ efficient 116
 recode 116
 stranded 116
 sir 116
-$get 116
 pathing 116
 testdb 116
 gyear 116
@@ -29221,7 +29067,6 @@ clanid 116
 horses 116
 minecarts 116
 krams 116
-fetch$ 116
 jquerymobile 116
 expedited 116
 kvindices 116
@@ -29481,7 +29326,6 @@ villagedoorinfo 114
 jackpal 114
 androidterm 114
 inquire 114
-set$ 114
 totaldigits 114
 nolink 114
 deviating 114
@@ -29618,7 +29462,6 @@ categoryid 113
 elision 113
 newbits 113
 graphstream 113
-map$ 113
 resph 113
 indentor 113
 swingsuite 113
@@ -29659,8 +29502,6 @@ verschluesseln 113
 autagent 113
 yatzee 113
 congloms 113
-$dir 113
-cup$result 113
 sdiff 112
 lindex 112
 zcount 112
@@ -29745,10 +29586,6 @@ stacky 112
 tenum 112
 convexity 112
 goby 112
-extsystem$ 112
-extobject$ 112
-extidentifier$ 112
-description$ 112
 lts 112
 sqlquery 112
 mystic 112
@@ -29802,12 +29639,10 @@ consolelog 112
 woerteler 112
 continuum 112
 rhubarb 112
-$reason 112
 jbms 112
 acwp 112
 eouter 112
 modulators 112
-cup$top 112
 quicktime 111
 zunionstore 111
 patter 111
@@ -31532,7 +31367,6 @@ nikki 100
 vflib 100
 digitbooks 100
 primitivegeofeature 100
-$$$$$ 100
 spa 100
 usercontext 100
 spree 100
@@ -31573,7 +31407,6 @@ annotates 99
 hardkeyboardhidden 99
 xto 99
 xmld 99
-module$ 99
 extensive 99
 moreoverflow 99
 alipay 99
@@ -31588,7 +31421,6 @@ xcount 99
 ptrans 99
 messg 99
 nfo 99
-$invoke 99
 resourceloader 99
 murle 99
 dwt 99
@@ -32001,7 +31833,6 @@ domsource 97
 kwnullable 97
 headnames 97
 tperrno 97
-$builder 97
 citem 97
 sline 97
 bymonthday 97
@@ -32106,7 +31937,6 @@ sbe 96
 unedited 96
 cajoled 96
 bookcase 96
-access$ 96
 typespec 96
 wizardpages 96
 outto 96
@@ -32252,7 +32082,6 @@ ddscaps 96
 fertilizable 96
 ratelog 96
 efinition 96
-$href 96
 nativefd 96
 fftsize 96
 sppsmb 96
@@ -32835,7 +32664,6 @@ females 92
 meg 92
 laid 92
 mountains 92
-this$ 92
 contentview 92
 igd 92
 dwherequantifier 92
@@ -32946,7 +32774,6 @@ tposiap 92
 tposiae 92
 futsall 92
 sqlerrmc 92
-$style 92
 entryoid 92
 itsc 92
 matchcount 91
@@ -33071,7 +32898,6 @@ innards 91
 cicadasong 91
 bufvoid 91
 mno 91
-category$ 91
 projargs 91
 ktable 91
 fathers 91
@@ -33733,7 +33559,6 @@ rwrw 88
 alues 88
 jaxbrm 88
 defaultconnections 88
-$mc3$ 88
 conccurent 88
 mypackage 87
 srandmember 87
@@ -34753,7 +34578,6 @@ tbend 82
 rotten 82
 newparent 82
 bestdist 82
-field$ 82
 accesor 82
 sounding 82
 removers 82
@@ -34898,7 +34722,6 @@ lblkey 82
 mdtype 82
 labyrinth 82
 tfw 82
-topping$ 82
 crimbco 82
 twistor 82
 superdroid 82
@@ -35865,7 +35688,6 @@ searchbox 77
 apage 77
 axial 77
 platinum 77
-*/ 77
 optim 77
 blinds 77
 contingency 77
@@ -36011,7 +35833,6 @@ eimport 77
 membermagics 77
 creditspolicys 77
 cutstr 77
-$type$buffer 77
 cosnaming 77
 gjson 77
 quantifiers 76
@@ -36070,8 +35891,6 @@ preparers 76
 virtualshop 76
 pale 76
 canbus 76
-$$$get 76
-component$$$ 76
 migratable 76
 rcdata 76
 vof 76
@@ -36230,7 +36049,6 @@ nemesis 76
 pwme 76
 subeffects 76
 swingosc 76
-correspondence$impl 76
 graphity 76
 modrecommend 76
 modertar 76
@@ -36702,7 +36520,6 @@ xclassifier 74
 cek 74
 zipme 74
 decnumber 74
-$id 74
 resourcesupport 74
 turris 74
 twickery 74
@@ -36732,7 +36549,6 @@ dynamicpagetrigger 74
 statsreg 74
 dodec 74
 recorderserver 74
-$call 74
 workitems 74
 costcode 74
 testmine 74
@@ -37053,9 +36869,6 @@ rownumber 72
 refsp 72
 nll 72
 gtp 72
-cup$parser$do 72
-cup$parser$act 72
-cup$parser$parser 72
 fbos 72
 sharps 72
 answering 72
@@ -37098,8 +36911,6 @@ mcount 72
 myhome 72
 cmderr 72
 raillogic 72
-this$name 72
-other$name 72
 newurl 72
 delt 72
 eoqualifier 72
@@ -37172,7 +36983,6 @@ ochar 72
 comfort 72
 personae 72
 restrictable 72
-$yielder 72
 retwis 72
 wkr 72
 vgoods 72
@@ -37463,7 +37273,6 @@ phrs 71
 nfctransaction 71
 softcore 71
 bricko 71
-$for 71
 haicom 71
 conndir 71
 imageproc 71
@@ -37475,7 +37284,6 @@ enterprises 71
 fmx 71
 srchtxt 71
 fkcd 71
-$lang 71
 painticon 71
 oblong 71
 mmbi 71
@@ -37612,7 +37420,6 @@ ucb 70
 bfexchangeservice 70
 olda 70
 ksr 70
-$i 70
 ownprec 70
 backpropagation 70
 subrects 70
@@ -37734,7 +37541,6 @@ kirjoittaja 70
 dgd 70
 nbhs 70
 objectcache 70
-union$ 70
 inanalyze 70
 numbertype 70
 coinc 70
@@ -37747,7 +37553,6 @@ joypad 70
 homeroom 70
 tiocm 70
 wykres 70
-$type 70
 longevity 70
 depimages 70
 headerinfo 70
@@ -37889,7 +37694,6 @@ unmangled 69
 lae 69
 midlandroid 69
 laptimer 69
-to$ 69
 gcb 69
 erdna 69
 notenspiegel 69
@@ -38226,7 +38030,6 @@ basefn 68
 softirq 68
 graphhandling 68
 desription 68
-mq$ 68
 previou 68
 vanderbilt 68
 hexnumber 68
@@ -39119,16 +38922,6 @@ qryclsimp 65
 getlegacy 65
 intgl 65
 blockpool 65
-$onclick 65
-$ondblclick 65
-$onmousedown 65
-$onmouseup 65
-$onmouseover 65
-$onmousemove 65
-$onmouseout 65
-$onkeypress 65
-$onkeydown 65
-$onkeyup 65
 representers 64
 jokre 64
 mnd 64
@@ -39417,8 +39210,6 @@ controltype 64
 stshf 64
 bso 64
 wwm 64
-name$string 64
-package$string 64
 photoeditor 64
 kindleit 64
 idloutput 64
@@ -40374,7 +40165,6 @@ monsrace 61
 zegoggles 61
 rsmp 61
 hasimoutput 61
-category$impl 61
 economysection 61
 jskey 61
 newstatvars 61
@@ -40551,7 +40341,6 @@ mane 60
 electrons 60
 esummary 60
 wantv 60
-$restricting 60
 adjustement 60
 unsplit 60
 sops 60
@@ -40666,7 +40455,6 @@ fastboot 60
 absoctets 60
 annote 60
 ghccompiler 60
-$has 60
 authorizers 60
 licks 60
 hoteis 60
@@ -40983,7 +40771,6 @@ conditon 59
 appliable 59
 attender 59
 jrmp 59
-rdb$relation 59
 soid 59
 franklin 59
 pollout 59
@@ -41264,7 +41051,6 @@ kpi 58
 reteoo 58
 toint 58
 dbls 58
-$pkg 58
 ssliosession 58
 ptx 58
 multiton 58
@@ -41796,7 +41582,6 @@ apiusage 57
 illuminated 57
 dsvm 57
 mlme 57
-read$bii 57
 resultbs 57
 hast 57
 designerweb 57
@@ -42573,7 +42358,6 @@ modificationuser 55
 ludarray 55
 estx 55
 lockscope 55
-$case 55
 unescaper 55
 mailinglist 55
 keith 55
@@ -43433,7 +43217,6 @@ dnaid 53
 expgenerators 53
 torder 53
 ammunition 53
-list$impl 53
 vapps 53
 contactwise 53
 advid 53
@@ -43625,7 +43408,6 @@ grandpa 52
 refernce 52
 wantu 52
 dataeditor 52
-from$ 52
 gsveo 52
 strlist 52
 precedences 52
@@ -44393,7 +44175,6 @@ unlocking 50
 austria 50
 oam 50
 threetest 50
-$map 50
 floatliteral 50
 eaa 50
 decltype 50
@@ -44824,7 +44605,6 @@ sfnse 50
 tmold 50
 componentlayout 50
 canchangeto 50
-$src 50
 volumei 50
 toog 50
 repn 50
@@ -44890,7 +44670,6 @@ maxmaxcode 49
 toddata 49
 tdr 49
 grnd 49
-$init 49
 reregister 49
 recalculated 49
 accomplishments 49
@@ -45042,7 +44821,6 @@ restat 49
 nnz 49
 getcontentlength 49
 tdy 49
-all$ 49
 eov 49
 erdiv 49
 sardine 49
@@ -45241,8 +45019,6 @@ vetex 49
 svalid 49
 eusablee 49
 groovyc 49
-head$ 49
-expr$$star 49
 servicesapi 49
 urlmp 49
 callermanager 49
@@ -45512,7 +45288,6 @@ componentvillagepathgen 48
 renderglobal 48
 royalchat 48
 telnetd 48
-$lock 48
 subcollection 48
 regulation 48
 yyp 48
@@ -45779,7 +45554,6 @@ modulefile 48
 schuine 48
 magcard 48
 literalizable 48
-write$bii 48
 liberated 48
 cdecls 48
 testlcdui 48
@@ -45852,7 +45626,6 @@ invokeinit 48
 attackvolenv 48
 sustainvolenv 48
 decayvolenv 48
-$var 48
 dfcs 48
 jjtroutineinvocation 48
 wpeer 48
@@ -45894,7 +45667,6 @@ hostaddr 47
 flgs 47
 ldiff 47
 farr 47
-container$manager 47
 synchronised 47
 instantheal 47
 purc 47
@@ -46134,7 +45906,6 @@ xym 47
 explaining 47
 refesh 47
 undeliverable 47
-rdb$field 47
 iisequences 47
 fpages 47
 xampp 47
@@ -46261,7 +46032,6 @@ hypers 47
 ivrdao 47
 imfd 47
 claus 47
-by$ 47
 ieds 47
 empid 47
 pupdate 47
@@ -46346,7 +46116,6 @@ extool 47
 openacc 47
 dbgerr 47
 antpath 47
-$type$ 47
 aia 47
 bindstatus 47
 itde 47
@@ -46579,7 +46348,6 @@ worldchunkmanager 46
 profilerresult 46
 componentstrongholdstairs 46
 haiku 46
-$a 46
 fstats 46
 lcom 46
 submodel 46
@@ -46620,7 +46388,6 @@ cddb 46
 idv 46
 warshall 46
 molding 46
-type$ 46
 samps 46
 cursive 46
 tetnum 46
@@ -46668,7 +46435,6 @@ argss 46
 savers 46
 subprogress 46
 tagi 46
-$old 46
 stalling 46
 logsize 46
 cukes 46
@@ -46735,7 +46501,6 @@ rsplen 46
 routestrings 46
 xmlclient 46
 smazat 46
-$registered 46
 gar 46
 unrollable 46
 iobject 46
@@ -46809,7 +46574,6 @@ autom 46
 ejv 46
 typetoxsd 46
 plme 46
-string$ljava 46
 meks 46
 demolition 46
 factionable 46
@@ -47381,7 +47145,6 @@ osmanya 45
 ironchest 45
 jjaxb 45
 vitaminc 45
-$l 45
 outpixbuf 45
 heavyweights 45
 qerr 45
@@ -47465,7 +47228,6 @@ journalnode 45
 canreturn 45
 windownotfocused 45
 unfavoured 45
-$mi4$ 45
 gsmlns 45
 pgram 45
 selectedobject 45
@@ -47509,7 +47271,6 @@ backprop 44
 bfc 44
 zvalue 44
 ccj 44
-state$provider 44
 hostel 44
 occluded 44
 sopt 44
@@ -47753,7 +47514,6 @@ viewerbook 44
 hashsplit 44
 reshanta 44
 appereance 44
-$txt 44
 relat 44
 wwww 44
 unmergeable 44
@@ -47941,7 +47701,6 @@ toright 44
 mkw 44
 refinfo 44
 reasemb 44
-exists$ 44
 nato 44
 esmcls 44
 upcasting 44
@@ -48739,7 +48498,6 @@ zdto 42
 reconstructor 42
 vref 42
 danielsoft 42
-context$factory 42
 luciddb 42
 fcall 42
 surveyinstance 42
@@ -48764,7 +48522,6 @@ loghandler 42
 unstreamed 42
 ticktype 42
 iic 42
-$parent 42
 faz 42
 plugh 42
 redeposit 42
@@ -48792,7 +48549,6 @@ eofflag 42
 mylog 42
 invsq 42
 gapless 42
-sheetname$ 42
 simplices 42
 nbyte 42
 sinlo 42
@@ -49679,7 +49435,6 @@ anemia 41
 crudinterfaces 41
 hubroid 41
 frankly 41
-append$ 41
 tagihan 41
 textzh 41
 haslrc 41
@@ -49736,7 +49491,6 @@ iminputfile 41
 pathogenicity 41
 samplebroker 41
 gsql 41
-$tmp 41
 roba 41
 omeeditpane 41
 bluelock 41
@@ -49751,7 +49505,6 @@ rulemultiplicative 41
 releasability 41
 annextext 41
 abstractrecord 41
-$target 41
 bifurcations 41
 debugee 41
 tcctx 41
@@ -50012,7 +49765,6 @@ rawlen 40
 bootcp 40
 dyt 40
 xkgid 40
-$qualifier 40
 pkeys 40
 flooding 40
 incrementable 40
@@ -50713,8 +50465,6 @@ elman 39
 outvar 39
 propertyfunctions 39
 phost 39
-implementation$ 39
-$$ 39
 scottish 39
 pastecode 39
 httpinvoker 39
@@ -50976,7 +50726,6 @@ classpathentry 39
 steadypoolsize 39
 maxpoolsize 39
 failconnection 39
-$py 39
 kqueue 39
 ethical 39
 genmodels 39
@@ -51856,7 +51605,6 @@ induce 37
 realx 37
 ircclient 37
 musiccursor 37
-$set 37
 dispather 37
 sublists 37
 nilled 37
@@ -52099,7 +51847,6 @@ transid 37
 wpath 37
 pprint 37
 bve 37
-content$ 37
 lexicalitems 37
 clocktime 37
 qualifiedname 37
@@ -52237,8 +51984,6 @@ usageexit 37
 trclmn 37
 npcdef 37
 isvisible 37
-xtexed$ 37
-ytexed$ 37
 octetstring 37
 dlis 37
 reqctx 37
@@ -52758,8 +52503,6 @@ softkeys 36
 decompiled 36
 accesing 36
 btrd 36
-delete$ 36
-$binding 36
 erpi 36
 quicksilver 36
 truncating 36
@@ -53374,7 +53117,6 @@ xplus 35
 upperleft 35
 bestx 35
 bolts 35
-provider$factory 35
 substems 35
 surrounded 35
 bcol 35
@@ -53704,7 +53446,6 @@ strbuilder 35
 warspite 35
 wbdb 35
 balaur 35
-voldsys$ 35
 teststubs 35
 usedefault 35
 sselection 35
@@ -54152,7 +53893,6 @@ clusterize 34
 vocals 34
 aggresive 34
 matrixs 34
-$put 34
 retrigger 34
 bytten 34
 throwers 34
@@ -54641,7 +54381,6 @@ getgclient 34
 relpos 34
 opsdone 34
 snipet 34
-$yield 34
 jawr 34
 msgdef 34
 itemno 34
@@ -55391,7 +55130,6 @@ punop 33
 diplay 33
 apiui 33
 nonanonymous 33
-rdb$index 33
 bigintunsigned 33
 sysidx 33
 primtives 33
@@ -55768,12 +55506,10 @@ astrdf 33
 uicallback 33
 zquery 33
 enscript 33
-of$value 33
 devinf 33
 wglgl 33
 mcasts 33
 kitsune 33
-corr$impl 33
 addn 33
 gradable 33
 tmpbyte 33
@@ -56485,7 +56221,6 @@ acceptation 32
 moduleref 32
 fcharset 32
 varialble 32
-$cause 32
 virtualapplications 32
 bpws 32
 cframe 32
@@ -56721,7 +56456,6 @@ notc 32
 litchr 32
 osmgraph 32
 printsettings 32
-recipient$string 32
 standstill 32
 uwetrottmann 32
 androidutils 32
@@ -57390,7 +57124,6 @@ spritesheet 31
 pvo 31
 kerros 31
 identitymgr 31
-ztexed$ 31
 referencey 31
 reviewers 31
 privprotocol 31
@@ -57530,7 +57263,6 @@ bcname 31
 endon 31
 rlike 31
 collectdtmf 31
-tail$ 31
 upvars 31
 macab 31
 mailfrom 31
@@ -58038,7 +57770,6 @@ onechar 30
 oorder 30
 csevl 30
 turnval 30
-required$ 30
 ron 30
 ujac 30
 ecor 30
@@ -58155,7 +57886,6 @@ tpev 30
 aptr 30
 keystoretype 30
 sparea 30
-class$ 30
 sfeature 30
 vibes 30
 bdu 30
@@ -58674,7 +58404,6 @@ wofs 30
 selfnamed 30
 iditr 30
 postlog 30
-default$ 30
 stoichometry 30
 runpath 30
 mulung 30
@@ -58903,7 +58632,6 @@ fullfilled 29
 umber 29
 uniquify 29
 argmap 29
-$array 29
 linkend 29
 jmap 29
 canonicals 29
@@ -59582,7 +59310,6 @@ multipoly 29
 nonopt 29
 yonatan 29
 yijing 29
-write$cii 29
 bulkan 29
 hobject 29
 underlines 29
@@ -59967,7 +59694,6 @@ subtarget 28
 dane 28
 setowner 28
 uriroot 28
-access$super 28
 hhook 28
 clengthone 28
 clengthtwo 28
@@ -60232,7 +59958,6 @@ unitary 28
 multipe 28
 wardrobe 28
 coke 28
-rowname$ 28
 zrev 28
 subgrid 28
 ttbp 28
@@ -60502,7 +60227,6 @@ ulozit 28
 fieldlength 28
 accoun 28
 mber 28
-$property 28
 undeployments 28
 prole 28
 fillchar 28
@@ -60535,7 +60259,6 @@ clsin 28
 jsonio 28
 pizzeria 28
 camerax 28
-camerapitch$ 28
 rawmodel 28
 grx 28
 tpat 28
@@ -60580,8 +60303,6 @@ scopeclosing 28
 maxstreams 28
 stafflink 28
 simplevm 28
-$switch 28
-map$net$minecraft$src$buildcraft$api$orientations 28
 atomatom 28
 modapi 28
 metalist 28
@@ -60743,7 +60464,6 @@ caddress 28
 uvsegsize 28
 blockdatalong 28
 subsidy 28
-read$cii 28
 diction 28
 iutput 28
 elementsetattributenodens 28
@@ -60895,7 +60615,6 @@ clisteners 28
 ucasts 28
 rebroadcasting 28
 hellohello 28
-cat$impl 28
 eflhs 28
 scalen 28
 pickboundingbox 28
@@ -61227,7 +60946,6 @@ carlfx 27
 brakes 27
 ezplug 27
 getlog 27
-rar$ 27
 jdpremclient 27
 orgm 27
 sah 27
@@ -61557,7 +61275,6 @@ academicdevoir 27
 attained 27
 underfull 27
 pmml 27
-$ingres 27
 rfv 27
 rhp 27
 rbintegrity 27
@@ -62099,7 +61816,6 @@ viewthread 27
 fldst 27
 formvars 27
 reged 27
-exhausted$ 27
 showmeasurement 27
 specal 27
 libver 27
@@ -62936,7 +62652,6 @@ typeinfos 26
 dateof 26
 arrowtower 26
 grounditems 26
-yvertex$ 26
 nestedset 26
 disapproved 26
 succeseeded 26
@@ -63297,7 +63012,6 @@ minvol 26
 rapleaf 26
 uimatag 26
 rhomobile 26
-collection$impl 26
 plotmaps 26
 valz 26
 mergedxpos 26
@@ -63804,7 +63518,6 @@ nosync 25
 pnp 25
 envstring 25
 indicesfor 25
-$ref 25
 defult 25
 generer 25
 gyldig 25
@@ -63829,7 +63542,6 @@ dfscio 25
 subprocesses 25
 startpage 25
 embeding 25
-$eq 25
 joone 25
 numerically 25
 agilent 25
@@ -64543,7 +64255,6 @@ toponym 25
 iconized 25
 versiongbc 25
 synths 25
-a$string$http 25
 haldajas 25
 trafficfeeds 25
 rooty 25
@@ -65230,11 +64941,6 @@ subcriteria 24
 sessionfactory 24
 knownhosts 24
 eahc 24
-this$value 24
-other$value 24
-this$z 24
-other$z 24
-$z 24
 lmatch 24
 imitator 24
 kfold 24
@@ -65481,7 +65187,6 @@ cdw 24
 jvmarg 24
 tempe 24
 typw 24
-mock$ 24
 managerlisteners 24
 jtransform 24
 rtpar 24
@@ -66020,7 +65725,6 @@ navring 24
 sradiusb 24
 onmaterial 24
 offmaterial 24
-model$c 24
 saxtf 24
 arth 24
 newsc 24
@@ -66280,7 +65984,6 @@ finaltccl 24
 chunktag 24
 elea 24
 rhogen 24
-map$impl 24
 piratemedia 24
 worldcretornica 24
 plotme 24
@@ -66854,7 +66557,6 @@ protective 23
 auditorium 23
 worship 23
 neutralize 23
-space$ 23
 ntup 23
 outloc 23
 nextri 23
@@ -67190,7 +66892,6 @@ tayloredapps 23
 userdef 23
 destcall 23
 moveitem 23
-xvertex$ 23
 tripricount 23
 yvar 23
 opvec 23
@@ -67242,7 +66943,6 @@ authenication 23
 enil 23
 ipclog 23
 howlong 23
-$end 23
 fibres 23
 personservice 23
 margined 23
@@ -67415,8 +67115,6 @@ pctrl 23
 manifesto 23
 jjz 23
 deserilized 23
-read$l 23
-write$l 23
 attrgetownerelement 23
 aclentry 23
 biasing 23
@@ -67784,7 +67482,6 @@ sfa 22
 serverpath 22
 draggablek 22
 mouseenter 22
-$length 22
 swith 22
 xba 22
 htin 22
@@ -68215,7 +67912,6 @@ dbfrom 22
 epost 22
 hangars 22
 hfactor 22
-$user 22
 xit 22
 creativecommons 22
 mlists 22
@@ -69015,7 +68711,6 @@ arget 22
 zaman 22
 reasmb 22
 letclass 22
-characters$$star 22
 acumulated 22
 namereturn 22
 protoco 22
@@ -69081,7 +68776,6 @@ macedonia 22
 leveldone 22
 lifelost 22
 paymnt 22
-descriptor$ 22
 rsdebug 22
 rstime 22
 rstypes 22
@@ -69092,7 +68786,6 @@ chomping 22
 drn 22
 datakey 22
 johnsmith 22
-$from 22
 bkj 22
 postlen 22
 stuffs 22
@@ -69209,9 +68902,6 @@ srccode 22
 wspolicy 22
 bukkitbasikscore 22
 snthresh 22
-every$elements 22
-any$elements 22
-iter$impl 22
 esrb 22
 auctionned 22
 categorynav 22
@@ -69270,8 +68960,6 @@ ymcu 22
 isfill 22
 devx 22
 devy 22
-$lg 22
-otype$ 22
 xrgbmodel 22
 gslimit 22
 dashphase 22
@@ -69853,7 +69541,6 @@ rcxcomm 21
 noof 21
 acknr 21
 wohttp 21
-create$ 21
 fetchspec 21
 intsize 21
 erve 21
@@ -69929,7 +69616,6 @@ preschool 21
 masonry 21
 differentiated 21
 ponds 21
-typename$ 21
 mdim 21
 dunits 21
 nstrips 21
@@ -70686,7 +70372,6 @@ unv 21
 aluetypee 21
 sayi 21
 platformdefinition 21
-id$$star 21
 kpof 21
 regdel 21
 apontamento 21
@@ -70747,7 +70432,6 @@ lumberyard 21
 directintent 21
 gamemakers 21
 genx 21
-int$ 21
 keyboardview 21
 apncontext 21
 pinstate 21
@@ -70965,7 +70649,6 @@ notinitkeystore 21
 mouseeventf 21
 dmlerr 21
 oglg 21
-$mi3$ 21
 lockword 21
 gcvt 21
 gtcatalog 21
@@ -71572,7 +71255,6 @@ eqclass 20
 pointtype 20
 wfp 20
 pquery 20
-support$factory 20
 noappointments 20
 massagings 20
 nopass 20
@@ -71625,7 +71307,6 @@ initalised 20
 geoidal 20
 kgid 20
 dealias 20
-end$ 20
 wosession 20
 unescapes 20
 unsuccessfull 20
@@ -72261,7 +71942,6 @@ irix 20
 loadout 20
 bulls 20
 openblock 20
-$test 20
 methodbinding 20
 wsaepr 20
 bpelc 20
@@ -72740,7 +72420,6 @@ extmatch 20
 regsave 20
 hatirlatma 20
 bodyr 20
-p$$shared 20
 pseparator 20
 characterisations 20
 consumedin 20
@@ -72877,8 +72556,6 @@ importfixes 20
 centit 20
 putkey 20
 nautic 20
-a$string$o 20
-consumer$o 20
 additionalparams 20
 foreiger 20
 preisgruppe 20
@@ -73777,7 +73454,6 @@ xconn 19
 segdir 19
 ydivision 19
 precisions 19
-$req 19
 subordinating 19
 jmsttl 19
 mtn 19
@@ -74449,7 +74125,6 @@ minits 19
 namespce 19
 sermon 19
 shootfrom 19
-$bii 19
 writeres 19
 aidia 19
 cybermen 19
@@ -74459,7 +74134,6 @@ throwingproviders 19
 mejb 19
 mappingprovider 19
 tssas 19
-generic$interface 19
 sawyer 19
 subwidgets 19
 ialg 19
@@ -75503,7 +75177,6 @@ launder 18
 cfield 18
 rude 18
 rgr 18
-$eo 18
 eokeyvaluequalifier 18
 inferrable 18
 rmn 18
@@ -75779,9 +75452,6 @@ cleint 18
 xyline 18
 fromdir 18
 ofe 18
-rdb$fields 18
-rdb$generators 18
-rdb$ref 18
 ownertype 18
 timestampi 18
 backgound 18
@@ -76270,9 +75940,6 @@ vsd 18
 hsimpl 18
 amx 18
 keesun 18
-$field 18
-$optional 18
-$bar 18
 headerdef 18
 mexid 18
 evaltask 18
@@ -76292,7 +75959,6 @@ jbuf 18
 numcows 18
 chosed 18
 hoard 18
-fool$s 18
 abcdef 18
 havings 18
 keystorefile 18
@@ -76381,7 +76047,6 @@ dstxml 18
 dalis 18
 ivss 18
 mou 18
-$echo 18
 actualchange 18
 drsqr 18
 efix 18
@@ -76853,7 +76518,6 @@ sbtw 18
 workdays 18
 udff 18
 isheet 18
-$base 18
 emphasise 18
 decedent 18
 bmm 18
@@ -77100,8 +76764,6 @@ androframework 18
 preterito 18
 perfeito 18
 precu 18
-every$keys 18
-any$keys 18
 plotworld 18
 redact 18
 derieve 18
@@ -77271,7 +76933,6 @@ cdds 18
 sbsp 18
 attrvallit 18
 toolutils 18
-$lc 18
 nonsecure 18
 clothoidtype 18
 abstractgeometricprimitivetype 18
@@ -77927,7 +77588,6 @@ extesion 17
 charseq 17
 npol 17
 biddingscreen 17
-$b 17
 nocopy 17
 boltz 17
 psign 17
@@ -78170,7 +77830,6 @@ msgindex 17
 mnwe 17
 housekeeping 17
 mrh 17
-rdb$relations 17
 sysview 17
 acceldata 17
 iconnection 17
@@ -78532,7 +78191,6 @@ isinring 17
 dipanel 17
 rcavl 17
 amtplayerupdatestack 17
-camerayaw$ 17
 sideicons 17
 midw 17
 midh 17
@@ -78907,7 +78565,6 @@ rdbi 17
 checkcollision 17
 cmcu 17
 timeconstruct 17
-identifier$$choice 17
 diffms 17
 sumtx 17
 sendme 17
@@ -78983,7 +78640,6 @@ osmlayer 17
 totalduration 17
 newlight 17
 fillups 17
-$transactions 17
 angleb 17
 pfheight 17
 scaledtilex 17
@@ -79224,7 +78880,6 @@ bmtodesk 17
 careted 17
 mistaken 17
 intrument 17
-items$keys 17
 adwo 17
 casee 17
 finisheddate 17
@@ -80329,12 +79984,6 @@ cemetery 16
 aerospace 16
 dams 16
 moisture 16
-facility$ 16
-floor$ 16
-zone$ 16
-system$ 16
-impact$ 16
-picklistname$ 16
 npx 16
 rtuple 16
 rrl 16
@@ -80477,7 +80126,6 @@ sentenceset 16
 stringbounds 16
 ocpds 16
 rootfolder 16
-provider$reference 16
 issuetext 16
 drags 16
 satelite 16
@@ -80675,7 +80323,6 @@ trecweb 16
 configer 16
 swordfish 16
 temptable 16
-bar$separator 16
 tsle 16
 contactprefix 16
 topdbis 16
@@ -80716,7 +80363,6 @@ cphis 16
 randompixelorder 16
 samb 16
 wigner 16
-parser$actions 16
 ppleft 16
 ppright 16
 objectref 16
@@ -80975,10 +80621,6 @@ easierbsm 16
 ukernel 16
 prevcontent 16
 sprouts 16
-$initialized 16
-$code 16
-$sub 16
-$tuple 16
 twitlonger 16
 pexmanager 16
 oexp 16
@@ -81646,10 +81288,6 @@ initkonst 16
 badlocationexception 16
 xmlguess 16
 nofix 16
-pattern$ 16
-expression$$tail 16
-f$$shared 16
-expr$ 16
 udca 16
 metrices 16
 toolsets 16
@@ -81757,7 +81395,6 @@ printtxt 16
 lgpi 16
 topnhashtags 16
 opestack 16
-sender$string 16
 searchword 16
 ipsw 16
 stringifies 16
@@ -81882,8 +81519,6 @@ fctx 16
 playlistser 16
 craftdispenser 16
 sysmsgs 16
-a$string 16
-a$o 16
 deltaacc 16
 difftype 16
 owneds 16
@@ -82125,7 +81760,6 @@ wallids 16
 currentblockid 16
 ejbo 16
 moduleobject 16
-short$connection 16
 pickray 16
 picksegment 16
 pickcylinder 16
@@ -82358,9 +81992,7 @@ btos 16
 ctxmgr 16
 cuites 16
 textwithoutlanguage 16
-$mi 16
 ifld 16
-$ex$ 16
 abstractringpropertytype 16
 abstracttimeobjecttype 16
 timeinstantpropertytype 16
@@ -82519,7 +82151,6 @@ extmin 15
 extmax 15
 endcaps 15
 drivable 15
-message$ 15
 variabletable 15
 undeline 15
 anp 15
@@ -83196,7 +82827,6 @@ numticks 15
 colorred 15
 memoryadaptor 15
 tyrell 15
-key$known 15
 csock 15
 elips 15
 nsmutabledictionary 15
@@ -83762,7 +83392,6 @@ xtitle 15
 bpwd 15
 srae 15
 minigames 15
-it$ 15
 tblmask 15
 oexpr 15
 kars 15
@@ -84203,7 +83832,6 @@ rightsfield 15
 hquery 15
 curversion 15
 globalsearch 15
-i$ 15
 origterm 15
 origaddr 15
 trestle 15
@@ -84656,7 +84284,6 @@ crlist 15
 signtool 15
 shutteddown 15
 semiweaks 15
-$cii 15
 dexs 15
 documentinvalidcharacterexceptioncreateattribute 15
 documentinvalidcharacterexceptioncreateelement 15
@@ -84827,7 +84454,6 @@ openwnn 15
 csptr 15
 dmsxml 15
 accurary 15
-$to 15
 schs 15
 betterfurnaces 15
 soulgalore 15
@@ -86196,7 +85822,6 @@ unioning 14
 tolerantly 14
 elena 14
 woognl 14
-implementation$type 14
 wodeclaration 14
 manditory 14
 eodatasource 14
@@ -86273,8 +85898,6 @@ centerline 14
 posti 14
 avmedia 14
 autocorrection 14
-$$$ 14
-$$$$ 14
 lumbridge 14
 draynor 14
 uptable 14
@@ -86296,11 +85919,6 @@ elevational 14
 psychiatric 14
 cremation 14
 distill 14
-rowname1$ 14
-rowname2$ 14
-durationunit$ 14
-duration$ 14
-externalsystem$ 14
 uvec 14
 cxoff 14
 czoff 14
@@ -86463,7 +86081,6 @@ bombcount 14
 indentamt 14
 openif 14
 killswitch 14
-$res 14
 webpath 14
 ppmodifier 14
 subsubmsg 14
@@ -86646,7 +86263,6 @@ memorable 14
 getinstance 14
 kilograms 14
 asri 14
-action$ 14
 asyncmessage 14
 commonality 14
 xes 14
@@ -87052,7 +86668,6 @@ endpointname 14
 ppanel 14
 userslist 14
 amiid 14
-$vetoable 14
 filted 14
 trsf 14
 mlset 14
@@ -87124,7 +86739,6 @@ nget 14
 mpref 14
 seleced 14
 fontid 14
-alpha$ 14
 confignpcs 14
 startslot 14
 markeroffset 14
@@ -87710,9 +87324,7 @@ cutthrough 14
 certificatebyte 14
 ecpks 14
 ropi 14
-fully$bii 14
 deseria 14
-sort$ljava 14
 cdatas 14
 allperm 14
 classldr 14
@@ -87794,7 +87406,6 @@ endarg 14
 sqlmapdao 14
 jand 14
 icsex 14
-type$$star 14
 lighttpd 14
 capitulo 14
 inic 14
@@ -88261,8 +87872,6 @@ labify 14
 anotherpackage 14
 vmh 14
 tanimotto 14
-sequence$impl 14
-$val$iter$ 14
 sepcified 14
 licencing 14
 everies 14
@@ -88395,10 +88004,6 @@ lastresource 14
 cxman 14
 simplejta 14
 outputqueue 14
-$tabindex 14
-$accesskey 14
-$onfocus 14
-$onblur 14
 anonymizable 14
 subthings 14
 expfrag 14
@@ -88681,7 +88286,6 @@ liveware 13
 superstate 13
 joelum 13
 mockjax 13
-$object 13
 wctype 13
 imdata 13
 nlinks 13
@@ -89598,7 +89202,6 @@ tpebaddesc 13
 logsdir 13
 unl 13
 reqval 13
-$wizard 13
 programm 13
 torev 13
 feh 13
@@ -89696,7 +89299,6 @@ escolha 13
 vbin 13
 exchg 13
 dursub 13
-rdb$constraint 13
 conglomerateid 13
 attlen 13
 tinytext 13
@@ -90923,7 +90525,6 @@ mbeval 13
 monkeyvoodoo 13
 stcon 13
 clargs 13
-a$ 13
 convertlets 13
 defeats 13
 bagcheck 13
@@ -91040,7 +90641,6 @@ satrosity 13
 unfulfillable 13
 weapontick 13
 httpformatterl 13
-map$entry 13
 testdrive 13
 unsuagared 13
 sneakernet 13
@@ -92199,7 +91799,6 @@ npfm 12
 ecouteur 12
 apnr 12
 clown 12
-graph$ 12
 stateslist 12
 countrieslist 12
 msdos 12
@@ -92208,7 +91807,6 @@ hyped 12
 metros 12
 negatedperms 12
 memorized 12
-new$ 12
 lest 12
 longdateformat 12
 mnoise 12
@@ -92728,14 +92326,6 @@ echoes 12
 twomil 12
 vfactor 12
 ddist 12
-this$a 12
-other$a 12
-this$b 12
-other$b 12
-$y 12
-$d 12
-this$f 12
-other$f 12
 karl 12
 purrs 12
 hoop 12
@@ -93317,7 +92907,6 @@ libelant 12
 plaintiff 12
 itrerations 12
 wbei 12
-\x7f 12
 outdebt 12
 dstm 12
 mln 12
@@ -93420,7 +93009,6 @@ inexisting 12
 posdate 12
 addata 12
 tddata 12
-$entry 12
 dfcb 12
 chunkloader 12
 inteiro 12
@@ -94177,7 +93765,6 @@ tarrer 12
 bul 12
 philanthropy 12
 makr 12
-$can 12
 convenient 12
 instancecleanup 12
 clientapi 12
@@ -94233,7 +93820,6 @@ sizeh 12
 massim 12
 haggler 12
 pcurve 12
-king$s 12
 proxperators 12
 mpse 12
 pseudograph 12
@@ -94333,12 +93919,10 @@ textureids 12
 titletopleft 12
 titletopright 12
 backvmid 12
-music$ 12
 tcury 12
 xmulti 12
 ymulti 12
 zmulti 12
-shading$ 12
 hexish 12
 preclosed 12
 xncr 12
@@ -95004,15 +94588,12 @@ referencefile 12
 bdex 12
 btrr 12
 grq 12
-val$prm 12
 ffffffffffffeb 12
 xfffffffffffffec 12
 eccfd 12
-foo$bar 12
 parameteric 12
 langth 12
 evalexpr 12
-test$test$test 12
 aonr 12
 redx 12
 compar 12
@@ -95259,7 +94840,6 @@ retnode 12
 hchars 12
 nullbytes 12
 canonicalf 12
-array$ljava 12
 linebuff 12
 putfloat 12
 putdouble 12
@@ -95368,7 +94948,6 @@ omin 12
 srai 12
 generifier 12
 sysproperties 12
-target$$choice 12
 udcb 12
 ufd 12
 decval 12
@@ -95782,7 +95361,6 @@ useradd 12
 bilang 12
 qstartz 12
 graduated 12
-method$string$long 12
 jtbf 12
 cavec 12
 tilers 12
@@ -96118,9 +95696,6 @@ nativedriver 12
 errorreport 12
 delayedload 12
 userprog 12
-empty$impl 12
-smaller$ 12
-larger$ 12
 canbuild 12
 iwcm 12
 cyphered 12
@@ -96130,7 +95705,6 @@ tvce 12
 brdrt 12
 pensioner 12
 cdob 12
-short$feature 12
 snds 12
 scrvc 12
 texturemapping 12
@@ -96154,7 +95728,6 @@ undeployvappparams 12
 deployvappparams 12
 cloudonestorage 12
 fencemode 12
-base$ 12
 boxdotnet 12
 caneid 12
 gapl 12
@@ -96338,8 +95911,6 @@ dfszk 12
 nnrpcaddresses 12
 elfis 12
 pipst 12
-$disabled 12
-$rel 12
 urlpb 12
 unspilled 12
 arrested 12
@@ -97049,7 +96620,6 @@ dlnapn 11
 nbcores 11
 whitefly 11
 emerging 11
-f$ 11
 endblock 11
 xrefstm 11
 alefmaksura 11
@@ -97206,7 +96776,6 @@ nrand 11
 isurf 11
 svdc 11
 mcnv 11
-$new 11
 interes 11
 icfile 11
 webface 11
@@ -97555,7 +97124,6 @@ chebypade 11
 insensitives 11
 uniqued 11
 mapplication 11
-order$set 11
 nstimestamp 11
 wodp 11
 ick 11
@@ -97668,7 +97236,6 @@ contemplation 11
 fabricated 11
 monorail 11
 pneumatic 11
-attribute$ 11
 outt 11
 lowlimit 11
 highlimit 11
@@ -98652,7 +98219,6 @@ deflected 11
 igps 11
 senddelivered 11
 modelstorage 11
-node$ 11
 palettecycle 11
 minclipx 11
 minclipy 11
@@ -99434,10 +99000,7 @@ gags 11
 laststd 11
 collelemiterator 11
 rsam 11
-lb$ 11
-constructor$b 11
 xdump 11
-constructor$ljava 11
 wafflemaker 11
 sqlwarning 11
 oobe 11
@@ -100137,8 +99700,6 @@ initlen 11
 starosta 11
 fodler 11
 ccspoly 11
-equal$ 11
-set$impl 11
 totalunread 11
 immob 11
 terlici 11
@@ -100336,8 +99897,6 @@ vscrollbar 11
 jquant 11
 dmorient 11
 dmcollate 11
-average$itypes 11
-max$itypes 11
 xentries 11
 identitymap 11
 bcsae 11
@@ -100373,7 +99932,6 @@ nestname 11
 xtoken 11
 zarrarr 11
 cnstraints 11
-$$$$$mi 11
 fcmp 11
 skunkworks 11
 timeperiodtype 11
@@ -101761,7 +101319,6 @@ tink 10
 whiteless 10
 hobgoblin 10
 spywhere 10
-from$user 10
 nameo 10
 outputbound 10
 repainable 10
@@ -101829,7 +101386,6 @@ bigarray 10
 seqmask 10
 gnp 10
 givers 10
-order$get 10
 attrubute 10
 eofetchspecification 10
 dtw 10
@@ -101959,7 +101515,6 @@ parameterb 10
 afloats 10
 aints 10
 avecs 10
-action$$ 10
 zopdel 10
 nohup 10
 lengthftm 10
@@ -102272,7 +101827,6 @@ investigating 10
 cheatstring 10
 frameowrk 10
 slinfo 10
-$application 10
 eventdetails 10
 wizad 10
 adddition 10
@@ -103572,7 +103126,6 @@ moveverticies 10
 camerapacket 10
 mapback 10
 steparrsize 10
-zvertex$ 10
 pridistances 10
 shadingtable 10
 tcurx 10
@@ -104306,7 +103859,6 @@ fkda 10
 imsk 10
 lnfe 10
 javaxml 10
-$t 10
 feuerkraft 10
 beschleunigung 10
 modclass 10
@@ -104623,15 +104175,9 @@ halfbit 10
 tlsext 10
 longmessage 10
 integerbyte 10
-write$b 10
-read$b 10
 mpis 10
 encodechar 10
 iiiiii 10
-buffer$byte 10
-update$bii 10
-b$ 10
-b$string 10
 localv 10
 attrcreatedocumentfragment 10
 attreffectivevalue 10
@@ -104886,10 +104432,7 @@ rshft 10
 thatstar 10
 topicstar 10
 lazyload 10
-expression$ 10
-args$ 10
 newlns 10
-expr$$choice 10
 uddd 10
 udea 10
 udec 10
@@ -105411,7 +104954,6 @@ obrm 10
 trekbuddy 10
 earthtools 10
 excfg 10
-method$map$string 10
 neusoft 10
 astarget 10
 pcombox 10
@@ -105744,7 +105286,6 @@ lsbfirst 10
 waveout 10
 scopebundle 10
 requiresnew 10
-$interface 10
 svcref 10
 svcbean 10
 birthcode 10
@@ -106648,7 +106189,6 @@ langdetect 9
 explotion 9
 steped 9
 opposes 9
-frame$native 9
 pscc 9
 offgc 9
 onreadystatechange 9
@@ -107169,7 +106709,6 @@ gspec 9
 authorithies 9
 andjong 9
 chariot 9
-true$ 9
 anfangssaldo 9
 acorn 9
 barrierfree 9
@@ -107507,7 +107046,6 @@ descaled 9
 corefun 9
 ldivergence 9
 beq 9
-$add 9
 salvador 9
 rdftransaction 9
 breathable 9
@@ -107747,8 +107285,6 @@ tpx 9
 tpy 9
 yxp 9
 closetimeout 9
-utility$take 9
-method$underscore 9
 npd 9
 dbds 9
 kvq 9
@@ -107841,7 +107377,6 @@ substractions 9
 qblique 9
 finshed 9
 freinds 9
-cglib$$ 9
 typos 9
 metawidet 9
 outps 9
@@ -107936,18 +107471,6 @@ fountains 9
 clarifying 9
 neutralizing 9
 proceedure 9
-contact$ 9
-component$ 9
-assembly$ 9
-connection$ 9
-spare$ 9
-resource$ 9
-job$ 9
-document$ 9
-coordinate$ 9
-issue$ 9
-street$ 9
-cobiepicklistname$ 9
 leno 9
 istwo 9
 incnstrips 9
@@ -108464,7 +107987,6 @@ gridding 9
 themap 9
 medida 9
 testgroupx 9
-$index 9
 determinisms 9
 nonregular 9
 levelk 9
@@ -108803,7 +108325,6 @@ bgwork 9
 tfamily 9
 trasplant 9
 eacha 9
-$ns 9
 timbersong 9
 timbers 9
 derrive 9
@@ -109447,7 +108968,6 @@ scheckout 9
 cped 9
 compacter 9
 sorterator 9
-dialog$section 9
 zonedabone 9
 defid 9
 leaned 9
@@ -110123,7 +109643,6 @@ dictitems 9
 pystr 9
 metaattr 9
 cself 9
-$obj 9
 keywordlist 9
 initname 9
 gdbm 9
@@ -110623,9 +110142,6 @@ xcerts 9
 userready 9
 ecnpe 9
 lexhandler 9
-constructor$bii 9
-fully$b 9
-$ljava 9
 charscopy 9
 puny 9
 attrremovechild 9
@@ -110858,7 +110374,6 @@ wocomponents 9
 woainstallroot 9
 otaglib 9
 encompassed 9
-$components 9
 nskvc 9
 rdest 9
 elpased 9
@@ -110927,7 +110442,6 @@ buffid 9
 buffmask 9
 defindex 9
 wrenches 9
-$min 9
 surg 9
 cordb 9
 fltspp 9
@@ -110957,7 +110471,6 @@ skvil 9
 idleworx 9
 mybatisdao 9
 defmethod 9
-$current 9
 tailindex 9
 promptstruct 9
 keyeventf 9
@@ -111109,7 +110622,6 @@ wkbreader 9
 foreignkeys 9
 desactiv 9
 vide 9
-$$escape 9
 promisque 9
 testsender 9
 setcomponent 9
@@ -111263,7 +110775,6 @@ testpid 9
 zeroclue 9
 tttracklog 9
 profileview 9
-token$signature 9
 feedr 9
 retwert 9
 therapi 9
@@ -111323,7 +110834,6 @@ uxml 9
 msetmax 9
 mailtype 9
 dayonly 9
-$cookie 9
 prvfile 9
 comboy 9
 portwidth 9
@@ -111718,7 +111228,6 @@ mdotm 9
 preventeditems 9
 iuv 9
 blobwrapper 9
-iwac\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00 9
 transparentcell 9
 operatori 9
 midddle 9
@@ -111729,7 +111238,6 @@ hitent 9
 hsx 9
 hsy 9
 ranch 9
-$shape 9
 ccfs 9
 lightenables 9
 stripcounts 9
@@ -111758,7 +111266,6 @@ passwordproperty 9
 hostproperty 9
 idproperty 9
 usernameproperty 9
-online\x00\x00 9
 otab 9
 pcodes 9
 hdfnbit 9
@@ -111972,7 +111479,6 @@ dctbl 9
 upsampler 9
 polyfill 9
 printquality 9
-$otype$buffer 9
 changealias 9
 genseckey 9
 extnum 9
@@ -111989,7 +111495,6 @@ endfunc 9
 rwarning 9
 arrowicon 9
 aptargs 9
-$v 9
 clientsub 9
 objectimpl 9
 hchain 9
@@ -112498,8 +112003,6 @@ vpe 8
 incon 8
 enumerables 8
 webbitserver 8
-$cast 8
-$delete 8
 cavespider 8
 protation 8
 fdfc 8
@@ -113529,7 +113032,6 @@ polcies 8
 turmericratelimiter 8
 currentlimiter 8
 buildsupport 8
-$gestalt 8
 nega 8
 mvts 8
 ndefuri 8
@@ -113992,8 +113494,6 @@ numcards 8
 instpg 8
 nasm 8
 autocast 8
-get$i 8
-set$i 8
 classscope 8
 otd 8
 undetectable 8
@@ -114890,7 +114390,6 @@ personnal 8
 menuname 8
 jpae 8
 lotype 8
-obj$state 8
 readfloat 8
 springorm 8
 mhf 8
@@ -115364,9 +114863,6 @@ vgi 8
 drbdtestdata 8
 odri 8
 xrows 8
-parser$do 8
-parser$act 8
-parser$parser 8
 ntestleft 8
 ntestright 8
 pipright 8
@@ -115533,7 +115029,6 @@ locref 8
 psymbol 8
 anyprinted 8
 collum 8
-description$manager 8
 xassignment 8
 xfeature 8
 versionname 8
@@ -115852,7 +115347,6 @@ foonalasys 8
 tshort 8
 optcg 8
 oaat 8
-list$touched 8
 saji 8
 optionshelp 8
 optionsversion 8
@@ -116146,8 +115640,6 @@ devpol 8
 volmax 8
 ahce 8
 guitview 8
-propagation$triggered 8
-panel$triggered 8
 longclick 8
 catastrophe 8
 ceded 8
@@ -116258,7 +115750,6 @@ projectexplorer 8
 ckpackager 8
 telno 8
 dparking 8
-$item 8
 methoddeclaration 8
 playerbools 8
 biquads 8
@@ -116386,7 +115877,6 @@ spacingt 8
 navtype 8
 hpen 8
 msecu 8
-params$ 8
 pageitem 8
 wellformness 8
 cdip 8
@@ -116444,7 +115934,6 @@ reldelta 8
 partyp 8
 kdindex 8
 indentify 8
-click$add 8
 dropevent 8
 userbanning 8
 dmanager 8
@@ -116518,7 +116007,6 @@ endslot 8
 unpackcounters 8
 bottomleftmid 8
 markerloc 8
-x$ 8
 outincr 8
 summarys 8
 dbstart 8
@@ -116996,7 +116484,6 @@ reassigning 8
 invocationtarget 8
 addcomment 8
 taskmarker 8
-panel$ 8
 lipo 8
 dtvalue 8
 usebyhour 8
@@ -117404,7 +116891,6 @@ kwarning 8
 filelike 8
 akeys 8
 functools 8
-$str 8
 savebcf 8
 spwd 8
 ruf 8
@@ -117637,7 +117123,6 @@ bivariant 8
 tvsym 8
 twrflow 8
 methodn 8
-win$$at 8
 biv 8
 odeps 8
 unerased 8
@@ -118130,12 +117615,8 @@ namespacing 8
 cspi 8
 signedcertificate 8
 rkgps 8
-search$ljava 8
 subvector 8
-append$cii 8
-ii$ci 8
 parametersbyte 8
-iterator$attribute 8
 abcdefghij 8
 namednodemapchildnoderange 8
 namednodemapnumberofnodes 8
@@ -118477,17 +117958,13 @@ decimalnumber 8
 realnumber 8
 floatnumber 8
 doublenumber 8
-literal$ 8
-literal$$star 8
 additionalparam 8
 ioobex 8
 condr 8
 fseparator 8
-def$ 8
 pcharacter 8
 udee 8
 udfa 8
-comment$$choice 8
 respbucket 8
 filehost 8
 targetchildnodes 8
@@ -119278,9 +118755,6 @@ dispathced 8
 holux 8
 clearspring 8
 desaturation 8
-method$signature 8
-body$string 8
-realm$o 8
 alligator 8
 notelength 8
 undonated 8
@@ -119374,7 +118848,6 @@ noncoding 8
 organismpropsql 8
 cvnames 8
 opena 8
-$random 8
 kbi 8
 regisrars 8
 mvnemsgcode 8
@@ -120074,8 +119547,6 @@ suffle 8
 paralysed 8
 altcolor 8
 vclose 8
-add$connection 8
-create$connection 8
 xmen 8
 rzb 8
 shaderbin 8
@@ -120413,15 +119884,10 @@ xadir 8
 seriablizable 8
 dtid 8
 kvj 8
-$colspan 8
 gtreports 8
 synconclose 8
 storageinfo 8
 nonrbw 8
-$content 8
-$cite 8
-$height 8
-$width 8
 randomtext 8
 jprop 8
 paranoidal 8
@@ -120454,8 +119920,6 @@ seendot 8
 dstpos 8
 initif 8
 dttl 8
-get$type$ 8
-put$type$ 8
 pdcache 8
 initialtablesize 8
 cwss 8
@@ -120638,7 +120102,6 @@ cacl 8
 endpointinteface 8
 tdtd 8
 chnc 8
-$list 8
 endifor 8
 poacorba 8
 xdoclets 8
@@ -120995,7 +120458,6 @@ reresh 7
 liking 7
 complexities 7
 voicebridge 7
-id$ 7
 linecounter 7
 notepadv 7
 njr 7
@@ -121468,7 +120930,6 @@ purreow 7
 harp 7
 protal 7
 steak 7
-animation$delegate 7
 ingredientes 7
 pratos 7
 congratulation 7
@@ -121582,7 +121043,6 @@ itsatacoshop 7
 oneabove 7
 selectoneradio 7
 foldingpanel 7
-o$ 7
 subrows 7
 iten 7
 clint 7
@@ -121775,7 +121235,6 @@ jdserv 7
 crackingpass 7
 startfile 7
 countup 7
-zip$ 7
 cvpt 7
 linktitle 7
 downloadpassword 7
@@ -122089,7 +121548,6 @@ kinda 7
 rangeop 7
 zzfield 7
 reoder 7
-$my 7
 martian 7
 linktrans 7
 callforward 7
@@ -122547,10 +122005,6 @@ taipei 7
 mauritius 7
 unfaulted 7
 testfiltered 7
-for$ 7
-utility$value 7
-key$implements 7
-field$no 7
 printerfriendly 7
 contentz 7
 bpli 7
@@ -122621,7 +122075,6 @@ returnnode 7
 whiskcraft 7
 berk 7
 actory 7
-get$ref 7
 onr 7
 kvinner 7
 menn 7
@@ -122728,120 +122181,6 @@ softening 7
 grit 7
 milling 7
 fusing 7
-coordinatexaxis$ 7
-coordinateyaxis$ 7
-coordinatezaxis$ 7
-clockwiserotation$ 7
-elevationalrotation$ 7
-yawrotation$ 7
-cobiefieldrestriction$ 7
-serialnumber$ 7
-installationdate$ 7
-warrantystartdate$ 7
-tagnumber$ 7
-barcode$ 7
-assetidentifier$ 7
-floorname$ 7
-roomtag$ 7
-usableheight$ 7
-grossarea$ 7
-netarea$ 7
-spacenames$ 7
-connectiontype$ 7
-realizingelement$ 7
-portname1$ 7
-portname2$ 7
-componentnames$ 7
-unit$ 7
-allowedvalues$ 7
-elevation$ 7
-height$ 7
-assettype$ 7
-manufacturer$ 7
-modelnumber$ 7
-warrantyguarantorparts$ 7
-warrantydurationparts$ 7
-warrantyguarantorlabor$ 7
-warrantydurationlabor$ 7
-warrantydurationunit$ 7
-replacementcost$ 7
-expectedlife$ 7
-warrantydescription$ 7
-nominallength$ 7
-nominalwidth$ 7
-nominalheight$ 7
-modelreference$ 7
-shape$ 7
-size$ 7
-color$ 7
-finish$ 7
-grade$ 7
-material$ 7
-constituents$ 7
-features$ 7
-accessibilityperformance$ 7
-codeperformance$ 7
-sustainabilityperformance$ 7
-status$ 7
-start$ 7
-taskstartunit$ 7
-frequency$ 7
-frequencyunit$ 7
-tasknumber$ 7
-priors$ 7
-resourcenames$ 7
-parentname$ 7
-childnames$ 7
-assemblytype$ 7
-email$ 7
-company$ 7
-phone$ 7
-externalobject$ 7
-externalidentifier$ 7
-department$ 7
-organizationcode$ 7
-givenname$ 7
-familyname$ 7
-postalbox$ 7
-town$ 7
-stateregion$ 7
-postalcode$ 7
-country$ 7
-risk$ 7
-chance$ 7
-sheetname1$ 7
-sheetname2$ 7
-owner$ 7
-mitigation$ 7
-impacttype$ 7
-impactstage$ 7
-impactunit$ 7
-leadintime$ 7
-leadouttime$ 7
-suppliers$ 7
-setnumber$ 7
-partnumber$ 7
-approvalby$ 7
-stage$ 7
-directory$ 7
-file$ 7
-reference$ 7
-projectname$ 7
-sitename$ 7
-linearunits$ 7
-areaunits$ 7
-volumeunits$ 7
-currencyunits$ 7
-areameasurement$ 7
-externalprojectobject$ 7
-externalprojectidentifier$ 7
-externalsiteobject$ 7
-externalsiteidentifier$ 7
-externalfacilityobject$ 7
-externalfacilityidentifier$ 7
-projectdescription$ 7
-sitedescription$ 7
-phase$ 7
 alltimes 7
 hullnum 7
 foundy 7
@@ -123124,7 +122463,6 @@ unresulved 7
 expts 7
 unwoven 7
 prewarps 7
-$activator$ 7
 selfhosting 7
 pdependencies 7
 rebuildcount 7
@@ -123392,7 +122730,6 @@ rerties 7
 attacch 7
 uncleared 7
 autorecoverables 7
-$ldap 7
 vmpool 7
 cdroms 7
 setportal 7
@@ -123406,7 +122743,6 @@ shouldbelogged 7
 addreses 7
 storgae 7
 gethas 7
-snapshot$snapshot 7
 hastbaccount 7
 hasproject 7
 hasorganisation 7
@@ -123821,7 +123157,6 @@ varids 7
 epps 7
 selem 7
 newlast 7
-strategy$provider 7
 xnull 7
 backpacks 7
 mret 7
@@ -124410,8 +123745,6 @@ torturer 7
 smugglers 7
 cutpurse 7
 scrying 7
-philosopher$s 7
-worker$s 7
 contraband 7
 rabble 7
 steed 7
@@ -124567,7 +123900,6 @@ lightvectory 7
 mapfunctionstackpos 7
 mapfunction 7
 packetencryption 7
-tileheight$ 7
 charmodel 7
 camerayawrate 7
 camerayrate 7
@@ -124712,7 +124044,6 @@ komponenty 7
 qsite 7
 uninstallable 7
 fvi 7
-of$ 7
 lightly 7
 boldify 7
 terry 7
@@ -125968,8 +125299,6 @@ datetxt 7
 porttxt 7
 lastdst 7
 ecparams 7
-update$b 7
-lb$lili 7
 ibme 7
 lowerounds 7
 turf 7
@@ -126132,31 +125461,13 @@ eventlogging 7
 pvvf 7
 cmdarg 7
 managerdata 7
-structure$$star 7
-parameters$$star 7
-matching$$star 7
-patterns$$star 7
-arguments$$plus 7
-type$$plus 7
-exponent$$plus 7
-word$$star 7
-list$$star 7
-choice$$star 7
-sequence$$star 7
-characters$$plus 7
 mofunctors 7
 newclazz 7
 tofront 7
 condra 7
 updtra 7
 updtr 7
-p$$star 7
-block$$star 7
-pattern3$$star 7
-body$$star 7
 uffd 7
-token$$plus 7
-brace$$star 7
 dkak 7
 decorrido 7
 caminho 7
@@ -127027,7 +126338,6 @@ actua 7
 tagbits 7
 adjstment 7
 announceon 7
-$service 7
 slappy 7
 encodedmap 7
 rsnorm 7
@@ -127359,7 +126669,6 @@ lavatreppe 7
 sendintbuffer 7
 sneakpeek 7
 installzip 7
-§c 7
 cppcfx 7
 concator 7
 spoolenable 7
@@ -127404,7 +126713,6 @@ legy 7
 legx 7
 modpackage 7
 sizeb 7
-for$value 7
 deletedprojects 7
 nrotations 7
 nrate 7
@@ -127823,7 +127131,6 @@ minidfs 7
 localfilepath 7
 datatnodeinfos 7
 djoin 7
-$media 7
 sigpid 7
 containerids 7
 compressibility 7
@@ -127848,9 +127155,6 @@ samplesperrow 7
 nextcolsum 7
 qtblno 7
 pagenums 7
-$x$ 7
-charset$coder$ 7
-$repl 7
 awtie 7
 lolock 7
 fortezza 7
@@ -127926,10 +127230,6 @@ heade 7
 mlaf 7
 logouted 7
 myin 7
-5$ 7
-$$$$mi 7
-$$$mi 7
-$$mi 7
 ushwy 7
 localpositions 7
 bulges 7
@@ -128342,7 +127642,6 @@ submapitem 6
 dasep 6
 dataadapter 6
 pjoin 6
-$pad 6
 apexparam 6
 apexvariable 6
 apexvote 6
@@ -128587,7 +127886,6 @@ alllinklength 6
 celldata 6
 subsetlinklengthlanes 6
 montab 6
-$clinit 6
 badjar 6
 notoncp 6
 staticinitializer 6
@@ -129237,7 +128535,6 @@ tmpkeypoints 6
 imsmoothed 6
 imthreshold 6
 matchingcoords 6
-$run 6
 dotless 6
 docommit 6
 msgcol 6
@@ -129475,7 +128772,6 @@ mapquestosm 6
 sumread 6
 mingeopoints 6
 mindiagonalmeters 6
-primitive$ 6
 cinstance 6
 fsdir 6
 clbf 6
@@ -129487,9 +128783,7 @@ decman 6
 vroom 6
 textureloader 6
 dsgt 6
-dataset$ 6
 activedsg 6
-triples$ 6
 nodetrans 6
 bruges 6
 bradford 6
@@ -129553,8 +128847,6 @@ htmlattributechangeevent 6
 webrequest 6
 extracttopath 6
 notenoughspace 6
-bz2$ 6
-gz$ 6
 getpartid 6
 importdate 6
 exto 6
@@ -130315,8 +129607,6 @@ nincx 6
 dualized 6
 atomcount 6
 opendbs 6
-$push 6
-$pull 6
 ivalo 6
 qresult 6
 bobbys 6
@@ -130793,9 +130083,6 @@ tacholimit 6
 seychelles 6
 gohome 6
 bouncetype 6
-field$underscore 6
-method$set 6
-method$userscore 6
 userscore 6
 kvo 6
 eoadaptor 6
@@ -131090,7 +130377,6 @@ plastics 6
 municipal 6
 arrest 6
 digestion 6
-attributes$ 6
 jamax 6
 jbmax 6
 difflast 6
@@ -131603,8 +130889,6 @@ allmute 6
 leavejail 6
 allinvisible 6
 biergarten 6
-$plugin 6
-$editor 6
 menuspy 6
 invaliddirectory 6
 rtitle 6
@@ -131672,7 +130956,6 @@ setrepr 6
 hsfb 6
 antras 6
 moppydesk 6
-$values 6
 propername 6
 maintopic 6
 tallies 6
@@ -131810,7 +131093,6 @@ fromsel 6
 tosel 6
 propogates 6
 mysum 6
-$alg 6
 parmstr 6
 testalgorithm 6
 mcbanlist 6
@@ -131897,7 +131179,6 @@ mesages 6
 overloadeded 6
 kpackages 6
 udts 6
-rdb$default 6
 sequencedatatype 6
 referencecount 6
 authorizationid 6
@@ -132075,7 +131356,6 @@ methodindex 6
 dupx 6
 lbct 6
 whileytype 6
-any$native 6
 atdt 6
 lmaster 6
 inputtagged 6
@@ -132099,7 +131379,6 @@ commint 6
 updtae 6
 serverflags 6
 getfree 6
-$givenname 6
 memballoon 6
 setstp 6
 getportal 6
@@ -132838,7 +132117,6 @@ ncdref 6
 maxlinecount 6
 oldfront 6
 tranverser 6
-strategy$provider$delegate 6
 xclosure 6
 jgeoip 6
 qif 6
@@ -133669,10 +132947,6 @@ xmlq 6
 ordermodel 6
 subnd 6
 touchcancel 6
-convention$manyfields$click$triggered 6
-annotation$manyfields$click$triggered 6
-attribute$triggered 6
-code$triggered 6
 onp 6
 slection 6
 exernal 6
@@ -134165,7 +133439,6 @@ maximumamount 6
 cljis 6
 widthoffset 6
 tileupdatestamps 6
-colorpoint1$ 6
 scalexz 6
 walkanim 6
 npcheadicon 6
@@ -134437,7 +133710,6 @@ subcontents 6
 mqlcommand 6
 inferenced 6
 acceppt 6
-aras$get 6
 sephardic 6
 recursives 6
 quitely 6
@@ -134452,8 +133724,6 @@ badbytes 6
 lattes 6
 redfn 6
 newuid 6
-$impl 6
-$fd 6
 descriptively 6
 dragfingerfurthertodrawlongerwall 6
 tapinsideyourzoneofinfluence 6
@@ -134846,7 +134116,6 @@ quadblobslist 6
 undefinded 6
 plotpic 6
 firstpaint 6
-$platform 6
 globalfriction 6
 takedamage 6
 numprojectiles 6
@@ -135496,7 +134765,6 @@ downloadupdate 6
 metacursor 6
 nofavorites 6
 sprials 6
-win$account 6
 tmpcase 6
 sampleboxs 6
 lchrom 6
@@ -136009,7 +135277,6 @@ dbstats 6
 unparses 6
 trite 6
 splices 6
-exit$$base 6
 palyer 6
 percflow 6
 openconfigal 6
@@ -136091,12 +135358,9 @@ aaefee 6
 sosf 6
 testme 6
 xwait 6
-bar$bar 6
-foobar\x1a 6
 precall 6
 cpinfo 6
 fbound 6
-test$test 6
 senclm 6
 fuc 6
 sfuc 6
@@ -136763,7 +136027,6 @@ opoints 6
 blockupdater 6
 disy 6
 clydesdale 6
-model$i 6
 mockacle 6
 runstatus 6
 demarshalling 6
@@ -136896,11 +136159,7 @@ errorname 6
 seedbyte 6
 crlcollection 6
 ipfe 6
-fill$ljava 6
-equals$ljava 6
-code$ljava 6
 spue 6
-dictionary$b 6
 daflate 6
 allpermission 6
 datatruncation 6
@@ -137239,18 +136498,9 @@ testcopy 6
 sptests 6
 spaceshooters 6
 requalify 6
-foldl$ 6
-structure$$choice 6
-pattern$$tail 6
-identifier$ 6
 pmatching 6
 switchn 6
-characters$ 6
-characters$$star1$ 6
-stat$ 6
-param$$choice 6
 pletter 6
-identifier$$plus 6
 udda 6
 uffc 6
 nontext 6
@@ -137609,7 +136859,6 @@ undertest 6
 xversion 6
 activatex 6
 genericinterf 6
-a$$ 6
 addxml 6
 resourses 6
 sslkey 6
@@ -137659,7 +136908,6 @@ dhstds 6
 downmost 6
 reskind 6
 feedbacktype 6
-$max 6
 sqlitedistancedemo 6
 systemic 6
 epci 6
@@ -137746,10 +136994,6 @@ sourcedamage 6
 nearitem 6
 stonerhawk 6
 sharpup 6
-$passed 6
-$future 6
-$states 6
-$port 6
 itrator 6
 jumpinf 6
 pfti 6
@@ -138486,10 +137730,6 @@ lessequalsign 6
 notequalsign 6
 econfigs 6
 fconfigs 6
-a$string$map$string 6
-a$string$request 6
-consumer$signature 6
-method$map 6
 executecommand 6
 plainhttp 6
 waad 6
@@ -139406,7 +138646,6 @@ buttonbg 6
 buttonblue 6
 longests 6
 lastmodificationdate 6
-weight$ 6
 createdwesize 6
 tresp 6
 intershardcom 6
@@ -139742,9 +138981,6 @@ runafterplayer 6
 randmove 6
 degn 6
 stepangle 6
-$feature 6
-new$shape 6
-short$ 6
 pointsxy 6
 onestore 6
 environmentset 6
@@ -140315,9 +139551,6 @@ extendedblock 6
 highbound 6
 decommissionthread 6
 webfs 6
-$onchange 6
-$alt 6
-$accept 6
 appsdir 6
 unealthy 6
 rmpath 6
@@ -140363,12 +139596,6 @@ printbufferlen 6
 responsecache 6
 proxyselector 6
 cookiehandler 6
-heap$type$buffer$rw$ 6
-heap$type$buffer 6
-buffer$rw$b 6
-buffer$rw$l 6
-bits$ 6
-direct$type$buffer$rw$$bo$ 6
 positiveinfinity 6
 defaultrules 6
 scientificstyle 6
@@ -140778,10 +140005,6 @@ uncatch 6
 deepcloned 6
 scert 6
 prnc 6
-t$ 6
-$mc4$ 6
-u$u 6
-template$ 6
 prevcl 6
 triangleclose 6
 ringclose 6
@@ -142200,7 +141423,6 @@ whiteflies 5
 noctaves 5
 noctavelayers 5
 tmpstorage 5
-$conflict 5
 snoc 5
 mysearch 5
 evaporating 5
@@ -142410,9 +141632,6 @@ sata 5
 kuitan 5
 superctxs 5
 subcheck 5
-false$ 5
-$plus 5
-$minus 5
 kaan 5
 keyformat 5
 ueberweisungen 5
@@ -142430,7 +141649,6 @@ jdapi 5
 sessionc 5
 retl 5
 tofrom 5
-z$ 5
 firstdl 5
 passwordfound 5
 localonly 5
@@ -142792,7 +142010,6 @@ counterprovider 5
 mockfor 5
 rlcf 5
 bitsinipv 5
-$delegate 5
 checkmate 5
 playersname 5
 modeq 5
@@ -144056,7 +143273,6 @@ lfilter 5
 lastpublish 5
 jsonservice 5
 jsui 5
-reference$tref 5
 rngf 5
 repeatability 5
 socialalerts 5
@@ -144297,7 +143513,6 @@ resourceworkingset 5
 idownbutton 5
 iupbutton 5
 coowner 5
-$action 5
 pagedescription 5
 catts 5
 nnames 5
@@ -144310,7 +143525,6 @@ buntry 5
 descriptioon 5
 compositors 5
 swisseducast 5
-$cdata 5
 feedstats 5
 svnae 5
 eventproperty 5
@@ -144503,7 +143717,6 @@ collectionize 5
 closurised 5
 locates 5
 initialises 5
-prop$ 5
 remainding 5
 earlib 5
 demoable 5
@@ -144558,8 +143771,6 @@ sslport 5
 destintation 5
 overfill 5
 biggles 5
-rdb$description 5
-rdb$external 5
 conglomeratenumber 5
 columndefault 5
 typemodulename 5
@@ -144600,7 +143811,6 @@ blockpassnode 5
 whiteespace 5
 csvc 5
 dtdn 5
-\x1b 5
 editmsg 5
 unreducible 5
 maxrule 5
@@ -144742,8 +143952,6 @@ getdepartment 5
 vdshooks 5
 refreshe 5
 asyncroniousely 5
-$principal 5
-$cn 5
 spicevmc 5
 rusr 5
 shrank 5
@@ -145232,7 +144440,6 @@ vmopts 5
 reopenable 5
 sdownstreams 5
 odep 5
-bar$class 5
 xpanel 5
 wordprocessor 5
 owlproperty 5
@@ -145623,7 +144830,6 @@ verilog 5
 mentioning 5
 ignight 5
 chariotsolutions 5
-$preconditions 5
 unathorized 5
 mcre 5
 statusserver 5
@@ -146759,7 +145965,6 @@ continuosly 5
 exceptionreport 5
 optionalize 5
 milieu 5
-field$reflection 5
 fieldobj 5
 tickvalues 5
 immediatelly 5
@@ -148571,7 +147776,6 @@ pronounce 5
 mxspeed 5
 rpref 5
 vidw 5
-$non 5
 gafmedia 5
 mbrb 5
 galx 5
@@ -148712,13 +147916,8 @@ lesorequal 5
 rightsubscript 5
 liquefy 5
 diploid 5
-name$b 5
-object$ljava 5
-bytes$b 5
 initializefailed 5
-string$c 5
 timestamplong 5
-member$class 5
 cdefg 5
 cdatasectiongetdata 5
 documentcreatecdatasection 5
@@ -148993,7 +148192,6 @@ deferload 5
 enumtypehandler 5
 mapcache 5
 badbeans 5
-type$$tail 5
 currying 5
 enterscope 5
 sbootcp 5
@@ -149286,7 +148484,6 @@ funselect 5
 simplexlink 5
 economically 5
 libvrt 5
-support$ 5
 dorun 5
 contrats 5
 mfow 5
@@ -149306,7 +148503,6 @@ jsif 5
 varer 5
 hubalek 5
 makeyourclock 5
-none$ 5
 mfcount 5
 sshio 5
 intercalate 5
@@ -149332,7 +148528,6 @@ scripters 5
 anewer 5
 argprops 5
 bboth 5
-xa$$ 5
 comline 5
 stubbon 5
 sensative 5
@@ -149508,12 +148703,6 @@ generalhandler 5
 tmpelems 5
 mpgs 5
 nojdk 5
-$app 5
-$module 5
-$bean 5
-$distinct 5
-$view 5
-$stateful 5
 recorver 5
 prefmaxlen 5
 hcursor 5
@@ -150386,7 +149575,6 @@ msoffice 5
 jdil 5
 attaquant 5
 clilent 5
-$root 5
 sysem 5
 wdrs 5
 progresspanel 5
@@ -151039,7 +150227,6 @@ zdelete 5
 regstr 5
 regdword 5
 trgres 5
-filter$curve 5
 cfclocation 5
 contional 5
 rico 5
@@ -151194,8 +150381,6 @@ fromconsole 5
 jbn 5
 bodyguard 5
 blacksmiths 5
-bottom$ 5
-none$impl 5
 wifim 5
 mobwin 5
 zestadz 5
@@ -151807,7 +150992,6 @@ newrbw 5
 replicainfo 5
 firstblockid 5
 thepipelinetest 5
-$http 5
 tldir 5
 diskhandler 5
 amfilter 5
@@ -151853,8 +151037,6 @@ lookbits 5
 blendi 5
 flushlength 5
 failcriticalerrors 5
-$bytes 5
-as$type$buffer$rw$$bo$ 5
 noncharset 5
 emptyba 5
 lynks 5
@@ -151886,9 +151068,7 @@ genwsdl 5
 duplic 5
 ying 5
 topci 5
-$idx 5
 xesw 5
-$loc 5
 alpababet 5
 proess 5
 exectimeout 5
@@ -151973,7 +151153,6 @@ srca 5
 aalc 5
 hostindex 5
 munus 5
-constructor$bi 5
 lnull 5
 mytg 5
 noncap 5
@@ -152565,7 +151744,6 @@ devlopment 4
 opfolder 4
 clavin 4
 prospector 4
-info$ 4
 extrecognizers 4
 artistlocation 4
 albumlocation 4
@@ -152987,7 +152165,6 @@ osaved 4
 bsaved 4
 appendee 4
 anopnymous 4
-$tr 4
 whichmodule 4
 clni 4
 tgtlen 4
@@ -153707,9 +152884,6 @@ entitytext 4
 oldworld 4
 spworld 4
 substatistic 4
-animation$strip 4
-animation$tile 4
-helper$new 4
 articolo 4
 magazzino 4
 pezzi 4
@@ -154430,7 +153604,6 @@ facecolor 4
 roomtypes 4
 basedsg 4
 courrent 4
-quads$ 4
 disgest 4
 pntt 4
 tdbdump 4
@@ -154571,7 +153744,6 @@ loguploadfailed 4
 extractedpath 4
 extractfile 4
 crawledlink 4
-tar$ 4
 maxdownloads 4
 checklogins 4
 updatesource 4
@@ -155153,7 +154325,6 @@ orindx 4
 ivalid 4
 resset 4
 sculpturer 4
-$form 4
 movetext 4
 wimgs 4
 bimgs 4
@@ -155394,7 +154565,6 @@ eventfired 4
 pacx 4
 notlog 4
 gotfocus 4
-client$ 4
 preferencs 4
 domian 4
 comletelistener 4
@@ -156313,18 +155483,6 @@ deckard 4
 rachael 4
 octobers 4
 formatte 4
-key$anon 4
-key$unknown 4
-utility$handle 4
-key$byte 4
-key$integer 4
-key$long 4
-key$float 4
-key$double 4
-key$boolean 4
-key$string 4
-conversion$overflow 4
-field$is 4
 milliswait 4
 blak 4
 wohtmlbarestring 4
@@ -156620,7 +155778,6 @@ qtrle 4
 wmav 4
 qdm 4
 wmapro 4
-native$ 4
 avstream 4
 fprintf 4
 pvpstats 4
@@ -156708,7 +155865,6 @@ diretion 4
 bigset 4
 myconnections 4
 deleteonce 4
-$addonce 4
 storified 4
 unicef 4
 devtrac 4
@@ -156720,24 +155876,6 @@ warrantydurationparts 4
 warrantyguarantorlabor 4
 warrantydurationlabor 4
 parenet 4
-contacts$ 4
-facilities$ 4
-floors$ 4
-spaces$ 4
-zones$ 4
-types$ 4
-components$ 4
-systems$ 4
-assemblies$ 4
-connections$ 4
-spares$ 4
-resources$ 4
-jobs$ 4
-impacts$ 4
-documents$ 4
-coordinates$ 4
-issues$ 4
-cobie$ 4
 trfactory 4
 trsfactory 4
 subregistry 4
@@ -157002,8 +156140,6 @@ itrim 4
 inheritablethreadlocal 4
 pmdui 4
 tildas 4
-entity$tref 4
-type$tref 4
 logq 4
 modq 4
 tempdeg 4
@@ -157969,8 +157105,6 @@ switchele 4
 nnjt 4
 writtern 4
 yjp 4
-make$new 4
-get$$relation 4
 apachecxf 4
 ofrows 4
 stopbearing 4
@@ -157997,10 +157131,6 @@ addded 4
 correctresponse 4
 wrongresponse 4
 elections 4
-rdb$null 4
-rdb$generator 4
-rdb$query 4
-rdb$system 4
 conglomeratename 4
 lockgranularity 4
 lastused 4
@@ -158965,7 +158095,6 @@ dreduce 4
 reduc 4
 lvrf 4
 fooz 4
-$c 4
 cbuildings 4
 clickx 4
 bonuspoint 4
@@ -159129,8 +158258,6 @@ wipeout 4
 lbo 4
 atra 4
 recurrenceperiod 4
-$dollar 4
-dollar$ 4
 doves 4
 cardlayout 4
 mostlyshady 4
@@ -159208,7 +158335,6 @@ exptn 4
 noparentheses 4
 moreorequal 4
 ocol 4
-nobody$ 4
 myworld 4
 plessis 4
 orfile 4
@@ -159519,7 +158645,6 @@ halberds 4
 selectbonsai 4
 introregister 4
 mqd 4
-$document 4
 ilwrt 4
 glargemapcontrol 4
 gsmallzoomcontrol 4
@@ -160707,11 +159832,6 @@ uixmlprefix 4
 fishtank 4
 divclicked 4
 spanclicked 4
-convention$singlefield$click$triggered 4
-annotation$singlefield$click$triggered 4
-runasync$triggered 4
-action$triggered 4
-default$triggered 4
 seved 4
 paramstype 4
 acac 4
@@ -161507,8 +160627,6 @@ maxdatasize 4
 ovelap 4
 blogmenu 4
 bloglistpref 4
-click$confirm 4
-click$reject 4
 countj 4
 furn 4
 ammt 4
@@ -161615,7 +160733,6 @@ mapsprite 4
 intensify 4
 srcinc 4
 outinc 4
-currentz$ 4
 textureshades 4
 displaymapdot 4
 placementpriority 4
@@ -161630,7 +160747,6 @@ grounditem 4
 mapdotsprite 4
 drawfps 4
 mapedge 4
-y$ 4
 pitchexemp 4
 yawexemp 4
 numericloader 4
@@ -161952,7 +161068,6 @@ adjustx 4
 adjusty 4
 projvl 4
 lsout 4
-serializer$i 4
 idmf 4
 gwml 4
 inclmin 4
@@ -162000,9 +161115,6 @@ ybounds 4
 matrixto 4
 pcbo 4
 hasattribute 4
-fi$eld 4
-fi$$eld 4
-$$a 4
 answercursor 4
 formcount 4
 fieldtypecheck 4
@@ -162038,7 +161150,6 @@ subbound 4
 tabble 4
 nectify 4
 modelndex 4
-aras$set 4
 rmatcher 4
 fbk 4
 halving 4
@@ -162634,7 +161745,6 @@ brickport 4
 sheepport 4
 hotkeypressed 4
 iplayers 4
-$integer 4
 japplemenubar 4
 gamesetup 4
 numpr 4
@@ -162886,7 +161996,6 @@ jmsretry 4
 canvasisompreview 4
 containerplayer 4
 istattype 4
-mthclass$ 4
 entityspider 4
 sendlater 4
 jjtnotin 4
@@ -163001,7 +162110,6 @@ intrg 4
 stidx 4
 jvidx 4
 txttilesize 4
-frame$ 4
 dsym 4
 magger 4
 fpisb 4
@@ -163661,7 +162769,6 @@ rsy 4
 pagecomponents 4
 advws 4
 jmeoldy 4
-$plus$eq 4
 ehcaches 4
 hotsopt 4
 tomjw 4
@@ -163756,7 +162863,6 @@ griewangk 4
 fates 4
 preembryonic 4
 ijms 4
-$default 4
 fullreset 4
 capskey 4
 undoreporthttp 4
@@ -163854,7 +162960,6 @@ methodhierarchy 4
 traditionalhierarchy 4
 superhierarchy 4
 typereference 4
-$dart 4
 ibc 4
 wcopy 4
 bashrc 4
@@ -164147,7 +163252,6 @@ outbus 4
 gettune 4
 secondard 4
 oranize 4
-participant$context 4
 unmodiable 4
 saxxmi 4
 affliated 4
@@ -164409,7 +163513,6 @@ repositions 4
 umsd 4
 jakfilename 4
 mthsig 4
-menu$$base 4
 ftws 4
 newvxiter 4
 haufigkeit 4
@@ -165484,11 +164587,6 @@ checkblock 4
 wrapme 4
 funject 4
 springbok 4
-model$ac 4
-model$ai 4
-java$lang$string$$ 4
-int$$$$ 4
-java$lang$string$$$$ 4
 nstdt 4
 mdbyte 4
 einor 4
@@ -165700,24 +164798,11 @@ nnmod 4
 skept 4
 colcrl 4
 tmgf 4
-write$c 4
-print$c 4
-println$c 4
-constructor$c 4
-constructor$cii 4
 buftemp 4
 iiiii 4
 huges 4
 aslt 4
-search$dd 4
-search$ff 4
-equals$f$f 4
-equals$d$d 4
-sort$d 4
-sort$f 4
 iiiiz 4
-instance$ljava 4
-loader$ljava 4
 prstatic 4
 pustatic 4
 pustatsynch 4
@@ -165725,11 +164810,6 @@ pustatsynchnat 4
 puabs 4
 innerbound 4
 proinst 4
-inflate$b 4
-inflate$bii 4
-input$b 4
-input$bii 4
-dictionary$bii 4
 maxcodepoint 4
 charint 4
 doubleint 4
@@ -165745,7 +164825,6 @@ limitint 4
 positionint 4
 readbcbuf 4
 writebcbuf 4
-init$b 4
 stote 4
 goodurl 4
 epochstring 4
@@ -165754,9 +164833,6 @@ japanarray 4
 invalidarray 4
 mhm 4
 yello 4
-append$c 4
-i$c 4
-i$cii 4
 npat 4
 pbewithshaand 4
 keytripledescbc 4
@@ -166026,7 +165102,6 @@ inflights 4
 jceksfile 4
 aesctrnopadding 4
 ofbiggest 4
-access$set 4
 badged 4
 cmnodes 4
 determing 4
@@ -166226,22 +165301,12 @@ commmitted 4
 mapparameter 4
 configtransaction 4
 vbindings 4
-structure$ 4
-clause$ 4
-constructor$ 4
-word$ 4
-symbol$ 4
 seqsize 4
 gtyper 4
 htmlkit 4
 tfkeys 4
 groovygroup 4
 fronting 4
-scala$$choice 4
-type$$star1$ 4
-p$$shared1$ 4
-types$$choice 4
-modifier$ 4
 pdecimal 4
 poctal 4
 udcbb 4
@@ -166264,15 +165329,10 @@ udefa 4
 udfca 4
 udfd 4
 ufffc 4
-key$ 4
-pkeyword$ 4
 pinteger 4
 pfloating 4
 pmulti 4
-data$$choice 4
 pcomment 4
-pseparator$ 4
-token$ 4
 serializedform 4
 characs 4
 lrandom 4
@@ -166953,7 +166013,6 @@ gobblers 4
 wotask 4
 webinfroot 4
 cmdstart 4
-$migration 4
 eonext 4
 eoinsert 4
 eodelete 4
@@ -167046,7 +166105,6 @@ iotype 4
 reversep 4
 tnft 4
 setboolean 4
-$byte 4
 staticfiles 4
 bicgstab 4
 itplus 4
@@ -167077,8 +166135,6 @@ inrefresh 4
 imph 4
 ioimports 4
 fwimports 4
-$$$$$$$$a 4
-x$$$$$$$$a 4
 nexttolast 4
 booby 4
 keepformat 4
@@ -167262,8 +166318,6 @@ horclr 4
 horlen 4
 horwid 4
 icefac 4
-$justh 4
-$justv 4
 lifcap 4
 mltylt 4
 nmdate 4
@@ -167751,7 +166805,6 @@ prefss 4
 adreno 4
 numerichost 4
 socktype 4
-fd$ 4
 olson 4
 noncheckable 4
 samplesyncadapter 4
@@ -168196,7 +167249,6 @@ facebmp 4
 tableorder 4
 acceuil 4
 htlatex 4
-$$filter 4
 zeropadding 4
 byed 4
 initlog 4
@@ -168813,7 +167865,6 @@ binmeta 4
 complementsearches 4
 subprogresses 4
 foundsep 4
-$k 4
 isym 4
 findstopkey 4
 totalfinalized 4
@@ -168835,8 +167886,6 @@ converti 4
 aconfigs 4
 yusers 4
 putattribute 4
-consumer$http 4
-token$http 4
 multiseteq 4
 ijnrpe 4
 forceblast 4
@@ -169122,8 +168171,6 @@ activeate 4
 hoursper 4
 unbillable 4
 custdateprj 4
-$md 4
-$hmacsha 4
 changereq 4
 errtok 4
 desctr 4
@@ -169308,8 +168355,6 @@ oaess 4
 oay 4
 taess 4
 bband 4
-$filter 4
-$line 4
 rawclasses 4
 reenc 4
 publishsubscribe 4
@@ -170101,7 +169146,6 @@ signdb 4
 userbuy 4
 buyprice 4
 pupload 4
-§e 4
 kitid 4
 optionalsuffix 4
 parceiros 4
@@ -170454,9 +169498,6 @@ unsleep 4
 unsneak 4
 finnjohnsen 4
 bitlyandroid 4
-sized$impl 4
-$key$iter$ 4
-some$impl 4
 actleft 4
 musicmod 4
 tbig 4
@@ -170529,17 +169570,11 @@ vfact 4
 firedestroyed 4
 maxlife 4
 eparent 4
-$layers 4
 fertilizables 4
 plantables 4
 injures 4
 ranchables 4
 lastslot 4
-short$pattern 4
-$diagram 4
-add$shape 4
-create$shape 4
-layout$shape 4
 xbut 4
 middlex 4
 middley 4
@@ -170645,7 +169680,6 @@ testcustomization 4
 hardwarel 4
 ctxrootfile 4
 catalogitemcustomizationparameters 4
-$lcase 4
 tarxpzf 4
 testroll 4
 jdaychooser 4
@@ -171541,15 +170575,6 @@ numrolls 4
 uappend 4
 clustertimestamp 4
 attmept 4
-$span 4
-$readonly 4
-$onselect 4
-$label 4
-$size 4
-$ismap 4
-$datetime 4
-$usemap 4
-$hreflang 4
 distributedshell 4
 distributedshellscriptlocation 4
 distributedshellscripttimestamp 4
@@ -171668,7 +170693,6 @@ istty 4
 defaultallowuserinteraction 4
 checkfpx 4
 initstr 4
-$swap$ 4
 cmdpath 4
 primaryordershift 4
 secondaryordermask 4
@@ -172139,7 +171163,6 @@ unappend 4
 redirecttest 4
 senddp 4
 imrfal 4
-string$l 4
 memorynotificationinfo 4
 stacktraceelement 4
 dotset 4
@@ -172170,7 +171193,6 @@ uisi 4
 uisici 4
 mudecl 4
 nmtk 4
-cup$actions 4
 infoleft 4
 inforight 4
 positionsint 4
@@ -172180,7 +171202,6 @@ contenttest 4
 itli 4
 ggb 4
 baab 4
-$mc 4
 countity 4
 exceptionist 4
 allpds 4
@@ -172978,7 +171999,6 @@ aftershutdown 3
 targetnetwork 3
 bidpl 3
 xeaf 3
-$n 3
 zscript 3
 ierator 3
 imgdest 3
@@ -173429,12 +172449,6 @@ fileextractors 3
 clik 3
 ncities 3
 ncombs 3
-display$native 3
-$or 3
-$prototype 3
-$constructor 3
-$properties 3
-$js 3
 cmdhandle 3
 arraypair 3
 typestart 3
@@ -174161,7 +173175,6 @@ burningfurnace 3
 nhat 3
 tunic 3
 slimeball 3
-utils$ 3
 itemsx 3
 xporb 3
 mgv 3
@@ -174489,7 +173502,6 @@ htmutils 3
 mosaicdetect 3
 snapwhiteflycount 3
 kldivergence 3
-$not 3
 readperwk 3
 chrisknyfe 3
 watersensor 3
@@ -174787,7 +173799,6 @@ mviews 3
 luiurl 3
 wobf 3
 spiller 3
-open$ 3
 gspo 3
 tdbrecovery 3
 tdbconfig 3
@@ -176014,12 +175025,6 @@ noreduced 3
 kcons 3
 biscan 3
 upiterset 3
-$inc 3
-$unset 3
-$each 3
-$pop 3
-$rename 3
-$bit 3
 pullj 3
 givendata 3
 undirs 3
@@ -176282,7 +175287,6 @@ tfname 3
 cumulatorx 3
 cumulatory 3
 listfooter 3
-click$save 3
 spmatch 3
 nearestn 3
 notcompleted 3
@@ -176302,9 +175306,6 @@ warndistance 3
 factoral 3
 distfunc 3
 thispipe 3
-zrange$opts 3
-zrevrange$opts 3
-sort$store 3
 remcnt 3
 keystolist 3
 listnamedata 3
@@ -176351,7 +175352,6 @@ cubeend 3
 haifa 3
 highcard 3
 hierarchized 3
-$visible 3
 mddataset 3
 doname 3
 dddddd 3
@@ -176770,15 +175770,6 @@ gammacore 3
 gammatext 3
 directactionexception 3
 overriddenaccess 3
-key$char 3
-key$short 3
-method$get 3
-method$no 3
-method$is 3
-search$multiple 3
-search$mixed 3
-search$single 3
-method$multiple 3
 heximals 3
 woml 3
 wocomponentreference 3
@@ -177016,9 +176007,7 @@ priosoner 3
 jukito 3
 ringbuffer 3
 cureve 3
-widgets$$enhancer 3
 baddate 3
-foo$enhancer 3
 extgwt 3
 viewhandler 3
 formset 3
@@ -177911,7 +176900,6 @@ unjailed 3
 reservemax 3
 warper 3
 newdistance 3
-$nature 3
 headlessapp 3
 incompat 3
 ctxhelp 3
@@ -178426,7 +177414,6 @@ contstants 3
 nssb 3
 outidentifier 3
 retraction 3
-rdb$view 3
 bydefault 3
 collid 3
 reftabschema 3
@@ -178802,7 +177789,6 @@ hoists 3
 contextk 3
 follo 3
 nake 3
-escaped$in 3
 ambigu 3
 pinched 3
 playersnum 3
@@ -182447,7 +181433,6 @@ blogitem 3
 notweet 3
 securizer 3
 javatalks 3
-click$del 3
 famaly 3
 coordinatedata 3
 mysanbox 3
@@ -182916,7 +181901,6 @@ fimi 3
 disturbing 3
 charactersl 3
 myified 3
-0$fields 3
 monitorquery 3
 monitorcount 3
 newcountc 3
@@ -183651,10 +182635,6 @@ exbadport 3
 embox 3
 badaccess 3
 funspec 3
-round$g 3
-float$n 3
-exact$g 3
-size$g 3
 eqxp 3
 dgroup 3
 phash 3
@@ -184799,7 +183779,6 @@ otherversiontokens 3
 reaplce 3
 replacedtoken 3
 fiddletabs 3
-win$password 3
 sourcetoolbar 3
 tokenpath 3
 uservo 3
@@ -185121,9 +184100,6 @@ fluction 3
 contais 3
 wsnotifier 3
 errorhr 3
-$times 3
-$minus$eq 3
-$times$eq 3
 evaluat 3
 inspectreport 3
 conecta 3
@@ -185484,13 +184460,11 @@ pytyp 3
 supercheck 3
 exitfunc 3
 jythonpath 3
-throw$ 3
 hcategory 3
 pyex 3
 oimag 3
 newargslist 3
 fakepath 3
-$clss 3
 genswitch 3
 nparamcell 3
 dynastuff 3
@@ -186091,7 +185065,6 @@ asciispecials 3
 contravar 3
 lacuna 3
 twolines 3
-clash$inner 3
 seetharam 3
 ffffffffffffcd 3
 ffffffffffffaa 3
@@ -186162,9 +185135,6 @@ bfabep 3
 cbfap 3
 daefb 3
 ffffffffffffffp 3
-foo$foo 3
-t1$inner 3
-val$zzz 3
 abcdefghijklnmopqrstuvwxyz 3
 estatico 3
 sanguine 3
@@ -186567,7 +185537,6 @@ reparametrize 3
 esels 3
 simplecase 3
 fkmk 3
-with$$ 3
 errds 3
 fksql 3
 cpks 3
@@ -188044,70 +187013,15 @@ fffffffffffffl 3
 seedlong 3
 corelation 3
 cerficate 3
-t$t 3
 serialzable 3
-unread$bii 3
 iiz 3
-into$ljava 3
-list$ljava 3
-search$bb 3
-search$cc 3
-search$ii 3
-search$jj 3
-search$ss 3
-fill$bb 3
-fill$biib 3
-fill$ss 3
-fill$siis 3
-fill$cc 3
-fill$ciic 3
-fill$ii 3
-fill$iiii 3
-fill$jj 3
-fill$jiij 3
-fill$ff 3
-fill$fiif 3
-fill$dd 3
-fill$diid 3
-fill$zz 3
-fill$ziiz 3
-equals$b$b 3
-equals$s$s 3
-equals$c$c 3
-equals$i$i 3
-equals$j$j 3
-equals$z$z 3
-sort$b 3
-sort$bii 3
-sort$c 3
-sort$cii 3
-sort$dii 3
-sort$fii 3
-sort$i 3
-sort$iii 3
-sort$j 3
-sort$jii 3
-sort$s 3
-sort$sii 3
-code$lz 3
-code$li 3
-code$lc 3
-code$lb 3
-code$lj 3
-code$lf 3
-code$ld 3
-code$ls 3
 coonstructor 3
 parameteriezd 3
 precicision 3
-url$ljava 3
 exceptionint 3
 invaliddriver 3
-string$b 3
 hyts 3
 instrution 3
-of$c 3
-of$cii 3
 upperd 3
 entitygetpublicid 3
 attrdefaultvalue 3
@@ -188244,7 +187158,6 @@ instancer 3
 handlerinjections 3
 cssnull 3
 setabcdef 3
-generic$inner 3
 tsss 3
 jaxrg 3
 servicemodule 3
@@ -189168,8 +188081,6 @@ ctfnt 3
 afit 3
 shdw 3
 choff 3
-font1$ 3
-font2$ 3
 isfprotection 3
 cfrti 3
 numfmt 3
@@ -189481,7 +188392,6 @@ setobjecti 3
 setrowid 3
 setnstring 3
 setsqlxml 3
-$s 3
 contentfiles 3
 jsfs 3
 alfaridi 3
@@ -189720,11 +188630,6 @@ unsare 3
 watfal 3
 hopa 3
 npub 3
-$areas 3
-$lines 3
-$csymb 3
-$comps 3
-$texts 3
 wtwaxs 3
 wtwprf 3
 brgare 3
@@ -189903,7 +188808,6 @@ healthregain 3
 backquoted 3
 randomno 3
 portz 3
-$transactionmethod 3
 affectedports 3
 maxconnecttimes 3
 dstnode 3
@@ -190778,7 +189682,6 @@ printtype 3
 codedeps 3
 delpackage 3
 shortcircuitably 3
-$$normalize 3
 prerendered 3
 cseqh 3
 answercall 3
@@ -191548,8 +190451,6 @@ piconfigs 3
 fbcs 3
 scriptingmailreader 3
 srcurl 3
-consumer$map 3
-token$map 3
 pdsh 3
 disenchanted 3
 hmissile 3
@@ -191934,7 +190835,6 @@ iabpp 3
 implicitbasepackage 3
 brancusi 3
 ccpt 3
-cglib$m1$ 3
 unflight 3
 aapc 3
 diable 3
@@ -191967,9 +190867,6 @@ colspanner 3
 userdept 3
 quickweeks 3
 quickmonths 3
-$host 3
-$logger 3
-$use 3
 testres 3
 eciphers 3
 dciphers 3
@@ -192124,7 +191021,6 @@ nickpass 3
 notvisble 3
 nevervisible 3
 respont 3
-abstract$ 3
 watche 3
 pviews 3
 nxi 3
@@ -192194,7 +191090,6 @@ lpppi 3
 btheta 3
 ptol 3
 wfdsimpleservice 3
-$global 3
 lastsize 3
 twodintarrayhits 3
 groundheights 3
@@ -193204,8 +192099,6 @@ firststops 3
 lruprefix 3
 crawlertimestamp 3
 httpstatuscode 3
-depth$ 3
-code$ 3
 limitsenabled 3
 delelt 3
 termiater 3
@@ -193330,10 +192223,7 @@ connprop 3
 highestperformance 3
 metaddata 3
 jiwp 3
-filter$material 3
-filter$line 3
 joincolumn 3
-arr$ 3
 pathcache 3
 overfow 3
 tcfs 3
@@ -193651,13 +192541,6 @@ shelp 3
 lhelp 3
 photocrop 3
 minuted 3
-set$bit 3
-iterator$ 3
-$throws 3
-$that 3
-split$group 3
-split$discard 3
-split$separator 3
 unadvert 3
 networkinfo 3
 clockinfo 3
@@ -193741,7 +192624,6 @@ xdisp 3
 negaten 3
 badazz 3
 wheatslot 3
-$connection 3
 printerdata 3
 greyish 3
 bigslope 3
@@ -195077,9 +193959,6 @@ totaltxnread 3
 editlogs 3
 newnodeinfo 3
 oldnodeinfo 3
-$headers 3
-$scope 3
-$rowspan 3
 jsnotice 3
 secrete 3
 runningcontainer 3
@@ -195196,10 +194075,6 @@ nogpfaulterrorbox 3
 noalignmentfaultexcept 3
 noopenfileerrorbox 3
 winlogo 3
-as$type$buffer 3
-direct$type$buffer 3
-$code$ 3
-$itype$buffer 3
 unpower 3
 atrmatch 3
 figuresp 3
@@ -195256,9 +194131,7 @@ abstractifier 3
 cchecker 3
 enumf 3
 edecl 3
-$col 3
 xrew 3
-$len 3
 xaew 3
 tostax 3
 dsct 3
@@ -196144,7 +195017,6 @@ membervalues 2
 telvue 2
 timecodes 2
 btserial 2
-look$ 2
 defaulthandlers 2
 mebbe 2
 channelevent 2
@@ -197997,7 +196869,6 @@ subwoofer 2
 lullaby 2
 haggstrom 2
 oxygene 2
-helper$stub 2
 numberselect 2
 multinsert 2
 mese 2
@@ -198506,7 +197377,6 @@ estagio 2
 firstplayedstat 2
 lastplayedstat 2
 statmanager 2
-$drools 2
 kamiya 2
 colorselectview 2
 hexview 2
@@ -198883,10 +197753,7 @@ originalduration 2
 goy 2
 facefont 2
 collisionchecking 2
-openref$ 2
-begin$ 2
 recordfactory 2
-time$ 2
 recstr 2
 reorganise 2
 pfunction 2
@@ -198996,10 +197863,6 @@ nullref 2
 utexp 2
 getanyfile 2
 lsrl 2
-null$qm 2
-$percent 2
-$lt 2
-$gt$eq 2
 umbuchung 2
 naechste 2
 addressbooks 2
@@ -200162,7 +199025,6 @@ calwrapper 2
 subrangemask 2
 objectnode 2
 compatibly 2
-$spock 2
 datasave 2
 chequered 2
 manches 2
@@ -200816,7 +199678,6 @@ letf 2
 counterspread 2
 icomb 2
 savet 2
-with$ 2
 extractcell 2
 publishalbe 2
 friendsid 2
@@ -200935,7 +199796,6 @@ confilict 2
 clszz 2
 onlylinestart 2
 idenifiers 2
-$peng 2
 tochtml 2
 suname 2
 adtext 2
@@ -201239,11 +200099,6 @@ waitns 2
 clientlistings 2
 bexc 2
 selectedtem 2
-focus$name 2
-change$type 2
-changing$first 2
-changing$last 2
-click$cancel 2
 ccic 2
 groupreader 2
 finalhtml 2
@@ -201877,7 +200732,6 @@ addlandmark 2
 authurl 2
 mapserver 2
 nthd 2
-comp\x13 2
 tickfile 2
 reqmarketdatatype 2
 savaed 2
@@ -201918,11 +200772,6 @@ erxentity 2
 testdeep 2
 peoples 2
 xarfile 2
-key$map 2
-utility$unable 2
-implementation$handle 2
-conversion$big 2
-field$userscore 2
 resetlob 2
 erimap 2
 wohtmlcommentstring 2
@@ -202376,8 +201225,6 @@ attribv 2
 generality 2
 enterframe 2
 oposition 2
-handler$$ 2
-nullable$$ 2
 caeagl 2
 jsontoken 2
 lummy 2
@@ -202510,8 +201357,6 @@ spesie 2
 destinaion 2
 newkappa 2
 newfocus 2
-$inf 2
-$deleteonce 2
 delite 2
 mymarks 2
 viewsr 2
@@ -203549,9 +202394,6 @@ dcud 2
 currencyo 2
 notaplugin 2
 defaultsl 2
-$perspective 2
-$contributor 2
-$page 2
 pluings 2
 copytooltip 2
 replacedialog 2
@@ -203659,7 +202501,6 @@ offoff 2
 getammo 2
 meanbean 2
 astlhs 2
-accept$ 2
 sssz 2
 slashdotslash 2
 doublesep 2
@@ -203673,7 +202514,6 @@ eprcent 2
 flickrpics 2
 jettexture 2
 manila 2
-event$ 2
 dtxmax 2
 dtxmin 2
 rohc 2
@@ -204574,7 +203414,6 @@ endofscript 2
 baer 2
 mysamplecompany 2
 jspit 2
-pkg$ 2
 repoint 2
 gobbling 2
 overlimit 2
@@ -204718,7 +203557,6 @@ themedisplay 2
 dependencises 2
 meke 2
 commitlock 2
-create$all 2
 dmls 2
 hierchy 2
 ifsn 2
@@ -204793,15 +203631,6 @@ xdrl 2
 dslr 2
 nothread 2
 discared 2
-rdb$const 2
-rdb$validation 2
-rdb$computed 2
-rdb$missing 2
-rdb$edit 2
-rdb$character 2
-rdb$collation 2
-rdb$update 2
-rdb$security 2
 relstamp 2
 isconstraint 2
 keycnt 2
@@ -205277,7 +204106,6 @@ musnot 2
 invalod 2
 natch 2
 pmtype 2
-disk$disk 2
 dashborads 2
 trasnlated 2
 upalert 2
@@ -205370,12 +204198,6 @@ envoid 2
 transisted 2
 renwtill 2
 jserializedobj 2
-$modification 2
-$operation 2
-$attributes 2
-$deleted 2
-$newrdn 2
-$deleteoldrdn 2
 fqjcn 2
 ztime 2
 lsve 2
@@ -208572,8 +207394,6 @@ tblueclient 2
 longx 2
 preexecute 2
 clicklistener 2
-$player 2
-$suit 2
 boundarymode 2
 oxi 2
 oyi 2
@@ -208799,8 +207619,6 @@ busbindings 2
 mofified 2
 wellformedxml 2
 fragmentdoc 2
-propagation$click 2
-panel$click 2
 tuboroidon 2
 createing 2
 toolpaths 2
@@ -209544,7 +208362,6 @@ quarries 2
 herbalists 2
 haggle 2
 coppersmiths 2
-min$indeck 2
 ofmy 2
 posibbly 2
 sparqlserver 2
@@ -210111,11 +208928,6 @@ graniteds 2
 fpersons 2
 fperson 2
 longbox 2
-click$edit 2
-button$edit 2
-click$close 2
-click$delete 2
-focus$branch 2
 ifmode 2
 typees 2
 brances 2
@@ -210242,7 +209054,6 @@ offsetheight 2
 rasterheight 2
 regionhash 2
 sunjava 2
-offsety$ 2
 asteriskicide 2
 zcalc 2
 xcalc 2
@@ -210264,7 +209075,6 @@ domainenc 2
 frangmentsenc 2
 tldlist 2
 centrifugalize 2
-c1$ 2
 palettex 2
 palettey 2
 pistachio 2
@@ -210826,7 +209636,6 @@ novelys 2
 jpegencoder 2
 projv 2
 biglistbox 2
-click$update 2
 blogout 2
 proxylist 2
 restconfig 2
@@ -210884,8 +209693,6 @@ faits 2
 flipme 2
 blackdown 2
 elementl 2
-fi$ 2
-$eld 2
 crinsert 2
 summaryview 2
 chartsubject 2
@@ -210941,7 +209748,6 @@ getparsed 2
 noneditablefields 2
 testbenchtests 2
 prefillbutton 2
-set$oid 2
 unhadled 2
 loadt 2
 fibcommon 2
@@ -210994,7 +209800,6 @@ targetrequesttypecode 2
 targetrrrtypecode 2
 orderofexecution 2
 wscex 2
-$plain 2
 nameeq 2
 viewpicture 2
 vverbose 2
@@ -212368,11 +211173,6 @@ sacdelay 2
 endonly 2
 dupnames 2
 ddll 2
-hd$p 2
-divide$p 2
-plus$p 2
-float$g 2
-ge$g 2
 insc 2
 tine 2
 codeshortification 2
@@ -212655,7 +211455,6 @@ attributing 2
 guaranteeing 2
 parametersearch 2
 friendinv 2
-test$node 2
 policyconfig 2
 smartkey 2
 wcmp 2
@@ -213148,7 +211947,6 @@ fixcount 2
 editrule 2
 linkup 2
 ignoreds 2
-util$os 2
 frameworkswith 2
 infoplist 2
 swco 2
@@ -213456,7 +212254,6 @@ xdaintent 2
 psuc 2
 corespi 2
 ontoloty 2
-with$and 2
 declaredfields 2
 nonboolneg 2
 expectedarg 2
@@ -214085,9 +212882,7 @@ subsubfeatures 2
 subsubsubfeatures 2
 spirals 2
 silvertail 2
-click$download 2
 logolink 2
-win$rembember 2
 tagurl 2
 casetag 2
 emptytitle 2
@@ -214214,8 +213009,6 @@ minimo 2
 requerido 2
 sytems 2
 fibbos 2
-$div 2
-$div$eq 2
 sevrity 2
 newfailure 2
 wifileaks 2
@@ -214418,7 +213211,6 @@ noz 2
 mazes 2
 enda 2
 vxvz 2
-$project 2
 bubba 2
 dispatchexecutor 2
 insatnce 2
@@ -214510,7 +213302,6 @@ severitiesconfiguration 2
 dartkeys 2
 submsumed 2
 bititude 2
-$nbsp 2
 reeader 2
 strsqbracketstart 2
 strsqbracketend 2
@@ -214535,7 +213326,6 @@ criterea 2
 mechname 2
 fuuuuuuuuuuuuuuuuu 2
 plclang 2
-interface$ 2
 memlog 2
 ndm 2
 crierion 2
@@ -214598,7 +213388,6 @@ isdisjoint 2
 builtinprop 2
 pyclass 2
 bimag 2
-$throwable 2
 wopt 2
 strerrors 2
 pycls 2
@@ -215482,15 +214271,6 @@ smachines 2
 etnl 2
 methdecl 2
 throwsc 2
-menu$$undo 2
-menu$$clipboard 2
-menu$$file 2
-bar$$base 2
-bar$$file 2
-bar$$undo 2
-bar$$clipboard 2
-bar$$find 2
-bar$$format 2
 fcenter 2
 vneighbors 2
 kontroller 2
@@ -217427,9 +216207,6 @@ oneinstance 2
 closeall 2
 unitedinternet 2
 beac 2
-model$af 2
-model$am 2
-model$mai 2
 asyncdemo 2
 broadcastservice 2
 pathcheck 2
@@ -217783,49 +216560,27 @@ normalizationmode 2
 collelemiteratoraddress 2
 suncompat 2
 randombyte 2
-string$i 2
 mcpb 2
 mintint 2
 tsalt 2
 ttrailer 2
 eement 2
-unread$c 2
-skip$j 2
-unread$cii 2
-unread$b 2
 bsnew 2
 utciiiiii 2
 iiiiiiii 2
 iiiiiiiii 2
 iiiiiiiiiii 2
-accessible$ljava 2
 pubfield 2
 privfield 2
 prsttrvol 2
-class$i 2
-i$b 2
 slsc 2
 cptmp 2
 adoptable 2
 mjis 2
-deflate$b 2
-deflate$bii 2
-extra$b 2
-read$byte 2
 putintbyte 2
 doubleuffer 2
-wrap$s 2
-wrap$sii 2
 colsed 2
-digest$b 2
-digest$bii 2
-equal$b$b 2
-seed$b 2
-lb$lb$ 2
-stream$c 2
-key$c$ljava 2
 stringdouble 2
-verify$b 2
 truncationintbooleanbooleanintint 2
 timestampintintintintintintint 2
 nanosint 2
@@ -217833,26 +216588,17 @@ timeintintint 2
 dateday 2
 dateintintint 2
 writechar 2
-string$bi 2
-string$bl 2
 ljavalang 2
 lgoogle 2
 incheck 2
-member2$a 2
-member3$b 2
 sequenceint 2
 backreferenced 2
 durat 2
 unnecessarily 2
 ftpuri 2
 httpsurl 2
-data$bii 2
-data$b 2
 dhparameterspec 2
-format$ljava 2
-iterator$ljava 2
 lsymbols 2
-ii$bi 2
 unparker 2
 infopoint 2
 principalimpl 2
@@ -217957,7 +216703,6 @@ editserver 2
 editnormalview 2
 jlt 2
 tmodels 2
-\x1a 2
 stdctx 2
 ipvhosts 2
 deletedb 2
@@ -218475,44 +217220,10 @@ configtype 2
 qaction 2
 withi 2
 ftos 2
-nth$ 2
 irredundant 2
-structure$$star1$ 2
-parameters$ 2
-parameters$$star1$ 2
-matching$ 2
-matching$$star1$ 2
-patterns$ 2
-patterns$$star1$ 2
-variable$ 2
-application$ 2
-arguments$ 2
-arguments$$plus1$ 2
-binding$ 2
-tag$ 2
-assignment$ 2
-type$$plus1$ 2
-exponent$ 2
-exponent$$plus1$ 2
-word$$star1$ 2
-keyword$ 2
 newlet 2
 fptype 2
 arglistn 2
-list$$star1$ 2
-target$ 2
-choice$ 2
-choice$$star1$ 2
-sequence$ 2
-sequence$$star1$ 2
-voided$ 2
-suffix$ 2
-primary$ 2
-terminal$ 2
-characters$$plus1$ 2
-literal$$choice 2
-literal$$star1$ 2
-char$ 2
 optel 2
 defif 2
 fileobjs 2
@@ -218525,44 +217236,6 @@ javasg 2
 scalasource 2
 scalagoals 2
 donfex 2
-p$ 2
-p$$star1$ 2
-path$ 2
-id$$star1$ 2
-id$$star2$ 2
-id$$star3$ 2
-expected$$choice 2
-p$$shared2$ 2
-expr$$star1$ 2
-expr$$star2$ 2
-expr$$star3$ 2
-expr$$star4$ 2
-expr$$star5$ 2
-expr$$star6$ 2
-expr$$star7$ 2
-member$ 2
-exprs$ 2
-block$ 2
-block$$star1$ 2
-stat$$choice 2
-clause$$choice 2
-pattern1$ 2
-pattern3$ 2
-pattern3$$star1$ 2
-patterns$$choice 2
-modifier$$choice 2
-qualifier$$choice 2
-annotation$ 2
-pair$ 2
-body$ 2
-body$$star1$ 2
-p$$shared3$ 2
-selectors$$choice 2
-selector$$choice 2
-dcl$ 2
-def$$choice 2
-opt$ 2
-extends$ 2
 ufdfb 2
 ufefc 2
 uffa 2
@@ -218578,14 +217251,6 @@ uffee 2
 uddfc 2
 udcf 2
 uddae 2
-pkey$ 2
-psep$ 2
-token$$choice 2
-token$$plus1$ 2
-brace$ 2
-brace$$choice 2
-brace$$star1$ 2
-separator$ 2
 entityannotation 2
 jahiamix 2
 parcelgen 2
@@ -219460,7 +218125,6 @@ collcn 2
 webserverresources 2
 flattenfile 2
 servercp 2
-$foreign 2
 rife 2
 slashstarstarslash 2
 whitescape 2
@@ -219469,9 +218133,6 @@ wodpath 2
 wodfile 2
 projectclasspath 2
 runtimeservices 2
-$rest 2
-$server 2
-$client 2
 textfrom 2
 macsymbol 2
 jarproject 2
@@ -219537,7 +218198,6 @@ bleuprint 2
 kutosis 2
 keper 2
 cirds 2
-conversions$ 2
 patchurl 2
 framents 2
 proivded 2
@@ -219716,13 +218376,7 @@ modifiedx 2
 exph 2
 classeson 2
 unreferred 2
-$$new 2
-a$$$ 2
 xsecret 2
-x$new 2
-x$$new 2
-xa$ 2
-xa$$$ 2
 stoe 2
 pgenes 2
 threades 2
@@ -219928,23 +218582,15 @@ timb 2
 alfunction 2
 coastguard 2
 nodein 2
-$space 2
-$chars 2
-$csize 2
 cpdate 2
 scamax 2
 scamin 2
-$scale 2
-$scode 2
-$txstr 2
 acwl 2
 hwlw 2
 mtod 2
 thdf 2
 tsvl 2
 vahc 2
-$tints 2
-$ntxst 2
 objl 2
 wthy 2
 prch 2
@@ -221051,7 +219697,6 @@ siocgifnetmask 2
 pointopoint 2
 addrconfig 2
 namereqd 2
-impl$ 2
 bindtodevice 2
 endheadermagic 2
 wifexited 2
@@ -221943,9 +220588,6 @@ invocke 2
 phnf 2
 rtnf 2
 tdn 2
-$$get 2
-$$less 2
-$$greater 2
 uipi 2
 buddygrid 2
 viaddr 2
@@ -222984,7 +221626,6 @@ copyvideo 2
 anamnesisform 2
 anamnesischecksvalue 2
 rewinds 2
-builder$ 2
 stpos 2
 neededsteps 2
 diposit 2
@@ -223206,10 +221847,6 @@ appsofsteel 2
 nofragments 2
 redeployable 2
 equaliy 2
-a$string$string$long 2
-a$string$string 2
-method$request 2
-a$object 2
 insrt 2
 rforb 2
 collisons 2
@@ -223394,7 +222031,6 @@ formulaconvert 2
 customrepeat 2
 activecell 2
 digitstr 2
-filter$ 2
 tabidarray 2
 anlayze 2
 reftest 2
@@ -223699,7 +222335,6 @@ rbex 2
 rberr 2
 genenerator 2
 preempts 2
-m1$ 2
 quakenet 2
 resultfmt 2
 fdbx 2
@@ -223756,7 +222391,6 @@ sanbox 2
 domobj 2
 unbooked 2
 datecell 2
-definition$ 2
 configf 2
 lpwd 2
 sencoder 2
@@ -223865,7 +222499,6 @@ zzvarzz 2
 zzy 2
 lpg 2
 initializeropt 2
-a$b 2
 dricennreeet 2
 dricenunreeet 2
 experted 2
@@ -224030,8 +222663,6 @@ curplane 2
 npcnode 2
 curtoolkit 2
 docfact 2
-$begincut$ 2
-$endcut$ 2
 dynaview 2
 bookmarklayer 2
 axispick 2
@@ -224207,7 +222838,6 @@ itemstate 2
 geofilteredcountries 2
 ftpcce 2
 roleprivilege 2
-reset$password 2
 autologout 2
 outrankingcriterion 2
 criterialist 2
@@ -224779,8 +223409,6 @@ sclient 2
 yarra 2
 diffgram 2
 freindly 2
-$phpcs 2
-$error 2
 codeformat 2
 basesearch 2
 deltasks 2
@@ -226752,37 +225380,8 @@ cydata 2
 unbought 2
 spawnon 2
 addendums 2
-coll$impl 2
-integral$impl 2
-package$ 2
-binary$impl 2
-$init$reason 2
-$keys$ 2
-iterator$impl 2
-summable$impl 2
-ordinal$impl 2
-$element$iter$ 2
 titlecased 2
-$init$when 2
-process$ 2
-comparable$impl 2
 breakeven 2
-cloneable$impl 2
-element$impl 2
-invertable$impl 2
-container$impl 2
-closeable$impl 2
-exponentiable$impl 2
-number$impl 2
-castable$impl 2
-ranged$impl 2
-scalar$impl 2
-numeric$impl 2
-identifiable$impl 2
-$init$cause 2
-$init$description 2
-$init$doc 2
-$init$by 2
 linewidthchooser 2
 linewidthpicker 2
 connectionthree 2
@@ -228350,7 +226949,6 @@ ltequal 2
 shiftrassign 2
 gtequal 2
 shiftlassign 2
-support$initializers 2
 threadprivate 2
 cetu 2
 clarator 2
@@ -228975,21 +227573,6 @@ ndupe 2
 hcfe 2
 nnidx 2
 applicationmaster 2
-$charset 2
-$defer 2
-$rows 2
-$cols 2
-$selected 2
-$multiple 2
-$checked 2
-$maxlength 2
-$enctype 2
-$onsubmit 2
-$onreset 2
-$data 2
-$coords 2
-$onload 2
-$onunload 2
 lcontainer 2
 appmaster 2
 unmanagedamlauncher 2
@@ -229251,17 +227834,6 @@ cbgtab 2
 disaccociate 2
 elementloop 2
 wossd 2
-$memtype$ 2
-direct$type$buffer$bo$ 2
-direct$type$buffer$rw$ 2
-r$bo$ 2
-get$swaptype$ 2
-put$swaptype$ 2
-buffer$rw$$bo$ 2
-get$type$$bo$ 2
-put$type$$bo$ 2
-length$ 2
-$code$loop 2
 taisho 2
 shouldinvalidate 2
 nzfill 2
@@ -229406,9 +227978,6 @@ transportproxyloglevel 2
 activationloglevel 2
 tmpfac 2
 argnumber 2
-format$field 2
-months$ljava 2
-weekdays$ljava 2
 sente 2
 badpattern 2
 forrun 2
@@ -229967,8 +228536,6 @@ legalset 2
 isjavastart 2
 isjavapart 2
 mrfal 2
-constructor$biii 2
-constructor$iii 2
 spacein 2
 tcme 2
 tcte 2
@@ -230027,11 +228594,9 @@ sixhundredtest 2
 notrailingzerotest 2
 zerotest 2
 superflags 2
-test$an 2
 aibe 2
 firevent 2
 llava 2
-info$some 2
 componenr 2
 parensis 2
 priveledged 2
@@ -230045,8 +228610,6 @@ ulstyle 2
 listyle 2
 talign 2
 numtk 2
-cup$do 2
-cup$act 2
 quotemarkleft 2
 quotemarkright 2
 attrleft 2
@@ -230061,7 +228624,6 @@ rectangleint 2
 mnemonicint 2
 iconbyte 2
 strokeint 2
-frame$j 2
 clickint 2
 modelfloatfloat 2
 biasint 2
@@ -230069,9 +228631,6 @@ strucutre 2
 garamond 2
 cssp 2
 autochange 2
-ui$drag 2
-ui$tabbed 2
-ui$metal 2
 princlpals 2
 ungp 2
 serversocketclass 2
@@ -230082,10 +228641,6 @@ acert 2
 wrappedclazz 2
 stringlong 2
 waitlongint 2
-$t$ 2
-t2$ 2
-mi5$ 2
-$$mc3$ 2
 krstnn 2
 arstcrt 2
 clrc 2
@@ -230199,12 +228754,6 @@ governmental 2
 caris 2
 fidfilter 2
 seqend 2
-$limmin 2
-$limmax 2
-$extmin 2
-$extmax 2
-$acadver 2
-$fillmode 2
 endtab 2
 dxfes 2
 newgeom 2
@@ -231037,11 +229586,8 @@ pushpublish 1
 currentflashversion 1
 fmle 1
 helloworldtestrunner 1
-$real 1
 cuiwe 1
 partialticks 1
-put$alternative 1
-put$fast 1
 whi 1
 anticlock 1
 povider 1
@@ -231310,8 +229856,6 @@ aspecific 1
 haveactivate 1
 shouldbeconfigurablewithparameterescape 1
 noproduction 1
-ignore$me 1
-ignoreme2$ 1
 getnot 1
 shouldbea 1
 asempty 1
@@ -231352,9 +229896,6 @@ simplerestclient 1
 guildhall 1
 cityhall 1
 elses 1
-service$ 1
-social$ 1
-user$ 1
 superflous 1
 testtrack 1
 labrepl 1
@@ -231366,7 +229907,6 @@ ldapvalidatorbundle 1
 configfilevalidatorbundle 1
 infomas 1
 sqprogram 1
-$o 1
 loggingto 1
 emailnow 1
 celltower 1
@@ -231507,7 +230047,6 @@ updateall 1
 scintific 1
 priative 1
 dehex 1
-$exc 1
 inhetirance 1
 spootnik 1
 setnametag 1
@@ -231618,8 +230157,6 @@ tjoin 1
 subplans 1
 jtolds 1
 dualnback 1
-add$pad 1
-name$action 1
 coloned 1
 csmacd 1
 vectordoubledoubledouble 1
@@ -231910,11 +230447,8 @@ blankvalue 1
 texturepath 1
 jpegg 1
 unselective 1
-thread$native 1
-random$native 1
 deselectable 1
 inlinefunction 1
-query$ 1
 boundwhen 1
 qnlen 1
 arbritry 1
@@ -232404,7 +230938,6 @@ backupfailed 1
 appnametext 1
 eliding 1
 lowercasing 1
-as$this 1
 servertest 1
 logoutfb 1
 nointernettext 1
@@ -232774,7 +231307,6 @@ glassyorange 1
 semithick 1
 thickglass 1
 zapp 1
-$ok 1
 trygve 1
 fistplus 1
 hostcontrols 1
@@ -233014,18 +231546,6 @@ praveen 1
 modiry 1
 appsupport 1
 fxui 1
-true$qm 1
-false$qm 1
-sort$em 1
-$lt$eq$gt 1
-$star 1
-$slash 1
-$lt$eq 1
-$gt 1
-$eq$eq 1
-$em$eq 1
-$amp$amp 1
-$bar$bar 1
 ausfuehrungsdatum 1
 flaggable 1
 ctnumber 1
@@ -234261,11 +232781,8 @@ autobuilder 1
 contributeapplicationdefaults 1
 drawl 1
 upcaser 1
-$ignored 1
 reimplementation 1
 imagesubmit 1
-get$conflict 1
-set$conflict 1
 javascriptsupport 1
 caselessly 1
 nonvisual 1
@@ -234713,15 +233230,12 @@ adduserrequeest 1
 userexceed 1
 signupapprovetoadmin 1
 signupapprovaltouser 1
-$macro 1
 nodification 1
 attahment 1
 attachmnets 1
-$xxx 1
 underlink 1
 preivate 1
 serobot 1
-$all$ 1
 synchorized 1
 weaktext 1
 underpage 1
@@ -234906,14 +233420,10 @@ blahdy 1
 formattingnbsp 1
 jdbcbatch 1
 edgeloop 1
-select$filter 1
-focus$predefined 1
-focus$label 1
 ckez 1
 progressmeter 1
 combobutton 1
 ciknowmgr 1
-info$stage 1
 irstats 1
 symmetrization 1
 haspath 1
@@ -235278,21 +233788,6 @@ testobject 1
 serializablilty 1
 woconfig 1
 pingx 1
-utility$null 1
-implementation$value 1
-implementation$take 1
-implementation$unable 1
-conversion$byte 1
-conversion$short 1
-conversion$integer 1
-conversion$long 1
-conversion$float 1
-conversion$double 1
-conversion$boolean 1
-conversion$null 1
-access$with 1
-access$without 1
-access$no 1
 eoonae 1
 ldisabled 1
 localizes 1
@@ -236285,8 +234780,6 @@ serverauth 1
 emailprotection 1
 endentity 1
 bartab 1
-$decorator 1
-$command$ 1
 selectionn 1
 simplecs 1
 compcs 1
@@ -236360,7 +234853,6 @@ npodetail 1
 vendordetail 1
 mygeoipstring 1
 creategeoipindex 1
-transfer$ 1
 fordelimiter 1
 bumpsphere 1
 bumptorus 1
@@ -236596,7 +235088,6 @@ faisl 1
 modifires 1
 instancesof 1
 editl 1
-class$factory 1
 dictonaries 1
 arrayutilities 1
 reproducable 1
@@ -236609,7 +235100,6 @@ realityforge 1
 guiceyloops 1
 nopro 1
 kboard 1
-\x1f 1
 ccga 1
 unbury 1
 oakland 1
@@ -236685,9 +235175,6 @@ mateusfreira 1
 personalizable 1
 onlineviewer 1
 mavenargs 1
-get$obj$state 1
-get$id 1
-get$oid 1
 readboolean 1
 readdouble 1
 readbytearray 1
@@ -236791,20 +235278,6 @@ generatorgenerateunsignedtypes 1
 generatorgenerategeneratedannotation 1
 generatortargetpackage 1
 generatortargetdirectory 1
-rdb$deferrable 1
-rdb$initially 1
-rdb$segment 1
-rdb$dimensions 1
-rdb$base 1
-rdb$complex 1
-rdb$match 1
-rdb$delete 1
-rdb$dbkey 1
-rdb$format 1
-rdb$runtime 1
-rdb$owner 1
-rdb$flags 1
-rdb$statistics 1
 seql 1
 ingdatatype 1
 ingtype 1
@@ -237001,7 +235474,6 @@ typtypmod 1
 typndims 1
 typdefaultbin 1
 typdefault 1
-sql$default 1
 timewithlocaltimezone 1
 timestampwithlocaltimezone 1
 naturaln 1
@@ -237174,9 +235646,6 @@ greaterthanequals 1
 lessthanequals 1
 virtualmachineerror 1
 arithmeticexception 1
-file$native 1
-math$native 1
-time$native 1
 clicktabs 1
 friendsclick 1
 runnkng 1
@@ -237938,8 +236407,6 @@ springstate 1
 tabletest 1
 unsetm 1
 decid 1
-$cmd 1
-$command 1
 beantest 1
 msglog 1
 spacl 1
@@ -238692,12 +237159,6 @@ autodrop 1
 qstructures 1
 electreiii 1
 drawcontrols 1
-change$geofeature 1
-click$drawmode 1
-click$mapview 1
-click$satview 1
-click$hybview 1
-select$layertree 1
 xdivs 1
 ydivs 1
 crscode 1
@@ -238809,7 +237270,6 @@ aifb 1
 typr 1
 nearestneighbors 1
 glisoft 1
-$package$ 1
 ksrc 1
 nonbinary 1
 nrce 1
@@ -239550,7 +238010,6 @@ rchunks 1
 slurping 1
 testlate 1
 devics 1
-two$vars 1
 domainfix 1
 xsuccess 1
 xexpect 1
@@ -239558,22 +238017,9 @@ alldays 1
 intiailize 1
 blorg 1
 andmanaged 1
-$place 1
 deslashify 1
 elementfactory 1
-div$click 1
-div1$click 1
-span$click 1
 testex 1
-button$click 1
-button$button2$click 1
-runasync$click 1
-action$click 1
-html$click 1
-textbox$key 1
-default$click 1
-$async 1
-textbox$focus 1
 pikcer 1
 upadted 1
 decalog 1
@@ -239924,7 +238370,6 @@ downcall 1
 vetod 1
 elasticfox 1
 ools 1
-$resolution 1
 holonomic 1
 syshalt 1
 sysrst 1
@@ -240404,18 +238849,6 @@ myvideos 1
 friendsvideos 1
 procede 1
 settingsview 1
-click$conf 1
-blur$name 1
-click$section 1
-click$moderators 1
-click$permissions 1
-click$groups 1
-click$remove 1
-click$permanent 1
-click$submit 1
-click$reset 1
-select$user 1
-click$branches 1
 diplicate 1
 recursevely 1
 wrok 1
@@ -240672,9 +239105,6 @@ baracks 1
 reptrod 1
 mosue 1
 matchervisitors 1
-parser$$parboiled 1
-conflict$ 1
-parent$ 1
 cristmas 1
 tahn 1
 consiredred 1
@@ -241425,8 +239855,6 @@ shootsound 1
 gamesong 1
 fruitpies 1
 chocolatepies 1
-add$g 1
-$gen 1
 bufv 1
 numerr 1
 mddos 1
@@ -241446,42 +239874,7 @@ hwaddr 1
 nbroadcast 1
 npointtopoint 1
 sndall 1
-element$g 1
-tl$p 1
-length$p 1
-neg$g 1
-div$g 1
-subtract$p 1
-minus$g 1
-multiply$g 1
-rem$p 1
-abs$p 1
-eq$p 1
-op$g 1
-gt$g 1
-ne$g 1
-lt$g 1
-le$g 1
-atom$p 1
-list$p 1
-tuple$p 1
-binary$p 1
-bitstring$g 1
-boolean$g 1
-integer$p 1
-number$g 1
-port$g 1
-or$g 1
-and$g 1
-not$g 1
-bnot$g 1
-bor$g 1
-bxor$g 1
-band$g 1
-bsl$g 1
-bsr$g 1
 dexit 1
-node$p 1
 fixtable 1
 bnor 1
 keymember 1
@@ -241773,9 +240166,6 @@ prettyfy 1
 minister 1
 citydetails 1
 cityitem 1
-test$object 1
-test$string 1
-test$ur 1
 wau 1
 greatbritain 1
 smsdcmd 1
@@ -241801,7 +240191,6 @@ smlies 1
 selete 1
 usingid 1
 testsmallest 1
-strategy$factory 1
 exlusivity 1
 animtation 1
 shoko 1
@@ -242500,35 +240889,6 @@ eventitemrowimage 1
 installobservers 1
 maptivity 1
 classicblue 1
-click$more 1
-changing$tag 1
-select$suggests 1
-select$recentlys 1
-select$likes 1
-click$news 1
-click$whyfiddle 1
-click$go 1
-click$run 1
-click$insert 1
-select$type 1
-click$logolink 1
-select$sandboxes 1
-click$view 1
-click$fork 1
-click$logined 1
-like$case 1
-change$author 1
-click$login 1
-click$logoff 1
-cancel$login 1
-ok$login 1
-add$sourcetabs 1
-click$open 1
-click$clear 1
-click$ping 1
-click$refresh 1
-paging$cases 1
-click$btn 1
 medallia 1
 fbench 1
 intrig 1
@@ -242878,19 +241238,15 @@ getdefaultencoding 1
 setdefaultencoding 1
 getfilesystemencoding 1
 getderef 1
-$thread 1
 getcodesize 1
 cmath 1
 hexlify 1
-hex$doc 1
 unhexlify 1
 hashlib 1
 extendleft 1
 getrandbits 1
 groupdict 1
 finditer 1
-wait$ 1
-notify$ 1
 getweakrefcount 1
 dyear 1
 sroute 1
@@ -243111,7 +241467,6 @@ underlineselection 1
 fontselector 1
 fontsizeselector 1
 iscserver 1
-with$prefixed 1
 componenent 1
 intstance 1
 susbscribed 1
@@ -243218,7 +241573,6 @@ uproperties 1
 ustaticstring 1
 visualbasic 1
 withjdk 1
-provider$extension 1
 eception 1
 byteis 1
 modificaiton 1
@@ -243491,8 +241845,6 @@ libstrc 1
 classsuite 1
 mmaterial 1
 getby 1
-$controller 1
-$format 1
 udpt 1
 followship 1
 getuserplaces 1
@@ -243606,7 +241958,6 @@ siefert 1
 caugh 1
 amah 1
 canek 1
-test$ 1
 datq 1
 contolled 1
 conusmer 1
@@ -244908,7 +243259,6 @@ nodecache 1
 operaters 1
 appa 1
 appb 1
-`optind 1
 rcpcleaner 1
 lesserequal 1
 libsdl 1
@@ -245060,68 +243410,17 @@ iterrator 1
 independency 1
 gsfe 1
 ofme 1
-store$c 1
-init$ljavax 1
-manager$ljavax 1
 timeint 1
 unicodestream 1
 axcii 1
 definitly 1
-read$zii 1
-wrap$b 1
-wrap$bii 1
-wrap$i 1
-wrap$iii 1
-wrap$l 1
-wrap$lii 1
-wrap$c 1
-wrap$cii 1
-wrap$d 1
-wrap$dii 1
 compliments 1
 signbyteintint 1
-verify$bii 1
-search$biib 1
-search$ciic 1
-search$diid 1
-search$fiif 1
-search$iiii 1
-search$jiij 1
-search$siis 1
-$bi 1
-$si 1
-$ii 1
-$zi 1
-$ci 1
-$fi 1
-$di 1
-$ji 1
-$ti 1
-$til 1
-$sii 1
-$iii 1
-$jii 1
-$fii 1
-$dii 1
-$zii 1
-$tii 1
-$tiil 1
-secret$bi 1
-unwrap$b 1
-final$bi 1
-final$b 1
-final$bii 1
-final$bii$b 1
-blob$b 1
-blob$bi 1
 rsaxxxl 1
 scsu 1
 integern 1
-formats$ljava 1
 ljavajava 1
-ii$ljava 1
 sixteenplus 1
-l$l 1
 cpher 1
 lgtm 1
 lyahoo 1
@@ -245239,7 +243538,6 @@ getruler 1
 getevilchase 1
 testbasic 1
 testorder 1
-$variable 1
 ruinwesen 1
 alwaysday 1
 alwaysnight 1
@@ -245382,7 +243680,6 @@ gmeter 1
 speedgaugeclean 1
 cagr 1
 dfsetting 1
-adapter$factory 1
 clojures 1
 simplecalculator 1
 continute 1
@@ -246207,8 +244504,6 @@ publicationdate 1
 serizable 1
 keyt 1
 qjpa 1
-public$ 1
-private$ 1
 ollection 1
 gottox 1
 canonizalier 1
@@ -246391,7 +244686,6 @@ securirty 1
 mailstatus 1
 otherclasspath 1
 wopbx 1
-$join 1
 setmodel 1
 browsersupport 1
 commonscollections 1
@@ -246636,8 +244930,6 @@ testnative 1
 privata 1
 mavenx 1
 unxset 1
-a$$$$ 1
-xa$$$$ 1
 implmajor 1
 privateimport 1
 bsnid 1
@@ -247333,7 +245625,6 @@ suitup 1
 agitatable 1
 schematically 1
 cfirestraint 1
-using$ 1
 defaultfilters 1
 accumluate 1
 hedged 1
@@ -247472,7 +245763,6 @@ cyphertext 1
 filsl 1
 entryseq 1
 valueseq 1
-object$make 1
 jsonparser 1
 charenc 1
 springfreemarker 1
@@ -247697,17 +245987,6 @@ evolverimpl 1
 htmlutil 1
 evolvers 1
 dfce 1
-$$augment 1
-$$change 1
-$$insert 1
-$$truncate 1
-$$negative 1
-$$times 1
-$$plus 1
-$$minus 1
-$$round 1
-$$min 1
-$$max 1
 highc 1
 highe 1
 highg 1
@@ -247748,7 +246027,6 @@ remotehandler 1
 submersed 1
 xrayer 1
 asfile 1
-factory$provider 1
 baseimpl 1
 favoriters 1
 invaliate 1
@@ -248302,7 +246580,6 @@ standardizedpatient 1
 appliacne 1
 eosce 1
 confidentially 1
-val$result 1
 toponyms 1
 notcommit 1
 fuckyou 1
@@ -248478,10 +246755,6 @@ duhawk 1
 ilde 1
 notsame 1
 fluxx 1
-method$string 1
-a$byte 1
-a$integer 1
-a$map 1
 nftpurge 1
 largeblob 1
 createlamp 1
@@ -248528,7 +246801,6 @@ userlevelimg 1
 userpoints 1
 userrank 1
 userrace 1
-select$tasks 1
 textfeld 1
 bmirechner 1
 ioberflaeche 1
@@ -248810,7 +247082,6 @@ apijson 1
 inteference 1
 reobtaining 1
 preclude 1
-set$around 1
 withincode 1
 clazzy 1
 interfaceif 1
@@ -248825,7 +247096,6 @@ nowt 1
 mathces 1
 implemnenting 1
 whippet 1
-cglib$m 1
 jpas 1
 berghei 1
 genelocs 1
@@ -248907,7 +247177,6 @@ argumentl 1
 fooling 1
 superinteface 1
 frament 1
-test$in 1
 marys 1
 metthods 1
 jconditional 1
@@ -248967,12 +247236,6 @@ alljoynerrordialog 1
 rowgrades 1
 getviewport 1
 bviiii 1
-$classname$ 1
-$rc$ 1
-$methodname$ 1
-$methodparms$ 1
-$defaultmain$ 1
-$testcode$ 1
 mainlaout 1
 sixe 1
 surefirereportverifier 1
@@ -249085,9 +247348,6 @@ allowedcountries 1
 flvfulllength 1
 freecog 1
 craigslist 1
-remember$me 1
-forgot$password 1
-goto$email 1
 uppber 1
 merad 1
 hesitation 1
@@ -249126,7 +247386,6 @@ shouting 1
 nbhmid 1
 malcolm 1
 whenmanifestonly 1
-deri$ved 1
 derivo 1
 sparqldlapi 1
 sqwrl 1
@@ -249169,7 +247428,6 @@ itsok 1
 illfetch 1
 accelerometerservos 1
 textstream 1
-\x17 1
 orgaddr 1
 orgport 1
 languate 1
@@ -250047,7 +248305,6 @@ loadx 1
 hungs 1
 htmlmessage 1
 avoding 1
-$static 1
 nestedclasspath 1
 mkp 1
 xdfff 1
@@ -250085,7 +248342,6 @@ buystack 1
 buyagain 1
 sellstack 1
 sellagain 1
-§a 1
 cobwb 1
 lilly 1
 damegeboost 1
@@ -250703,15 +248959,6 @@ democracy 1
 rhobuild 1
 relacion 1
 asistentes 1
-null$ 1
-$abstract 1
-infinity$ 1
-language$ 1
-$init$license 1
-$init$dependencies 1
-$init$optional 1
-$init$export 1
-$init$shared 1
 findwhiteboards 1
 loadwhiteboard 1
 eclaire 1
@@ -250915,7 +249162,6 @@ tarxzp 1
 doublecheck 1
 provioder 1
 testbecause 1
-$camel 1
 gslb 1
 existingbb 1
 getprep 1
@@ -250928,7 +249174,6 @@ accuse 1
 horizental 1
 vertival 1
 questionarys 1
-replace$$ 1
 syslogs 1
 childselect 1
 roleids 1
@@ -251949,7 +250194,6 @@ reinsertnamedirs 1
 sequenecs 1
 midfile 1
 failureto 1
-$about 1
 textnames 1
 updation 1
 arrm 1
@@ -252011,18 +250255,6 @@ wrcoefs 1
 rdcoefs 1
 dctsizesqr 1
 boundsx 1
-buffer$rw$ 1
-get$memtype$ 1
-put$memtype$ 1
-as$type$buffer$rw$b 1
-as$type$buffer$rw$l 1
-direct$type$buffer$rw$u 1
-direct$type$buffer$rw$s 1
-mapped$type$buffer 1
-to$memtype$array 1
-from$memtype$array 1
-$bo$ 1
-repl$ 1
 ufdfc 1
 ufefd 1
 uffbf 1
@@ -252044,21 +250276,9 @@ soapur 1
 lbii 1
 charsetfloatfloatbyte 1
 bufnull 1
-write$non 1
 configureblocking 1
-instance$b 1
 compartibility 1
-ctor$lbyte 1
-combine$ljava 1
-domain$ljava 1
-string$b$ljava 1
 activationport 1
-strings$ljava 1
-eras$ljava 1
-strings$$ljava 1
-index$ljava 1
-constructor$d$ljava 1
-choices$d$ljava 1
 lpofnhookproc 1
 qmspp 1
 anysize 1
@@ -255355,30 +253575,10 @@ nonintersected 1
 indexedr 1
 jndie 1
 nextand 1
-clob$c 1
-j$b 1
-j$bii 1
-position$bj 1
 ttlb 1
-string$z 1
-string$d 1
-string$f 1
-string$j 1
-string$s 1
-string$java 1
 tvararg 1
-search$tt 1
-sort$t 1
-sort$tii 1
 outofbound 1
 priorityqueue 1
-enumerate$ljava 1
-at$ci 1
-at$cii 1
-before$ci 1
-before$cii 1
-i$ci 1
-points$ciiii 1
 directionaliy 1
 groupint 1
 findint 1
@@ -255407,9 +253607,7 @@ handlerint 1
 duplicatenamenum 1
 duplicatenum 1
 unwrapbyte 1
-class$b 1
 properity 1
-read$write 1
 ambitious 1
 rcompatible 1
 badargtype 1
@@ -255487,7 +253685,6 @@ elementintint 1
 boundsint 1
 autoscrolloing 1
 perty 1
-ui$internal 1
 folser 1
 borderintint 1
 graphicsintintintint 1
@@ -255507,7 +253704,6 @@ sleeplongint 1
 joinlong 1
 joinlongint 1
 manytimes 1
-yyy$ 1
 eguals 1
 waitlong 1
 supeclass 1
