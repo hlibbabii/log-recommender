@@ -23,6 +23,9 @@ class VocabMerger(object):
         self.merged_vocabs = Counter()
         self.seen_files = []
 
+    def set_path_to_dump(self, path):
+        self.path_to_dump = path
+
     def __dump_to_file(self):
         pickle.dump(self, open(self.path_to_dump, 'wb'))
 
@@ -106,6 +109,7 @@ def get_vocab(path_to_file):
 def create_vocab_merger(path_to_dump):
     if (os.path.exists(path_to_dump)):
         vocab_merger = pickle.load(open(path_to_dump, 'rb'))
+        vocab_merger.set_path_to_dump(path_to_dump)
         if not isinstance(vocab_merger, VocabMerger):
             raise TypeError(f"Object {str(vocab_merger)} must be VocabMerger version {vocab_merger.VERSION}")
         return vocab_merger
