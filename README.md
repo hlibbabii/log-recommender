@@ -82,6 +82,9 @@ cat /home/lv71161/hlibbabii/log-recommender/nn-data/new_framework/en_100_percent
 
 1. The resulting vocabulary is used as input file (`{base_project_dir}/vocab`) to splitting algorithm (`logrec/split/samecase/splitter.py`)
 
+```shell
+python logrec/dataprep/split/samecase/splitter.py
+```
 
 1. The algorithm produces `splitting.txt` file.
 
