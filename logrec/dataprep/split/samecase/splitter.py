@@ -285,21 +285,14 @@ def generate_sample(transformed, nontransformed, nn, where):
 
 
 if __name__ == '__main__':
-    base_dir = base_from = f'{base_project_dir}/nn-data/'
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--path-to-dataset', action='store', default='devanbu_split_no_tabs_under_2000')
-    args = parser.parse_args()
-
-    path_to_dataset = f'{base_dir}/{args.path_to_dataset}'
-    path_to_splits = f'{path_to_dataset}/splits'
-    vocab_file = f'{path_to_dataset}/vocab.txt'
+    path_to_splits = f'{base_project_dir}/splits'
+    vocab_file = f'{base_project_dir}/vocab'
 
     logging.info(f"Loading vocabulary into memory from {vocab_file} ...")
     freqs = {}
     with open(vocab_file, 'r') as f:
         for l in f:
-            line = l.split()
+            line = l.split(' ')
             freqs[line[0]] = int(line[1])
 
     logging.info("Loading dictionaries")
@@ -310,7 +303,7 @@ if __name__ == '__main__':
     if not os.path.exists(path_to_splits):
         os.makedirs(path_to_split_folder)
 
-    split_file =  f'{path_to_split_folder}/split.txt'
+    split_file = f'{path_to_split_folder}/splitting.txt'
     nonsplit_file = f"{path_to_split_folder}/nonsplit.txt"
     typo_candidates_file = f"{path_to_split_folder}/typo-candidates.txt"
 
