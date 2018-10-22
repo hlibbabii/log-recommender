@@ -67,13 +67,21 @@ Currently, a heuristic that chooses a splitting amoung the set of all possible s
 ##### Steps
 
 1. The vocabulary of alamanis dataset is calculated as following
+```shell
 `lorec vocab build en_100_percent 1101001`
+```
 - camelcase and undercase splitting is done
 - splitting of numerals is done
 - string and comments are NOT removed
 - non-English words are removed
 
+```shell
+
+less /home/lv71161/hlibbabii/log-recommender/nn-data/new_framework/en_100_percent/metadata/1101111/vocab | awk -e '{print $1}' | grep -v ^\<.*\>$ > /home/lv71161/hlibbabii/log-recommender/vocab
+```
+
 1. The resulting vocabulary is used as input file (`{base_project_dir}/vocab`) to splitting algorithm (`logrec/split/samecase/splitter.py`)
+
 
 1. The algorithm produces `splitting.txt` file.
 
