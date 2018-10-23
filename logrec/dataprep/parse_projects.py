@@ -8,6 +8,7 @@ import time
 from multiprocessing.pool import Pool
 from pathlib import Path
 
+from logrec.dataprep import base_project_dir
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingType
 from logrec.dataprep.preprocess_params import pp_params
@@ -96,7 +97,7 @@ if __name__ == '__main__':
     parser.add_argument('src', help="name of the 'raw' dataset")
     parser.add_argument('dest', help='destination for parsed files, recommended format <dataset name>/parsed')
     parser.add_argument('--splitting-file', action='store',
-                        default='/home/hlib/thesis/log-recommender/nn-data/devanbu_split_no_tabs_under_2000/splits/split.txt')
+                        default=f'{base_project_dir}/splitting.txt')
     args = parser.parse_known_args(*DEFAULT_PARSE_PROJECTS_ARGS)
     args = args[0]
 
