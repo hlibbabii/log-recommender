@@ -26,5 +26,5 @@ nn_params = {
         'how_many_words': 2000,
         'starting_words': "<comment> public static class"
     },
-    'mode': Mode.TRAINING
+    'mode': Mode.TRAINING.value
 }
