@@ -97,7 +97,7 @@ if __name__ == '__main__':
     parser.add_argument('src', help="name of the 'raw' dataset")
     parser.add_argument('dest', help='destination for parsed files, recommended format <dataset name>/parsed')
     parser.add_argument('--splitting-file', action='store',
-                        default=f'{base_project_dir}/splitting.txt')
+                        default=f'{base_project_dir}/splittings.txt')
     args = parser.parse_known_args(*DEFAULT_PARSE_PROJECTS_ARGS)
     args = args[0]
 
