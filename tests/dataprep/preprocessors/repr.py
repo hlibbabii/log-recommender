@@ -12,7 +12,7 @@ from logrec.dataprep.preprocessors.repr import to_repr
 
 class TeprTest(unittest.TestCase):
     def test_to_repr_empty_preprocess_param_set(self):
-        prep_params = []
+        prep_params = {PreprocessingType.BSR: False}
         tokens = [
             Number([1, DecimalPoint(), 1]),
             "*",
@@ -74,7 +74,7 @@ class TeprTest(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_to_repr_spl_1(self):
-        prep_params = {PreprocessingType.SPL: True}
+        prep_params = {PreprocessingType.SPL: True, PreprocessingType.BSR: False}
         tokens = [
             Number([1, DecimalPoint(), 1]),
             "*",
@@ -108,17 +108,17 @@ class TeprTest(unittest.TestCase):
             Number([1, DecimalPoint(), 1]),
             "*",
             NonEng("dinero"),
-            StringLiteral(['<capital>', 'a', '<cc_sep>', NonEng("wirklich")]),
+            StringLiteral(['`C', 'a', '<cc_sep>', NonEng("wirklich")]),
             NewLine(),
             MultilineComment([NonEng('ц'), NonEng("blanco"), "<us_sep>", "english"]),
             NewLine(), Tab(),
-            OneLineComment(['<capital>', NonEng("dieselbe"), '<cc_sep>', "8"])
+            OneLineComment(['`C', NonEng("dieselbe"), '<cc_sep>', "8"])
         ]
 
         self.assertEqual(expected, actual)
 
     def test_to_repr_spl_1_numspl_1(self):
-        prep_params = {PreprocessingType.SPL: True, PreprocessingType.NUM_SPL: True}
+        prep_params = {PreprocessingType.SPL: True, PreprocessingType.NUM_SPL: True, PreprocessingType.BSR: True}
         tokens = [
             Number([1, DecimalPoint(), 1]),
             "*",
@@ -154,18 +154,18 @@ class TeprTest(unittest.TestCase):
             '1',
             "*",
             NonEng("dinero"),
-            StringLiteral(['<capital>', 'a', '<cc_sep>', NonEng("wirklich")]),
+            StringLiteral(['`C', 'a', '<cc_sep>', NonEng("wirklich")]),
             NewLine(),
             MultilineComment([NonEng('ц'), NonEng("blanco"), "<us_sep>", "english"]),
             NewLine(), Tab(),
-            OneLineComment(['<capital>', NonEng("dieselbe"), '<cc_sep>', "8"])
+            OneLineComment(['`C', NonEng("dieselbe"), '<cc_sep>', "8"])
         ]
 
         self.assertEqual(expected, actual)
 
     def test_to_repr_spl_1_numspl_1_nonewlinestabs_1(self):
         prep_params = {PreprocessingType.SPL: True, PreprocessingType.NUM_SPL: True,
-                       PreprocessingType.NO_NEWLINES_TABS: True}
+                       PreprocessingType.NO_NEWLINES_TABS: True, PreprocessingType.BSR: False}
         tokens = [
             Number([1, DecimalPoint(), 1]),
             "*",
@@ -201,16 +201,17 @@ class TeprTest(unittest.TestCase):
             '1',
             "*",
             NonEng("dinero"),
-            StringLiteral(['<capital>', 'a', '<cc_sep>', NonEng("wirklich")]),
+            StringLiteral(['`C', 'a', '<cc_sep>', NonEng("wirklich")]),
             MultilineComment([NonEng('ц'), NonEng("blanco"), "<us_sep>", "english"]),
-            OneLineComment(['<capital>', NonEng("dieselbe"), '<cc_sep>', "8"])
+            OneLineComment(['`C', NonEng("dieselbe"), '<cc_sep>', "8"])
         ]
 
         self.assertEqual(expected, actual)
 
     def test_to_repr_spl_1_numspl_1_nonewlinestabs_1_nostr_1(self):
         prep_params = {PreprocessingType.SPL: True, PreprocessingType.NUM_SPL: True,
-                       PreprocessingType.NO_NEWLINES_TABS: True, PreprocessingType.NO_STR: True}
+                       PreprocessingType.NO_NEWLINES_TABS: True, PreprocessingType.NO_STR: True,
+                       PreprocessingType.BSR: False}
         tokens = [
             Number([1, DecimalPoint(), 1]),
             "*",
@@ -249,14 +250,15 @@ class TeprTest(unittest.TestCase):
             NonEng("dinero"),
             '<str_literal>', '<str_literal>',
             MultilineComment([NonEng('ц'), NonEng("blanco"), "<us_sep>", "english"]),
-            OneLineComment(['<capital>', NonEng("dieselbe"), '<cc_sep>', "8"])
+            OneLineComment(['`C', NonEng("dieselbe"), '<cc_sep>', "8"])
         ]
 
         self.assertEqual(expected, actual)
 
     def test_to_repr_spl_1_numspl_1_nonewlinestabs_1_nostr_0(self):
         prep_params = {PreprocessingType.SPL: True, PreprocessingType.NUM_SPL: True,
-                       PreprocessingType.NO_NEWLINES_TABS: True, PreprocessingType.NO_STR: False}
+                       PreprocessingType.NO_NEWLINES_TABS: True, PreprocessingType.NO_STR: False,
+                       PreprocessingType.BSR: False}
         tokens = [
             Number([1, DecimalPoint(), 1]),
             "*",
@@ -293,10 +295,10 @@ class TeprTest(unittest.TestCase):
             '1',
             "*",
             NonEng("dinero"),
-            '"', '<capital>', 'a', '<cc_sep>', NonEng("wirklich"), '"',
+            '"', '`C', 'a', '<cc_sep>', NonEng("wirklich"), '"',
             '"', 'b', '"',
             MultilineComment([NonEng('ц'), NonEng("blanco"), "<us_sep>", "english"]),
-            OneLineComment(['<capital>', NonEng("dieselbe"), '<cc_sep>', "8"])
+            OneLineComment(['`C', NonEng("dieselbe"), '<cc_sep>', "8"])
         ]
 
         self.assertEqual(expected, actual)
@@ -306,7 +308,8 @@ class TeprTest(unittest.TestCase):
                        PreprocessingType.NUM_SPL: True,
                        PreprocessingType.NO_NEWLINES_TABS: True,
                        PreprocessingType.NO_STR: False,
-                       PreprocessingType.EN_ONLY: True}
+                       PreprocessingType.EN_ONLY: True,
+                       PreprocessingType.BSR: True}
         tokens = [
             Number([1, DecimalPoint(), 1]),
             "*",
@@ -342,9 +345,9 @@ class TeprTest(unittest.TestCase):
             '1',
             "*",
             '<non_eng>',
-            '"', '<capital>', 'a', '<cc_sep>', '<non_eng>', '"',
+            '"', '`C', 'a', '<cc_sep>', '<non_eng>', '"',
             MultilineComment(['<non_eng>', '<non_eng>', "<us_sep>", "english"]),
-            OneLineComment(['<capital>', '<non_eng>', '<cc_sep>', "8"])
+            OneLineComment(['`C', '<non_eng>', '<cc_sep>', "8"])
         ]
 
         self.assertEqual(expected, actual)
@@ -354,7 +357,8 @@ class TeprTest(unittest.TestCase):
                        PreprocessingType.NUM_SPL: True,
                        PreprocessingType.NO_NEWLINES_TABS: True,
                        PreprocessingType.NO_STR: False,
-                       PreprocessingType.EN_ONLY: True}
+                       PreprocessingType.EN_ONLY: True,
+                       PreprocessingType.BSR: False}
         tokens = [
             Number([1, DecimalPoint(), 1]),
             "*",
@@ -400,7 +404,7 @@ class TeprTest(unittest.TestCase):
             '<non_eng>',
             '"', '<non_eng_contents>', '"',
             MultilineComment(['<non_eng>', '<non_eng>', "<us_sep>", "english"]),
-            OneLineComment(['<capital>', '<non_eng>', '<cc_sep>', "8"])
+            OneLineComment(['`C', '<non_eng>', '<cc_sep>', "8"])
         ]
 
         self.assertEqual(expected, actual)

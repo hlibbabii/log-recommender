@@ -1,11 +1,38 @@
+from abc import ABC, abstractmethod
+
 from logrec.dataprep.preprocessors.model.general import ProcessableTokenContainer
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 
+from enum import Enum, auto
 
-class SplitContainer(ProcessableTokenContainer):
+
+class SplitRepr(Enum):
+    BETWEEN_WORDS = auto()
+    BONDERIES = auto()
+    NONE = auto()
+
+
+class SplitContainer(ProcessableTokenContainer, ABC):
     def __init__(self, subtokens):
         super().__init__(subtokens)
 
+    def empty_repr(self):
+        return self.subtokens
+
+    @abstractmethod
+    def boundaries_repr(self):
+        pass
+
+    @abstractmethod
+    def preprocessed_repr(self):
+        pass
+
+
+split_repr_func_map = {
+    SplitRepr.BETWEEN_WORDS: 'preprocessed_repr',
+    SplitRepr.BONDERIES: 'boundaries_repr',
+    SplitRepr.NONE: 'empty_repr'
+}
 
 class UnderscoreSplit(SplitContainer):
     def __init__(self, subtokens):
@@ -20,8 +47,11 @@ class UnderscoreSplit(SplitContainer):
     def preprocessed_repr(self):
         return [w for subtoken in self.subtokens for w in (subtoken, placeholders['underscore_separator'])][:-1]
 
+    def boundaries_repr(self):
+        return [placeholders['split_words_start']] + self.subtokens + [placeholders['split_words_end']]
 
-class NonDelimiterSplitContainer(SplitContainer):
+
+class NonDelimiterSplitContainer(SplitContainer, ABC):
     def __init__(self, subtokens, capitalized):
         super().__init__(subtokens)
         self.capitalized = capitalized
@@ -34,6 +64,10 @@ class NonDelimiterSplitContainer(SplitContainer):
 
     def __repr__(self):
         return f'{self.__class__.__name__}{"(CAP)" if self.capitalized else ""}{self.subtokens}'
+
+    def boundaries_repr(self):
+        return [placeholders['split_words_start']] + (
+            [placeholders['capital']] if self.capitalized else []) + self.subtokens + [placeholders['split_words_end']]
 
 
 class CamelCaseSplit(NonDelimiterSplitContainer):

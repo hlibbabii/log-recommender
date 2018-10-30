@@ -15,6 +15,7 @@ class PreprocessingType(str, Enum):
     NO_COM: str = 'nocom'
     NO_STR: str = 'nostr'
     EN_ONLY: str = 'en_only'
+    BSR: str = 'bsr'
 
 
 token_to_preprocessing_type_level_dict = {
