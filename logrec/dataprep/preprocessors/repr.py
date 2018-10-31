@@ -70,15 +70,17 @@ def to_repr_token(types_to_be_repr_dict, token, split_repr):
             if issubclass(clazz, SplitContainer):
                 repr_func = split_repr_func_map[split_repr]
                 repr = getattr(token, repr_func)()
+                split_repr = SplitRepr.NONE if split_repr == SplitRepr.BONDERIES else SplitRepr.BETWEEN_WORDS
             else:
                 repr = token.preprocessed_repr()
         else:
             repr = token.non_preprocessed_repr()
 
+
         if clazz in recursive and isinstance(repr, list):
-            return to_repr_list(types_to_be_repr_dict, repr, SplitRepr.NONE)
+            return to_repr_list(types_to_be_repr_dict, repr, split_repr)
         elif clazz in recursive:
-            return to_repr_token(types_to_be_repr_dict, repr, SplitRepr.NONE)
+            return to_repr_token(types_to_be_repr_dict, repr, split_repr)
         else:
             return repr
     elif clazz in recursive:

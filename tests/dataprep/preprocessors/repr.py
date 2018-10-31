@@ -118,7 +118,7 @@ class TeprTest(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_to_repr_spl_1_numspl_1(self):
-        prep_params = {PreprocessingType.SPL: True, PreprocessingType.NUM_SPL: True, PreprocessingType.BSR: True}
+        prep_params = {PreprocessingType.SPL: True, PreprocessingType.NUM_SPL: True, PreprocessingType.BSR: False}
         tokens = [
             Number([1, DecimalPoint(), 1]),
             "*",
@@ -309,7 +309,7 @@ class TeprTest(unittest.TestCase):
                        PreprocessingType.NO_NEWLINES_TABS: True,
                        PreprocessingType.NO_STR: False,
                        PreprocessingType.EN_ONLY: True,
-                       PreprocessingType.BSR: True}
+                       PreprocessingType.BSR: False}
         tokens = [
             Number([1, DecimalPoint(), 1]),
             "*",
@@ -405,6 +405,55 @@ class TeprTest(unittest.TestCase):
             '"', '<non_eng_contents>', '"',
             MultilineComment(['<non_eng>', '<non_eng>', "<us_sep>", "english"]),
             OneLineComment(['`C', '<non_eng>', '<cc_sep>', "8"])
+        ]
+
+        self.assertEqual(expected, actual)
+
+    def test_to_repr_spl_1_numspl_1_nonewlinestabs_1_nostr_0_enonly_1_bsr(self):
+        prep_params = {PreprocessingType.SPL: True,
+                       PreprocessingType.NUM_SPL: True,
+                       PreprocessingType.NO_NEWLINES_TABS: True,
+                       PreprocessingType.NO_STR: False,
+                       PreprocessingType.EN_ONLY: True,
+                       PreprocessingType.BSR: True}
+        tokens = [
+            Number([1, DecimalPoint(), 1]),
+            "*",
+            NonEng("dinero"),
+            StringLiteral([
+                CamelCaseSplit([
+                    ProcessableToken("a"),
+                    NonEng("wirklich")
+                ], True)
+            ]),
+            NewLine(),
+            MultilineComment([
+                NonEng('ц'),
+                UnderscoreSplit([
+                    NonEng("blanco"),
+                    ProcessableToken("english")
+                ])
+            ]),
+            NewLine(), Tab(),
+            OneLineComment([
+                WithNumbersSplit([
+                    NonEng("dieselbe"),
+                    ProcessableToken("8")
+                ], True)
+            ])
+        ]
+
+        actual = to_repr(prep_params, tokens)
+
+        expected = [
+            '1',
+            '<dec_point>',
+            '1',
+            "*",
+            '<non_eng>',
+            '"', '`s', '`C', 'a', '<non_eng>', 's`', '"',
+            MultilineComment(['<non_eng>', '`s', '<non_eng>', "english", 's`']),
+            OneLineComment(['`s', '`C', '<non_eng>', "8", 's`'])
         ]
 
         self.assertEqual(expected, actual)
