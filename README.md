@@ -22,7 +22,7 @@ that getting source code as input suggests different kind of information related
 and their parsing, preprocessing etc.
 
 ## Data Gathering
-
+14,317 projects from Github
 [Mining source code repositories at massive scale using language modeling. M Allamanis, C Sutton](https://dl.acm.org/citation.cfm?id=2487127)
 
 ## Data Preprocessing
