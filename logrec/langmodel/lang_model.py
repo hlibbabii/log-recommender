@@ -71,7 +71,7 @@ def create_df(dir):
         raise ValueError(f"No data available: {os.path.abspath(dir)}")
 
 
-def get_model(model_name):
+def get_model(model_name, nn_arch):
     dataset_name = params.nn_params["dataset_name"]
     path_to_dataset = f'{params.nn_params["path_to_data"]}/{dataset_name}'
     path_to_model = f'{path_to_dataset}/{model_name}'
@@ -131,7 +131,8 @@ def get_model(model_name):
 
     return rnn_learner, text_field, model_trained
 
-def run_and_display_tests(m, text_field, path_to_save=None):
+
+def run_and_display_tests(m, text_field, nn_arch, nn_testing, path_to_save=None):
     to_test_mode(m)
     print("==============        TESTS       ====================")
 
@@ -203,7 +204,7 @@ def printGPUInfo():
         logging.info("Number of GPUs available: " + str(torch.cuda.device_count()))
 
 
-def get_model_name_by_params():
+def get_model_name_by_params(path_to_dataset, nn_arch):
     folder, config_diff = find_most_similar_config(path_to_dataset, nn_arch)
     if config_diff == {}:
         return folder
@@ -225,7 +226,7 @@ def find_and_plot_lr(rnn_learner, path_to_model):
     logging.info(f"Plot is saved to {path}")
 
 
-def train_model(rnn_learner, path_to_dataset, model_name):
+def train_model(rnn_learner, path_to_dataset, model_name, nn_arch):
     dataset_name = params.nn_params["dataset_name"]
     training_start_time = time()
     vals, ep_vals = rnn_learner.fit(params.nn_params['lr'], n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
@@ -243,11 +244,14 @@ def train_model(rnn_learner, path_to_dataset, model_name):
     rnn_learner.save_encoder(dataset_name + "_encoder")
 
 
-if __name__ == '__main__':
-    parser = ArgumentParser()
-    parser.add_argument("params_file")
-    args = parser.parse_args(['logrec.langmodel.params'])
-    params = importlib.import_module(args.params_file)
+def get_non_existent_model_name(path_to_dataset, base_model_name):
+    model_name = base_model_name + "_extratrained"
+    while os.path.exists(f'{path_to_dataset}/{model_name}'):
+        model_name = model_name + "_"
+    return model_name
+
+
+def run(params):
     logging.info(f"Using params: {params.nn_params}")
 
     nn_arch = params.nn_params['arch']
@@ -259,21 +263,17 @@ if __name__ == '__main__':
 
     path_to_dataset = f'{params.nn_params["path_to_data"]}/{params.nn_params["dataset_name"]}'
     force_rerun = False
-    md=params.nn_params['mode']
+    md = params.nn_params['mode']
     logging.info(f"Mode: {md}")
 
     if "base_model" in params.nn_params:
         base_model_name = params.nn_params["base_model"]
         path_to_best_model = f'{path_to_dataset}/{base_model_name}/models/{params.nn_params["dataset_name"]}_best.h5'
         logging.info(f"Using base model: {base_model_name}")
-        model_name = base_model_name  + "_extratrained"
+        model_name = get_non_existent_model_name(path_to_dataset, base_model_name)
         path_to_model = f'{path_to_dataset}/{model_name}'
-        while os.path.exists(path_to_model):
-            model_name = model_name + "_"
-            path_to_model = f'{path_to_dataset}/{model_name}'
-        os.mkdir(path_to_model)
         path_to_model_models = f'{path_to_model}/models'
-        os.mkdir(path_to_model_models)
+        os.makedirs(path_to_model_models)
         path_to_model_best_base = f'{path_to_model_models}/{params.nn_params["dataset_name"]}_best_base.h5'
         try:
             logging.info(f"Copying from {os.path.abspath(path_to_best_model)} "
@@ -284,14 +284,14 @@ if __name__ == '__main__':
             exit(1)
     else:
         logging.info("Not using base model. Training coefficients from scratch...")
-        model_name = get_model_name_by_params()
+        model_name = get_model_name_by_params(path_to_dataset, nn_arch)
         path_to_model = f'{path_to_dataset}/{model_name}'
 
     logging.info(f"Path to model: {os.path.abspath(path_to_model)}")
     if not os.path.exists(path_to_model):
         os.mkdir(path_to_model)
 
-    learner, text_field, model_trained = get_model(model_name)
+    learner, text_field, model_trained = get_model(model_name, nn_arch)
     vocab_file = f'{path_to_dataset}/TEXT.pkl'
     if not os.path.exists(vocab_file):
         with open(vocab_file, 'w') as f:
@@ -300,8 +300,6 @@ if __name__ == '__main__':
     if not rerunning_model or force_rerun:
         with open(f'{path_to_model}/{PARAM_FILE_NAME}', 'w') as f:
             json.dump(nn_arch, f)
-        # with open(f'{path_to_dataset}/{name}/config_diff.json', 'w') as f:
-        #     json.dump(config_diff, f)
 
         if params.nn_params['mode'] == Mode.LEARNING_RATE_FINDING.value:
             if rerunning_model:
@@ -310,12 +308,20 @@ if __name__ == '__main__':
         elif params.nn_params['mode'] == Mode.TRAINING.value:
             if rerunning_model:
                 logging.info(f"Forcing training rerun")
-            train_model(learner, path_to_dataset, model_name)
+            train_model(learner, path_to_dataset, model_name, nn_arch)
             logging.info("Loading the best model")
             learner.load(f'{params.nn_params["dataset_name"]}_best')
             m = learner.model
-            run_and_display_tests(m, text_field, f'{path_to_model}/gen_text.out')
+            run_and_display_tests(m, text_field, nn_arch, nn_testing, f'{path_to_model}/gen_text.out')
         else:
             raise AssertionError(f"Unknown mode: {params.nn_params['mode']}")
     else:
         logging.info(f'Model {params.nn_params["dataset_name"]}/{model_name} already trained. Not rerunning training.')
+
+
+if __name__ == '__main__':
+    parser = ArgumentParser()
+    parser.add_argument("params_file")
+    args = parser.parse_args(['logrec.langmodel.params'])
+    params = importlib.import_module(args.params_file)
+    run(params)
