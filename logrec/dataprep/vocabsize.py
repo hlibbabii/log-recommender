@@ -9,6 +9,7 @@ from multiprocessing.pool import Pool
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.to_repr import REPR_EXTENSION
 from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_VOCABSIZE_ARGS
+from logrec.util import io_utils
 
 
 class VocabMerger(object):
@@ -57,9 +58,7 @@ class VocabMerger(object):
 
     def write_vocab(self, path_to_vocab_file):
         sorted_vocab = sorted(self.merged_vocabs.items(), key=lambda x: x[1], reverse=True)
-        with open(path_to_vocab_file, 'w') as f:
-            for entry in sorted_vocab:
-                f.write(f'{entry[0]} {entry[1]}\n')
+        io_utils.dump_dict_into_2_columns(sorted_vocab, path_to_vocab_file)
 
     def __generate_stats(self):
         total = len(self.sizes)

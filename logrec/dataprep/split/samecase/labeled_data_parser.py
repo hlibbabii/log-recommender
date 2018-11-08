@@ -1,14 +1,13 @@
 import csv
 import logging
-from collections import defaultdict
 from pprint import pprint
 
 from fastai.imports import tqdm
 from logrec.dataprep import base_project_dir
 from logrec.dataprep.split.samecase import manually_tagged_splittings_file_reader
-from logrec.dataprep.split.samecase.random_word_selector_for_splitting import base_dataset_dir
 from logrec.dataprep.split.samecase.splitter import load_english_dict, get_splittings
 from logrec.langmodel.params import nn_params
+from logrec.util import io_utils
 from logrec.util.param_mutator import ParamMutator
 
 logging.basicConfig(level=logging.INFO)
@@ -118,11 +117,7 @@ if __name__ == '__main__':
          {'name': 'd', 'start': 1.0, 'end': 100.0, 'plus_or_mult': 'mult', 'koef': 1.5}]) \
         .mutate(5000, 1000)
 
-    freqs = {}
-    with open(f'{path_to_dataset}/vocab.txt', 'r') as f:
-        for l in f:
-            line = l.split(" ")
-            freqs[line[0]] = int(line[1])
+    freqs = io_utils.read_dict_from_2_columns(f'{path_to_dataset}/vocab.txt')
 
     print(possibel_var_values)
     print("======================")

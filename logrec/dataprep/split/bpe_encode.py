@@ -2,6 +2,8 @@ import argparse
 import sys
 
 from logrec.local_properties import DEFAULT_BPE_ENCODE_ARGS
+from logrec.util import io_utils
+
 
 def encode(words, merges):
     letters_list = {" ".join(k): v for k, v in words.items()}
@@ -58,16 +60,9 @@ if __name__ == '__main__':
 
     if args.input and args.output:
         # working with files
-        words = {}
-        with open(args.input, 'r') as f:
-            for line in f:
-                line = line[:-1] if line[-1] else line
-                splits = line.split(" ")
-                words[splits[0]] = splits[1]
+        words = io_utils.read_dict_from_2_columns(args.input)
         new_words = encode(words, merges)
-        with open(args.output, 'w') as f:
-            for word, freq in new_words.items():
-                f.write(f'{word} {freq}\n')
+        io_utils.dump_dict_into_2_columns(new_words, args.output)
     else:
         subwords = encode_word(args.word, merges)
         print(subwords)

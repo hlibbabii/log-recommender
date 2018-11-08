@@ -10,6 +10,7 @@ import deepdiff
 import matplotlib
 
 from logrec.langmodel.utils import to_test_mode, gen_text, beautify_text, back_to_train_mode
+from logrec.util import io_utils
 
 matplotlib.use('Agg')
 
@@ -91,9 +92,7 @@ def get_model(model_name, nn_arch):
                                                           min_freq=nn_arch["min_freq"]
                                                           # not important since we remove rare tokens during preprocessing
                                                           )
-    with open(f'{path_to_dataset}/vocab_all.txt', 'w') as f:
-        for word, freq in text_field.vocab.freqs.items():
-            f.write(f'{str(word)} {str(freq)}\n')
+    io_utils.dump_dict_into_2_columns(text_field.vocab.freqs, f'{path_to_dataset}/vocab_all.txt')
     pickle.dump(text_field, open(f'{path_to_dataset}/TEXT.pkl', 'wb'))
 
     vocab_size=len(text_field.vocab.itos)

@@ -8,6 +8,8 @@ from multiprocessing.pool import Pool
 from operator import itemgetter
 from random import shuffle
 
+from logrec.util import io_utils
+
 print(sys.path)
 from fastai.imports import tqdm
 from logrec.dataprep import base_project_dir
@@ -289,11 +291,7 @@ if __name__ == '__main__':
     vocab_file = f'{base_project_dir}/vocab'
 
     logging.info(f"Loading vocabulary into memory from {vocab_file} ...")
-    freqs = {}
-    with open(vocab_file, 'r') as f:
-        for l in f:
-            line = l.split(' ')
-            freqs[line[0]] = int(line[1])
+    freqs = io_utils.read_dict_from_2_columns(vocab_file)
 
     logging.info("Loading dictionaries")
     general_dict = load_english_dict(f'{base_project_dir}/dicts/eng')

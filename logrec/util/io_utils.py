@@ -226,3 +226,24 @@ def dump_k_means_clustering_stats(clustering_stats, classes, word_count, gini):
     )
 
 #==================================================
+
+
+def dump_dict_into_2_columns(dct, file, append=False):
+    with open(file, 'w+' if append else 'w') as f:
+        lst = dct.items() if isinstance(dct, dict) else dct
+        for word, freq in lst:
+            f.write(f'{str(word)} {str(freq)}\n')
+
+
+def read_dict_from_2_columns(file):
+    words = {}
+    with open(file, 'r') as f:
+        for line in f:
+            line = line[:-1] if line[-1] else line
+            splits = line.split(" ")
+            try:
+                second_column = int(splits[1])
+            except:
+                second_column = splits[1]
+            words[splits[0]] = second_column
+    return words

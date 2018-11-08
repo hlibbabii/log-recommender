@@ -3,6 +3,7 @@ import logging
 import re, collections
 
 from logrec.local_properties import DEFAULT_BPE_ARGS
+from logrec.util import io_utils
 from logrec.util.priority_counter import PriorityCounter
 
 
@@ -96,12 +97,6 @@ if __name__ == '__main__':
             resulting_vocab[subword] += frequency
     resulting_vocab_sorted = sorted(resulting_vocab.items(), key=lambda x: x[1], reverse=True)
 
-    with open(f'{args.base_dir}/{MERGES_FILE_NAME}', 'w+') as f:
-        for merge in merges:
-            f.write(" ".join(merge) + "\n")
-    with open(f'{args.base_dir}/{REASSEMBLED_VOCAB_FILE_NAME}', 'w') as f:
-        for entry, freq in vocab.items():
-            f.write(f'{entry} {freq}\n')
-    with open(f'{args.base_dir}/{RESULTING_VOCAB_FILE_NAME}', 'w') as f:
-        for entry, freq in resulting_vocab_sorted:
-            f.write(f'{entry} {freq}\n')
+    io_utils.dump_dict_into_2_columns(merges, f'{args.base_dir}/{MERGES_FILE_NAME}', append=True)
+    io_utils.dump_dict_into_2_columns(vocab, f'{args.base_dir}/{REASSEMBLED_VOCAB_FILE_NAME}')
+    io_utils.dump_dict_into_2_columns(resulting_vocab_sorted, f'{args.base_dir}/{RESULTING_VOCAB_FILE_NAME}')
