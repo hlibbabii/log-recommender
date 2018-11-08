@@ -2,6 +2,8 @@ import importlib
 import logging
 import time
 
+logger = logging.getLogger(__name__)
+
 def names_to_functions(pp_names):
     pps = []
     for name in pp_names:
@@ -28,5 +30,5 @@ def apply_preprocessors(to_be_processed, preprocessors, context={}):
             to_be_processed = preprocessor_output
         t = int(time.time() - start)
         if t > 0:
-            logging.debug(f"{preprocessor}: {t}s")
+            logger.debug(f"{preprocessor}: {t}s")
     return to_be_processed

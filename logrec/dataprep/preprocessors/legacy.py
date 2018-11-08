@@ -6,6 +6,8 @@ from logrec.dataprep.preprocessors import java
 from logrec.dataprep.preprocessors.general import spl, spl_verbose
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 
+logger = logging.getLogger(__name__)
+
 
 def replace_variable_place_holders(multitoken_list):
     res = []
@@ -94,7 +96,7 @@ def replace_infrequent_numeric_literal(token_list, context):
     try:
         frequent_tokens = context['frequent_tokens']
     except KeyError:
-        logging.error("no frequent tokens attribute in preprocessing context")
+        logger.error("no frequent tokens attribute in preprocessing context")
         return
     for i in range(len(token_list)):
         if token_list[i] not in frequent_tokens:

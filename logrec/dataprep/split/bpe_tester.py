@@ -1,6 +1,10 @@
+import logging
+
 from logrec.dataprep import base_project_dir
 from logrec.dataprep.split.bpe_encode import read_merges, encode_word
 from logrec.dataprep.split.samecase import manually_tagged_splittings_file_reader
+
+logger = logging.getLogger(__name__)
 
 path_manually_tagged_splittings = f'{base_project_dir}/manually_tagged_splittings.txt'
 merges_file='/home/hlib/thesis/log-recommender/nn-data/devanbu_split_no_tabs_new_splits3_under_5000_15_percent/merges.txt'

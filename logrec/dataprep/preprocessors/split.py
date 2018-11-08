@@ -8,6 +8,7 @@ from logrec.dataprep.preprocessors.model.general import ProcessableToken, Proces
 from logrec.dataprep.preprocessors.model.split import CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, \
     NonDelimiterSplitContainer, SameCaseSplit
 
+logger = logging.getLogger(__name__)
 
 class Singleton(type):
     _instances = {}
@@ -26,7 +27,7 @@ class SplittingDict(metaclass=Singleton):
             for ln in f:
                 word, splitting = ln.split("|")
                 self.splitting_dict[word] = splitting.split()
-        logging.info(f"Splitting dictionary is build in {time.time()-start} s")
+        logger.info(f"Splitting dictionary is build in {time.time()-start} s")
 
 
 def get_splitting_dictionary(splitting_file_location):

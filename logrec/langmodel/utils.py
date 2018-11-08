@@ -5,8 +5,7 @@ import torch
 from fastai.core import to_np, to_gpu
 from fastai.metrics import top_k, MRR
 
-logging.basicConfig(level=logging.DEBUG)
-
+logger = logging.getLogger(__name__)
 
 def output_predictions(m, input_field, output_field, starting_text, how_many, file_to_save):
     words = [starting_text.split()]
@@ -70,10 +69,10 @@ def display_not_guessed_examples(examples, vocab):
             vocab.itos[target]
     ))
     for ex in exs:
-        logging.info(f'                    ... {ex[0]}')
-        logging.info(f'                    ... {ex[1]}')
-        logging.info(f'                    ... {ex[2]}')
-        logging.info(f'===============================================')
+        logger.info(f'                    ... {ex[0]}')
+        logger.info(f'                    ... {ex[1]}')
+        logger.info(f'                    ... {ex[2]}')
+        logger.info(f'===============================================')
 
 
 def calc_and_display_top_k(rnn_learner, metric, vocab):
@@ -86,8 +85,8 @@ def calc_and_display_top_k(rnn_learner, metric, vocab):
 
     accuracies, examples = top_k(*rnn_learner.predict_with_targs(True), ks, cat)
 
-    logging.info(f'Current tops are ...')
-    logging.info(f'                    ... {accuracies}')
+    logger.info(f'Current tops are ...')
+    logger.info(f'                    ... {accuracies}')
     if spl[-1] == 'show':
         display_not_guessed_examples(examples, vocab)
 
@@ -98,4 +97,4 @@ def calculate_and_display_metrics(rnn_learner, metrics, vocab):
             calc_and_display_top_k(rnn_learner, metric, vocab)
         elif metric == 'mrr':
             mrr = MRR(*rnn_learner.predict_with_targs(True))
-            logging.info(f"mrr: {mrr}")
+            logger.info(f"mrr: {mrr}")

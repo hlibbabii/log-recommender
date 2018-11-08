@@ -14,6 +14,8 @@ from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingType
 from logrec.dataprep.preprocessors.repr import to_repr
 from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
 
+logger = logging.getLogger(__name__)
+
 PARSED_FILE_EXTENSION = "parsed"
 PART_REPR_EXTENSION = "partrepr"
 REPR_EXTENSION = "repr"
@@ -77,21 +79,21 @@ class IntermediateReprWriter(ReprWriter):
 def preprocess_and_write(params):
     src_file, dest_file, preprocessing_params, old_preprocessing_params = params
     if not os.path.exists(src_file):
-        logging.error(f"File {src_file} does not exist")
+        logger.error(f"File {src_file} does not exist")
         exit(2)
 
-    logging.info(f"Preprocessing parsed file {src_file}")
+    logger.info(f"Preprocessing parsed file {src_file}")
     with gzip.GzipFile(src_file, 'rb') as i:
         preprocessing_param_dict = pickle.load(i)
         if old_preprocessing_params != preprocessing_param_dict:
-            logging.error(f"File {src_file} was expected to have preprocessing params "
+            logger.error(f"File {src_file} was expected to have preprocessing params "
                           f"{old_preprocessing_params}, but has {preprocessing_param_dict}")
             exit(221)
         new_preprocessing_param_dict, got_pure_repr = calc_new_preprocessing_types_dict(preprocessing_param_dict, preprocessing_params)
         writer = FinalReprWriter(dest_file) if got_pure_repr else IntermediateReprWriter(dest_file)
 
         if os.path.exists(writer.get_full_dest_name()):
-            logging.warning(f"File {writer.get_full_dest_name()} already exists! Doing nothing.")
+            logger.warning(f"File {writer.get_full_dest_name()} already exists! Doing nothing.")
             return
         with writer as w:
             if not got_pure_repr:
@@ -124,6 +126,8 @@ def parse_preprocessing_params(preprocessing_types_str):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--base-from',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
     parser.add_argument('--base-to',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
@@ -135,31 +139,28 @@ if __name__ == '__main__':
     args = parser.parse_known_args(*DEFAULT_TO_REPR_ARGS)
     args = args[0]
 
-
-    logging.basicConfig(level=logging.DEBUG)
-
     full_src_dir = f'{args.base_from}/{args.src}'
     if not os.path.exists(full_src_dir):
-        logging.error(f"Dir does not exist: {full_src_dir}")
+        logger.error(f"Dir does not exist: {full_src_dir}")
         exit(3)
-    logging.info(f"Reading parsed files from: {os.path.abspath(full_src_dir)}")
+    logger.info(f"Reading parsed files from: {os.path.abspath(full_src_dir)}")
     with open(f'{full_src_dir}/preprocessing_types.json', 'r') as f:
         old_preprocessing_params_json = json.load(f)
     old_preprocessing_params = {PreprocessingType(k): v for (k, v) in old_preprocessing_params_json.items()}
-    logging.info(f"Old preprocessing params : {old_preprocessing_params}")
+    logger.info(f"Old preprocessing params : {old_preprocessing_params}")
 
     preprocessing_params = parse_preprocessing_params(args.preprocessing_types)
 
     new_preprocessing_types_dict, got_pure_repr = calc_new_preprocessing_types_dict(old_preprocessing_params,
                                                                                     preprocessing_params)
     if old_preprocessing_params == new_preprocessing_types_dict:
-        logging.warning("No new preprocessors to be applied found")
+        logger.warning("No new preprocessors to be applied found")
         exit(0)
 
     if got_pure_repr:
-        logging.info("Representation resolved")
+        logger.info("Representation resolved")
     else:
-        logging.info(f"Representation not resolved: {new_preprocessing_types_dict}")
+        logger.info(f"Representation not resolved: {new_preprocessing_types_dict}")
 
     gen_dir_name_from_verb_param = gen_dir_name(new_preprocessing_types_dict)
     while os.path.exists(gen_dir_name_from_verb_param):
@@ -167,7 +168,7 @@ if __name__ == '__main__':
 
     full_dest_dir = f'{args.base_to}/{args.dest}/{"repr" if got_pure_repr else "partrepr"}/{gen_dir_name_from_verb_param}'
     full_metadata_dir = f'{args.base_to}/{args.dest}/metadata/{gen_dir_name_from_verb_param}'
-    logging.info(f"Writing preprocessed files to {os.path.abspath(full_dest_dir)}")
+    logger.info(f"Writing preprocessed files to {os.path.abspath(full_dest_dir)}")
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir)
     if not os.path.exists(full_metadata_dir):
@@ -202,7 +203,7 @@ if __name__ == '__main__':
         it = pool.imap_unordered(preprocess_and_write, params)
         for _ in it:
             current_file += 1
-            logging.info(f"Processed {current_file} out of {files_total}")
+            logger.info(f"Processed {current_file} out of {files_total}")
             time_elapsed = time.time() - start_time
-            logging.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
+            logger.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
                          f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")

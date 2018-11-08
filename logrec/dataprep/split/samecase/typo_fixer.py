@@ -9,6 +9,7 @@ from tqdm import tqdm
 from logrec.dataprep import base_project_dir
 from logrec.dataprep.split.samecase.splitter import load_english_dict
 
+logger = logging.getLogger(__name__)
 
 def get_words_of_almost_same_length(word):
     ln = len(word)
@@ -33,6 +34,8 @@ def is_typo(word, word_from_dict):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+
     base_dir = base_from = f'{base_project_dir}/nn-data/new-framework/'
 
     parser = argparse.ArgumentParser()
@@ -41,8 +44,8 @@ if __name__ == '__main__':
 
     path_to_typo_candidates = f"{base_dir}/{args.path_to_typo_candidates}"
     file_with_fixes = os.path.join(os.path.split(path_to_typo_candidates)[0], 'typo-fixes.txt')
-    logging.basicConfig(level=logging.DEBUG)
-    logging.info(f"Reading typo candidates from {path_to_typo_candidates}...")
+
+    logger.info(f"Reading typo candidates from {path_to_typo_candidates}...")
 
     words_with_typos = []
     with open(path_to_typo_candidates, 'r') as f:

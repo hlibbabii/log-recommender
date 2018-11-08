@@ -1,9 +1,11 @@
 import argparse
+import logging
 import sys
 
 from logrec.local_properties import DEFAULT_BPE_ENCODE_ARGS
 from logrec.util import io_utils
 
+logger = logging.getLogger(__name__)
 
 def encode(words, merges):
     letters_list = {" ".join(k): v for k, v in words.items()}

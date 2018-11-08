@@ -6,6 +6,7 @@ from logrec.local_properties import DEFAULT_BPE_ARGS
 from logrec.util import io_utils
 from logrec.util.priority_counter import PriorityCounter
 
+logger = logging.getLogger(__name__)
 
 def get_stats(vocab):
     pairs = collections.defaultdict(int)
@@ -47,6 +48,8 @@ MERGES_FILE_NAME = "merges.txt"
 RESULTING_VOCAB_FILE_NAME = "vocab_res.txt"
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+
     argument_parser = argparse.ArgumentParser()
     argument_parser.add_argument('--n-merges', action='store', type=int, default=1)
     argument_parser.add_argument('--base-dir', action='store',
@@ -54,11 +57,9 @@ if __name__ == '__main__':
     argument_parser.add_argument('--reset', action='store_true')
     args = argument_parser.parse_args(*DEFAULT_BPE_ARGS)
 
-    logging.basicConfig(level=logging.DEBUG)
-
     vocab = {}
     if args.reset:
-        logging.info("Starting the encoding from scratch...")
+        logger.info("Starting the encoding from scratch...")
         with open(f'{args.base_dir}/{VOCAB_FILE_NAME}', 'r') as f:
             for line in f:
                 line = line[:-1] if line[-1] == '\n' else line
@@ -67,7 +68,7 @@ if __name__ == '__main__':
                     raise ValueError(f"Invalid vocab line: {splits}")
                 vocab[" ".join(splits[0])] = int(splits[1])
     else:
-        logging.info("Using existing merges...")
+        logger.info("Using existing merges...")
         with open(f'{args.base_dir}/{REASSEMBLED_VOCAB_FILE_NAME}', 'r') as f:
             for line in f:
                 line = line[:-1] if line[-1] == '\n' else line

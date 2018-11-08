@@ -14,7 +14,7 @@ print(sys.path)
 from fastai.imports import tqdm
 from logrec.dataprep import base_project_dir
 
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def get_next_combo(last_subwords_comb, max_subwords, non_ex_index=-1):
@@ -287,6 +287,8 @@ def generate_sample(transformed, nontransformed, nn, where):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+
     path_to_splits = f'{base_project_dir}/splits'
     vocab_file = f'{base_project_dir}/vocab'
 

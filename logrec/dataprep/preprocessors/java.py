@@ -9,6 +9,8 @@ from logrec.dataprep.preprocessors.model.numeric import Number, D, F, L, Decimal
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.model.textcontainers import MultilineComment, StringLiteral, OneLineComment
 
+logger = logging.getLogger(__name__)
+
 START_MULTILINE_COMMENT = MultilineCommentStart()
 END_MULTILINE_COMMENT = MultilineCommentEnd()
 
@@ -161,7 +163,8 @@ def process_comments_and_str_literals(token_list, context):
     for index, symbol in comment_string_literal_symbols_locations:
         if active_symbol is None:
             if symbol == END_MULTILINE_COMMENT:
-                logging.warning(f"{repr(' '.join(list(map(lambda t: str(t),token_list[index-100:index+1]))))}, index: {index}")
+                logger.warning(
+                    f"{repr(' '.join(list(map(lambda t: str(t),token_list[index-100:index+1]))))}, index: {index}")
                 return token_list
             elif symbol == NEW_LINE:
                 pass
@@ -169,7 +172,7 @@ def process_comments_and_str_literals(token_list, context):
                 active_symbol, active_symbol_index = symbol, index
         elif active_symbol == QUOTE:
             if symbol == NEW_LINE:
-                logging.warning(
+                logger.warning(
                     f"{repr(' '.join(list(map(lambda t: str(t),token_list[index-100:index+1]))))}, index: {index}")
                 return token_list
             elif symbol == QUOTE:

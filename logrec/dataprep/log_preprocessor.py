@@ -13,6 +13,8 @@ from logrec.dataprep.preprocessors.legacy import replace_string_resources_names,
 from logrec.log_statement import LogStatement
 from logrec.util import io_utils
 
+logger = logging.getLogger(__name__)
+
 __author__ = 'hlib'
 
 LOG_LEVEL_REGEX = re.compile(".*([Ll]og|LOG|[Ll]ogger|LOGGER)\.([Tt]race|[Dd]ebug|[Ii]nfo|[Ww]arn|[Ee]rror|[Ff]atal)\(.*")
@@ -132,7 +134,7 @@ def process_log_statement(log_entry):
 
 
 def preprocess_logs(grepped_logs):
-    logging.info(f"Processing logs")
+    logger.info(f"Processing logs")
     for ind, grepped_log in tqdm(enumerate(grepped_logs), leave=False, total=logs_total):
         ppl = process_log_statement(grepped_log)
         if len(ppl.text_words) > 0 and len(ppl.context.context_before) > 0:
@@ -141,13 +143,14 @@ def preprocess_logs(grepped_logs):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--min-log-number-per-project', action='store', type=int, default=100)
     args = parser.parse_args()
 
     in_file = "../../.Logs"
     in_file_abspath = os.path.abspath(in_file)
-    logging.info(f"Preprocessing logs from {in_file_abspath}")
+    logger.info(f"Preprocessing logs from {in_file_abspath}")
     grepped_logs, project_stats = read_grepped_log_file(in_file, args.min_log_number_per_project)
     pp_logs_gen = []
     logs_total = len(grepped_logs)

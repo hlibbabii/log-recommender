@@ -1,3 +1,5 @@
+import logging
+
 from logrec.dataprep.preprocessors.model.general import NonEng
 from logrec.dataprep.preprocessors.model.split import NonDelimiterSplitContainer, SplitContainer, split_repr_func_map, \
     SplitRepr
@@ -5,6 +7,8 @@ from logrec.dataprep.preprocessors.model.textcontainers import TextContainer
 from logrec.dataprep.preprocessors.preprocessing_types import token_to_preprocessing_type_level_dict, always_repr, \
     recursive, \
     PreprocessingType
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_NO_COM_NO_STR = {
     PreprocessingType.SPL:    True, PreprocessingType.NUM_SPL:          True, PreprocessingType.NO_COM: True,

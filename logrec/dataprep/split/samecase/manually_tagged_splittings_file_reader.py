@@ -1,7 +1,9 @@
+import logging
 from collections import defaultdict
 
 from logrec.dataprep.split.samecase.typo_fixer import is_typo
 
+logger = logging.getLogger(__name__)
 
 def assert_split(split_line):
     if len(split_line) != 3:

@@ -10,7 +10,7 @@ from logrec.langmodel.params import nn_params
 from logrec.util import io_utils
 from logrec.util.param_mutator import ParamMutator
 
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 base_dataset_dir = f'{base_project_dir}/nn-data/devanbu_no_replaced_identifier_split_no_tabs_new_splits3_under_5000_15_percent/'
 path_manually_tagged_splittings = f'{base_project_dir}/manually_tagged_splittings.txt'
@@ -97,6 +97,7 @@ def convert_to_params(keys, mutations):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
 
     stats, words_to_split = manually_tagged_splittings_file_reader.read(path_manually_tagged_splittings)
 

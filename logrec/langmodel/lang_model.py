@@ -9,7 +9,7 @@ from time import time
 import deepdiff
 import matplotlib
 
-from logrec.langmodel.utils import to_test_mode, gen_text, beautify_text, back_to_train_mode
+from logrec.langmodel.utils import to_test_mode, gen_text, beautify_text, back_to_train_mode, do_noth
 from logrec.util import io_utils
 
 matplotlib.use('Agg')
@@ -31,10 +31,8 @@ from torchtext import data
 
 # for some reason this import should go here to avoid error
 
-logging.basicConfig(level=logging.DEBUG)
-
 LEVEL_LABEL = data.Field(sequential=False)
-
+logger = logging.getLogger(__name__)
 
 class Mode(Enum):
     TRAINING = "training"
@@ -58,7 +56,7 @@ def create_df(dir):
             with open(os.path.join(root, file), 'r') as f:
                 if not file.startswith("_"):
                     cur_file += 1
-                    logging.info(f'Adding {os.path.join(root, file)} to dataframe [{cur_file} out of {files_total}]')
+                    logger.info(f'Adding {os.path.join(root, file)} to dataframe [{cur_file} out of {files_total}]')
                     lines.extend([line for line in f])
                     if len(lines) > DATAFRAME_LINES_THRESHOLD:
                         yield pandas.DataFrame(lines)
@@ -96,7 +94,7 @@ def get_model(model_name, nn_arch):
     pickle.dump(text_field, open(f'{path_to_dataset}/TEXT.pkl', 'wb'))
 
     vocab_size=len(text_field.vocab.itos)
-    logging.info(f'Dictionary size is: {vocab_size}')
+    logger.info(f'Dictionary size is: {vocab_size}')
     with open(f'{path_to_dataset}/vocab_size', 'w') as f:
         f.write("# This is automatically generated file! Do not edit!\n")
         f.write(str(vocab_size))
@@ -113,18 +111,18 @@ def get_model(model_name, nn_arch):
     rnn_learner.reg_fn = partial(seq2seq_reg, alpha=nn_arch['reg_fn']['alpha'], beta=nn_arch['reg_fn']['beta'])
     rnn_learner.clip = nn_arch['clip']
 
-    logging.info(rnn_learner)
+    logger.info(rnn_learner)
 
     try:
         rnn_learner.load(f'{params.nn_params["dataset_name"]}_best')
         model_trained = True
         # calculate_and_display_metrics(rnn_learner, nn_params['metrics'], text_field.vocab)
     except FileNotFoundError:
-        logging.warning(f"Model {dataset_name}/{model_name} not found")
+        logger.warning(f"Model {dataset_name}/{model_name} not found")
         model_trained = False
         try:
             rnn_learner.load(f'{params.nn_params["dataset_name"]}_best_base')
-            logging.info("Base model detected and loaded")
+            logger.info("Base model detected and loaded")
         except FileNotFoundError:
             pass
 
@@ -198,9 +196,9 @@ def find_name_for_new_config(config_diff):
 
 
 def printGPUInfo():
-    logging.info("Using GPU: " + str(USE_GPU))
+    logger.info("Using GPU: " + str(USE_GPU))
     if USE_GPU:
-        logging.info("Number of GPUs available: " + str(torch.cuda.device_count()))
+        logger.info("Number of GPUs available: " + str(torch.cuda.device_count()))
 
 
 def get_model_name_by_params(path_to_dataset, nn_arch):
@@ -216,13 +214,13 @@ def get_model_name_by_params(path_to_dataset, nn_arch):
         return name
 
 def find_and_plot_lr(rnn_learner, path_to_model):
-    logging.info("Looking for the best learning rate...")
+    logger.info("Looking for the best learning rate...")
     rnn_learner.lr_find()
 
     dir = os.path.dirname(os.path.realpath(__file__))
     path = os.path.join(dir, path_to_model, 'lr_finder_plot.png')
     rnn_learner.sched.plot(path)
-    logging.info(f"Plot is saved to {path}")
+    logger.info(f"Plot is saved to {path}")
 
 
 def train_model(rnn_learner, path_to_dataset, model_name, nn_arch):
@@ -238,7 +236,7 @@ def train_model(rnn_learner, path_to_dataset, model_name, nn_arch):
         for _, vals in ep_vals.items():
             f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
 
-    logging.info(f'Saving model: {dataset_name}/{model_name}')
+    logger.info(f'Saving model: {dataset_name}/{model_name}')
     rnn_learner.save(dataset_name)
     rnn_learner.save_encoder(dataset_name + "_encoder")
 
@@ -251,42 +249,42 @@ def get_non_existent_model_name(path_to_dataset, base_model_name):
 
 
 def run(params):
-    logging.info(f"Using params: {params.nn_params}")
+    logger.info(f"Using params: {params.nn_params}")
 
     nn_arch = params.nn_params['arch']
     nn_testing = params.nn_params['testing']
 
     printGPUInfo()
-    logging.info("Using the following parameters:")
-    logging.info(nn_arch)
+    logger.info("Using the following parameters:")
+    logger.info(nn_arch)
 
     path_to_dataset = f'{params.nn_params["path_to_data"]}/{params.nn_params["dataset_name"]}'
-    force_rerun = False
+    force_rerun = True
     md = params.nn_params['mode']
-    logging.info(f"Mode: {md}")
+    logger.info(f"Mode: {md}")
 
     if "base_model" in params.nn_params:
         base_model_name = params.nn_params["base_model"]
         path_to_best_model = f'{path_to_dataset}/{base_model_name}/models/{params.nn_params["dataset_name"]}_best.h5'
-        logging.info(f"Using base model: {base_model_name}")
+        logger.info(f"Using base model: {base_model_name}")
         model_name = get_non_existent_model_name(path_to_dataset, base_model_name)
         path_to_model = f'{path_to_dataset}/{model_name}'
         path_to_model_models = f'{path_to_model}/models'
         os.makedirs(path_to_model_models)
         path_to_model_best_base = f'{path_to_model_models}/{params.nn_params["dataset_name"]}_best_base.h5'
         try:
-            logging.info(f"Copying from {os.path.abspath(path_to_best_model)} "
+            logger.info(f"Copying from {os.path.abspath(path_to_best_model)} "
                          f"to {os.path.abspath(path_to_model_best_base)}")
             copyfile(path_to_best_model, path_to_model_best_base)
         except IOError:
-            logging.error("Error copying file!")
+            logger.error("Error copying file!")
             exit(1)
     else:
-        logging.info("Not using base model. Training coefficients from scratch...")
+        logger.info("Not using base model. Training coefficients from scratch...")
         model_name = get_model_name_by_params(path_to_dataset, nn_arch)
         path_to_model = f'{path_to_dataset}/{model_name}'
 
-    logging.info(f"Path to model: {os.path.abspath(path_to_model)}")
+    logger.info(f"Path to model: {os.path.abspath(path_to_model)}")
     if not os.path.exists(path_to_model):
         os.mkdir(path_to_model)
 
@@ -302,23 +300,25 @@ def run(params):
 
         if params.nn_params['mode'] == Mode.LEARNING_RATE_FINDING.value:
             if rerunning_model:
-                logging.info(f"Forcing lr-finder rerun")
+                logger.info(f"Forcing lr-finder rerun")
             find_and_plot_lr(learner, f'{path_to_model}')
         elif params.nn_params['mode'] == Mode.TRAINING.value:
             if rerunning_model:
-                logging.info(f"Forcing training rerun")
+                logger.info(f"Forcing training rerun")
             train_model(learner, path_to_dataset, model_name, nn_arch)
-            logging.info("Loading the best model")
+            logger.info("Loading the best model")
             learner.load(f'{params.nn_params["dataset_name"]}_best')
             m = learner.model
             run_and_display_tests(m, text_field, nn_arch, nn_testing, f'{path_to_model}/gen_text.out')
         else:
             raise AssertionError(f"Unknown mode: {params.nn_params['mode']}")
     else:
-        logging.info(f'Model {params.nn_params["dataset_name"]}/{model_name} already trained. Not rerunning training.')
+        logger.info(f'Model {params.nn_params["dataset_name"]}/{model_name} already trained. Not rerunning training.')
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+
     parser = ArgumentParser()
     parser.add_argument("params_file")
     args = parser.parse_args(['logrec.langmodel.params'])

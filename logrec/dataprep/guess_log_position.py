@@ -1,9 +1,12 @@
 import argparse
+import logging
 import os
 
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.general import to_token_list
 from logrec.util import io_utils
+
+logger = logging.getLogger(__name__)
 
 LOG_PLACEHOLDER = "<LOG>"
 

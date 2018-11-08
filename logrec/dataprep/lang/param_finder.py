@@ -1,9 +1,13 @@
+import logging
+
 from logrec.dataprep import base_project_dir
 from logrec.util.param_mutator import ParamMutator
 
 file160 = f'{base_project_dir}/160.json'
 
 import json
+
+logger = logging.getLogger(__name__)
 
 def metric(code_percent, code_non_eng, code_non_eng_uq, code_str_percent, code_str_non_eng, code_str_non_eng_uq):
     count_good = 0

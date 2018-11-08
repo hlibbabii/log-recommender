@@ -1,9 +1,11 @@
 import argparse
 import collections
+import logging
 import os
 
 from logrec.util import io_utils
 
+logger = logging.getLogger(__name__)
 
 class FileDefaultDict(collections.defaultdict):
     def __init__(self, output_dir):

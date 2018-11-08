@@ -11,6 +11,7 @@ from logrec.dataprep.to_repr import REPR_EXTENSION
 from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_VOCABSIZE_ARGS
 from logrec.util import io_utils
 
+logger = logging.getLogger(__name__)
 
 class VocabMerger(object):
     DEFAULT_PERCENTS = [0.01, 0.02, 0.05, 0.15, 0.5, 0.95, 1.0]
@@ -115,7 +116,10 @@ def create_vocab_merger(path_to_dump):
     else:
         return VocabMerger(path_to_dump)
 
+
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--base-from', action='store', default=DEFAULT_PARSED_DATASETS_DIR)
     parser.add_argument('dataset', action='store', help=f'dataset name')
@@ -124,24 +128,22 @@ if __name__ == '__main__':
     args = parser.parse_known_args(*DEFAULT_VOCABSIZE_ARGS)
     args = args[0]
 
-    logging.basicConfig(level=logging.DEBUG)
-
     full_src_dir = f'{args.base_from}/{args.dataset}/repr/{args.repr}/train'
     full_metadata_dir = f'{args.base_from}/{args.dataset}/metadata/{args.repr}'
 
     if not os.path.exists(full_src_dir):
-        logging.error(f"Dir does not exist: {full_src_dir}")
+        logger.error(f"Dir does not exist: {full_src_dir}")
         exit(3)
 
     if os.path.exists(f'{full_metadata_dir}/vocabsize'):
-        logging.warning(f"File already exists: {full_metadata_dir}/vocabsize. Doing nothing.")
+        logger.warning(f"File already exists: {full_metadata_dir}/vocabsize. Doing nothing.")
         exit(0)
 
-    logging.info(f"Reading files from: {os.path.abspath(full_src_dir)}")
+    logger.info(f"Reading files from: {os.path.abspath(full_src_dir)}")
 
     all_files = get_all_files(full_src_dir)
     if not all_files:
-        logging.warning("No preprocessed files found.")
+        logger.warning("No preprocessed files found.")
         exit(4)
     files_total = len(all_files)
     start_time = time.time()
@@ -153,9 +155,9 @@ if __name__ == '__main__':
         for vocab, path_to_file in it:
             vocab_merger.merge(vocab, path_to_file)
             current_file += 1
-            logging.info(f"Processed {current_file} out of {files_total}")
+            logger.info(f"Processed {current_file} out of {files_total}")
             time_elapsed = time.time() - start_time
-            logging.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
+            logger.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
                          f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
 
     vocab_merger.write_stats(f'{full_metadata_dir}/vocabsize')

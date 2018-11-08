@@ -13,6 +13,8 @@ from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingType
 from logrec.dataprep.preprocess_params import pp_params
 
+logger = logging.getLogger(__name__)
+
 EXTENSION = "parsed"
 FILENAMES_EXTENSION = "filenames"
 
@@ -40,7 +42,7 @@ def read_file_contents(file_path):
         try:
             return [line for line in f], file_path
         except UnicodeDecodeError:
-            logging.error(f"Unicode decode error in file: {file_path}")
+            logger.error(f"Unicode decode error in file: {file_path}")
 
 
 def preprocess_and_write(params):
@@ -52,20 +54,21 @@ def preprocess_and_write(params):
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir, exist_ok=True)
     if not REWRITE_PARSED_FILE and os.path.exists(path_to_preprocessed_file):
-        logging.warning(f"File {path_to_preprocessed_file} already exists! Doing nothing.")
+        logger.warning(f"File {path_to_preprocessed_file} already exists! Doing nothing.")
         return
     dir_with_files_to_preprocess = os.path.join(src_dir, train_test_valid, project)
     if not os.path.exists(dir_with_files_to_preprocess):
-        logging.error(f"Path {dir_with_files_to_preprocess} does not exist")
+        logger.error(f"Path {dir_with_files_to_preprocess} does not exist")
         exit(2)
     filenames=[]
     with gzip.GzipFile(f'{path_to_preprocessed_file}.part', 'wb') as f:
         total_files = sum([f for f in java_file_mapper(dir_with_files_to_preprocess, lambda path: 1)])
-        logging.info(f"Preprocessing java files from {dir_with_files_to_preprocess}. Files to process: {total_files}")
+        logger.info(f"Preprocessing java files from {dir_with_files_to_preprocess}. Files to process: {total_files}")
         pickle.dump(preprocessing_param_dict, f, pickle.HIGHEST_PROTOCOL)
         for ind, (lines_from_file, file_path) in enumerate(java_file_mapper(dir_with_files_to_preprocess, read_file_contents)):
             if (ind+1) % 100 == 0:
-                logging.info(f"[{train_test_valid}/{project}] Parsed {ind+1} out of {total_files} files ({(ind+1)/float(total_files)*100:.2f}%)")
+                logger.info(
+                    f"[{train_test_valid}/{project}] Parsed {ind+1} out of {total_files} files ({(ind+1)/float(total_files)*100:.2f}%)")
             parsed = apply_preprocessors(lines_from_file, pp_params["preprocessors"], {
                 'interesting_context_words': [],
                 'splitting_file_location': splitting_file
@@ -88,6 +91,8 @@ def split_two_last_levels(root):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+
     from logrec.local_properties import DEFAULT_RAW_DATASETS_DIR, DEFAULT_PARSED_DATASETS_DIR, \
         DEFAULT_PARSE_PROJECTS_ARGS
 
@@ -101,14 +106,13 @@ if __name__ == '__main__':
     args = parser.parse_known_args(*DEFAULT_PARSE_PROJECTS_ARGS)
     args = args[0]
 
-    logging.basicConfig(level=logging.DEBUG)
     raw_dataset_dir=f'{args.base_from}/{args.src}/'
     dest_dataset_dir = f'{args.base_to}/{args.dest}/'
 
-    logging.info(f"Getting files from {os.path.abspath(raw_dataset_dir)}")
-    logging.info(f"Writing preprocessed files to {os.path.abspath(dest_dataset_dir)}")
+    logger.info(f"Getting files from {os.path.abspath(raw_dataset_dir)}")
+    logger.info(f"Writing preprocessed files to {os.path.abspath(dest_dataset_dir)}")
     preprocessing_types_dict = {k: None for k in PreprocessingType}
-    logging.info(f"To get preprocessing represantation, "
+    logger.info(f"To get preprocessing represantation, "
                  f"resolve the following preprocessing params: {', '.join([pt.value for pt in PreprocessingType])}")
 
     if not os.path.exists(dest_dataset_dir):
@@ -130,8 +134,8 @@ if __name__ == '__main__':
         it = pool.imap_unordered(preprocess_and_write, params)
         for _ in it:
             current_file += 1
-            logging.info(f"Processed {current_file} out of {files_total} chunks")
+            logger.info(f"Processed {current_file} out of {files_total} chunks")
             time_elapsed = time.time() - start_time
-            logging.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
+            logger.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
                          f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
 

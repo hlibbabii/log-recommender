@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 
 from logrec.dataprep.preprocessors.model.chars import NewLine, Tab
@@ -6,6 +7,7 @@ from logrec.dataprep.preprocessors.model.numeric import Number
 from logrec.dataprep.preprocessors.model.split import CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, SameCaseSplit
 from logrec.dataprep.preprocessors.model.textcontainers import OneLineComment, MultilineComment, StringLiteral
 
+logger = logging.getLogger(__name__)
 
 class PreprocessingType(str, Enum):
     SPL: str = 'spl'

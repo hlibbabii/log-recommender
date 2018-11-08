@@ -14,9 +14,6 @@ def write_log_context_to_corpus_file(preprocessed_logs, output_filename, context
         for l in preprocessed_logs:
             f.write(" ".join(l.get_context_words(context_lines_to_consider)) + "\n")
 
-
-logging.basicConfig(level=logging.DEBUG)
-
 def write_log_context_to_fastai_input(train_logs, output_dir, interesting_context_words):
     with open(output_dir + "contexts.src", 'w') as c_file,\
             open(output_dir + "levels.src", 'w') as l_file, \
@@ -36,6 +33,8 @@ def write_context_index(logs, output_filename):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--context-lines-to-consider', action='store', type=int, default=4)
 

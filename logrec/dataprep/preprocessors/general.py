@@ -1,5 +1,8 @@
 import itertools
+import logging
 import re
+
+logger = logging.getLogger(__name__)
 
 ###############   File lines level   ###########
 from logrec.dataprep.preprocessors import java

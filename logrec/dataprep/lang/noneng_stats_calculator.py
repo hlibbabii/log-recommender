@@ -13,14 +13,15 @@ from logrec.dataprep.preprocessors.general import to_token_list
 from logrec.dataprep.preprocessors.repr import DEFAULT_NO_COM_NO_STR, to_repr, DEFAULT, DEFAULT_NO_COM
 from logrec.dataprep.split.samecase.splitter import load_english_dict
 
+logger = logging.getLogger(__name__)
 
 class LanguageChecker(object):
     DEFAULT_MIN_CHARS_TO_BE_NON_ENG = 4
 
     def __init__(self, path_to_general_english_dict, path_to_non_eng_dicts):
-        logging.info("Loading english dictionary")
+        logger.info("Loading english dictionary")
         english_general_dict = load_english_dict(path_to_general_english_dict)
-        logging.info("Loading non-english dictionaries")
+        logger.info("Loading non-english dictionaries")
         self.non_eng_word_set = self.__create_non_eng_word_set(path_to_non_eng_dicts, english_general_dict,
                                                                LanguageChecker.DEFAULT_MIN_CHARS_TO_BE_NON_ENG)
 
@@ -125,7 +126,7 @@ def run():
 
     logging.basicConfig(level=logging.DEBUG)
     if not os.path.exists(path_to_dir_with_preprocessed_projects):
-        logging.error(f"Path: {path_to_dir_with_preprocessed_projects} does not exist")
+        logger.error(f"Path: {path_to_dir_with_preprocessed_projects} does not exist")
         exit(1)
 
     language_checker = LanguageChecker(path_to_eng_dicts, path_to_non_eng_dicts)
@@ -133,19 +134,19 @@ def run():
     ALWAYS_REWRITE = False
 
     if ALWAYS_REWRITE:
-        logging.info("Purging db...")
+        logger.info("Purging db...")
         dao.purge()
 
     get_parsed_file_generator = lambda: parsed_files_generator(path_to_dir_with_preprocessed_projects, dao)
     total_projects = len([x for x in get_parsed_file_generator()])
-    logging.info(f"Total projects to process: {total_projects}")
+    logger.info(f"Total projects to process: {total_projects}")
     counter = 0
     with Pool() as pool:
         results = pool.imap_unordered(partial(calc_stats, language_checker, path_to_dir_with_preprocessed_projects),
                                       get_parsed_file_generator())
         for result in results:
             project_name = result[0][0]
-            logging.info(f'Processed {project_name}: ({counter} out of {total_projects})')
+            logger.info(f'Processed {project_name}: ({counter} out of {total_projects})')
             counter += 1
             if len(result) > 1 or len(result[0]) > 1:
                 for row in result:
@@ -155,13 +156,13 @@ def run():
                         print(ex)
             else:
                 # project was empty
-                logging.warning(f'No parsed files found in {project_name}')
+                logger.warning(f'No parsed files found in {project_name}')
             dao.save_processed_project(project_name)
 
     params = (0.006, 2.01, 2.01, 0.019, 3.939599999999999, 2.01)
     non_eng_projects = dao.select_noneng_projects(*params)
     noneng_projects_file = f'{args.base_dataset_dir}/noneng-projects.txt'
-    logging.info(f"Writing non-english projects list to {noneng_projects_file}")
+    logger.info(f"Writing non-english projects list to {noneng_projects_file}")
     with open(noneng_projects_file, 'w') as f:
         f.write(str(params) + '\n')
         for p in non_eng_projects:
