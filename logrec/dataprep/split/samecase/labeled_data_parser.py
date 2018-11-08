@@ -5,53 +5,18 @@ from pprint import pprint
 
 from fastai.imports import tqdm
 from logrec.dataprep import base_project_dir
+from logrec.dataprep.split.samecase import manually_tagged_splittings_file_reader
+from logrec.dataprep.split.samecase.random_word_selector_for_splitting import base_dataset_dir
 from logrec.dataprep.split.samecase.splitter import load_english_dict, get_splittings
 from logrec.langmodel.params import nn_params
 from logrec.util.param_mutator import ParamMutator
-from logrec.dataprep.split.samecase.typo_fixer import is_typo
 
 logging.basicConfig(level=logging.INFO)
 
 base_dataset_dir = f'{base_project_dir}/nn-data/devanbu_no_replaced_identifier_split_no_tabs_new_splits3_under_5000_15_percent/'
-path_to_labeled_data = f'{base_dataset_dir}/sample.txt'
+path_manually_tagged_splittings = f'{base_project_dir}/manually_tagged_splittings.txt'
 path_to_mutations = f'{base_dataset_dir}/mutations.csv'
 path_to_general_dictionary = '/usr/share/dict/words'
-
-
-def assert_split(split_line):
-    if len(split_line) != 3:
-        raise AssertionError(f"Type is split but no splitting to subwords: {split_line}")
-    original = split_line[0]
-    subwords = split_line[2]
-    split_subwords = subwords.split()
-    if len(split_subwords) <= 1:
-        raise AssertionError(f"Type is split but word actually not split: {original}")
-    if original != ''.join(split_subwords):
-        raise AssertionError(f"Original word is {original}, but split seq is {split_subwords}")
-
-
-def assert_typo(split_line):
-    if len(split_line) != 3:
-        raise AssertionError(f"Type is split but no typo fix: {split_line}")
-    original = split_line[0]
-    typo_fix = split_line[2]
-    if not is_typo(original, typo_fix):
-        raise AssertionError(f"{typo_fix} is not typo fix of {original}")
-
-
-def assert_non_split(split_line):
-    if len(split_line) != 2:
-        raise AssertionError(f"There should 2 entries in this line: {split_line}")
-
-
-def check_line(split_line):
-    if len(split_line) <= 1:
-        raise AssertionError(f"There should be at least 2 entries in this line: {split_line}")
-    type = split_line[1]
-    if type in types_to_convertion_assertions:
-        types_to_convertion_assertions[type](split_line)
-    else:
-        raise AssertionError(f'Unknown type: {type}')
 
 
 class ErrorStats(object):
@@ -132,34 +97,9 @@ def convert_to_params(keys, mutations):
     return res
 
 
-if __name__ == '__name__':
-    types_to_convertion_assertions = {
-        'spl': assert_split,
-        'nonspl': assert_non_split,
-        'rnd': assert_non_split,
-        'typo': assert_typo
-    }
+if __name__ == '__main__':
 
-    lang_code_list = ['de', 'sp', 'pt', 'fr', 'sv', 'da', 'nl', 'fi', 'hr', 'et']
-
-    for lang_code in lang_code_list:
-        types_to_convertion_assertions[lang_code] = assert_non_split
-
-    data = []
-    stats = defaultdict(list)
-    words_to_split = {}
-    sample_word_length_stats = defaultdict(int)
-    with open(path_to_labeled_data, 'r') as f:
-        for line in f:
-            split_line = line[:-1].split('|')
-            check_line(split_line)
-            type = split_line[1]
-            original_word = split_line[0]
-            stats[type].append((original_word, split_line[2]) if type == 'spl' else original_word)
-            if type == 'spl' or type == 'nonspl':
-                words_to_split[original_word] = type
-            sample_word_length_stats[len(original_word)] += 1
-    sample_word_length_stats.default_factory = None
+    stats, words_to_split = manually_tagged_splittings_file_reader.read(path_manually_tagged_splittings)
 
     print_different_token_types_stats(stats)
 

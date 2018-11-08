@@ -62,6 +62,8 @@ if __name__ == '__main__':
             for line in f:
                 line = line[:-1] if line[-1] == '\n' else line
                 splits = line.split(" ")
+                if len(splits) != 2:
+                    raise ValueError(f"Invalid vocab line: {splits}")
                 vocab[" ".join(splits[0])] = int(splits[1])
     else:
         logging.info("Using existing merges...")
