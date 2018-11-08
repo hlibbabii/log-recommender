@@ -34,10 +34,10 @@ logging.basicConfig(level=logging.DEBUG)
 
 LEVEL_LABEL = data.Field(sequential=False)
 
+
 class Mode(Enum):
     TRAINING = "training"
     LEARNING_RATE_FINDING = "learning_rate_finding"
-    VOCAB_BUILDING = "vocab_building"
 
 
 def create_df(dir):
@@ -71,7 +71,7 @@ def create_df(dir):
         raise ValueError(f"No data available: {os.path.abspath(dir)}")
 
 
-def get_model(model_name, only_build_vocab=False):
+def get_model(model_name):
     dataset_name = params.nn_params["dataset_name"]
     path_to_dataset = f'{params.nn_params["path_to_data"]}/{dataset_name}'
     path_to_model = f'{path_to_dataset}/{model_name}'
@@ -88,8 +88,7 @@ def get_model(model_name, only_build_vocab=False):
                                                           train_df_path, valid_df_path, test_df_path,
                                                           bs=nn_arch["bs"], validation_bs=params.nn_params["validation_bs"],
                                                           bptt=nn_arch["bptt"],
-                                                          min_freq=nn_arch["min_freq"],
-                                                          only_build_vocab=only_build_vocab
+                                                          min_freq=nn_arch["min_freq"]
                                                           # not important since we remove rare tokens during preprocessing
                                                           )
     with open(f'{path_to_dataset}/vocab_all.txt', 'w') as f:
@@ -102,8 +101,6 @@ def get_model(model_name, only_build_vocab=False):
     with open(f'{path_to_dataset}/vocab_size', 'w') as f:
         f.write("# This is automatically generated file! Do not edit!\n")
         f.write(str(vocab_size))
-    if only_build_vocab:
-        return None, text_field, None
 
     opt_fn = partial(torch.optim.Adam, betas=nn_arch['betas'])
 
@@ -246,10 +243,10 @@ def train_model(rnn_learner, path_to_dataset, model_name):
     rnn_learner.save_encoder(dataset_name + "_encoder")
 
 
-if __name__ =='__main__':
+if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("params_file")
-    args = parser.parse_args()
+    args = parser.parse_args(['logrec.langmodel.params'])
     params = importlib.import_module(args.params_file)
     logging.info(f"Using params: {params.nn_params}")
 
@@ -264,11 +261,6 @@ if __name__ =='__main__':
     force_rerun = False
     md=params.nn_params['mode']
     logging.info(f"Mode: {md}")
-    if md == Mode.VOCAB_BUILDING.value:
-        logging.info("Vocab building mode.")
-        learner, text_field, model_trained = get_model("vocab", only_build_vocab=True)
-        logging.info("Vocab is built.")
-        exit(0)
 
     if "base_model" in params.nn_params:
         base_model_name = params.nn_params["base_model"]
@@ -324,6 +316,6 @@ if __name__ =='__main__':
             m = learner.model
             run_and_display_tests(m, text_field, f'{path_to_model}/gen_text.out')
         else:
-            raise AssertionError("Unknown mode")
+            raise AssertionError(f"Unknown mode: {params.nn_params['mode']}")
     else:
         logging.info(f'Model {params.nn_params["dataset_name"]}/{model_name} already trained. Not rerunning training.')
