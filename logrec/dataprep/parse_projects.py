@@ -8,9 +8,8 @@ import time
 from multiprocessing.pool import Pool
 from pathlib import Path
 
-from logrec.dataprep import base_project_dir
 from logrec.dataprep.preprocessors import apply_preprocessors
-from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingType
+from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
 from logrec.dataprep.preprocess_params import pp_params
 
 logger = logging.getLogger(__name__)
@@ -48,7 +47,7 @@ def read_file_contents(file_path):
 def preprocess_and_write(params):
     from logrec.local_properties import REWRITE_PARSED_FILE
 
-    src_dir, dest_dir, train_test_valid, project, preprocessing_param_dict, splitting_file = params
+    src_dir, dest_dir, train_test_valid, project, preprocessing_param_dict = params
     full_dest_dir = os.path.join(dest_dir, train_test_valid)
     path_to_preprocessed_file = os.path.join(full_dest_dir, f'{project}.{EXTENSION}')
     if not os.path.exists(full_dest_dir):
@@ -70,8 +69,7 @@ def preprocess_and_write(params):
                 logger.info(
                     f"[{train_test_valid}/{project}] Parsed {ind+1} out of {total_files} files ({(ind+1)/float(total_files)*100:.2f}%)")
             parsed = apply_preprocessors(lines_from_file, pp_params["preprocessors"], {
-                'interesting_context_words': [],
-                'splitting_file_location': splitting_file
+                'interesting_context_words': []
             })
             pickle.dump(parsed, f, pickle.HIGHEST_PROTOCOL)
             filename=os.path.relpath(file_path, start=dir_with_files_to_preprocess)
@@ -101,8 +99,7 @@ if __name__ == '__main__':
     parser.add_argument('--base-to',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
     parser.add_argument('src', help="name of the 'raw' dataset")
     parser.add_argument('dest', help='destination for parsed files, recommended format <dataset name>/parsed')
-    parser.add_argument('--splitting-file', action='store',
-                        default=f'{base_project_dir}/splittings.txt')
+
     args = parser.parse_known_args(*DEFAULT_PARSE_PROJECTS_ARGS)
     args = args[0]
 
@@ -111,9 +108,9 @@ if __name__ == '__main__':
 
     logger.info(f"Getting files from {os.path.abspath(raw_dataset_dir)}")
     logger.info(f"Writing preprocessed files to {os.path.abspath(dest_dataset_dir)}")
-    preprocessing_types_dict = {k: None for k in PreprocessingType}
+    preprocessing_types_dict = {k: None for k in PreprocessingParam}
     logger.info(f"To get preprocessing represantation, "
-                 f"resolve the following preprocessing params: {', '.join([pt.value for pt in PreprocessingType])}")
+                f"resolve the following preprocessing params: {', '.join([pt.value for pt in PreprocessingParam])}")
 
     if not os.path.exists(dest_dataset_dir):
         os.makedirs(dest_dataset_dir)
@@ -125,7 +122,7 @@ if __name__ == '__main__':
     params = []
 
     for _, train_test_valid, project in get_two_levels_subdirs(raw_dataset_dir):
-        params.append((raw_dataset_dir, dest_dataset_dir, train_test_valid, project, preprocessing_types_dict, args.splitting_file))
+        params.append((raw_dataset_dir, dest_dataset_dir, train_test_valid, project, preprocessing_types_dict))
 
     files_total = len(params)
     current_file = 0

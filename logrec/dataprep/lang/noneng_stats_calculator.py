@@ -10,10 +10,36 @@ from multiprocessing.pool import Pool
 from logrec.dataprep import parse_projects, path_to_non_eng_dicts, path_to_eng_dicts
 from logrec.dataprep.lang.dao import DAO
 from logrec.dataprep.preprocessors.general import to_token_list
-from logrec.dataprep.preprocessors.repr import DEFAULT_NO_COM_NO_STR, to_repr, DEFAULT, DEFAULT_NO_COM
+from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
+from logrec.dataprep.preprocessors.repr import to_repr
 from logrec.dataprep.split.samecase.splitter import load_english_dict
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_NO_COM_NO_STR = {
+    PreprocessingParam.SPL_TYPE: 2,
+    PreprocessingParam.NO_COM: True,
+    PreprocessingParam.NO_STR: True,
+    PreprocessingParam.NO_NEWLINES_TABS: True,
+    PreprocessingParam.BSR: False
+}
+
+DEFAULT_NO_COM = {
+    PreprocessingParam.SPL_TYPE: 2,
+    PreprocessingParam.NO_COM: True,
+    PreprocessingParam.NO_STR: False,
+    PreprocessingParam.NO_NEWLINES_TABS: True,
+    PreprocessingParam.BSR: False
+}
+
+DEFAULT = {
+    PreprocessingParam.SPL_TYPE: 2,
+    PreprocessingParam.NO_COM: False,
+    PreprocessingParam.NO_STR: False,
+    PreprocessingParam.NO_NEWLINES_TABS: True,
+    PreprocessingParam.BSR: False
+}
+
 
 class LanguageChecker(object):
     DEFAULT_MIN_CHARS_TO_BE_NON_ENG = 4

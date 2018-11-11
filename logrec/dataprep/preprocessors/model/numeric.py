@@ -1,4 +1,5 @@
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.util import insert_separators
 
 
 class Number(object):
@@ -12,10 +13,11 @@ class Number(object):
         return f'{self.__class__.__name__}{self.parts_of_number}'
 
     def non_preprocessed_repr(self):
-        return "".join([(w.non_preprocessed_repr() if isinstance(w, SpecialNumberChar) else str(w)) for w in self.parts_of_number])
+        return "".join([str(w) for w in self.parts_of_number])
 
     def preprocessed_repr(self):
-        return [(w.preprocessed_repr() if isinstance(w, SpecialNumberChar) else str(w)) for w in self.parts_of_number]
+        subwords = [str(w) for w in self.parts_of_number]
+        return insert_separators(subwords, placeholders['same_case_separator'])
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.parts_of_number == other.parts_of_number
@@ -36,9 +38,6 @@ class E(SpecialNumberChar):
     def non_preprocessed_repr(self):
         return "e"
 
-    def preprocessed_repr(self):
-        return placeholders['e']
-
 
 class L(SpecialNumberChar):
     def __str__(self):
@@ -46,9 +45,6 @@ class L(SpecialNumberChar):
 
     def non_preprocessed_repr(self):
         return "l"
-
-    def preprocessed_repr(self):
-        return placeholders['long']
 
 
 class F(SpecialNumberChar):
@@ -58,9 +54,6 @@ class F(SpecialNumberChar):
     def non_preprocessed_repr(self):
         return "f"
 
-    def preprocessed_repr(self):
-        return placeholders['float']
-
 
 class D(SpecialNumberChar):
     def __str__(self):
@@ -68,9 +61,6 @@ class D(SpecialNumberChar):
 
     def non_preprocessed_repr(self):
         return "d"
-
-    def preprocessed_repr(self):
-        return placeholders['double']
 
 
 class DecimalPoint(SpecialNumberChar):
@@ -80,9 +70,6 @@ class DecimalPoint(SpecialNumberChar):
     def non_preprocessed_repr(self):
         return "."
 
-    def preprocessed_repr(self):
-        return placeholders['decimal_point']
-
 
 class HexStart(SpecialNumberChar):
     def __str__(self):
@@ -90,6 +77,3 @@ class HexStart(SpecialNumberChar):
 
     def non_preprocessed_repr(self):
         return "0x"
-
-    def preprocessed_repr(self):
-        return placeholders['hex_start']

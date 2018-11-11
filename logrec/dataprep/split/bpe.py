@@ -42,9 +42,10 @@ def merge_vocab(pair, v_in, pairs):
     return v_out
 
 
-VOCAB_FILE_NAME = "vocab.txt"
+VOCAB_FILE_NAME = "vocab"
 REASSEMBLED_VOCAB_FILE_NAME = "vocab_reassembled.txt"
 MERGES_FILE_NAME = "merges.txt"
+MERGES_CACHE_FILE_NAME = "merges_cache.txt"
 RESULTING_VOCAB_FILE_NAME = "vocab_res.txt"
 
 if __name__ == '__main__':
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     argument_parser = argparse.ArgumentParser()
     argument_parser.add_argument('--n-merges', action='store', type=int, default=1)
     argument_parser.add_argument('--base-dir', action='store',
-                                 default='/home/hlib/thesis/log-recommender/nn-data/devanbu_split_no_tabs_new_splits3_under_5000_15_percent/')
+                                 default='/home/hlib/thesis/log-recommender/')
     argument_parser.add_argument('--reset', action='store_true')
     args = argument_parser.parse_args(*DEFAULT_BPE_ARGS)
 
@@ -98,6 +99,13 @@ if __name__ == '__main__':
             resulting_vocab[subword] += frequency
     resulting_vocab_sorted = sorted(resulting_vocab.items(), key=lambda x: x[1], reverse=True)
 
+    merges_cache = {}
+    for entry, frequency in vocab.items():
+        subword_list = entry.split(' ')
+        key = ''.join(subword_list)
+        merges_cache[key] = subword_list
+
     io_utils.dump_dict_into_2_columns(merges, f'{args.base_dir}/{MERGES_FILE_NAME}', append=True)
     io_utils.dump_dict_into_2_columns(vocab, f'{args.base_dir}/{REASSEMBLED_VOCAB_FILE_NAME}')
+    io_utils.dump_dict_into_2_columns(merges_cache, f'{args.base_dir}/{MERGES_CACHE_FILE_NAME}', val_type=list)
     io_utils.dump_dict_into_2_columns(resulting_vocab_sorted, f'{args.base_dir}/{RESULTING_VOCAB_FILE_NAME}')

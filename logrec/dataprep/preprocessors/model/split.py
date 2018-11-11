@@ -11,7 +11,6 @@ class SplitRepr(Enum):
     BONDERIES = auto()
     NONE = auto()
 
-
 class SplitContainer(ProcessableTokenContainer, ABC):
     def __init__(self, subtokens):
         super().__init__(subtokens)

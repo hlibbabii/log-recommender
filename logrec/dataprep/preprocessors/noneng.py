@@ -11,7 +11,8 @@ lang_checker = LanguageChecker(path_to_eng_dicts, path_to_non_eng_dicts)
 
 def mark(token_list, context):
     return [
-        apply_operation_to_token(token, lambda t: NonEng(t.get_val()) if lang_checker.is_non_eng(t.get_val()) else t)
+        apply_operation_to_token(token, lambda t: NonEng(ProcessableToken(t.get_val())) if lang_checker.is_non_eng(
+            t.get_val()) else t)
         for token in token_list]
 
 

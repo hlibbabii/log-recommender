@@ -5,11 +5,11 @@ class SpecialChar(object):
     def __repr__(self):
         return f'<{self.__class__.__name__}>'
 
-
-class NewLine(SpecialChar):
     def __str__(self):
         return self.non_preprocessed_repr()
 
+
+class NewLine(SpecialChar):
     def non_preprocessed_repr(self):
         return "\n"
 
@@ -18,9 +18,6 @@ class NewLine(SpecialChar):
 
 
 class Tab(SpecialChar):
-    def __str__(self):
-        return self.non_preprocessed_repr()
-
     def non_preprocessed_repr(self):
         return "\t"
 
@@ -29,24 +26,24 @@ class Tab(SpecialChar):
 
 
 class Backslash(SpecialChar):
-    def __str__(self):
+    def non_preprocessed_repr(self):
         return "\\"
 
 
 class Quote(SpecialChar):
-    def __str__(self):
+    def non_preprocessed_repr(self):
         return "\""
 
 
 class MultilineCommentStart(SpecialChar):
-    def __str__(self):
+    def non_preprocessed_repr(self):
         return "/*"
 
 class MultilineCommentEnd(SpecialChar):
-    def __str__(self):
+    def non_preprocessed_repr(self):
         return "*/"
 
 
 class OneLineCommentStart(SpecialChar):
-    def __str__(self):
+    def non_preprocessed_repr(self):
         return "//"

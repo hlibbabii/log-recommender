@@ -7,17 +7,19 @@ import pickle
 import time
 from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import Pool
-from pickle import HIGHEST_PROTOCOL
 
+from logrec.dataprep import base_project_dir
 from logrec.dataprep.preprocessors.general import to_token_list
-from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingType
+from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam, parse_preprocessing_params, \
+    check_preprocessing_params_are_valid
 from logrec.dataprep.preprocessors.repr import to_repr
+from logrec.dataprep.split.ngram import NgramSplittingType
 from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
+from logrec.util import io_utils
 
 logger = logging.getLogger(__name__)
 
 PARSED_FILE_EXTENSION = "parsed"
-PART_REPR_EXTENSION = "partrepr"
 REPR_EXTENSION = "repr"
 NOT_FINISHED_EXTENSION = "part"
 
@@ -68,16 +70,8 @@ class FinalReprWriter(ReprWriter):
         self.handle.write(to_token_list(token_list))
 
 
-class IntermediateReprWriter(ReprWriter):
-    def __init__(self, dest_file):
-        super().__init__(dest_file, 'wb', f'{PART_REPR_EXTENSION}')
-
-    def write(self, token_list):
-        pickle.dump(token_list, self.handle, HIGHEST_PROTOCOL)
-
-
 def preprocess_and_write(params):
-    src_file, dest_file, preprocessing_params, old_preprocessing_params = params
+    src_file, dest_file, preprocessing_params, old_preprocessing_params, aux_splitting_dicts = params
     if not os.path.exists(src_file):
         logger.error(f"File {src_file} does not exist")
         exit(2)
@@ -90,7 +84,7 @@ def preprocess_and_write(params):
                           f"{old_preprocessing_params}, but has {preprocessing_param_dict}")
             exit(221)
         new_preprocessing_param_dict, got_pure_repr = calc_new_preprocessing_types_dict(preprocessing_param_dict, preprocessing_params)
-        writer = FinalReprWriter(dest_file) if got_pure_repr else IntermediateReprWriter(dest_file)
+        writer = FinalReprWriter(dest_file)
 
         if os.path.exists(writer.get_full_dest_name()):
             logger.warning(f"File {writer.get_full_dest_name()} already exists! Doing nothing.")
@@ -101,7 +95,7 @@ def preprocess_and_write(params):
             while True:
                 try:
                     token_list = pickle.load(i)
-                    repr = to_repr(preprocessing_params, token_list)
+                    repr = to_repr(preprocessing_params, token_list, aux_splitting_dicts)
                     w.write(repr)
                 except EOFError:
                     break
@@ -111,18 +105,12 @@ def preprocess_and_write(params):
 
 def gen_dir_name(new_preprocessing_param_dict):
     name = ""
-    for k in PreprocessingType:
+    for k in PreprocessingParam:
         if new_preprocessing_param_dict[k] is None:
             name += "_"
-        elif new_preprocessing_param_dict[k]:
-            name += "1"
         else:
-            name += "0"
+            name += str(int(new_preprocessing_param_dict[k]))
     return name
-
-
-def parse_preprocessing_params(preprocessing_types_str):
-    return {PreprocessingType(param.split('=')[0]): bool(int(param.split('=')[1])) for param in preprocessing_types_str.split(',')}
 
 
 if __name__ == '__main__':
@@ -135,6 +123,10 @@ if __name__ == '__main__':
     parser.add_argument('dest', action='store', help=f'destination for representation')
     parser.add_argument('-p','--preprocessing-types', required=True, action='store', help='preprocessing params line, \n Example: '
                                                                                           'spl=1,numspl=1,nostr=0,nocom=0,nonewlinestabs=0,scspl=1,en_only=1')
+    parser.add_argument('--bpe-merges-file', action='store', help='Full path to the file with bpe merges')
+    parser.add_argument('--bpe-merges-cache', action='store', help='Full path to the file with bpe split words')
+    parser.add_argument('--splitting-file', action='store', help='Full path to the file with sc split words',
+                        default=f'{base_project_dir}/splittings.txt')
 
     args = parser.parse_known_args(*DEFAULT_TO_REPR_ARGS)
     args = args[0]
@@ -146,10 +138,33 @@ if __name__ == '__main__':
     logger.info(f"Reading parsed files from: {os.path.abspath(full_src_dir)}")
     with open(f'{full_src_dir}/preprocessing_types.json', 'r') as f:
         old_preprocessing_params_json = json.load(f)
-    old_preprocessing_params = {PreprocessingType(k): v for (k, v) in old_preprocessing_params_json.items()}
+    old_preprocessing_params = {PreprocessingParam(k): v for (k, v) in old_preprocessing_params_json.items()}
     logger.info(f"Old preprocessing params : {old_preprocessing_params}")
 
     preprocessing_params = parse_preprocessing_params(args.preprocessing_types)
+    check_preprocessing_params_are_valid(preprocessing_params)
+
+    aux_splitting_dicts = {}
+    if preprocessing_params[PreprocessingParam.SPL_TYPE] == 4:
+        if not args.bpe_merges_cache or not args.bpe_merges_file:
+            raise ValueError("--bpe-merges-file and --bpe-merges-cache must be specified")
+
+        merges_cache = io_utils.read_dict_from_2_columns(args.bpe_merges_cache, val_type=list)
+        merges = []
+        with open(args.bpe_merges_file, 'r') as f:
+            for line in f:
+                line = line[:-1] if line[-1] == '\n' else line
+                merges.append(line.split(' '))
+        aux_splitting_dicts['merges_cache'] = merges_cache
+        aux_splitting_dicts['merges'] = merges
+        aux_splitting_dicts['ngramSplittingType'] = NgramSplittingType.BPE
+    elif preprocessing_params[PreprocessingParam.SPL_TYPE] == 3:
+        if not args.splitting_file:
+            raise ValueError("--splitting-file must be specified")
+
+        splittings = io_utils.read_dict_from_2_columns(args.splitting_file, val_type=list, delim='|')
+        aux_splitting_dicts['sc_splittings'] = splittings
+        aux_splitting_dicts['ngramSplittingType'] = NgramSplittingType.CUSTOM
 
     new_preprocessing_types_dict, got_pure_repr = calc_new_preprocessing_types_dict(old_preprocessing_params,
                                                                                     preprocessing_params)
@@ -161,12 +176,14 @@ if __name__ == '__main__':
         logger.info("Representation resolved")
     else:
         logger.info(f"Representation not resolved: {new_preprocessing_types_dict}")
+        logger.error(f"Partial representation is no longer supported")
+        exit(388)
 
     gen_dir_name_from_verb_param = gen_dir_name(new_preprocessing_types_dict)
     while os.path.exists(gen_dir_name_from_verb_param):
         gen_dir_name_from_verb_param += '_'
 
-    full_dest_dir = f'{args.base_to}/{args.dest}/{"repr" if got_pure_repr else "partrepr"}/{gen_dir_name_from_verb_param}'
+    full_dest_dir = f'{args.base_to}/{args.dest}/{REPR_EXTENSION}/{gen_dir_name_from_verb_param}'
     full_metadata_dir = f'{args.base_to}/{args.dest}/metadata/{gen_dir_name_from_verb_param}'
     logger.info(f"Writing preprocessed files to {os.path.abspath(full_dest_dir)}")
     if not os.path.exists(full_dest_dir):
@@ -182,20 +199,20 @@ if __name__ == '__main__':
     files_total = 0
     for root, dirs, files in os.walk(full_src_dir):
         for file in files:
-            if file.endswith(f".{PARSED_FILE_EXTENSION}") or file.endswith(f".{PART_REPR_EXTENSION}"):
+            if file.endswith(f".{PARSED_FILE_EXTENSION}"):
                 files_total += 1
 
     params = []
     for root, dirs, files in os.walk(full_src_dir):
         for file in files:
-            if file.endswith(f".{PARSED_FILE_EXTENSION}") or file.endswith(f".{PART_REPR_EXTENSION}"):
+            if file.endswith(f".{PARSED_FILE_EXTENSION}"):
 
                 full_dest_dir_with_sub_dir = os.path.join(full_dest_dir, os.path.relpath(root, full_src_dir))
                 if not os.path.exists(full_dest_dir_with_sub_dir):
                     os.makedirs(full_dest_dir_with_sub_dir)
                 params.append((os.path.join(root, file),
                                os.path.join(full_dest_dir_with_sub_dir, file),
-                               preprocessing_params, old_preprocessing_params))
+                               preprocessing_params, old_preprocessing_params, aux_splitting_dicts))
     files_total = len(params)
     current_file = 0
     start_time = time.time()

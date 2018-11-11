@@ -33,15 +33,6 @@ class ProcessableToken(object):
         else:
             raise AssertionError(f"Bad type of obj: {str}")
 
-    def get_processable_subtokens(self):
-        if self.simple():
-            return [self]
-        else:
-            return [pst for st in self.val if isinstance(st, ProcessableToken) for pst in st.get_processable_subtokens()]
-
-    def simple(self):
-        return len(self.val) == 1 and isinstance(self.val[0], str)
-
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.val == other.val
 
@@ -69,7 +60,6 @@ class NonEng(object):
 
     def non_preprocessed_repr(self):
         return self.str
-        # raise NotImplementedError("We don't support non preprocessed representation of NonEng, i.e. non-english tokens")
 
     def preprocessed_repr(self):
         return placeholders['non_eng']

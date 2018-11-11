@@ -11,7 +11,6 @@ pp_params = {
         "split.camel_case",
         "split.underscore",
         "split.with_numbers",
-        "split.same_case",
         # "legacy.merge_tabs",
 
         "java.process_comments_and_str_literals",

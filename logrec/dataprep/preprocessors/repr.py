@@ -1,97 +1,69 @@
 import logging
 
-from logrec.dataprep.preprocessors.model.general import NonEng
-from logrec.dataprep.preprocessors.model.split import NonDelimiterSplitContainer, SplitContainer, split_repr_func_map, \
-    SplitRepr
+from logrec.dataprep.preprocessors.model.general import NonEng, ProcessableToken
+from logrec.dataprep.preprocessors.model.numeric import Number
+from logrec.dataprep.preprocessors.model.split import SplitContainer, split_repr_func_map, SplitRepr
 from logrec.dataprep.preprocessors.model.textcontainers import TextContainer
-from logrec.dataprep.preprocessors.preprocessing_types import token_to_preprocessing_type_level_dict, always_repr, \
-    recursive, \
-    PreprocessingType
+from logrec.dataprep.preprocessors.preprocessing_types import recursive, PreprocessingParam, get_types_to_be_repr, \
+    check_preprocessing_params_are_valid
+from logrec.dataprep.split.ngram import do_same_case_splitting
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_NO_COM_NO_STR = {
-    PreprocessingType.SPL:    True, PreprocessingType.NUM_SPL:          True, PreprocessingType.NO_COM: True,
-    PreprocessingType.NO_STR: True, PreprocessingType.NO_NEWLINES_TABS: True, PreprocessingType.SC_SPL: False,
-    PreprocessingType.BSR: True
-}
 
-DEFAULT_NO_COM = {
-    PreprocessingType.SPL:     True, PreprocessingType.NUM_SPL:          True, PreprocessingType.NO_COM: True,
-    PreprocessingType.NO_STR: False, PreprocessingType.NO_NEWLINES_TABS: True, PreprocessingType.SC_SPL: False,
-    PreprocessingType.BSR: True
-}
-
-DEFAULT = {
-    PreprocessingType.SPL:     True, PreprocessingType.NUM_SPL:          True, PreprocessingType.NO_COM: False,
-    PreprocessingType.NO_STR: False, PreprocessingType.NO_NEWLINES_TABS: True, PreprocessingType.SC_SPL: False,
-    PreprocessingType.BSR: True
-}
-
-
-def to_repr(preprocessing_params, token_list):
-    if PreprocessingType.BSR not in preprocessing_params or preprocessing_params[PreprocessingType.BSR] is None:
-        raise AssertionError('PreprocessingType.BSR should be presen twith value True or false')
+def to_repr(preprocessing_params, token_list, aux_splitting_dicts):
     """
     Preprocesses token list according to given preprocessing params
     :param preprocessing_params: e.g. {
-        PreprocessingType.SPL: True,
-        PreprocessingType.NUM_SPL: True,
+        PreprocessingType.SPL_TYPE: 4,
         PreprocessingType.NO_COM: False,
         PreprocessingType.NO_STR: False
         PreprocessingType.NO_NEWLINES_TABS: False',
-        PreprocessingType.SC_SPL: True
-        PreprocessingType.BSR: True
+        PreprocessingType.BSR: False
     }
     :param token_list: list of tokens to be preprocessed
     :return:
     """
-    types_to_be_repr_dict = {k:preprocessing_params[v] for (k, v) in token_to_preprocessing_type_level_dict.items()
-                             if v in preprocessing_params}
-    splitRepr = SplitRepr.BONDERIES if preprocessing_params[PreprocessingType.BSR] else SplitRepr.BETWEEN_WORDS
-    repr_list = to_repr_list(types_to_be_repr_dict, token_list, splitRepr)
+    check_preprocessing_params_are_valid(preprocessing_params)
+
+    types_to_be_repr = get_types_to_be_repr(preprocessing_params)
+    splitRepr = SplitRepr.BONDERIES if preprocessing_params[PreprocessingParam.BSR] else SplitRepr.BETWEEN_WORDS
+    repr_list = to_repr_list(types_to_be_repr, token_list, splitRepr, aux_splitting_dicts)
     return repr_list
 
 
-def to_repr_list(types_to_be_repr_dict, token_list, bsr):
+def to_repr_list(types_to_be_repr, token_list, bsr, aux_splitting_dicts):
     repr_res = []
     for token in token_list:
-        repr_token = to_repr_token(types_to_be_repr_dict, token, bsr)
+        repr_token = to_repr_token(types_to_be_repr, token, bsr, aux_splitting_dicts)
         repr_res.extend(repr_token if isinstance(repr_token, list) else [repr_token])
     return repr_res
 
 
-def to_repr_token(types_to_be_repr_dict, token, split_repr):
+def to_repr_token(types_to_be_repr, token, split_repr, aux_splitting_dicts):
     clazz = type(token)
-    if clazz in types_to_be_repr_dict and not types_to_be_repr_dict[clazz] \
-            and NonEng in types_to_be_repr_dict and types_to_be_repr_dict[NonEng] \
+    if clazz == str:
+        return token
+    if clazz not in types_to_be_repr and NonEng in types_to_be_repr \
             and issubclass(clazz, TextContainer) and token.has_non_eng_contents():
         return token.non_eng_contents()
-    elif clazz in always_repr:
-        return token.to_repr()
-    elif clazz in types_to_be_repr_dict:
-        if types_to_be_repr_dict[clazz]:
-            if issubclass(clazz, SplitContainer):
-                repr_func = split_repr_func_map[split_repr]
-                repr = getattr(token, repr_func)()
-                split_repr = SplitRepr.NONE if split_repr == SplitRepr.BONDERIES else SplitRepr.BETWEEN_WORDS
-            else:
-                repr = token.preprocessed_repr()
-        else:
-            repr = token.non_preprocessed_repr()
+    if clazz == ProcessableToken or clazz == Number:
+        return do_same_case_splitting(token, aux_splitting_dicts)
 
-
-        if clazz in recursive and isinstance(repr, list):
-            return to_repr_list(types_to_be_repr_dict, repr, split_repr)
-        elif clazz in recursive:
-            return to_repr_token(types_to_be_repr_dict, repr, split_repr)
+    if clazz in types_to_be_repr:
+        if issubclass(clazz, SplitContainer):
+            repr_func = split_repr_func_map[split_repr]
+            repr = getattr(token, repr_func)()
+            split_repr = SplitRepr.NONE if split_repr == SplitRepr.BONDERIES else SplitRepr.BETWEEN_WORDS
         else:
-            return repr
-    elif clazz in recursive:
-        repr_list = to_repr_list(types_to_be_repr_dict, token.get_subtokens(), split_repr)
-        if isinstance(token, NonDelimiterSplitContainer):
-            return clazz(repr_list, token.is_capitalized())
-        else:
-            return clazz(repr_list)
+            repr = token.preprocessed_repr()
     else:
-        return token
+        repr = token.non_preprocessed_repr()
+
+    if clazz in recursive:
+        if isinstance(repr, list):
+            return to_repr_list(types_to_be_repr, repr, split_repr, aux_splitting_dicts)
+        else:
+            return to_repr_token(types_to_be_repr, repr, split_repr, aux_splitting_dicts)
+    else:
+        return repr

@@ -29,20 +29,7 @@ class NonengTest(unittest.TestCase):
 
         actual = mark(tokens, {})
 
-        expected = [StringLiteral([OneLineCommentStart(), UnderscoreSplit([ProcessableToken("test"),
-                                                                           CamelCaseSplit([ProcessableToken("my"),
-                                                                                           ProcessableToken("class")],
-                                                                                          True)])]),
-                    NewLine(),
-                    OneLineComment([MultilineCommentEnd(), ProcessableToken("lifeisgood")]),
-                    NewLine(),
-                    StringLiteral([MultilineCommentStart(), ProcessableToken("!")]),
-                    NewLine(),
-                    MultilineComment([NewLine()]),
-                    NewLine()
-                    ]
-
-        self.assertEqual(actual, expected)
+        self.assertEqual(actual, tokens)
 
     def test_mark_with_noneng(self):
         tokens = [
@@ -73,19 +60,19 @@ class NonengTest(unittest.TestCase):
             StringLiteral([
                 CamelCaseSplit([
                     ProcessableToken("a"),
-                    NonEng("wirklich")
+                    NonEng(ProcessableToken("wirklich"))
                 ], True)
             ]),
             MultilineComment([
-                NonEng('ц'),
+                NonEng(ProcessableToken('ц')),
                 UnderscoreSplit([
-                    NonEng("blanco"),
+                    NonEng(ProcessableToken("blanco")),
                     ProcessableToken("english")
                 ])
             ]),
             OneLineComment([
                 WithNumbersSplit([
-                    NonEng("dieselbe"),
+                    NonEng(ProcessableToken("dieselbe")),
                     ProcessableToken("8")
                 ], True)
             ])
