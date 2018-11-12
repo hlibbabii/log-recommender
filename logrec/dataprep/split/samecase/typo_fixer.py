@@ -11,7 +11,8 @@ from logrec.dataprep.split.samecase.splitter import load_english_dict
 
 logger = logging.getLogger(__name__)
 
-def get_words_of_almost_same_length(word):
+
+def get_words_of_almost_same_length(word, len_to_words_in_dict):
     ln = len(word)
     return len_to_words_in_dict[ln - 1] + len_to_words_in_dict[ln] + len_to_words_in_dict[ln + 1]
 
@@ -33,18 +34,7 @@ def is_typo(word, word_from_dict):
     return dist == 1 or (dist == 2 and fl(word, word_from_dict))
 
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
-    base_dir = base_from = f'{base_project_dir}/nn-data/new-framework/'
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--path-to-typo-candidates', action='store', default="100_percent/splits/typo-candidates.txt")
-    args = parser.parse_args()
-
-    path_to_typo_candidates = f"{base_dir}/{args.path_to_typo_candidates}"
-    file_with_fixes = os.path.join(os.path.split(path_to_typo_candidates)[0], 'typo-fixes.txt')
-
+def run(path_to_typo_candidates, file_with_fixes):
     logger.info(f"Reading typo candidates from {path_to_typo_candidates}...")
 
     words_with_typos = []
@@ -58,12 +48,25 @@ if __name__ == '__main__':
         len_to_words_in_dict[len(w)].append(w)
     len_to_words_in_dict.default_factory = None
 
-
     with open(file_with_fixes, 'w') as f:
         for word in tqdm(words_with_typos):
             possible_fixes = []
-            for word_from_dict in get_words_of_almost_same_length(word):
+            for word_from_dict in get_words_of_almost_same_length(word, len_to_words_in_dict):
                 if is_typo(word, word_from_dict):
                     possible_fixes.append(word_from_dict)
             stringified_possible_fixes = " ".join(possible_fixes)
             f.write(f"{word}|{stringified_possible_fixes}\n")
+
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--path-to-typo-candidates', action='store', default="100_percent/splits/typo-candidates.txt")
+    args = parser.parse_args()
+
+    base_dir = base_from = f'{base_project_dir}/nn-data/new-framework/'
+    path_to_typo_candidates = f"{base_dir}/{args.path_to_typo_candidates}"
+    file_with_fixes = os.path.join(os.path.split(path_to_typo_candidates)[0], 'typo-fixes.txt')
+
+    run(path_to_typo_candidates, file_with_fixes)

@@ -113,25 +113,7 @@ def gen_dir_name(new_preprocessing_param_dict):
     return name
 
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--base-from',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
-    parser.add_argument('--base-to',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
-    parser.add_argument('src', action='store', help=f'path to the parsed dataset')
-    parser.add_argument('dest', action='store', help=f'destination for representation')
-    parser.add_argument('-p','--preprocessing-types', required=True, action='store', help='preprocessing params line, \n Example: '
-                                                                                          'spl=1,numspl=1,nostr=0,nocom=0,nonewlinestabs=0,scspl=1,en_only=1')
-    parser.add_argument('--bpe-merges-file', action='store', help='Full path to the file with bpe merges')
-    parser.add_argument('--bpe-merges-cache', action='store', help='Full path to the file with bpe split words')
-    parser.add_argument('--splitting-file', action='store', help='Full path to the file with sc split words',
-                        default=f'{base_project_dir}/splittings.txt')
-
-    args = parser.parse_known_args(*DEFAULT_TO_REPR_ARGS)
-    args = args[0]
-
-    full_src_dir = f'{args.base_from}/{args.src}'
+def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, splitting_file):
     if not os.path.exists(full_src_dir):
         logger.error(f"Dir does not exist: {full_src_dir}")
         exit(3)
@@ -141,32 +123,32 @@ if __name__ == '__main__':
     old_preprocessing_params = {PreprocessingParam(k): v for (k, v) in old_preprocessing_params_json.items()}
     logger.info(f"Old preprocessing params : {old_preprocessing_params}")
 
-    preprocessing_params = parse_preprocessing_params(args.preprocessing_types)
+    preprocessing_params = parse_preprocessing_params(preprocessing_params)
     check_preprocessing_params_are_valid(preprocessing_params)
 
     ngramSplittingConfig = NgramSplittingConfig()
     if preprocessing_params[PreprocessingParam.SPL_TYPE] == 4:
-        if not args.bpe_merges_cache or not args.bpe_merges_file:
+        if not bpe_merges_cache or not bpe_merges_file:
             raise ValueError("--bpe-merges-file and --bpe-merges-cache must be specified")
 
-        merges_cache = io_utils.read_dict_from_2_columns(args.bpe_merges_cache, val_type=list)
+        merges_cache = io_utils.read_dict_from_2_columns(bpe_merges_cache, val_type=list)
         merges = []
-        with open(args.bpe_merges_file, 'r') as f:
+        with open(bpe_merges_file, 'r') as f:
             for line in f:
                 line = line[:-1] if line[-1] == '\n' else line
                 merges.append(line.split(' '))
-        ngramSplittingConfig.merges_cache(merges_cache)
-        ngramSplittingConfig.merges(merges)
-        ngramSplittingConfig.splitting_type(NgramSplittingType.BPE)
+        ngramSplittingConfig.merges_cache = merges_cache
+        ngramSplittingConfig.merges = merges
+        ngramSplittingConfig.set_splitting_type(NgramSplittingType.BPE)
     elif preprocessing_params[PreprocessingParam.SPL_TYPE] == 3:
-        if not args.splitting_file:
+        if not splitting_file:
             raise ValueError("--splitting-file must be specified")
 
-        splittings = io_utils.read_dict_from_2_columns(args.splitting_file, val_type=list, delim='|')
-        ngramSplittingConfig.sc_splittings(splittings)
-        ngramSplittingConfig.splitting_type(NgramSplittingType.CUSTOM)
+        splittings = io_utils.read_dict_from_2_columns(splitting_file, val_type=list, delim='|')
+        ngramSplittingConfig.sc_splittings = splittings
+        ngramSplittingConfig.set_splitting_type(NgramSplittingType.CUSTOM)
     elif preprocessing_params[PreprocessingParam.SPL_TYPE] == 2:
-        ngramSplittingConfig.splitting_type(NgramSplittingType.ONLY_NUMBERS)
+        ngramSplittingConfig.set_splitting_type(NgramSplittingType.ONLY_NUMBERS)
 
     new_preprocessing_types_dict, got_pure_repr = calc_new_preprocessing_types_dict(old_preprocessing_params,
                                                                                     preprocessing_params)
@@ -185,8 +167,8 @@ if __name__ == '__main__':
     while os.path.exists(gen_dir_name_from_verb_param):
         gen_dir_name_from_verb_param += '_'
 
-    full_dest_dir = f'{args.base_to}/{args.dest}/{REPR_EXTENSION}/{gen_dir_name_from_verb_param}'
-    full_metadata_dir = f'{args.base_to}/{args.dest}/metadata/{gen_dir_name_from_verb_param}'
+    full_dest_dir = f'{dest_dir}/{REPR_EXTENSION}/{gen_dir_name_from_verb_param}'
+    full_metadata_dir = f'{dest_dir}/metadata/{gen_dir_name_from_verb_param}'
     logger.info(f"Writing preprocessed files to {os.path.abspath(full_dest_dir)}")
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir)
@@ -196,8 +178,7 @@ if __name__ == '__main__':
     with open(f'{full_dest_dir}/preprocessing_types.json', "w") as f:
         json.dump(new_preprocessing_types_dict, f)
 
-
-    #TODO remove duplication
+    # TODO remove duplication
     files_total = 0
     for root, dirs, files in os.walk(full_src_dir):
         for file in files:
@@ -225,4 +206,29 @@ if __name__ == '__main__':
             logger.info(f"Processed {current_file} out of {files_total}")
             time_elapsed = time.time() - start_time
             logger.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
-                         f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
+                        f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
+
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--base-from',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
+    parser.add_argument('--base-to',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
+    parser.add_argument('src', action='store', help=f'path to the parsed dataset')
+    parser.add_argument('dest', action='store', help=f'destination for representation')
+    parser.add_argument('-p', '--preprocessing-params', required=True, action='store',
+                        help='preprocessing params line, \n Example: '
+                                                                                          'spl=1,numspl=1,nostr=0,nocom=0,nonewlinestabs=0,scspl=1,en_only=1')
+    parser.add_argument('--bpe-merges-file', action='store', help='Full path to the file with bpe merges')
+    parser.add_argument('--bpe-merges-cache', action='store', help='Full path to the file with bpe split words')
+    parser.add_argument('--splitting-file', action='store', help='Full path to the file with sc split words',
+                        default=f'{base_project_dir}/splittings.txt')
+
+    args = parser.parse_known_args(*DEFAULT_TO_REPR_ARGS)
+    args = args[0]
+
+    full_src_dir = f'{args.base_from}/{args.src}'
+    dest_dir = f'{args.base_to}/{args.dest}'
+
+    run(args.preprocessing_params, dest_dir, args.bpe_merges_file, args.bpe_merges_cache, args.splitting_file)

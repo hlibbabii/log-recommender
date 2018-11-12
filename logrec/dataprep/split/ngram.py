@@ -41,7 +41,7 @@ class NgramSplittingConfig(object):
     def merges_cache(self, m):
         self._merges_cache = m
 
-    def splitting_type(self, type):
+    def set_splitting_type(self, type):
         self._splitting_type = type
 
     @sc_splittings.setter

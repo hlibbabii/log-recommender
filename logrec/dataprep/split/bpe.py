@@ -48,20 +48,12 @@ MERGES_FILE_NAME = "merges.txt"
 MERGES_CACHE_FILE_NAME = "merges_cache.txt"
 RESULTING_VOCAB_FILE_NAME = "vocab_res.txt"
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
 
-    argument_parser = argparse.ArgumentParser()
-    argument_parser.add_argument('--n-merges', action='store', type=int, default=1)
-    argument_parser.add_argument('--base-dir', action='store',
-                                 default='/home/hlib/thesis/log-recommender/')
-    argument_parser.add_argument('--reset', action='store_true')
-    args = argument_parser.parse_args(*DEFAULT_BPE_ARGS)
-
+def run(reset, base_dir, n_merges):
     vocab = {}
-    if args.reset:
+    if reset:
         logger.info("Starting the encoding from scratch...")
-        with open(f'{args.base_dir}/{VOCAB_FILE_NAME}', 'r') as f:
+        with open(f'{base_dir}/{VOCAB_FILE_NAME}', 'r') as f:
             for line in f:
                 line = line[:-1] if line[-1] == '\n' else line
                 splits = line.split(" ")
@@ -70,21 +62,21 @@ if __name__ == '__main__':
                 vocab[" ".join(splits[0])] = int(splits[1])
     else:
         logger.info("Using existing merges...")
-        with open(f'{args.base_dir}/{REASSEMBLED_VOCAB_FILE_NAME}', 'r') as f:
+        with open(f'{base_dir}/{REASSEMBLED_VOCAB_FILE_NAME}', 'r') as f:
             for line in f:
                 line = line[:-1] if line[-1] == '\n' else line
-                splits = line.split(" ")
+                splits = line.split("\t")
                 vocab[" ".join(splits[:-1])] = int(splits[-1])
     pairs = get_stats(vocab)
 
     merges = []
-    if not args.reset:
-        with open(f'{args.base_dir}/{MERGES_FILE_NAME}', 'r') as f:
+    if not reset:
+        with open(f'{base_dir}/{MERGES_FILE_NAME}', 'r') as f:
             for line in f:
                 line = line[:-1] if line[-1] == '\n' else line
-                merges.append(line.split(" "))
+                merges.append(line.split("\t"))
     n_done_merges = len(merges)
-    for i in range(args.n_merges):
+    for i in range(n_merges):
         try:
             best = pairs.pop_pair()
             print(f'Processing pair number {n_done_merges + i+1} ({best})')
@@ -95,17 +87,30 @@ if __name__ == '__main__':
 
     resulting_vocab = collections.defaultdict(int)
     for entry, frequency in vocab.items():
-        for subword in entry.split(" "):
+        for subword in entry.split("\t"):
             resulting_vocab[subword] += frequency
     resulting_vocab_sorted = sorted(resulting_vocab.items(), key=lambda x: x[1], reverse=True)
 
     merges_cache = {}
     for entry, frequency in vocab.items():
-        subword_list = entry.split(' ')
+        subword_list = entry.split('\t')
         key = ''.join(subword_list)
         merges_cache[key] = subword_list
 
-    io_utils.dump_dict_into_2_columns(merges, f'{args.base_dir}/{MERGES_FILE_NAME}', append=True)
-    io_utils.dump_dict_into_2_columns(vocab, f'{args.base_dir}/{REASSEMBLED_VOCAB_FILE_NAME}')
-    io_utils.dump_dict_into_2_columns(merges_cache, f'{args.base_dir}/{MERGES_CACHE_FILE_NAME}', val_type=list)
-    io_utils.dump_dict_into_2_columns(resulting_vocab_sorted, f'{args.base_dir}/{RESULTING_VOCAB_FILE_NAME}')
+    io_utils.dump_dict_into_2_columns(merges, f'{base_dir}/{MERGES_FILE_NAME}', append=True)
+    io_utils.dump_dict_into_2_columns(vocab, f'{base_dir}/{REASSEMBLED_VOCAB_FILE_NAME}')
+    io_utils.dump_dict_into_2_columns(merges_cache, f'{base_dir}/{MERGES_CACHE_FILE_NAME}', val_type=list)
+    io_utils.dump_dict_into_2_columns(resulting_vocab_sorted, f'{base_dir}/{RESULTING_VOCAB_FILE_NAME}')
+
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+
+    argument_parser = argparse.ArgumentParser()
+    argument_parser.add_argument('--n-merges', action='store', type=int, default=1)
+    argument_parser.add_argument('--base-dir', action='store',
+                                 default='/home/hlib/thesis/log-recommender/')
+    argument_parser.add_argument('--reset', action='store_true')
+    args = argument_parser.parse_args(*DEFAULT_BPE_ARGS)
+
+    run(args.reset, args.base_dir, args.n_merges)

@@ -117,20 +117,7 @@ def create_vocab_merger(path_to_dump):
         return VocabMerger(path_to_dump)
 
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--base-from', action='store', default=DEFAULT_PARSED_DATASETS_DIR)
-    parser.add_argument('dataset', action='store', help=f'dataset name')
-    parser.add_argument('repr', action='store', help=f'repr name')
-
-    args = parser.parse_known_args(*DEFAULT_VOCABSIZE_ARGS)
-    args = args[0]
-
-    full_src_dir = f'{args.base_from}/{args.dataset}/repr/{args.repr}/train'
-    full_metadata_dir = f'{args.base_from}/{args.dataset}/metadata/{args.repr}'
-
+def run(full_src_dir, full_metadata_dir):
     if not os.path.exists(full_src_dir):
         logger.error(f"Dir does not exist: {full_src_dir}")
         exit(3)
@@ -158,8 +145,25 @@ if __name__ == '__main__':
             logger.info(f"Processed {current_file} out of {files_total}")
             time_elapsed = time.time() - start_time
             logger.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
-                         f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
+                        f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
 
     vocab_merger.write_stats(f'{full_metadata_dir}/vocabsize')
     vocab_merger.write_vocab(f'{full_metadata_dir}/vocab')
     os.remove(f'{full_metadata_dir}/part_vocab.pkl')
+
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--base-from', action='store', default=DEFAULT_PARSED_DATASETS_DIR)
+    parser.add_argument('dataset', action='store', help=f'dataset name')
+    parser.add_argument('repr', action='store', help=f'repr name')
+
+    args = parser.parse_known_args(*DEFAULT_VOCABSIZE_ARGS)
+    args = args[0]
+
+    full_src_dir = f'{args.base_from}/{args.dataset}/repr/{args.repr}/train'
+    full_metadata_dir = f'{args.base_from}/{args.dataset}/metadata/{args.repr}'
+
+    run(full_src_dir, full_metadata_dir)

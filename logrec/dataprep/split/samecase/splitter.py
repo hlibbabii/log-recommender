@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import sys
 from math import log
 from multiprocessing.pool import Pool
 from operator import itemgetter
@@ -9,7 +8,6 @@ from random import shuffle
 
 from logrec.util import io_utils
 
-print(sys.path)
 from fastai.imports import tqdm
 from logrec.dataprep import base_project_dir
 
@@ -54,10 +52,6 @@ def init_cache(file):
 def cache_comb_creator(split_cache, word):
     return [split_cache[word], [word]]
 
-def true_comb_creator(word):
-    max_subwords = get_max_subwords(word)
-    return combos(word, max_subwords)
-
 
 def adjusted_negative_abs(x, alpha):
     return x if x >= 0 else -alpha * x
@@ -100,7 +94,7 @@ def ll(word, params):
                                            params['beta']) + params['gamma'])
 
 
-def calc_score(subwords_set, denum, denum_f, denum_l):
+def calc_score(subwords_set, denum, denum_f, denum_l, freqs, general_dict):
     num = 0.0
     num_ls = []
     num_fs = []
@@ -132,7 +126,7 @@ def calc_score(subwords_set, denum, denum_f, denum_l):
 
 
 def get_splitting(pp):
-    word, freq, freqs, params, cached_combs, identity = pp
+    word, freq, freqs, params, cached_combs, identity, general_dict = pp
     denum_f = ff(freq, word in general_dict, True, params)
     denum_l = ll(word, params)
     denum = denum_f * denum_l
@@ -146,7 +140,7 @@ def get_splitting(pp):
         pregenerated=False
     if pregenerated:
         for subwords_set in combinations:
-            score = calc_score(subwords_set, denum, denum_f, denum_l)
+            score = calc_score(subwords_set, denum, denum_f, denum_l, freqs, general_dict)
             if score is not None:
                 options.append(score)
     else:
@@ -161,8 +155,6 @@ def get_splitting(pp):
                 combo = get_next_combo(combo, max_subwords, score)
 
     options.sort(key=itemgetter('num'), reverse=True)
-    # if word not in cache:
-    #     cache[word] = [opt['subwords_set'] for opt in options[:10]]
     for option in options[:5]:
         num_str = "avg(" + "+".join([f'{f:.2f}*{l:.2f}' for f, l in zip(option["num_fs"], option["num_ls"])]) + ")"
         logging.debug(
@@ -231,7 +223,7 @@ def get_splittings(words_to_split, freqs, general_dict, non_eng_dicts, cache_fil
                 identity = True
             elif word in nonsplit_cache or word in typo_candidates_cache:
                 identity = True
-            pp.append((word, freq, new_freqs, params, cached_combs, identity))
+            pp.append((word, freq, new_freqs, params, cached_combs, identity, general_dict))
 
     return transformed, nontransformed, typo_candidates
 
@@ -285,9 +277,7 @@ def generate_sample(transformed, nontransformed, nn, where):
             f.write(f'{w}\n')
 
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
+def run():
     path_to_splits = f'{base_project_dir}/splits'
     vocab_file = f'{base_project_dir}/vocab'
 
@@ -325,13 +315,6 @@ if __name__ == '__main__':
     generate_sample(transformed, nontransformed, (1000, 4000), f'{path_to_split_folder}/sample.txt')
 
 
-# combo = get_next_combo("abcdefg", 3, -1)
-# print(combo)
-# combo = get_next_combo(combo, 3, -1)
-# print(combo)
-# combo = get_next_combo(combo, 3, -1)
-# print(combo)
-# combo = get_next_combo(combo, 3, 0)
-# while combo is not None:
-#     print(combo)
-#     combo = get_next_combo(combo, 3, -1)
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+    run()

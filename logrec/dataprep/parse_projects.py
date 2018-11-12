@@ -88,24 +88,7 @@ def split_two_last_levels(root):
     return os.path.dirname(os.path.dirname(os.path.dirname(root))), Path(root).parts[-2], Path(root).parts[-1]
 
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
-    from logrec.local_properties import DEFAULT_RAW_DATASETS_DIR, DEFAULT_PARSED_DATASETS_DIR, \
-        DEFAULT_PARSE_PROJECTS_ARGS
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--base-from',action='store', default=DEFAULT_RAW_DATASETS_DIR)
-    parser.add_argument('--base-to',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
-    parser.add_argument('src', help="name of the 'raw' dataset")
-    parser.add_argument('dest', help='destination for parsed files, recommended format <dataset name>/parsed')
-
-    args = parser.parse_known_args(*DEFAULT_PARSE_PROJECTS_ARGS)
-    args = args[0]
-
-    raw_dataset_dir=f'{args.base_from}/{args.src}/'
-    dest_dataset_dir = f'{args.base_to}/{args.dest}/'
-
+def run(raw_dataset_dir, dest_dataset_dir):
     logger.info(f"Getting files from {os.path.abspath(raw_dataset_dir)}")
     logger.info(f"Writing preprocessed files to {os.path.abspath(dest_dataset_dir)}")
     preprocessing_types_dict = {k: None for k in PreprocessingParam}
@@ -134,5 +117,25 @@ if __name__ == '__main__':
             logger.info(f"Processed {current_file} out of {files_total} chunks")
             time_elapsed = time.time() - start_time
             logger.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
-                         f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
+                        f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
 
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+
+    from logrec.local_properties import DEFAULT_RAW_DATASETS_DIR, DEFAULT_PARSED_DATASETS_DIR, \
+        DEFAULT_PARSE_PROJECTS_ARGS
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--base-from',action='store', default=DEFAULT_RAW_DATASETS_DIR)
+    parser.add_argument('--base-to',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
+    parser.add_argument('src', help="name of the 'raw' dataset")
+    parser.add_argument('dest', help='destination for parsed files, recommended format <dataset name>/parsed')
+
+    args = parser.parse_known_args(*DEFAULT_PARSE_PROJECTS_ARGS)
+    args = args[0]
+
+    raw_dataset_dir=f'{args.base_from}/{args.src}/'
+    dest_dataset_dir = f'{args.base_to}/{args.dest}/'
+
+    run(raw_dataset_dir, dest_dataset_dir)
