@@ -3,7 +3,7 @@ import unittest
 from logrec.dataprep import base_project_dir
 from logrec.util import io_utils
 
-PATH_TO_TEST_DATA = f'{base_project_dir}/test-data'
+PATH_TO_TEST_DATA = f'{base_project_dir}/test-resources'
 if not os.path.exists(PATH_TO_TEST_DATA):
     os.mkdir(PATH_TO_TEST_DATA)
 PATH_TO_FILE = f'{PATH_TO_TEST_DATA}/dump-read-test.txt'
