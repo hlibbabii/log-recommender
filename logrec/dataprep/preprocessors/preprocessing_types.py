@@ -28,8 +28,8 @@ class PreprocessingParam(str, Enum):
 split_type_to_types_to_be_repr = {
     0: [],
     1: [CamelCaseSplit, UnderscoreSplit, WithNumbersSplit],
-    2: [CamelCaseSplit, UnderscoreSplit, WithNumbersSplit, Number],
-    3: [CamelCaseSplit, UnderscoreSplit, WithNumbersSplit, Number],
+    2: [CamelCaseSplit, UnderscoreSplit, WithNumbersSplit],
+    3: [CamelCaseSplit, UnderscoreSplit, WithNumbersSplit],
     4: [CamelCaseSplit, UnderscoreSplit, WithNumbersSplit]
 }
 
@@ -37,6 +37,8 @@ split_type_to_types_to_be_repr = {
 def check_preprocessing_params_are_valid(preprocessing_params):
     if preprocessing_params[PreprocessingParam.BSR] and preprocessing_params[PreprocessingParam.SPL_TYPE] == 4:
         raise ValueError("both BSR and BPE is not supported")
+    if preprocessing_params[PreprocessingParam.BSR] and preprocessing_params[PreprocessingParam.SPL_TYPE] == 3:
+        raise ValueError("both BSR and same case splitting is not supported")
 
 
 def parse_preprocessing_params(preprocessing_types_str):

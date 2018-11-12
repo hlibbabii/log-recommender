@@ -14,6 +14,9 @@ class ProcessableToken(object):
     def to_repr(self):
         return self.val.lower()
 
+    def non_preprocessed_repr(self):
+        return self.to_repr()
+
     def get_flat_list(self):
         return self.__get_flat_list(self.val)
 
@@ -68,7 +71,7 @@ class NonEng(object):
         return f'{self.__class__.__name__}({self.str})'
 
     def __str__(self):
-        return self.non_preprocessed_repr()
+        return str(self.str)
 
     def to_repr(self):
         return self.preprocessed_repr()

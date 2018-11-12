@@ -80,7 +80,7 @@ class CamelCaseSplit(NonDelimiterSplitContainer):
 
 class WithNumbersSplit(NonDelimiterSplitContainer):
     def non_preprocessed_repr(self):
-        capitalized_str = "".join(map(lambda s: str(s), self.subtokens))
+        capitalized_str = "".join(map(lambda s: str(s).capitalize(), self.subtokens))
         return (capitalized_str[0] if self.capitalized else capitalized_str[0].lower()) + capitalized_str[1:]
 
     def preprocessed_repr(self):

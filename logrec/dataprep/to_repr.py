@@ -13,7 +13,7 @@ from logrec.dataprep.preprocessors.general import to_token_list
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam, parse_preprocessing_params, \
     check_preprocessing_params_are_valid
 from logrec.dataprep.preprocessors.repr import to_repr
-from logrec.dataprep.split.ngram import NgramSplittingType
+from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplittingConfig
 from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
 from logrec.util import io_utils
 
@@ -71,7 +71,7 @@ class FinalReprWriter(ReprWriter):
 
 
 def preprocess_and_write(params):
-    src_file, dest_file, preprocessing_params, old_preprocessing_params, aux_splitting_dicts = params
+    src_file, dest_file, preprocessing_params, old_preprocessing_params, ngramSplittingConfig = params
     if not os.path.exists(src_file):
         logger.error(f"File {src_file} does not exist")
         exit(2)
@@ -95,7 +95,7 @@ def preprocess_and_write(params):
             while True:
                 try:
                     token_list = pickle.load(i)
-                    repr = to_repr(preprocessing_params, token_list, aux_splitting_dicts)
+                    repr = to_repr(preprocessing_params, token_list, ngramSplittingConfig)
                     w.write(repr)
                 except EOFError:
                     break
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     preprocessing_params = parse_preprocessing_params(args.preprocessing_types)
     check_preprocessing_params_are_valid(preprocessing_params)
 
-    aux_splitting_dicts = {}
+    ngramSplittingConfig = NgramSplittingConfig()
     if preprocessing_params[PreprocessingParam.SPL_TYPE] == 4:
         if not args.bpe_merges_cache or not args.bpe_merges_file:
             raise ValueError("--bpe-merges-file and --bpe-merges-cache must be specified")
@@ -155,16 +155,18 @@ if __name__ == '__main__':
             for line in f:
                 line = line[:-1] if line[-1] == '\n' else line
                 merges.append(line.split(' '))
-        aux_splitting_dicts['merges_cache'] = merges_cache
-        aux_splitting_dicts['merges'] = merges
-        aux_splitting_dicts['ngramSplittingType'] = NgramSplittingType.BPE
+        ngramSplittingConfig.merges_cache(merges_cache)
+        ngramSplittingConfig.merges(merges)
+        ngramSplittingConfig.splitting_type(NgramSplittingType.BPE)
     elif preprocessing_params[PreprocessingParam.SPL_TYPE] == 3:
         if not args.splitting_file:
             raise ValueError("--splitting-file must be specified")
 
         splittings = io_utils.read_dict_from_2_columns(args.splitting_file, val_type=list, delim='|')
-        aux_splitting_dicts['sc_splittings'] = splittings
-        aux_splitting_dicts['ngramSplittingType'] = NgramSplittingType.CUSTOM
+        ngramSplittingConfig.sc_splittings(splittings)
+        ngramSplittingConfig.splitting_type(NgramSplittingType.CUSTOM)
+    elif preprocessing_params[PreprocessingParam.SPL_TYPE] == 2:
+        ngramSplittingConfig.splitting_type(NgramSplittingType.ONLY_NUMBERS)
 
     new_preprocessing_types_dict, got_pure_repr = calc_new_preprocessing_types_dict(old_preprocessing_params,
                                                                                     preprocessing_params)
@@ -212,7 +214,7 @@ if __name__ == '__main__':
                     os.makedirs(full_dest_dir_with_sub_dir)
                 params.append((os.path.join(root, file),
                                os.path.join(full_dest_dir_with_sub_dir, file),
-                               preprocessing_params, old_preprocessing_params, aux_splitting_dicts))
+                               preprocessing_params, old_preprocessing_params, ngramSplittingConfig))
     files_total = len(params)
     current_file = 0
     start_time = time.time()
