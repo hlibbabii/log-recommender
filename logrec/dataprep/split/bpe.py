@@ -50,31 +50,19 @@ RESULTING_VOCAB_FILE_NAME = "vocab_res.txt"
 
 
 def run(reset, base_dir, n_merges):
-    vocab = {}
     if reset:
         logger.info("Starting the encoding from scratch...")
-        with open(f'{base_dir}/{VOCAB_FILE_NAME}', 'r') as f:
-            for line in f:
-                line = line[:-1] if line[-1] == '\n' else line
-                splits = line.split(" ")
-                if len(splits) != 2:
-                    raise ValueError(f"Invalid vocab line: {splits}")
-                vocab[" ".join(splits[0])] = int(splits[1])
+        vocab = io_utils.read_dict_from_2_columns(f'{base_dir}/{VOCAB_FILE_NAME}', delim=' ')
+        vocab = {" ".join(k): v for k, v in vocab.items()}
     else:
         logger.info("Using existing merges...")
-        with open(f'{base_dir}/{REASSEMBLED_VOCAB_FILE_NAME}', 'r') as f:
-            for line in f:
-                line = line[:-1] if line[-1] == '\n' else line
-                splits = line.split("\t")
-                vocab[" ".join(splits[:-1])] = int(splits[-1])
+        vocab = io_utils.read_dict_from_2_columns(f'{base_dir}/{REASSEMBLED_VOCAB_FILE_NAME}')
     pairs = get_stats(vocab)
 
-    merges = []
     if not reset:
-        with open(f'{base_dir}/{MERGES_FILE_NAME}', 'r') as f:
-            for line in f:
-                line = line[:-1] if line[-1] == '\n' else line
-                merges.append(line.split("\t"))
+        merges = io_utils.read_list(f'{base_dir}/{MERGES_FILE_NAME}')
+    else:
+        merges = []
     n_done_merges = len(merges)
     for i in range(n_merges):
         try:
@@ -87,17 +75,17 @@ def run(reset, base_dir, n_merges):
 
     resulting_vocab = collections.defaultdict(int)
     for entry, frequency in vocab.items():
-        for subword in entry.split("\t"):
+        for subword in entry.split(" "):
             resulting_vocab[subword] += frequency
     resulting_vocab_sorted = sorted(resulting_vocab.items(), key=lambda x: x[1], reverse=True)
 
     merges_cache = {}
     for entry, frequency in vocab.items():
-        subword_list = entry.split('\t')
+        subword_list = entry.split(' ')
         key = ''.join(subword_list)
         merges_cache[key] = subword_list
 
-    io_utils.dump_dict_into_2_columns(merges, f'{base_dir}/{MERGES_FILE_NAME}', append=True)
+    io_utils.dump_list(merges, f'{base_dir}/{MERGES_FILE_NAME}')
     io_utils.dump_dict_into_2_columns(vocab, f'{base_dir}/{REASSEMBLED_VOCAB_FILE_NAME}')
     io_utils.dump_dict_into_2_columns(merges_cache, f'{base_dir}/{MERGES_CACHE_FILE_NAME}', val_type=list)
     io_utils.dump_dict_into_2_columns(resulting_vocab_sorted, f'{base_dir}/{RESULTING_VOCAB_FILE_NAME}')

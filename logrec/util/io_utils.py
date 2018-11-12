@@ -95,18 +95,11 @@ def dump_preprocessed_logs(pp_logs):
 #==================================================
 
 def load_project_stats():
-    project_stats = {}
-    with open(PROJECT_STATS_FILE, 'r') as i:
-        for line in i:
-            split = line.split(",")
-            project_stats[split[0]] = int(split[1])
-    return project_stats
+    read_dict_from_2_columns(PROJECT_STATS_FILE, delim=',')
 
 
 def dump_project_stats(project_stats):
-    with open(PROJECT_STATS_FILE, 'w') as o:
-        for project in project_stats.items():
-            o.write(project[0] + ',' + str(project[1]) + '\n')
+    dump_dict_into_2_columns(project_stats, PROJECT_STATS_FILE, delim=',')
 
 #==================================================
 
@@ -233,7 +226,7 @@ def dump_dict_into_2_columns(dct, file, val_type=str, delim='\t', append=False):
         lst = dct.items() if isinstance(dct, dict) else dct
         for word, freq in lst:
             value = ' '.join(freq) if val_type == list else str(freq)
-            f.write(f'{str(word)}{delim}{str(value)}\n')
+            f.write(f'{str(word)}{delim}{value}\n')
 
 
 def read_dict_from_2_columns(file, val_type=str, delim='\t'):
@@ -251,3 +244,19 @@ def read_dict_from_2_columns(file, val_type=str, delim='\t'):
                     second_column = splits[1]
             words[splits[0]] = second_column
     return words
+
+
+def read_list(file):
+    res = []
+    with open(file, 'r') as f:
+        for line in f:
+            line = line[:-1] if line[-1] else line
+            splits = line.split(' ')
+            res.append(splits)
+    return res
+
+
+def dump_list(lst, file):
+    with open(file, 'w') as f:
+        for elm in lst:
+            f.write(f"{' '.join(elm)}\n")
