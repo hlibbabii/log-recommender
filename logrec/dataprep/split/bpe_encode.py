@@ -2,7 +2,6 @@ import argparse
 import logging
 import sys
 
-from logrec.local_properties import DEFAULT_BPE_ENCODE_ARGS
 from logrec.util import io_utils
 
 logger = logging.getLogger(__name__)
@@ -56,6 +55,8 @@ if __name__ == '__main__':
     arg_parser.add_argument('word', action='store', help='word to encode', default='if')
     arg_parser.add_argument('--input', action='store')
     arg_parser.add_argument('--output', action='store')
+
+    from logrec.local_properties import DEFAULT_BPE_ENCODE_ARGS
     args = arg_parser.parse_args(*DEFAULT_BPE_ENCODE_ARGS)
 
     merges = read_merges(args.merges_file)
