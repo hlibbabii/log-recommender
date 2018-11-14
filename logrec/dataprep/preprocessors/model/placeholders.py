@@ -14,5 +14,6 @@ placeholders= {
     'string_resource': '<str_res>',
     'ect': '<ect>',
     'non_eng': '<non_eng>',
-    'non_eng_contents': '<non_eng_contents>'
+    'non_eng_contents': '<non_eng_contents>',
+    'log_statement': '`L'
 }

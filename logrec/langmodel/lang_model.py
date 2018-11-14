@@ -9,7 +9,7 @@ from time import time
 import deepdiff
 import matplotlib
 
-from logrec.langmodel.utils import to_test_mode, gen_text, beautify_text, back_to_train_mode, do_noth
+from logrec.langmodel.utils import to_test_mode, gen_text, beautify_text, back_to_train_mode
 from logrec.util import io_utils
 
 matplotlib.use('Agg')

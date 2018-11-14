@@ -47,6 +47,9 @@ class ProcessableTokenContainer(object):
         else:
             raise AssertionError(f"Should be list byt is: {subtokens}")
 
+    def add(self, token):
+        self.subtokens.append(token)
+
     def get_subtokens(self):
         return self.subtokens
 

@@ -14,6 +14,7 @@ pp_params = {
         # "legacy.merge_tabs",
 
         "java.process_comments_and_str_literals",
+        "logs.mark",
         "noneng.mark",  # this should be applied after all splittings
 
         # "java.strip_off_identifiers"

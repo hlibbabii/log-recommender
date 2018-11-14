@@ -3,7 +3,7 @@ from enum import Enum
 
 from logrec.dataprep.preprocessors.model.chars import NewLine, Tab
 from logrec.dataprep.preprocessors.model.general import NonEng
-from logrec.dataprep.preprocessors.model.numeric import Number
+from logrec.dataprep.preprocessors.model.logging import LogStatement
 from logrec.dataprep.preprocessors.model.split import CamelCaseSplit, WithNumbersSplit, UnderscoreSplit
 from logrec.dataprep.preprocessors.model.textcontainers import OneLineComment, MultilineComment, StringLiteral
 
@@ -23,6 +23,7 @@ class PreprocessingParam(str, Enum):
     NO_STR: str = 'nostr'
     EN_ONLY: str = 'en_only'
     BSR: str = 'bsr'
+    OBF_LOGS: str = 'obf_logs'
 
 
 split_type_to_types_to_be_repr = {
@@ -63,7 +64,10 @@ def get_types_to_be_repr(preprocessing_params):
         res.extend([NewLine, Tab])
     if preprocessing_params[PreprocessingParam.EN_ONLY]:
         res.append(NonEng)
+    if preprocessing_params[PreprocessingParam.OBF_LOGS]:
+        res.append(LogStatement)
     return res
 
 
-recursive = [CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, OneLineComment, MultilineComment, StringLiteral, NonEng]
+recursive = [CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, OneLineComment, MultilineComment, StringLiteral, NonEng,
+             LogStatement]
