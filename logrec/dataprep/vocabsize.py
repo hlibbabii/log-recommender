@@ -1,9 +1,11 @@
 import argparse
 import logging
+import multiprocessing
 import os
 import pickle
+import queue
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 from multiprocessing.pool import Pool
 
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
@@ -13,69 +15,75 @@ from logrec.util import io_utils
 
 logger = logging.getLogger(__name__)
 
-class VocabMerger(object):
-    DEFAULT_PERCENTS = [0.01, 0.02, 0.05, 0.15, 0.5, 0.95, 1.0]
-    DUMP_TO_DISK_EVERY = 100
-    CLASS_VERSION = 1
 
-    def __init__(self, path_to_dump):
-        self.path_to_dump = path_to_dump
-        self.sizes = []
-        self.non_eng = []
-        self.merged_vocabs = Counter()
-        self.seen_files = []
+def merge_dicts_(dict1, dict2):
+    '''
+    this method return modified dict1! and new words added to the dicitonary
+    :param dict1:
+    :param dict2:
+    :return:
+    '''
+    new_words = []
+    for k, v in dict2.items():
+        if k not in dict1:
+            dict1[k] = v
+            new_words.append(k)
+    return dict1, new_words
+
+
+class PartialVocab(object):
+    DEFAULT_PERCENTS = [0.01, 0.02, 0.05, 0.15, 0.5, 0.95, 1.0]
+    CLASS_VERSION = 2
+
+    def __init__(self, word_counts):
+        if not isinstance(word_counts, Counter):
+            raise TypeError(f'Vocab must be a Counter, but is {type(word_counts)}')
+
+        self.merged_word_counts = word_counts
+        self.stats = [(1, len(self.merged_word_counts), self.merged_word_counts[placeholders['non_eng']])]
+        self.n_files = 1
 
     def set_path_to_dump(self, path):
         self.path_to_dump = path
 
-    def __dump_to_file(self):
-        pickle.dump(self, open(self.path_to_dump, 'wb'))
+    def add_vocab(self, partial_vocab):
+        if not isinstance(partial_vocab, PartialVocab):
+            raise TypeError(f'Vocab must be a PartialVocab, but is {type(partial_vocab)}')
 
-    def merge(self, vocab, file_id):
         start = time.time()
-        if not isinstance(vocab, Counter):
-            raise TypeError(f'Vocab must be a Counter, but is {type(vocab)}')
-        if file_id in self.seen_files:
-            raise AssertionError("File already seen!")
-
-        new_words = [v for v in vocab if v not in self.merged_vocabs]
-        logging.debug(f"New words: {list(new_words)[:10]} ...")
-        self.merged_vocabs = self.merged_vocabs + vocab
-        cur_vocab_size = len(self.merged_vocabs)
-        self.sizes.append(cur_vocab_size)
-        self.non_eng.append(self.merged_vocabs[placeholders['non_eng']])
+        self.merged_word_counts, new_words = merge_dicts_(self.merged_word_counts, partial_vocab.merged_word_counts)
+        logging.debug(f"New words: {new_words[:10]} ..., total: {len(new_words)}")
+        cur_vocab_size = len(self.merged_word_counts)
         logging.info(f"Merging took {time.time() - start} s, current vocab size: {cur_vocab_size}")
-        self.seen_files.append(file_id)
+        self.n_files += partial_vocab.n_files
+        new_stats_entry = (self.n_files, cur_vocab_size, self.merged_word_counts[placeholders['non_eng']])
+        self.stats.extend(partial_vocab.stats + [new_stats_entry])
 
-        if len(self.seen_files) % self.DUMP_TO_DISK_EVERY == 0:
-            self.__dump_to_file()
 
     def write_stats(self, path_to_stats_file):
         stats = self.__generate_stats()
         with open(path_to_stats_file, 'w') as f:
-            f.write(f"{str(self.sizes[-1])} {str(self.non_eng[-1])}\n")
-            for line in stats:
-                f.write(f"{line[0]} {line[1]} {line[2]}\n")
+            for percent, (v, n) in stats:
+                f.write(f"{percent} {v} {n}\n")
 
     def write_vocab(self, path_to_vocab_file):
-        sorted_vocab = sorted(self.merged_vocabs.items(), key=lambda x: x[1], reverse=True)
+        sorted_vocab = sorted(self.merged_word_counts.items(), key=lambda x: x[1], reverse=True)
         io_utils.dump_dict_into_2_columns(sorted_vocab, path_to_vocab_file)
 
     def __generate_stats(self):
-        total = len(self.sizes)
-        stats = []
-        for percent in self.DEFAULT_PERCENTS:
-            n_files = int(percent * total)
-            exact_percent = float(n_files) / total
-            stats.append((exact_percent,
-                          self.sizes[n_files - 1] if n_files > 0 else 0,
-                          self.non_eng[n_files - 1] if n_files > 0 else 0
-                          ))
-        return stats
+        d = defaultdict(list)
+        for entry in self.stats:
+            d[entry[0]].append((entry[1], entry[2]))
+        fin = {(float(k) / self.n_files): avg_ssum(v) for k, v in d.items()}
+        return sorted(fin.items())
 
-    def get_seen_files(self):
-        return self.seen_files
 
+# TODO remove this ugliness!!
+def avg_ssum(nested_list):
+    sm = (0, 0)
+    for i, k in nested_list:
+        sm = (sm[0] + i, sm[1] + k)
+    return (sm[0] / float(len(nested_list)), sm[1] / float(len(nested_list)))
 
 def calc_total_files(full_src_dir):
     files_total = 0
@@ -103,18 +111,43 @@ def get_vocab(path_to_file):
                 line = line[:-1]
             split = line.split(' ')
             vocab.update(split)
-    return (vocab, path_to_file)
+    return vocab
 
 
-def create_vocab_merger(path_to_dump):
+def create_merged_vocab(path_to_dump):
     if (os.path.exists(path_to_dump)):
         vocab_merger = pickle.load(open(path_to_dump, 'rb'))
         vocab_merger.set_path_to_dump(path_to_dump)
-        if not isinstance(vocab_merger, VocabMerger):
+        if not isinstance(vocab_merger, PartialVocab):
             raise TypeError(f"Object {str(vocab_merger)} must be VocabMerger version {vocab_merger.VERSION}")
         return vocab_merger
     else:
-        return VocabMerger(path_to_dump)
+        return PartialVocab(path_to_dump)
+
+
+class Merger(multiprocessing.Process):
+    def __init__(self, tasks, temporary_results):
+        multiprocessing.Process.__init__(self)
+        self.tasks = tasks
+        self.temporary_results = temporary_results
+
+    def run(self):
+        while True:
+            try:
+                first = self.tasks.get_nowait()
+            except queue.Empty:
+                self.tasks.task_done()
+                return
+
+            try:
+                second = self.tasks.get_nowait()
+            except queue.Empty:
+                self.temporary_results.put_nowait(first)
+                self.tasks.task_done()
+                return
+
+            first.add_vocab(second)
+            self.temporary_results.put_nowait(first)
 
 
 def run(full_src_dir, full_metadata_dir):
@@ -132,24 +165,64 @@ def run(full_src_dir, full_metadata_dir):
     if not all_files:
         logger.warning("No preprocessed files found.")
         exit(4)
+
+    path_to_dump = f'{full_metadata_dir}/part_vocab.pkl'
+
+    if os.path.exists(path_to_dump):
+        task_list = pickle.load(open(path_to_dump, 'rb'))
+        logging.info(f"Loaded {len(task_list)} mergers from {path_to_dump}")
+    else:
+        task_list = create_initial_partial_vocabs(all_files)
+        logging.info(f"Starting merging from scratch")
+
+    tasks = list_to_joinable_queue(task_list)
+    temporary_results = multiprocessing.JoinableQueue()
+    while len(task_list) > 1:
+        num_mergers = min(multiprocessing.cpu_count(), len(task_list))
+        mergers = [Merger(tasks, temporary_results) for i in range(num_mergers)]
+        for w in mergers:
+            w.start()
+        tasks.join()
+        task_list = queue_to_list(temporary_results)
+        tasks = list_to_joinable_queue(task_list)
+        pickle.dump(task_list, open(path_to_dump, 'wb'))
+    final_vocab = task_list[0]
+    final_vocab.write_stats(f'{full_metadata_dir}/vocabsize')
+    final_vocab.write_vocab(f'{full_metadata_dir}/vocab')
+    os.remove(f'{full_metadata_dir}/part_vocab.pkl')
+    time.sleep(1)
+
+
+def queue_to_list(queue):
+    lst = []
+    while not queue.empty():
+        lst.append(queue.get_nowait())
+    return lst
+
+
+def list_to_joinable_queue(lst):
+    queue = multiprocessing.JoinableQueue()
+    for elm in lst:
+        queue.put_nowait(elm)
+    return queue
+
+
+def create_initial_partial_vocabs(all_files):
+    partial_vocabs_queue = []
     files_total = len(all_files)
+    current_file = 0
     start_time = time.time()
-    vocab_merger = create_vocab_merger(f'{full_metadata_dir}/part_vocab.pkl')
-    seen_files = vocab_merger.get_seen_files()
-    current_file = len(seen_files)
     with Pool() as pool:
-        it = pool.imap_unordered(get_vocab, [f for f in all_files if f not in seen_files])
-        for vocab, path_to_file in it:
-            vocab_merger.merge(vocab, path_to_file)
+        it = pool.imap_unordered(get_vocab, all_files)
+        for vocab in it:
+            partial_vocab = PartialVocab(vocab)
+            partial_vocabs_queue.append(partial_vocab)
             current_file += 1
-            logger.info(f"Processed {current_file} out of {files_total}")
+            logger.info(f"To partial vocabs added  {current_file} out of {files_total}")
             time_elapsed = time.time() - start_time
             logger.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
                         f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
-
-    vocab_merger.write_stats(f'{full_metadata_dir}/vocabsize')
-    vocab_merger.write_vocab(f'{full_metadata_dir}/vocab')
-    os.remove(f'{full_metadata_dir}/part_vocab.pkl')
+    return partial_vocabs_queue
 
 
 if __name__ == '__main__':
