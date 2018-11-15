@@ -136,18 +136,19 @@ class Merger(multiprocessing.Process):
             try:
                 first = self.tasks.get_nowait()
             except queue.Empty:
-                self.tasks.task_done()
-                return
+                break
 
             try:
                 second = self.tasks.get_nowait()
             except queue.Empty:
                 self.temporary_results.put_nowait(first)
                 self.tasks.task_done()
-                return
+                break
 
             first.add_vocab(second)
             self.temporary_results.put_nowait(first)
+            self.tasks.task_done()
+            self.tasks.task_done()
 
 
 def run(full_src_dir, full_metadata_dir):
@@ -174,17 +175,20 @@ def run(full_src_dir, full_metadata_dir):
     else:
         task_list = create_initial_partial_vocabs(all_files)
         logging.info(f"Starting merging from scratch")
+        logging.info(f"Dumping {len(task_list)} to {path_to_dump}")
 
     tasks = list_to_joinable_queue(task_list)
     temporary_results = multiprocessing.JoinableQueue()
     while len(task_list) > 1:
-        num_mergers = min(multiprocessing.cpu_count(), len(task_list))
+        # num_mergers = min(multiprocessing.cpu_count(), len(task_list))
+        num_mergers = 1
         mergers = [Merger(tasks, temporary_results) for i in range(num_mergers)]
         for w in mergers:
             w.start()
         tasks.join()
         task_list = queue_to_list(temporary_results)
         tasks = list_to_joinable_queue(task_list)
+        logging.info(f"Dumping {len(task_list)} to {path_to_dump}")
         pickle.dump(task_list, open(path_to_dump, 'wb'))
     final_vocab = task_list[0]
     final_vocab.write_stats(f'{full_metadata_dir}/vocabsize')
