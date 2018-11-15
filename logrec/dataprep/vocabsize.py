@@ -4,6 +4,7 @@ import multiprocessing
 import os
 import pickle
 import queue
+import shutil
 import time
 from collections import Counter, defaultdict
 from multiprocessing.pool import Pool
@@ -15,6 +16,7 @@ from logrec.util import io_utils
 
 logger = logging.getLogger(__name__)
 
+PARTVOCAB_EXT = 'partvocab'
 
 def merge_dicts_(dict1, dict2):
     '''
@@ -42,6 +44,13 @@ class PartialVocab(object):
         self.merged_word_counts = word_counts
         self.stats = [(1, len(self.merged_word_counts), self.merged_word_counts[placeholders['non_eng']])]
         self.n_files = 1
+        self.id = self.__generate_id()
+
+    def __generate_id(self):
+        return ''.join(str(time.time()).split('.'))
+
+    def renew_id(self):
+        self.id = self.__generate_id()
 
     def set_path_to_dump(self, path):
         self.path_to_dump = path
@@ -94,11 +103,11 @@ def calc_total_files(full_src_dir):
     return files_total
 
 
-def get_all_files(full_src_dir):
+def get_all_files(full_src_dir, ext):
     res = []
     for root, dirs, files in os.walk(full_src_dir):
         for file in files:
-            if file.endswith(f".{REPR_EXTENSION}"):
+            if file.endswith(f".{ext}"):
                 res.append(os.path.join(root, file))
     return res
 
@@ -126,10 +135,10 @@ def create_merged_vocab(path_to_dump):
 
 
 class Merger(multiprocessing.Process):
-    def __init__(self, tasks, temporary_results):
+    def __init__(self, tasks, path_to_dump):
         multiprocessing.Process.__init__(self)
         self.tasks = tasks
-        self.temporary_results = temporary_results
+        self.path_to_dump = path_to_dump
 
     def run(self):
         while True:
@@ -141,15 +150,34 @@ class Merger(multiprocessing.Process):
             try:
                 second = self.tasks.get_nowait()
             except queue.Empty:
-                self.temporary_results.put_nowait(first)
-                self.tasks.task_done()
+                self.tasks.put_nowait(first)
                 break
 
-            first.add_vocab(second)
-            self.temporary_results.put_nowait(first)
-            self.tasks.task_done()
-            self.tasks.task_done()
+            first_id = first.id
+            second_id = second.id
 
+            first.add_vocab(second)
+
+            first.renew_id()
+            path_to_new_file = f'{self.path_to_dump}/{first_id}_{second_id}_{first.id}.{PARTVOCAB_EXT}'
+            pickle.dump(first, open(path_to_new_file, 'wb'))
+            finish_file_dumping(path_to_new_file)
+
+            self.tasks.put_nowait(first)
+
+
+def finish_file_dumping(path_to_new_file):
+    base = os.path.basename(path_to_new_file)
+    dir = os.path.dirname(path_to_new_file)
+    spl = base.split('.')[0].split('_')
+    if len(spl) != 3:
+        raise AssertionError(f'Wrong file: {path_to_new_file}')
+    first_id, second_id, new_id = spl[0], spl[1], spl[2]
+    os.remove(f'{dir}/{first_id}.{PARTVOCAB_EXT}')
+    os.remove(f'{dir}/{second_id}.{PARTVOCAB_EXT}')
+    new_file = f'{dir}/{new_id}.{PARTVOCAB_EXT}'
+    os.rename(f'{dir}/{first_id}_{second_id}_{new_id}.{PARTVOCAB_EXT}', new_file)
+    return new_file
 
 def run(full_src_dir, full_metadata_dir):
     if not os.path.exists(full_src_dir):
@@ -162,50 +190,58 @@ def run(full_src_dir, full_metadata_dir):
 
     logger.info(f"Reading files from: {os.path.abspath(full_src_dir)}")
 
-    all_files = get_all_files(full_src_dir)
+    all_files = get_all_files(full_src_dir, REPR_EXTENSION)
     if not all_files:
         logger.warning("No preprocessed files found.")
         exit(4)
 
-    path_to_dump = f'{full_metadata_dir}/part_vocab.pkl'
+    path_to_dump = f'{full_metadata_dir}/part_vocab/'
+    dumps_valid_file = f'{path_to_dump}/ready'
 
-    if os.path.exists(path_to_dump):
-        task_list = pickle.load(open(path_to_dump, 'rb'))
-        logging.info(f"Loaded {len(task_list)} mergers from {path_to_dump}")
+    if os.path.exists(dumps_valid_file):
+        all_files = get_all_files(path_to_dump, PARTVOCAB_EXT)
+        task_list = []
+        for file in all_files:
+            if '_' in os.path.basename(file):  # not very robust solution for checking if creation of this backup file
+                # hasn't been terminated properly
+                file = finish_file_dumping(file)
+            task_list.append(pickle.load(open(file, 'rb')))
+
+        logging.info(f"Loaded partially calculated vocabs from {path_to_dump}")
     else:
-        task_list = create_initial_partial_vocabs(all_files)
         logging.info(f"Starting merging from scratch")
-        logging.info(f"Dumping {len(task_list)} to {path_to_dump}")
+        if os.path.exists(path_to_dump):
+            shutil.rmtree(path_to_dump)
+        os.makedirs(path_to_dump)
+        task_list = create_initial_partial_vocabs(all_files)
+        for partial_vocab in task_list:
+            pickle.dump(partial_vocab, open(f'{path_to_dump}/{partial_vocab.id}.{PARTVOCAB_EXT}', 'wb'))
+        open(dumps_valid_file, 'a').close()
 
-    tasks = list_to_joinable_queue(task_list)
-    temporary_results = multiprocessing.JoinableQueue()
-    while len(task_list) > 1:
-        # num_mergers = min(multiprocessing.cpu_count(), len(task_list))
-        num_mergers = 1
-        mergers = [Merger(tasks, temporary_results) for i in range(num_mergers)]
-        for w in mergers:
-            w.start()
-        tasks.join()
-        task_list = queue_to_list(temporary_results)
-        tasks = list_to_joinable_queue(task_list)
-        logging.info(f"Dumping {len(task_list)} to {path_to_dump}")
-        pickle.dump(task_list, open(path_to_dump, 'wb'))
-    final_vocab = task_list[0]
+    task_queue = list_to_queue(task_list)
+
+    num_mergers = multiprocessing.cpu_count()
+    mergers = [Merger(task_queue, path_to_dump) for i in range(num_mergers)]
+    for merger in mergers:
+        merger.start()
+    for merger in mergers:
+        merger.join()
+
+    final_vocab = task_queue.get_nowait()
+    try:
+        task_queue.get_nowait()
+        raise AssertionError()
+    except:
+        pass
+
     final_vocab.write_stats(f'{full_metadata_dir}/vocabsize')
     final_vocab.write_vocab(f'{full_metadata_dir}/vocab')
-    os.remove(f'{full_metadata_dir}/part_vocab.pkl')
-    time.sleep(1)
+    shutil.rmtree(path_to_dump)
+    # time.sleep(1)
 
 
-def queue_to_list(queue):
-    lst = []
-    while not queue.empty():
-        lst.append(queue.get_nowait())
-    return lst
-
-
-def list_to_joinable_queue(lst):
-    queue = multiprocessing.JoinableQueue()
+def list_to_queue(lst):
+    queue = multiprocessing.Queue()
     for elm in lst:
         queue.put_nowait(elm)
     return queue
