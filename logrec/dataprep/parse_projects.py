@@ -122,6 +122,7 @@ def run(raw_dataset_dir, dest_dataset_dir):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger('matplotlib').setLevel(logging.INFO)
 
     from logrec.local_properties import DEFAULT_RAW_DATASETS_DIR, DEFAULT_PARSED_DATASETS_DIR, \
         DEFAULT_PARSE_PROJECTS_ARGS
