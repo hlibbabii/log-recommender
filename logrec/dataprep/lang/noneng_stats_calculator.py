@@ -17,27 +17,27 @@ from logrec.dataprep.split.samecase.splitter import load_english_dict
 logger = logging.getLogger(__name__)
 
 DEFAULT_NO_COM_NO_STR = {
-    PreprocessingParam.SPL_TYPE: 2,
-    PreprocessingParam.NO_COM: True,
-    PreprocessingParam.NO_STR: True,
-    PreprocessingParam.NO_NEWLINES_TABS: True,
-    PreprocessingParam.BSR: False
+    PreprocessingParam.NO_COM_STR: 2,
+    PreprocessingParam.SPL: 2,
+    PreprocessingParam.NO_SEP: 0,
+    PreprocessingParam.NO_NEWLINES_TABS: 1,
+    PreprocessingParam.NO_LOGS: 0,
 }
 
 DEFAULT_NO_COM = {
-    PreprocessingParam.SPL_TYPE: 2,
-    PreprocessingParam.NO_COM: True,
-    PreprocessingParam.NO_STR: False,
-    PreprocessingParam.NO_NEWLINES_TABS: True,
-    PreprocessingParam.BSR: False
+    PreprocessingParam.NO_COM_STR: 1,
+    PreprocessingParam.SPL: 2,
+    PreprocessingParam.NO_SEP: 0,
+    PreprocessingParam.NO_NEWLINES_TABS: 1,
+    PreprocessingParam.NO_LOGS: 0,
 }
 
 DEFAULT = {
-    PreprocessingParam.SPL_TYPE: 2,
-    PreprocessingParam.NO_COM: False,
-    PreprocessingParam.NO_STR: False,
-    PreprocessingParam.NO_NEWLINES_TABS: True,
-    PreprocessingParam.BSR: False
+    PreprocessingParam.NO_COM_STR: 0,
+    PreprocessingParam.SPL: 2,
+    PreprocessingParam.NO_SEP: 0,
+    PreprocessingParam.NO_NEWLINES_TABS: 1,
+    PreprocessingParam.NO_LOGS: 0
 }
 
 

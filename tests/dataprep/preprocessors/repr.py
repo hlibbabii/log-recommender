@@ -13,42 +13,45 @@ from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplittingConfig
 
 class TeprTest(unittest.TestCase):
 
-    def test_both_bsr_and_bpe(self):
+    def test_both_nosep_and_bpe(self):
         with self.assertRaises(ValueError):
-            prep_params = {PreprocessingParam.SPL_TYPE: 4,
-                           PreprocessingParam.NO_NEWLINES_TABS: True,
-                           PreprocessingParam.NO_STR: False,
-                           PreprocessingParam.NO_COM: False,
-                           PreprocessingParam.EN_ONLY: True,
-                           PreprocessingParam.BSR: True
+            prep_params = {
+                PreprocessingParam.EN_ONLY: 1,
+                PreprocessingParam.NO_COM_STR: 0,
+                PreprocessingParam.SPL: 4,
+                PreprocessingParam.NO_SEP: 1,
+                PreprocessingParam.NO_NEWLINES_TABS: 1,
+                PreprocessingParam.NO_LOGS: 0
                            }
             to_repr(prep_params, [], {})
 
     ############################################################################################
     ############################################################################################
 
-    def test_both_bsr_and_same_case_splitting(self):
+    def test_both_nosep_and_same_case_splitting(self):
         with self.assertRaises(ValueError):
-            prep_params = {PreprocessingParam.SPL_TYPE: 3,
-                           PreprocessingParam.NO_NEWLINES_TABS: True,
-                           PreprocessingParam.NO_STR: False,
-                           PreprocessingParam.NO_COM: False,
-                           PreprocessingParam.EN_ONLY: True,
-                           PreprocessingParam.BSR: True
-                           }
+            prep_params = {
+                PreprocessingParam.EN_ONLY: 1,
+                PreprocessingParam.NO_COM_STR: 0,
+                PreprocessingParam.SPL: 3,
+                PreprocessingParam.NO_SEP: 1,
+                PreprocessingParam.NO_NEWLINES_TABS: 1,
+                PreprocessingParam.NO_LOGS: 0
+            }
             to_repr(prep_params, [], {})
 
     ############################################################################################
     ############################################################################################
 
     def test_to_repr_0(self):
-        prep_params = {PreprocessingParam.SPL_TYPE: 0,
-                       PreprocessingParam.NO_NEWLINES_TABS: True,
-                       PreprocessingParam.NO_STR: False,
-                       PreprocessingParam.NO_COM: False,
-                       PreprocessingParam.EN_ONLY: True,
-                       PreprocessingParam.BSR: False,
-                       }
+        prep_params = {
+            PreprocessingParam.EN_ONLY: 1,
+            PreprocessingParam.NO_COM_STR: 0,
+            PreprocessingParam.SPL: 0,
+            PreprocessingParam.NO_SEP: 0,
+            PreprocessingParam.NO_NEWLINES_TABS: 1,
+            PreprocessingParam.NO_LOGS: 0
+        }
 
         ngramSplittingConfig = NgramSplittingConfig()
 
@@ -96,13 +99,14 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
 
     def test_to_repr_1(self):
-        prep_params = {PreprocessingParam.SPL_TYPE: 1,
-                       PreprocessingParam.NO_NEWLINES_TABS: True,
-                       PreprocessingParam.NO_STR: False,
-                       PreprocessingParam.NO_COM: False,
-                       PreprocessingParam.EN_ONLY: True,
-                       PreprocessingParam.BSR: False,
-                       }
+        prep_params = {
+            PreprocessingParam.EN_ONLY: 1,
+            PreprocessingParam.NO_COM_STR: 0,
+            PreprocessingParam.SPL: 1,
+            PreprocessingParam.NO_SEP: 0,
+            PreprocessingParam.NO_NEWLINES_TABS: 1,
+            PreprocessingParam.NO_LOGS: 0
+        }
 
         ngramSplittingConfig = NgramSplittingConfig()
 
@@ -149,14 +153,15 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
     ############################################################################################
 
-    def test_to_repr_1_bsr(self):
-        prep_params = {PreprocessingParam.SPL_TYPE: 1,
-                       PreprocessingParam.NO_NEWLINES_TABS: True,
-                       PreprocessingParam.NO_STR: False,
-                       PreprocessingParam.NO_COM: False,
-                       PreprocessingParam.EN_ONLY: True,
-                       PreprocessingParam.BSR: True,
-                       }
+    def test_to_repr_1_nosep(self):
+        prep_params = {
+            PreprocessingParam.EN_ONLY: 1,
+            PreprocessingParam.NO_COM_STR: 0,
+            PreprocessingParam.SPL: 1,
+            PreprocessingParam.NO_SEP: 1,
+            PreprocessingParam.NO_NEWLINES_TABS: 1,
+            PreprocessingParam.NO_LOGS: 0
+        }
 
         ngramSplittingConfig = NgramSplittingConfig()
 
@@ -204,13 +209,14 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
 
     def test_to_repr_2(self):
-        prep_params = {PreprocessingParam.SPL_TYPE: 2,
-                       PreprocessingParam.NO_NEWLINES_TABS: True,
-                       PreprocessingParam.NO_STR: False,
-                       PreprocessingParam.NO_COM: False,
-                       PreprocessingParam.EN_ONLY: True,
-                       PreprocessingParam.BSR: False,
-                       }
+        prep_params = {
+            PreprocessingParam.EN_ONLY: 1,
+            PreprocessingParam.NO_COM_STR: 0,
+            PreprocessingParam.SPL: 2,
+            PreprocessingParam.NO_SEP: 0,
+            PreprocessingParam.NO_NEWLINES_TABS: 1,
+            PreprocessingParam.NO_LOGS: 0
+        }
 
         ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS,
                                                     sc_splittings={
@@ -265,14 +271,15 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
     ############################################################################################
 
-    def test_to_repr_2_bsr(self):
-        prep_params = {PreprocessingParam.SPL_TYPE: 2,
-                       PreprocessingParam.NO_NEWLINES_TABS: True,
-                       PreprocessingParam.NO_STR: False,
-                       PreprocessingParam.NO_COM: False,
-                       PreprocessingParam.EN_ONLY: True,
-                       PreprocessingParam.BSR: True,
-                       }
+    def test_to_repr_2_nosep(self):
+        prep_params = {
+            PreprocessingParam.EN_ONLY: 1,
+            PreprocessingParam.NO_COM_STR: 0,
+            PreprocessingParam.SPL: 2,
+            PreprocessingParam.NO_SEP: 1,
+            PreprocessingParam.NO_NEWLINES_TABS: 1,
+            PreprocessingParam.NO_LOGS: 0
+        }
 
         ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS)
 
@@ -324,13 +331,14 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
 
     def test_to_repr_with_enonlycontents(self):
-        prep_params = {PreprocessingParam.SPL_TYPE: 3,
-                       PreprocessingParam.NO_NEWLINES_TABS: True,
-                       PreprocessingParam.NO_STR: False,
-                       PreprocessingParam.NO_COM: False,
-                       PreprocessingParam.EN_ONLY: True,
-                       PreprocessingParam.BSR: False,
-                       }
+        prep_params = {
+            PreprocessingParam.EN_ONLY: 1,
+            PreprocessingParam.NO_COM_STR: 0,
+            PreprocessingParam.SPL: 3,
+            PreprocessingParam.NO_SEP: 0,
+            PreprocessingParam.NO_NEWLINES_TABS: 1,
+            PreprocessingParam.NO_LOGS: 0
+        }
 
         ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.CUSTOM,
                                                     sc_splittings={})
@@ -391,13 +399,14 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
 
     def test_to_repr_3(self):
-        prep_params = {PreprocessingParam.SPL_TYPE: 3,
-                       PreprocessingParam.NO_NEWLINES_TABS: True,
-                       PreprocessingParam.NO_STR: False,
-                       PreprocessingParam.NO_COM: False,
-                       PreprocessingParam.EN_ONLY: True,
-                       PreprocessingParam.BSR: False,
-                       }
+        prep_params = {
+            PreprocessingParam.EN_ONLY: 1,
+            PreprocessingParam.SPL: 3,
+            PreprocessingParam.NO_COM_STR: 0,
+            PreprocessingParam.NO_SEP: 0,
+            PreprocessingParam.NO_NEWLINES_TABS: 1,
+            PreprocessingParam.NO_LOGS: 0
+        }
 
         ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.CUSTOM,
                                                     sc_splittings={
@@ -453,13 +462,14 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
 
     def test_to_repr_with_non_eng(self):
-        prep_params = {PreprocessingParam.SPL_TYPE: 3,
-                       PreprocessingParam.NO_NEWLINES_TABS: True,
-                       PreprocessingParam.NO_STR: False,
-                       PreprocessingParam.NO_COM: False,
-                       PreprocessingParam.EN_ONLY: False,
-                       PreprocessingParam.BSR: False,
-                       }
+        prep_params = {
+            PreprocessingParam.EN_ONLY: 0,
+            PreprocessingParam.NO_COM_STR: 0,
+            PreprocessingParam.SPL: 3,
+            PreprocessingParam.NO_SEP: 0,
+            PreprocessingParam.NO_NEWLINES_TABS: 1,
+            PreprocessingParam.NO_LOGS: 0
+        }
 
         ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.CUSTOM,
                                                     sc_splittings={
@@ -516,13 +526,14 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
 
     def test_to_repr_with_newlines_and_tabs(self):
-        prep_params = {PreprocessingParam.SPL_TYPE: 2,
-                       PreprocessingParam.NO_NEWLINES_TABS: False,
-                       PreprocessingParam.NO_STR: False,
-                       PreprocessingParam.NO_COM: False,
-                       PreprocessingParam.EN_ONLY: True,
-                       PreprocessingParam.BSR: True,
-                       }
+        prep_params = {
+            PreprocessingParam.EN_ONLY: 1,
+            PreprocessingParam.NO_COM_STR: 0,
+            PreprocessingParam.SPL: 2,
+            PreprocessingParam.NO_SEP: 1,
+            PreprocessingParam.NO_NEWLINES_TABS: 0,
+            PreprocessingParam.NO_LOGS: 0
+        }
 
         ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS,
                                                     )
@@ -577,13 +588,14 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
 
     def test_to_repr_no_str_no_com(self):
-        prep_params = {PreprocessingParam.SPL_TYPE: 3,
-                       PreprocessingParam.NO_NEWLINES_TABS: True,
-                       PreprocessingParam.NO_STR: True,
-                       PreprocessingParam.NO_COM: True,
-                       PreprocessingParam.EN_ONLY: True,
-                       PreprocessingParam.BSR: False,
-                       }
+        prep_params = {
+            PreprocessingParam.EN_ONLY: 1,
+            PreprocessingParam.NO_COM_STR: 2,
+            PreprocessingParam.SPL: 3,
+            PreprocessingParam.NO_SEP: 0,
+            PreprocessingParam.NO_NEWLINES_TABS: 1,
+            PreprocessingParam.NO_LOGS: 0
+        }
 
         ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.CUSTOM,
                                                     sc_splittings={
@@ -638,14 +650,15 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
     ############################################################################################
 
-    def test_to_repr_no_bsr(self):
-        prep_params = {PreprocessingParam.SPL_TYPE: 3,
-                       PreprocessingParam.NO_NEWLINES_TABS: True,
-                       PreprocessingParam.NO_STR: False,
-                       PreprocessingParam.NO_COM: False,
-                       PreprocessingParam.EN_ONLY: True,
-                       PreprocessingParam.BSR: False,
-                       }
+    def test_to_repr_no_nosep(self):
+        prep_params = {
+            PreprocessingParam.EN_ONLY: 1,
+            PreprocessingParam.NO_COM_STR: 0,
+            PreprocessingParam.SPL: 3,
+            PreprocessingParam.NO_SEP: 0,
+            PreprocessingParam.NO_NEWLINES_TABS: True,
+            PreprocessingParam.NO_LOGS: 0
+        }
 
         ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.CUSTOM,
                                                     sc_splittings={
@@ -700,14 +713,15 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
     ############################################################################################
 
-    def test_to_repr_no_bsr_with_bpe_no_merges(self):
-        prep_params = {PreprocessingParam.SPL_TYPE: 4,
-                       PreprocessingParam.NO_NEWLINES_TABS: True,
-                       PreprocessingParam.NO_STR: False,
-                       PreprocessingParam.NO_COM: False,
-                       PreprocessingParam.EN_ONLY: True,
-                       PreprocessingParam.BSR: False,
-                       }
+    def test_to_repr_no_no_sep_with_bpe_no_merges(self):
+        prep_params = {
+            PreprocessingParam.EN_ONLY: 1,
+            PreprocessingParam.NO_COM_STR: 0,
+            PreprocessingParam.SPL: 4,
+            PreprocessingParam.NO_SEP: 0,
+            PreprocessingParam.NO_NEWLINES_TABS: 1,
+            PreprocessingParam.NO_LOGS: 0
+        }
 
         ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.BPE,
                                                     merges=[], merges_cache={})

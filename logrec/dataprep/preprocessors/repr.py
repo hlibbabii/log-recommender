@@ -14,11 +14,12 @@ def to_repr(preprocessing_params, token_list, ngramSplittingConfig):
     """
     Preprocesses token list according to given preprocessing params
     :param preprocessing_params: e.g. {
-        PreprocessingType.SPL_TYPE: 4,
-        PreprocessingType.NO_COM: False,
-        PreprocessingType.NO_STR: False
-        PreprocessingType.NO_NEWLINES_TABS: False',
-        PreprocessingType.BSR: False
+        PreprocessingType.EN_ONLY: 1,
+        PreprocessingType.NO_COM_STR: 0,
+        PreprocessingType.SPL: 4,
+        PreprocessingType.NO_SEP: 0
+        PreprocessingType.NO_NEWLINES_TABS: 0,
+        PreprocessingType.NO_LOGS: 0
     }
     :param token_list: list of tokens to be preprocessed
     :return:
@@ -26,7 +27,7 @@ def to_repr(preprocessing_params, token_list, ngramSplittingConfig):
     check_preprocessing_params_are_valid(preprocessing_params)
 
     types_to_be_repr = get_types_to_be_repr(preprocessing_params)
-    splitRepr = SplitRepr.BONDERIES if preprocessing_params[PreprocessingParam.BSR] else SplitRepr.BETWEEN_WORDS
+    splitRepr = SplitRepr.BONDERIES if preprocessing_params[PreprocessingParam.NO_SEP] else SplitRepr.BETWEEN_WORDS
     repr_list = to_repr_list(types_to_be_repr, token_list, splitRepr, ngramSplittingConfig)
     return repr_list
 

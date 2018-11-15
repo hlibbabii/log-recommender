@@ -127,7 +127,7 @@ def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, split
     check_preprocessing_params_are_valid(preprocessing_params)
 
     ngramSplittingConfig = NgramSplittingConfig()
-    if preprocessing_params[PreprocessingParam.SPL_TYPE] == 4:
+    if preprocessing_params[PreprocessingParam.SPL] == 4:
         if not bpe_merges_cache or not bpe_merges_file:
             raise ValueError("--bpe-merges-file and --bpe-merges-cache must be specified")
 
@@ -140,14 +140,14 @@ def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, split
         ngramSplittingConfig.merges_cache = merges_cache
         ngramSplittingConfig.merges = merges
         ngramSplittingConfig.set_splitting_type(NgramSplittingType.BPE)
-    elif preprocessing_params[PreprocessingParam.SPL_TYPE] == 3:
+    elif preprocessing_params[PreprocessingParam.SPL] == 3:
         if not splitting_file:
             raise ValueError("--splitting-file must be specified")
 
         splittings = io_utils.read_dict_from_2_columns(splitting_file, val_type=list, delim='|')
         ngramSplittingConfig.sc_splittings = splittings
         ngramSplittingConfig.set_splitting_type(NgramSplittingType.CUSTOM)
-    elif preprocessing_params[PreprocessingParam.SPL_TYPE] == 2:
+    elif preprocessing_params[PreprocessingParam.SPL] == 2:
         ngramSplittingConfig.set_splitting_type(NgramSplittingType.ONLY_NUMBERS)
 
     new_preprocessing_types_dict, got_pure_repr = calc_new_preprocessing_types_dict(old_preprocessing_params,
@@ -219,7 +219,7 @@ if __name__ == '__main__':
     parser.add_argument('dest', action='store', help=f'destination for representation')
     parser.add_argument('-p', '--preprocessing-params', required=True, action='store',
                         help='preprocessing params line, \n Example: '
-                                                                                          'spl=1,numspl=1,nostr=0,nocom=0,nonewlinestabs=0,scspl=1,en_only=1')
+                             'enonly=1,nocomstr=0,spl=1,nosep=1,nonewlinestabs=0,nologs=0,')
     parser.add_argument('--bpe-merges-file', action='store', help='Full path to the file with bpe merges')
     parser.add_argument('--bpe-merges-cache', action='store', help='Full path to the file with bpe split words')
     parser.add_argument('--splitting-file', action='store', help='Full path to the file with sc split words',

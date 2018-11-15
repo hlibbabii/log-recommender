@@ -11,19 +11,17 @@ logger = logging.getLogger(__name__)
 
 
 class PreprocessingParam(str, Enum):
-    SPL_TYPE: str = 'spl_type'
+    EN_ONLY: str = 'enonly'
+    NO_COM_STR: str = 'nocomstr'
+    SPL: str = 'spl'
     # 0 - no_splitting
     # 1 - only camel-case, underscore splitting
     # 2 - camel-case, underscore; splitting of numbers
     # 3 - camel-case, underscore; splitting of numbers; same-case splitting
     # 4 - camel-case, underscore; byte-pair encoding (bpe)
-
+    NO_SEP: str = 'nosep'
     NO_NEWLINES_TABS: str = 'nonewlinestabs'
-    NO_COM: str = 'nocom'
-    NO_STR: str = 'nostr'
-    EN_ONLY: str = 'en_only'
-    BSR: str = 'bsr'
-    OBF_LOGS: str = 'obf_logs'
+    NO_LOGS: str = 'nologs'
 
 
 split_type_to_types_to_be_repr = {
@@ -34,37 +32,37 @@ split_type_to_types_to_be_repr = {
     4: [CamelCaseSplit, UnderscoreSplit, WithNumbersSplit]
 }
 
+com_str_to_types_to_be_repr = {
+    0: [],
+    1: [StringLiteral],
+    2: [StringLiteral, OneLineComment, MultilineComment],
+}
+
 
 def check_preprocessing_params_are_valid(preprocessing_params):
-    if preprocessing_params[PreprocessingParam.BSR] and preprocessing_params[PreprocessingParam.SPL_TYPE] == 4:
-        raise ValueError("both BSR and BPE is not supported")
-    if preprocessing_params[PreprocessingParam.BSR] and preprocessing_params[PreprocessingParam.SPL_TYPE] == 3:
-        raise ValueError("both BSR and same case splitting is not supported")
+    if preprocessing_params[PreprocessingParam.NO_SEP] and preprocessing_params[PreprocessingParam.SPL] == 4:
+        raise ValueError("both NO_SEP and BPE is not supported")
+    if preprocessing_params[PreprocessingParam.NO_SEP] and preprocessing_params[PreprocessingParam.SPL] == 3:
+        raise ValueError("both NO_SEP and same case splitting is not supported")
 
 
 def parse_preprocessing_params(preprocessing_types_str):
     res = {}
     for param in preprocessing_types_str.split(','):
         key, val = param.split('=')
-        if key == PreprocessingParam.SPL_TYPE:
-            res[key] = int(val)
-        else:
-            res[key] = bool(int(val))
+        res[key] = int(val)
     return res
 
 
 def get_types_to_be_repr(preprocessing_params):
     res = []
-    res.extend(split_type_to_types_to_be_repr[preprocessing_params[PreprocessingParam.SPL_TYPE]])
-    if preprocessing_params[PreprocessingParam.NO_COM]:
-        res.extend([OneLineComment, MultilineComment])
-    if preprocessing_params[PreprocessingParam.NO_STR]:
-        res.append(StringLiteral)
+    res.extend(split_type_to_types_to_be_repr[preprocessing_params[PreprocessingParam.SPL]])
+    res.extend(com_str_to_types_to_be_repr[preprocessing_params[PreprocessingParam.NO_COM_STR]])
     if preprocessing_params[PreprocessingParam.NO_NEWLINES_TABS]:
         res.extend([NewLine, Tab])
     if preprocessing_params[PreprocessingParam.EN_ONLY]:
         res.append(NonEng)
-    if preprocessing_params[PreprocessingParam.OBF_LOGS]:
+    if preprocessing_params[PreprocessingParam.NO_LOGS]:
         res.append(LogStatement)
     return res
 
