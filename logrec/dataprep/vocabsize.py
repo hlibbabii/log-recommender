@@ -153,12 +153,14 @@ class Merger(multiprocessing.Process):
             try:
                 first = self.tasks.get_nowait()
             except queue.Empty:
+                logger.debug("No tasks left in the queue. Terminating...")
                 break
 
             try:
                 second = self.tasks.get_nowait()
             except queue.Empty:
                 self.tasks.put_nowait(first)
+                logger.debug("Only one task left in the queue. Terminating...")
                 break
 
             first_id = first.id
