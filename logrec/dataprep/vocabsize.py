@@ -147,8 +147,9 @@ def create_merged_vocab(path_to_dump):
 
 
 class Merger(multiprocessing.Process):
-    def __init__(self, tasks, path_to_dump):
+    def __init__(self, id, tasks, path_to_dump):
         multiprocessing.Process.__init__(self)
+        self.id = id
         self.tasks = tasks
         self.path_to_dump = path_to_dump
 
@@ -156,17 +157,17 @@ class Merger(multiprocessing.Process):
         while True:
             try:
                 first = self.tasks.get(True, SECONDS_TO_BLOCK_FOR)
-                logger.debug(f"Tasks left in the queue: {queue_elm_counter.dec()}")
+                logger.debug(f"[{self.id}] Tasks left in the queue: {queue_elm_counter.dec()}")
             except queue.Empty:
-                logger.debug("No tasks left in the queue. Terminating...")
+                logger.debug(f"[{self.id}] No tasks left in the queue. Terminating...")
                 break
 
             try:
                 second = self.tasks.get(True, SECONDS_TO_BLOCK_FOR)
-                logger.debug(f"Tasks left in the queue: {queue_elm_counter.dec()}")
+                logger.debug(f"[{self.id}] Tasks left in the queue: {queue_elm_counter.dec()}")
             except queue.Empty:
                 self.tasks.put_nowait(first)
-                logger.debug("Only one task left in the queue. Terminating...")
+                logger.debug(f"[{self.id}] Only one task left in the queue. Terminating...")
                 break
 
             first_id = first.id
@@ -180,7 +181,7 @@ class Merger(multiprocessing.Process):
             finish_file_dumping(path_to_new_file)
 
             self.tasks.put(first, True, SECONDS_TO_BLOCK_FOR)
-            logger.debug(f"Tasks left in the queue: {queue_elm_counter.inc()}")
+            logger.debug(f"[{self.id}] Tasks left in the queue: {queue_elm_counter.inc()}")
 
 
 def finish_file_dumping(path_to_new_file):
@@ -243,7 +244,7 @@ def run(full_src_dir, full_metadata_dir):
     num_mergers = multiprocessing.cpu_count()
     logger.info(f"Using {num_mergers} mergers, size of task queue: {len(task_list)}")
     queue_elm_counter.value = len(task_list)
-    mergers = [Merger(task_queue, path_to_dump) for i in range(num_mergers)]
+    mergers = [Merger(i + 1, task_queue, path_to_dump) for i in range(num_mergers)]
     for merger in mergers:
         merger.start()
     count = 1

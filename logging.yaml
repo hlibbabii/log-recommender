@@ -1,13 +1,13 @@
 version: 1
 disable_existing_loggers: False
 formatters:
-    process_aware:
-        format: "[%(process)d] %(levelname)s : %(name)s - %(asctime)s :%(message)s"
+    simple:
+        format: "[%(levelname)s : %(name)s - %(asctime)s :%(message)s"
 handlers:
     console:
         class: logging.StreamHandler
         level: DEBUG
-        formatter: process_aware
+        formatter: simple
         stream: ext://sys.stdout
 root:
     level: DEBUG
