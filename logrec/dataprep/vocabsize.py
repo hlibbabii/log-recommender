@@ -26,6 +26,8 @@ queue_elm_counter = AtomicInteger()
 
 PARTVOCAB_EXT = 'partvocab'
 
+SECONDS_TO_BLOCK_FOR = 10
+
 def merge_dicts_(dict1, dict2):
     '''
     this method returns modified dict1! and new words are added to the dictionary
@@ -153,14 +155,14 @@ class Merger(multiprocessing.Process):
     def run(self):
         while True:
             try:
-                first = self.tasks.get_nowait()
+                first = self.tasks.get(True, SECONDS_TO_BLOCK_FOR)
                 logger.debug(f"Tasks left in the queue: {queue_elm_counter.dec()}")
             except queue.Empty:
                 logger.debug("No tasks left in the queue. Terminating...")
                 break
 
             try:
-                second = self.tasks.get_nowait()
+                second = self.tasks.get(True, SECONDS_TO_BLOCK_FOR)
                 logger.debug(f"Tasks left in the queue: {queue_elm_counter.dec()}")
             except queue.Empty:
                 self.tasks.put_nowait(first)
@@ -177,7 +179,7 @@ class Merger(multiprocessing.Process):
             pickle.dump(first, open(path_to_new_file, 'wb'))
             finish_file_dumping(path_to_new_file)
 
-            self.tasks.put_nowait(first)
+            self.tasks.put(first, True, SECONDS_TO_BLOCK_FOR)
             logger.debug(f"Tasks left in the queue: {queue_elm_counter.inc()}")
 
 
@@ -260,7 +262,6 @@ def run(full_src_dir, full_metadata_dir):
     final_vocab.write_stats(f'{full_metadata_dir}/vocabsize')
     final_vocab.write_vocab(f'{full_metadata_dir}/vocab')
     shutil.rmtree(path_to_dump)
-    # time.sleep(1)
 
 
 def list_to_queue(lst):
