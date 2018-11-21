@@ -214,7 +214,7 @@ def finish_file_dumping(path_to_new_file):
     new_file = f'{dir}/{new_id}.{PARTVOCAB_EXT}'
     os.rename(path_to_new_file, new_file)
     logger.debug(f'Renaming {path_to_new_file} --> {new_file}')
-    return new_file
+    return new_file, (first_file, second_file)
 
 
 def run(full_src_dir, full_metadata_dir):
@@ -239,11 +239,14 @@ def run(full_src_dir, full_metadata_dir):
     if os.path.exists(dumps_valid_file):
         all_files = get_all_files(path_to_dump, PARTVOCAB_EXT)
         task_list = []
+        removed_files = []
         for file in all_files:
             if '_' in os.path.basename(file):  # not very robust solution for checking if creation of this backup file
                 # hasn't been terminated properly
-                file = finish_file_dumping(file)
-            task_list.append(pickle.load(open(file, 'rb')))
+                file, removed_files = finish_file_dumping(file)
+                removed_files.extend(list(removed_files))
+            if file not in removed_files:
+                task_list.append(pickle.load(open(file, 'rb')))
 
         logger.info(f"Loaded partially calculated vocabs from {path_to_dump}")
     else:
