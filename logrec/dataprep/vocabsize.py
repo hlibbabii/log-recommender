@@ -157,16 +157,16 @@ class Merger(multiprocessing.Process):
         while True:
             try:
                 first = self.tasks.get(True, SECONDS_TO_BLOCK_FOR)
-                logger.debug(f"[{self.id}] Tasks left in the queue: {queue_elm_counter.dec()}")
+                logger.debug(f"[{self.id}] Tasks left in the queue: {self.tasks.qsize()}")
             except queue.Empty:
                 logger.debug(f"[{self.id}] No tasks left in the queue. Terminating...")
                 break
 
             try:
                 second = self.tasks.get(True, SECONDS_TO_BLOCK_FOR)
-                logger.debug(f"[{self.id}] Tasks left in the queue: {queue_elm_counter.dec()}")
+                logger.debug(f"[{self.id}] Tasks left in the queue: {self.tasks.qsize()}")
             except queue.Empty:
-                self.tasks.put_nowait(first)
+                self.tasks.put(first)
                 logger.debug(f"[{self.id}] Only one task left in the queue. Terminating...")
                 break
 
@@ -181,7 +181,7 @@ class Merger(multiprocessing.Process):
             finish_file_dumping(path_to_new_file)
 
             self.tasks.put(first, True, SECONDS_TO_BLOCK_FOR)
-            logger.debug(f"[{self.id}] Tasks left in the queue: {queue_elm_counter.inc()}")
+            logger.debug(f"[{self.id}] Tasks left in the queue: {self.tasks.qsize()}")
 
 
 def finish_file_dumping(path_to_new_file):
