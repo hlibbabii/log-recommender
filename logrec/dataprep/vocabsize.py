@@ -243,8 +243,8 @@ def run(full_src_dir, full_metadata_dir):
         for file in all_files:
             if '_' in os.path.basename(file):  # not very robust solution for checking if creation of this backup file
                 # hasn't been terminated properly
-                file, removed_files = finish_file_dumping(file)
-                removed_files.extend(list(removed_files))
+                file, rm_files = finish_file_dumping(file)
+                removed_files.extend(list(rm_files))
             if file not in removed_files:
                 task_list.append(pickle.load(open(file, 'rb')))
 
