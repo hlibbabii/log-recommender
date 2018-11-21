@@ -205,7 +205,7 @@ def finish_file_dumping(path_to_new_file):
     if os.path.exists(f'{dir}/{second_id}.{PARTVOCAB_EXT}'):
         os.remove(f'{dir}/{second_id}.{PARTVOCAB_EXT}')
     new_file = f'{dir}/{new_id}.{PARTVOCAB_EXT}'
-    os.rename(f'{dir}/{first_id}_{second_id}_{new_id}.{PARTVOCAB_EXT}', new_file)
+    os.rename(f'{dir}/{first_id}_{second_id}_{new_id}.{PARTVOCAB_EXT}', f'{dir}/new_file')
     return new_file
 
 
