@@ -1,5 +1,5 @@
 import argparse
-import logging
+import logging.config
 import multiprocessing
 import os
 import pickle
@@ -9,12 +9,18 @@ import time
 from collections import Counter, defaultdict
 from multiprocessing.pool import Pool
 
+import yaml
+
+from logrec.dataprep import base_project_dir
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.to_repr import REPR_EXTENSION
 from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_VOCABSIZE_ARGS
 from logrec.util import io_utils
 
 logger = logging.getLogger(__name__)
+config = yaml.load(open(f'{base_project_dir}/logging.yaml').read())
+logging.config.dictConfig(config)
+
 
 PARTVOCAB_EXT = 'partvocab'
 
@@ -224,7 +230,7 @@ def run(full_src_dir, full_metadata_dir):
     task_queue = list_to_queue(task_list)
 
     num_mergers = multiprocessing.cpu_count()
-    logger.info(f"Using {num_mergers} mergers")
+    logger.info(f"Using {num_mergers} mergers, size of task queue: {len(task_list)}")
     mergers = [Merger(task_queue, path_to_dump) for i in range(num_mergers)]
     for merger in mergers:
         merger.start()
@@ -273,8 +279,6 @@ def create_initial_partial_vocabs(all_files):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--base-from', action='store', default=DEFAULT_PARSED_DATASETS_DIR)
     parser.add_argument('dataset', action='store', help=f'dataset name')
