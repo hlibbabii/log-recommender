@@ -14,6 +14,7 @@ import yaml
 from logrec.dataprep import base_project_dir
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.to_repr import REPR_EXTENSION
+from logrec.dataprep.util import AtomicInteger
 from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_VOCABSIZE_ARGS
 from logrec.util import io_utils
 
@@ -21,6 +22,7 @@ logger = logging.getLogger(__name__)
 config = yaml.load(open(f'{base_project_dir}/logging.yaml').read())
 logging.config.dictConfig(config)
 
+queue_elm_counter = AtomicInteger()
 
 PARTVOCAB_EXT = 'partvocab'
 
@@ -152,12 +154,14 @@ class Merger(multiprocessing.Process):
         while True:
             try:
                 first = self.tasks.get_nowait()
+                logger.debug(f"Tasks left in the queue: {queue_elm_counter.dec()}")
             except queue.Empty:
                 logger.debug("No tasks left in the queue. Terminating...")
                 break
 
             try:
                 second = self.tasks.get_nowait()
+                logger.debug(f"Tasks left in the queue: {queue_elm_counter.dec()}")
             except queue.Empty:
                 self.tasks.put_nowait(first)
                 logger.debug("Only one task left in the queue. Terminating...")
@@ -174,6 +178,7 @@ class Merger(multiprocessing.Process):
             finish_file_dumping(path_to_new_file)
 
             self.tasks.put_nowait(first)
+            logger.debug(f"Tasks left in the queue: {queue_elm_counter.inc()}")
 
 
 def finish_file_dumping(path_to_new_file):
@@ -233,6 +238,7 @@ def run(full_src_dir, full_metadata_dir):
 
     num_mergers = multiprocessing.cpu_count()
     logger.info(f"Using {num_mergers} mergers, size of task queue: {len(task_list)}")
+    queue_elm_counter.value = len(task_list)
     mergers = [Merger(task_queue, path_to_dump) for i in range(num_mergers)]
     for merger in mergers:
         merger.start()
