@@ -249,7 +249,7 @@ def run(full_src_dir, full_metadata_dir):
         merger.start()
     count = 1
     for merger in mergers:
-        logger.debug(f"Waiting for merger {count}/{num_mergers} to join")
+        logger.debug(f"Waiting for merger {count}/{num_mergers} [{merger.id}] to join")
         count += 1
         merger.join()
 
