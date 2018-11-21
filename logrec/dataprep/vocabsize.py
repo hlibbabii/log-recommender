@@ -20,7 +20,7 @@ PARTVOCAB_EXT = 'partvocab'
 
 def merge_dicts_(dict1, dict2):
     '''
-    this method return modified dict1! and new words added to the dicitonary
+    this method returns modified dict1! and new words are added to the dictionary
     :param dict1:
     :param dict2:
     :return:
@@ -60,14 +60,16 @@ class PartialVocab(object):
             raise TypeError(f'Vocab must be a PartialVocab, but is {type(partial_vocab)}')
 
         start = time.time()
+
         self.merged_word_counts, new_words = merge_dicts_(self.merged_word_counts, partial_vocab.merged_word_counts)
-        logging.debug(f"New words: {new_words[:10]} ..., total: {len(new_words)}")
+        logger.debug(f"New words: {new_words[:10]} ..., total: {len(new_words)}")
         cur_vocab_size = len(self.merged_word_counts)
-        logging.info(f"Merging took {time.time() - start} s, current vocab size: {cur_vocab_size}")
+
+        logger.info(f"Merging took {time.time() - start} s, current vocab size: {cur_vocab_size}")
+
         self.n_files += partial_vocab.n_files
         new_stats_entry = (self.n_files, cur_vocab_size, self.merged_word_counts[placeholders['non_eng']])
         self.stats.extend(partial_vocab.stats + [new_stats_entry])
-
 
     def write_stats(self, path_to_stats_file):
         stats = self.__generate_stats()
@@ -179,6 +181,7 @@ def finish_file_dumping(path_to_new_file):
     os.rename(f'{dir}/{first_id}_{second_id}_{new_id}.{PARTVOCAB_EXT}', new_file)
     return new_file
 
+
 def run(full_src_dir, full_metadata_dir):
     if not os.path.exists(full_src_dir):
         logger.error(f"Dir does not exist: {full_src_dir}")
@@ -207,9 +210,9 @@ def run(full_src_dir, full_metadata_dir):
                 file = finish_file_dumping(file)
             task_list.append(pickle.load(open(file, 'rb')))
 
-        logging.info(f"Loaded partially calculated vocabs from {path_to_dump}")
+        logger.info(f"Loaded partially calculated vocabs from {path_to_dump}")
     else:
-        logging.info(f"Starting merging from scratch")
+        logger.info(f"Starting merging from scratch")
         if os.path.exists(path_to_dump):
             shutil.rmtree(path_to_dump)
         os.makedirs(path_to_dump)
@@ -221,10 +224,14 @@ def run(full_src_dir, full_metadata_dir):
     task_queue = list_to_queue(task_list)
 
     num_mergers = multiprocessing.cpu_count()
+    logger.info(f"Using {num_mergers} mergers")
     mergers = [Merger(task_queue, path_to_dump) for i in range(num_mergers)]
     for merger in mergers:
         merger.start()
+    count = 1
     for merger in mergers:
+        logger.debug(f"Waiting for merger {count}/{num_mergers} to join")
+        count += 1
         merger.join()
 
     final_vocab = task_queue.get_nowait()
