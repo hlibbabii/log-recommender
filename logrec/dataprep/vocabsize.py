@@ -200,12 +200,20 @@ def finish_file_dumping(path_to_new_file):
     if len(spl) != 3:
         raise AssertionError(f'Wrong file: {path_to_new_file}')
     first_id, second_id, new_id = spl[0], spl[1], spl[2]
-    if os.path.exists(f'{dir}/{first_id}.{PARTVOCAB_EXT}'):
-        os.remove(f'{dir}/{first_id}.{PARTVOCAB_EXT}')
-    if os.path.exists(f'{dir}/{second_id}.{PARTVOCAB_EXT}'):
-        os.remove(f'{dir}/{second_id}.{PARTVOCAB_EXT}')
+
+    first_file = f'{dir}/{first_id}.{PARTVOCAB_EXT}'
+    logger.debug(f'Removing if doesnt exist: {first_file}')
+    if os.path.exists(first_file):
+        os.remove(first_file)
+
+    second_file = f'{dir}/{second_id}.{PARTVOCAB_EXT}'
+    logger.debug(f'Removing if doesnt exist: {second_file}')
+    if os.path.exists(second_file):
+        os.remove(second_file)
+
     new_file = f'{dir}/{new_id}.{PARTVOCAB_EXT}'
-    os.rename(f'{dir}/{first_id}_{second_id}_{new_id}.{PARTVOCAB_EXT}', new_file)
+    os.rename(path_to_new_file, new_file)
+    logger.debug(f'Renaming {path_to_new_file} --> {new_file}')
     return new_file
 
 
