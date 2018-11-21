@@ -1,3 +1,4 @@
+import multiprocessing
 import threading
 
 
@@ -34,28 +35,31 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-class AtomicInteger():
-    def __init__(self, value=0):
-        self._value = value
+class AtomicInteger(object):
+    def __init__(self, v=0):
         self._lock = threading.Lock()
+        self._queue = multiprocessing.Queue()
+        for i in range(v):
+            self._queue.put(1)
 
     def inc(self):
         with self._lock:
-            self._value += 1
-            return self._value
+            self._queue.put(1)
+            return self._queue.qsize()
 
     def dec(self):
         with self._lock:
-            self._value -= 1
-            return self._value
+            self._queue.get()
+            return self._queue.qsize()
 
     @property
     def value(self):
         with self._lock:
-            return self._value
+            return self._queue.qsize()
 
     @value.setter
     def value(self, v):
         with self._lock:
-            self._value = v
-            return self._value
+            self._queue = multiprocessing.Queue()
+            for i in range(v):
+                self._queue.put(1)

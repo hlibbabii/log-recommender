@@ -4,6 +4,7 @@ import multiprocessing
 import os
 import pickle
 import queue
+import random
 import shutil
 import time
 from collections import Counter, defaultdict
@@ -161,20 +162,21 @@ class Merger(multiprocessing.Process):
                 first = self.tasks.get(True, SECONDS_TO_BLOCK_FOR)
                 logger.debug(f"[{self.id}] Tasks left in the queue: {self.tasks.qsize()}")
             except queue.Empty:
-                logger.debug(f"[{self.id}] No tasks left in the queue. Terminating...")
-                self.process_counter.dec()
+                logger.debug(
+                    f"[{self.id}] No tasks left in the queue. Terminating..., mergers left: {self.process_counter.dec()}")
                 break
 
             try:
                 second = self.tasks.get(True, SECONDS_TO_BLOCK_FOR)
                 logger.debug(f"[{self.id}] Tasks left in the queue: {self.tasks.qsize()}")
             except queue.Empty:
-                logger.debug(f"[{self.id}] Only one task left in the queue. Terminating...")
                 if self.process_counter.dec() > 0:
+                    logger.debug(
+                        f"[{self.id}] Only one task left in the queue. Terminating..., , mergers left: {self.process_counter.value}")
                     self.tasks.put(first)
                 else:
                     self.final_queue.put(first)
-                    logger.info(f"Writing final vocab")
+                    logger.info(f"[{self.id}] Writing final vocab")
                 break
 
             first_id = first.id
@@ -252,7 +254,7 @@ def run(full_src_dir, full_metadata_dir):
     logger.info(f"Using {num_mergers} mergers, size of task queue: {len(task_list)}")
     queue_elm_counter.value = len(task_list)
     final_queue = multiprocessing.Queue()
-    merger_counter = AtomicInteger()
+    merger_counter = AtomicInteger(num_mergers)
     mergers = [Merger(i + 1, task_queue, path_to_dump, merger_counter, final_queue) for i in range(num_mergers)]
     for merger in mergers:
         merger.start()
