@@ -147,11 +147,13 @@ def create_merged_vocab(path_to_dump):
 
 
 class Merger(multiprocessing.Process):
-    def __init__(self, id, tasks, path_to_dump):
+    def __init__(self, id, tasks, path_to_dump, process_counter, final_queue):
         multiprocessing.Process.__init__(self)
         self.id = id
         self.tasks = tasks
         self.path_to_dump = path_to_dump
+        self.process_counter = process_counter
+        self.final_queue = final_queue
 
     def run(self):
         while True:
@@ -160,14 +162,18 @@ class Merger(multiprocessing.Process):
                 logger.debug(f"[{self.id}] Tasks left in the queue: {self.tasks.qsize()}")
             except queue.Empty:
                 logger.debug(f"[{self.id}] No tasks left in the queue. Terminating...")
+                self.process_counter.dec()
                 break
 
             try:
                 second = self.tasks.get(True, SECONDS_TO_BLOCK_FOR)
                 logger.debug(f"[{self.id}] Tasks left in the queue: {self.tasks.qsize()}")
             except queue.Empty:
-                self.tasks.put(first)
                 logger.debug(f"[{self.id}] Only one task left in the queue. Terminating...")
+                if self.process_counter.dec() > 0:
+                    self.tasks.put(first)
+                else:
+                    self.final_queue.put(first)
                 break
 
             first_id = first.id
@@ -244,21 +250,17 @@ def run(full_src_dir, full_metadata_dir):
     num_mergers = multiprocessing.cpu_count()
     logger.info(f"Using {num_mergers} mergers, size of task queue: {len(task_list)}")
     queue_elm_counter.value = len(task_list)
-    mergers = [Merger(i + 1, task_queue, path_to_dump) for i in range(num_mergers)]
+    final_queue = multiprocessing.Queue()
+    merger_counter = AtomicInteger()
+    mergers = [Merger(i + 1, task_queue, path_to_dump, merger_counter, final_queue) for i in range(num_mergers)]
     for merger in mergers:
         merger.start()
     count = 1
+    final_vocab = final_queue.get()
     for merger in mergers:
         logger.debug(f"Waiting for merger {count}/{num_mergers} [{merger.id}] to join")
         count += 1
         merger.join()
-
-    final_vocab = task_queue.get_nowait()
-    try:
-        task_queue.get_nowait()
-        raise AssertionError()
-    except:
-        pass
 
     final_vocab.write_stats(f'{full_metadata_dir}/vocabsize')
     final_vocab.write_vocab(f'{full_metadata_dir}/vocab')
