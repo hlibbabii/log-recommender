@@ -1,3 +1,6 @@
+import threading
+
+
 def insert_separators(subwords, separator):
     return [s for subword in subwords for s in (subword, separator)][:-1]
 
@@ -29,3 +32,30 @@ class Singleton(type):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
+
+class AtomicInteger():
+    def __init__(self, value=0):
+        self._value = value
+        self._lock = threading.Lock()
+
+    def inc(self):
+        with self._lock:
+            self._value += 1
+            return self._value
+
+    def dec(self):
+        with self._lock:
+            self._value -= 1
+            return self._value
+
+    @property
+    def value(self):
+        with self._lock:
+            return self._value
+
+    @value.setter
+    def value(self, v):
+        with self._lock:
+            self._value = v
+            return self._value
