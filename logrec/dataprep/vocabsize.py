@@ -174,6 +174,7 @@ class Merger(multiprocessing.Process):
                     self.tasks.put(first)
                 else:
                     self.final_queue.put(first)
+                    logger.info(f"Writing final vocab")
                 break
 
             first_id = first.id
@@ -255,11 +256,10 @@ def run(full_src_dir, full_metadata_dir):
     mergers = [Merger(i + 1, task_queue, path_to_dump, merger_counter, final_queue) for i in range(num_mergers)]
     for merger in mergers:
         merger.start()
-    count = 1
-    final_vocab = final_queue.get()
+    final_vocab = final_queue.get(block=True)
+    logger.info("Got final vocab")
     for merger in mergers:
-        logger.debug(f"Waiting for merger {count}/{num_mergers} [{merger.id}] to join")
-        count += 1
+        logger.debug(f"Waiting for merger [{merger.id}] to join")
         merger.join()
 
     final_vocab.write_stats(f'{full_metadata_dir}/vocabsize')
