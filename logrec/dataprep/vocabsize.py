@@ -27,7 +27,7 @@ queue_elm_counter = AtomicInteger()
 
 PARTVOCAB_EXT = 'partvocab'
 
-SECONDS_TO_BLOCK_FOR = 10
+SECONDS_TO_BLOCK_FOR = random.randint(5, 15)
 
 def merge_dicts_(dict1, dict2):
     '''
@@ -45,7 +45,6 @@ def merge_dicts_(dict1, dict2):
 
 
 class PartialVocab(object):
-    DEFAULT_PERCENTS = [0.01, 0.02, 0.05, 0.15, 0.5, 0.95, 1.0]
     CLASS_VERSION = 2
 
     def __init__(self, word_counts):
@@ -100,6 +99,57 @@ class PartialVocab(object):
         return sorted(fin.items())
 
 
+class VocabMerger(multiprocessing.Process):
+    def __init__(self, id, tasks, path_to_dump, process_counter, final_queue):
+        multiprocessing.Process.__init__(self)
+        self.id = id
+        self.tasks = tasks
+        self.path_to_dump = path_to_dump
+        self.process_counter = process_counter
+        self.final_queue = final_queue
+
+    def __take_from_queue(self):
+        elm = self.tasks.get(True, SECONDS_TO_BLOCK_FOR)
+        size = self.tasks.qsize()
+        if size & (size - 1) == 0:
+            logger.debug(f"[{self.id}] Tasks left in the queue: {size}")
+        return elm
+
+    def run(self):
+        while True:
+            try:
+                first = self.__take_from_queue()
+            except queue.Empty:
+                logger.debug(
+                    f"[{self.id}] No vocabs available for merge. Terminating process..., mergers left: {self.process_counter.dec()}")
+                break
+
+            try:
+                second = self.__take_from_queue()
+            except queue.Empty:
+                if self.process_counter.dec() > 0:
+                    logger.debug(
+                        f"[{self.id}] No vocabs available for merge. Terminating process..., mergers left: {self.process_counter.value}")
+                    self.tasks.put(first)
+                else:
+                    self.final_queue.put(first)
+                    logger.info(f"[{self.id}] Only 1 (final) vocab left. Merging done")
+                break
+
+            first_id = first.id
+            second_id = second.id
+
+            first.add_vocab(second)
+
+            first.renew_id()
+            path_to_new_file = f'{self.path_to_dump}/{first_id}_{second_id}_{first.id}.{PARTVOCAB_EXT}'
+            pickle.dump(first, open(path_to_new_file, 'wb'))
+            finish_file_dumping(path_to_new_file)
+
+            self.tasks.put(first, True, SECONDS_TO_BLOCK_FOR)
+            logger.debug(f"[{self.id}] Tasks left in the queue: {self.tasks.qsize()}")
+
+
 # TODO remove this ugliness!!
 def avg_ssum(nested_list):
     sm = (0, 0)
@@ -136,63 +186,6 @@ def get_vocab(path_to_file):
     return vocab
 
 
-def create_merged_vocab(path_to_dump):
-    if (os.path.exists(path_to_dump)):
-        vocab_merger = pickle.load(open(path_to_dump, 'rb'))
-        vocab_merger.set_path_to_dump(path_to_dump)
-        if not isinstance(vocab_merger, PartialVocab):
-            raise TypeError(f"Object {str(vocab_merger)} must be VocabMerger version {vocab_merger.VERSION}")
-        return vocab_merger
-    else:
-        return PartialVocab(path_to_dump)
-
-
-class Merger(multiprocessing.Process):
-    def __init__(self, id, tasks, path_to_dump, process_counter, final_queue):
-        multiprocessing.Process.__init__(self)
-        self.id = id
-        self.tasks = tasks
-        self.path_to_dump = path_to_dump
-        self.process_counter = process_counter
-        self.final_queue = final_queue
-
-    def run(self):
-        while True:
-            try:
-                first = self.tasks.get(True, SECONDS_TO_BLOCK_FOR)
-                logger.debug(f"[{self.id}] Tasks left in the queue: {self.tasks.qsize()}")
-            except queue.Empty:
-                logger.debug(
-                    f"[{self.id}] No tasks left in the queue. Terminating..., mergers left: {self.process_counter.dec()}")
-                break
-
-            try:
-                second = self.tasks.get(True, SECONDS_TO_BLOCK_FOR)
-                logger.debug(f"[{self.id}] Tasks left in the queue: {self.tasks.qsize()}")
-            except queue.Empty:
-                if self.process_counter.dec() > 0:
-                    logger.debug(
-                        f"[{self.id}] Only one task left in the queue. Terminating..., , mergers left: {self.process_counter.value}")
-                    self.tasks.put(first)
-                else:
-                    self.final_queue.put(first)
-                    logger.info(f"[{self.id}] Writing final vocab")
-                break
-
-            first_id = first.id
-            second_id = second.id
-
-            first.add_vocab(second)
-
-            first.renew_id()
-            path_to_new_file = f'{self.path_to_dump}/{first_id}_{second_id}_{first.id}.{PARTVOCAB_EXT}'
-            pickle.dump(first, open(path_to_new_file, 'wb'))
-            finish_file_dumping(path_to_new_file)
-
-            self.tasks.put(first, True, SECONDS_TO_BLOCK_FOR)
-            logger.debug(f"[{self.id}] Tasks left in the queue: {self.tasks.qsize()}")
-
-
 def finish_file_dumping(path_to_new_file):
     base = os.path.basename(path_to_new_file)
     dir = os.path.dirname(path_to_new_file)
@@ -215,6 +208,31 @@ def finish_file_dumping(path_to_new_file):
     os.rename(path_to_new_file, new_file)
     logger.debug(f'Renaming {path_to_new_file} --> {new_file}')
     return new_file, (first_file, second_file)
+
+
+def list_to_queue(lst):
+    queue = multiprocessing.Queue()
+    for elm in lst:
+        queue.put_nowait(elm)
+    return queue
+
+
+def create_initial_partial_vocabs(all_files):
+    partial_vocabs_queue = []
+    files_total = len(all_files)
+    current_file = 0
+    start_time = time.time()
+    with Pool() as pool:
+        it = pool.imap_unordered(get_vocab, all_files)
+        for vocab in it:
+            partial_vocab = PartialVocab(vocab)
+            partial_vocabs_queue.append(partial_vocab)
+            current_file += 1
+            logger.info(f"To partial vocabs added  {current_file} out of {files_total}")
+            time_elapsed = time.time() - start_time
+            logger.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
+                        f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
+    return partial_vocabs_queue
 
 
 def run(full_src_dir, full_metadata_dir):
@@ -246,7 +264,10 @@ def run(full_src_dir, full_metadata_dir):
                 file, rm_files = finish_file_dumping(file)
                 removed_files.extend(list(rm_files))
             if file not in removed_files:
-                task_list.append(pickle.load(open(file, 'rb')))
+                part_vocab = pickle.load(open(file, 'rb'))
+                if not isinstance(part_vocab, PartialVocab):
+                    raise TypeError(f"Object {str(part_vocab)} must be VocabMerger version {part_vocab.VERSION}")
+                task_list.append(part_vocab)
 
         logger.info(f"Loaded partially calculated vocabs from {path_to_dump}")
     else:
@@ -266,7 +287,7 @@ def run(full_src_dir, full_metadata_dir):
     queue_elm_counter.value = len(task_list)
     final_queue = multiprocessing.Queue()
     merger_counter = AtomicInteger(num_mergers)
-    mergers = [Merger(i + 1, task_queue, path_to_dump, merger_counter, final_queue) for i in range(num_mergers)]
+    mergers = [VocabMerger(i + 1, task_queue, path_to_dump, merger_counter, final_queue) for i in range(num_mergers)]
     for merger in mergers:
         merger.start()
     final_vocab = final_queue.get(block=True)
@@ -278,31 +299,6 @@ def run(full_src_dir, full_metadata_dir):
     final_vocab.write_stats(f'{full_metadata_dir}/vocabsize')
     final_vocab.write_vocab(f'{full_metadata_dir}/vocab')
     shutil.rmtree(path_to_dump)
-
-
-def list_to_queue(lst):
-    queue = multiprocessing.Queue()
-    for elm in lst:
-        queue.put_nowait(elm)
-    return queue
-
-
-def create_initial_partial_vocabs(all_files):
-    partial_vocabs_queue = []
-    files_total = len(all_files)
-    current_file = 0
-    start_time = time.time()
-    with Pool() as pool:
-        it = pool.imap_unordered(get_vocab, all_files)
-        for vocab in it:
-            partial_vocab = PartialVocab(vocab)
-            partial_vocabs_queue.append(partial_vocab)
-            current_file += 1
-            logger.info(f"To partial vocabs added  {current_file} out of {files_total}")
-            time_elapsed = time.time() - start_time
-            logger.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
-                        f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
-    return partial_vocabs_queue
 
 
 if __name__ == '__main__':
