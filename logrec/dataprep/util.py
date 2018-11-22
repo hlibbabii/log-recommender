@@ -20,6 +20,7 @@ def create_regex_from_token_list(token_list):
                  .replace('(', "\(")
                  .replace(')', "\)")
                  .replace(".", "\.")
+                 .replace("$", "\$")
                  , token_list))
     return "(" + "|".join(
         m

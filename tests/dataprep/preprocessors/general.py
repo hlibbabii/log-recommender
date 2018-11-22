@@ -1,6 +1,7 @@
 import unittest
 
 from logrec.dataprep.preprocessors.general import spl_verbose
+from logrec.dataprep.preprocessors.model.capitals import Capitals
 from logrec.dataprep.preprocessors.model.chars import MultilineCommentStart, MultilineCommentEnd, OneLineCommentStart, \
     Quote, \
     Backslash, Tab
@@ -62,24 +63,24 @@ BigAWESOMEString[] a2y = "abc".doSplit("\\"");
 
     def test_split_verbose4(self):
         text = '''
-++
---
-+=
--=
-/=
-*=
-%=
-$
-<=
->=
-@
-    ^=
-    &=
-    #
-                                                                    >>
-<<
-&&
-||
+a++a
+b--b
+c+=c
+d-=d
+e/=e
+f*=f
+g%=g
+h$h
+i<=i
+j>=j
+k@k
+    l^=l
+    m&=m
+    n#n
+                                                                    o>>o
+p<<p
+q&&q
+r||r
 +*!/><\t\n
 {}[],.-:();&|\\'~%^
 /*multi-line MyComment_
@@ -88,10 +89,25 @@ _operations
 '''
         actual = spl_verbose([ProcessableToken(text)], None)
 
-        expected = ['\n','++', '\n', '--', '\n',
-                    '+=', '\n', '-=', '\n', '/=', '\n', '*=', '\n', '%=', '\n', '$', '\n', '<=', '\n',
-                    '>=', '\n', '@', '\n', '^=', '\n', '&=', '\n', '#', '\n', '>>', '\n', '<<', '\n',
-                    '&&', '\n', '||', '\n', '+', '*', '!', '/', '>', '<', Tab(),'\n', '\n','{', '}', '[',
+        expected = ['\n', ProcessableToken('a'), '++', ProcessableToken('a'),
+                    '\n', ProcessableToken('b'), '--', ProcessableToken('b'),
+                    '\n', ProcessableToken('c'), '+=', ProcessableToken('c'),
+                    '\n', ProcessableToken('d'), '-=', ProcessableToken('d'),
+                    '\n', ProcessableToken('e'), '/=', ProcessableToken('e'),
+                    '\n', ProcessableToken('f'), '*=', ProcessableToken('f'),
+                    '\n', ProcessableToken('g'), '%=', ProcessableToken('g'),
+                    '\n', ProcessableToken('h'), '$', ProcessableToken('h'),
+                    '\n', ProcessableToken('i'), '<=', ProcessableToken('i'),
+                    '\n', ProcessableToken('j'), '>=', ProcessableToken('j'),
+                    '\n', ProcessableToken('k'), '@', ProcessableToken('k'),
+                    '\n', ProcessableToken('l'), '^=', ProcessableToken('l'),
+                    '\n', ProcessableToken('m'), '&=', ProcessableToken('m'),
+                    '\n', ProcessableToken('n'), '#', ProcessableToken('n'),
+                    '\n', ProcessableToken('o'), '>>', ProcessableToken('o'),
+                    '\n', ProcessableToken('p'), '<<', ProcessableToken('p'),
+                    '\n', ProcessableToken('q'), '&&', ProcessableToken('q'),
+                    '\n', ProcessableToken('r'), '||', ProcessableToken('r'),
+                    '\n', '+', '*', '!', '/', '>', '<', Tab(), '\n', '\n', '{', '}', '[',
                     ']', ',', '.', '-', ':', '(', ')', ';', '&', '|', Backslash(), "'", '~', '%', '^',
                     '\n', MultilineCommentStart(), ProcessableToken("multi"), '-', ProcessableToken("line"),
                     ProcessableToken("MyComment_"), '\n', MultilineCommentEnd(), '/', '\n',
