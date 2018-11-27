@@ -4,7 +4,7 @@ from logrec.dataprep.preprocessors.model.chars import NewLine, Tab
 # TODO write explanations with normal strings
 from logrec.dataprep.preprocessors.model.containers import SplitContainer, OneLineComment, MultilineComment, \
     StringLiteral
-from logrec.dataprep.preprocessors.model.noneng import NonEng
+from logrec.dataprep.preprocessors.model.noneng import NonEng, NonEngFullWord, NonEngSubWord
 from logrec.dataprep.preprocessors.model.numeric import DecimalPoint, Number
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.model.word import FullWord, SubWord
@@ -15,25 +15,25 @@ from logrec.dataprep.to_repr import to_repr
 tokens = [
     Number([1, DecimalPoint(), 1]),
     "*",
-    NonEng(FullWord.of("dinero")),
+    NonEngFullWord(FullWord.of("dinero")),
     StringLiteral([
         SplitContainer([
             SubWord.of("A"),
-            NonEng(SubWord.of("Wirklich"))
+            NonEngSubWord(SubWord.of("Wirklich"))
         ])
     ]),
     NewLine(),
     MultilineComment([
-        NonEng(FullWord.of('ц')),
+        NonEngFullWord(FullWord.of('ц')),
         SplitContainer([
-            NonEng(SubWord.of("blanco")),
+            NonEngSubWord(SubWord.of("blanco")),
             SubWord.of("_english")
         ])
     ]),
     NewLine(), Tab(),
     OneLineComment([
         SplitContainer([
-            NonEng(SubWord.of("DIESELBE")),
+            NonEngSubWord(SubWord.of("DIESELBE")),
             SubWord.of("8")
         ])
     ])
@@ -222,33 +222,33 @@ class TeprTest(unittest.TestCase):
         tokens = [
             Number([1, DecimalPoint(), 1]),
             "*",
-            NonEng(FullWord.of("dinero")),
+            NonEngFullWord(FullWord.of("dinero")),
             StringLiteral([
-                NonEng(SubWord.of("ich")),
-                NonEng(SubWord.of("weiss")),
-                NonEng(SubWord.of("nicht")),
-                NonEng(SubWord.of("was")),
-                NonEng(SubWord.of("soll")),
-                NonEng(SubWord.of("es")),
-                NonEng(SubWord.of("bedeuten")),
-                NonEng(SubWord.of("dass")),
-                NonEng(SubWord.of("ich")),
-                NonEng(SubWord.of("so")),
-                NonEng(SubWord.of("traurig")),
-                NonEng(SubWord.of("bin")),
+                NonEngSubWord(SubWord.of("ich")),
+                NonEngSubWord(SubWord.of("weiss")),
+                NonEngSubWord(SubWord.of("nicht")),
+                NonEngSubWord(SubWord.of("was")),
+                NonEngSubWord(SubWord.of("soll")),
+                NonEngSubWord(SubWord.of("es")),
+                NonEngSubWord(SubWord.of("bedeuten")),
+                NonEngSubWord(SubWord.of("dass")),
+                NonEngSubWord(SubWord.of("ich")),
+                NonEngSubWord(SubWord.of("so")),
+                NonEngSubWord(SubWord.of("traurig")),
+                NonEngSubWord(SubWord.of("bin")),
             ]),
             NewLine(),
             MultilineComment([
-                NonEng(FullWord.of('ц')),
+                NonEngFullWord(FullWord.of('ц')),
                 SplitContainer([
-                    NonEng(SubWord.of("blanco")),
+                    NonEngSubWord(SubWord.of("blanco")),
                     SubWord.of("_english")
                 ])
             ]),
             NewLine(), Tab(),
             OneLineComment([
                 SplitContainer([
-                    NonEng(SubWord.of("DIESELBE")),
+                    NonEngSubWord(SubWord.of("DIESELBE")),
                     SubWord.of("8")
                 ])
             ])

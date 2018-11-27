@@ -1,4 +1,4 @@
-from logrec.dataprep.preprocessors.model.noneng import NonEng
+from logrec.dataprep.preprocessors.model.noneng import NonEng, NonEngFullWord
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.model.word import WordStart
 from logrec.dataprep.preprocessors.repr import torepr, ReprConfig
@@ -88,7 +88,9 @@ class OneLineComment(TextContainer):
         super().__init__(tokens)
 
     def non_preprocessed_repr(self, repr_config):
-        if NonEng in repr_config.types_to_be_repr and self.has_non_eng_contents():
+        # TODO this condition despite being right seems to be not robust enough
+        # because only one NonEng subclass is mentioned
+        if NonEngFullWord in repr_config.types_to_be_repr and self.has_non_eng_contents():
             return ["//", placeholders['non_eng_contents']]
         else:
             return ["//"] + torepr(self.subtokens, repr_config)
@@ -102,7 +104,9 @@ class MultilineComment(TextContainer):
         super().__init__(tokens)
 
     def non_preprocessed_repr(self, repr_config):
-        if NonEng in repr_config.types_to_be_repr and self.has_non_eng_contents():
+        # TODO this condition despite being right seems to be not robust enough
+        # because only one NonEng subclass is mentioned
+        if NonEngFullWord in repr_config.types_to_be_repr and self.has_non_eng_contents():
             return ["//", placeholders['non_eng_contents']]
         else:
             return ["/*"] + torepr(self.subtokens, repr_config) + ["*/"]
@@ -116,7 +120,9 @@ class StringLiteral(TextContainer):
         super().__init__(tokens)
 
     def non_preprocessed_repr(self, repr_config):
-        if NonEng in repr_config.types_to_be_repr and self.has_non_eng_contents():
+        # TODO this condition despite being right seems to be not robust enough
+        # because only one NonEng subclass is mentioned
+        if NonEngFullWord in repr_config.types_to_be_repr and self.has_non_eng_contents():
             return ["\"", placeholders['non_eng_contents'], "\""]
         else:
             return ["\""] + torepr(self.subtokens, repr_config) + ["\""]

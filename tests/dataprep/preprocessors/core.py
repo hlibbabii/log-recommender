@@ -6,9 +6,9 @@ from logrec.dataprep.preprocessors.general import from_file
 from logrec.dataprep.preprocessors.model.chars import NewLine, Tab, Backslash, Quote
 from logrec.dataprep.preprocessors.model.containers import OneLineComment, SplitContainer, StringLiteral, \
     MultilineComment
-from logrec.dataprep.preprocessors.model.noneng import NonEng
+from logrec.dataprep.preprocessors.model.noneng import NonEngSubWord
 from logrec.dataprep.preprocessors.model.numeric import HexStart, Number, DecimalPoint, L, F, E, D
-from logrec.dataprep.preprocessors.model.word import Word, Capitalization, WordStart, FullWord, SubWord
+from logrec.dataprep.preprocessors.model.word import FullWord, SubWord
 
 text2 = '''
 _my_favoRite_ints_
@@ -59,7 +59,7 @@ int[] _my_favoRite_ints_ = {0x12, 0x1fE, 441, -81, -0xfFf};
                            '[',
                            ']',
                            SplitContainer(
-                               [SubWord.of('my'), NonEng(SubWord.of('_favo')),
+                               [SubWord.of('my'), NonEngSubWord(SubWord.of('_favo')),
                                 SubWord.of('Rite'), SubWord.of('_ints'), SubWord.of("_")]
                            ),
                            '=',

@@ -3,10 +3,11 @@ import unittest
 from logrec.dataprep.preprocess_params import pp_params
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.general import from_string
-from logrec.dataprep.preprocessors.model.containers import SplitContainer
+from logrec.dataprep.preprocessors.model.containers import SplitContainer, StringLiteral
+from logrec.dataprep.preprocessors.model.noneng import NonEngSubWord, NonEngFullWord
 from logrec.dataprep.preprocessors.model.numeric import Number, DecimalPoint, E
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
-from logrec.dataprep.preprocessors.model.word import FullWord, SubWord
+from logrec.dataprep.preprocessors.model.word import FullWord, SubWord, Capitalization, WordStart
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
 from logrec.dataprep.split.ngram import NgramSplitConfig, NgramSplittingType
 from logrec.dataprep.to_repr import to_repr
@@ -71,6 +72,49 @@ test_cases = {
          placeholders["capitals"], "play", "er", "s", placeholders["underscore_separator"], placeholders["capitals"],
          "num", placeholders["split_words_end"]]
     ),
+    "test_очень": (
+        [SplitContainer([SubWord.of("test"), NonEngSubWord(SubWord.of("_очень"))])],
+        ["test", placeholders["underscore_separator"], placeholders['non_eng']],
+        [placeholders["camel_case_separator"], "test", placeholders["underscore_separator"], placeholders['non_eng'],
+         placeholders["split_words_end"]]
+    ),
+    "очень_test": (
+        [SplitContainer([NonEngSubWord(SubWord("очень", Capitalization.NONE, WordStart())), SubWord.of("_test")])],
+        [placeholders['non_eng'], placeholders["underscore_separator"], "test"],
+        [placeholders["camel_case_separator"], placeholders['non_eng'], placeholders["underscore_separator"], "test",
+         placeholders["split_words_end"]]
+    ),
+    "testWчень": (
+        [SplitContainer([SubWord.of("test"), NonEngSubWord(SubWord.of("Wчень"))])],
+        ["test", placeholders["camel_case_separator"], placeholders['non_eng']],
+        [placeholders["camel_case_separator"], "test", placeholders["camel_case_separator"], placeholders['non_eng'],
+         placeholders["split_words_end"]]
+    ),
+    "сегодня": (
+        [NonEngFullWord(FullWord.of("сегодня"))],
+        [placeholders['non_eng']],
+        [placeholders['non_eng']]
+    ),
+    "_сегодня": (
+        [NonEngFullWord(FullWord.of("_сегодня"))],
+        [placeholders['underscore_separator'], placeholders['non_eng']],
+        [placeholders['underscore_separator'], placeholders['non_eng']]
+    ),
+    "_Сегодня": (
+        [NonEngFullWord(FullWord.of("_Сегодня"))],
+        [placeholders['underscore_separator'], placeholders['capital'], placeholders['non_eng']],
+        [placeholders['underscore_separator'], placeholders['capital'], placeholders['non_eng']]
+    ),
+    "Сегодня": (
+        [NonEngFullWord(FullWord.of("Сегодня"))],
+        [placeholders['capital'], placeholders['non_eng']],
+        [placeholders['capital'], placeholders['non_eng']]
+    ),
+    '"сегодня"': (
+        [StringLiteral([NonEngFullWord(FullWord.of("сегодня"))])],
+        ['"', placeholders['non_eng'], '"'],
+        ['"', placeholders['non_eng'], '"']
+    )
 }
 
 bpe_merges_cache = {

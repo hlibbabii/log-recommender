@@ -5,7 +5,7 @@ from logrec.dataprep.preprocessors.model.chars import OneLineCommentStart, NewLi
 # TODO write explanations with normal strings
 from logrec.dataprep.preprocessors.model.containers import SplitContainer, StringLiteral, OneLineComment, \
     MultilineComment
-from logrec.dataprep.preprocessors.model.noneng import NonEng
+from logrec.dataprep.preprocessors.model.noneng import NonEng, NonEngSubWord, NonEngFullWord
 from logrec.dataprep.preprocessors.model.word import Word, FullWord, SubWord, Capitalization, WordStart
 from logrec.dataprep.preprocessors.noneng import mark
 
@@ -61,16 +61,16 @@ class NonengTest(unittest.TestCase):
             StringLiteral([
                 SplitContainer([
                     SubWord.of("A"),
-                    NonEng(SubWord.of("Wirklich"))
+                    NonEngSubWord(SubWord.of("Wirklich"))
                 ])
             ]),
             MultilineComment([
-                NonEng(FullWord.of('ц')),
+                NonEngFullWord(FullWord.of('ц')),
                 SplitContainer([
                     # we have to call constructor manually here,
                     # case split container cannot set wordStart prefix
                     # when the first subword is wrapped in NonEng
-                    NonEng(SubWord("blanco", Capitalization.NONE, WordStart())),
+                    NonEngSubWord(SubWord("blanco", Capitalization.NONE, WordStart())),
                     SubWord.of("_english")
                 ])
             ]),
@@ -79,7 +79,7 @@ class NonengTest(unittest.TestCase):
                     # we have to call constructor manually here,
                     # case split container cannot set wordStart prefix
                     # when the first subword is wrapped in NonEng
-                    NonEng(SubWord("dieselbe", Capitalization.ALL, WordStart())),
+                    NonEngSubWord(SubWord("dieselbe", Capitalization.ALL, WordStart())),
                     SubWord.of("8")
                 ])
             ])
