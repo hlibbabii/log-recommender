@@ -75,7 +75,7 @@ class F(SpecialNumberChar):
 
 class D(SpecialNumberChar):
     def __str__(self):
-        return self.non_preprocessed_repr(ReprConfig.empty(ReprConfig.empty()))
+        return self.non_preprocessed_repr(ReprConfig.empty())
 
     def non_preprocessed_repr(self, repr_config):
         return "d"
