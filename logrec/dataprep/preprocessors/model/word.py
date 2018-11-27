@@ -75,7 +75,7 @@ class Word(object):
     """
 
     def __init__(self, canonic_form, capitalization=Capitalization.UNDEFINED, prefix=None):
-        self.__check_canonic_form_is_valid(canonic_form)
+        Word._check_canonic_form_is_valid(canonic_form)
 
         self.canonic_form = canonic_form
         self.capitalization = capitalization
@@ -84,9 +84,14 @@ class Word(object):
     def get_canonic_form(self):
         return self.canonic_form
 
-    def __check_canonic_form_is_valid(self, canonic_form):
-        if not isinstance(canonic_form, str) or canonic_form.isupper() \
-                or (canonic_form and canonic_form[0].isupper()):
+    @staticmethod
+    def _is_strictly_upper(s):
+        return s.isupper() and not s.lower().isupper()
+
+    @staticmethod
+    def _check_canonic_form_is_valid(canonic_form):
+        if not isinstance(canonic_form, str) or Word._is_strictly_upper(canonic_form) \
+                or (canonic_form and Word._is_strictly_upper(canonic_form[0])):
             raise AssertionError(f"Bad canonic form: {canonic_form}")
 
     def __str__(self):
