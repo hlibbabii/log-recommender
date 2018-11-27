@@ -14,7 +14,6 @@ from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
     get_types_to_be_repr
 from logrec.dataprep.preprocessors.repr import to_repr_list, ReprConfig
 from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplitConfig, SplitRepr
-from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
 from logrec.util import io_utils
 
 logger = logging.getLogger(__name__)
@@ -235,6 +234,8 @@ def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, split
 
 
 if __name__ == '__main__':
+    from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
+
     logging.basicConfig(level=logging.DEBUG)
 
     parser = argparse.ArgumentParser()
