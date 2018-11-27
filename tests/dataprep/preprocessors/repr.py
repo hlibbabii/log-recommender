@@ -6,6 +6,7 @@ from logrec.dataprep.preprocessors.model.containers import SplitContainer, OneLi
     StringLiteral
 from logrec.dataprep.preprocessors.model.noneng import NonEng
 from logrec.dataprep.preprocessors.model.numeric import DecimalPoint, Number
+from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.model.word import FullWord, SubWord, Capitalization, WordStart
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
 from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplitConfig
@@ -94,10 +95,11 @@ class TeprTest(unittest.TestCase):
         expected = [
             '1.1',
             "*",
-            '<non_eng>',
-            '"', '`C', 'a', '<cc_sep>', '<non_eng>', '"',
-            '/*', '<non_eng>', '<non_eng>', '<us_sep>', 'english', '*/',
-            '//', '`Cs', '<non_eng>', '<cc_sep>', "8"
+            placeholders['non_eng'],
+            '"', placeholders['capital'], 'a', placeholders["camel_case_separator"], placeholders['non_eng'], '"',
+            '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'english',
+            '*/',
+            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8"
         ]
 
         self.assertEqual(expected, actual)
@@ -121,10 +123,13 @@ class TeprTest(unittest.TestCase):
         expected = [
             '1.1',
             "*",
-            '<non_eng>',
-            '"', '<cc_sep>', '`C', 'a', '<cc_sep>', '<non_eng>', 's`', '"',
-            '/*', '<non_eng>', '<cc_sep>', '<non_eng>', '<us_sep>', 'english', 's`', '*/',
-            '//', '<cc_sep>', '`Cs', '<non_eng>', '<cc_sep>', '8', 's`'
+            placeholders['non_eng'],
+            '"', placeholders["camel_case_separator"], placeholders['capital'], 'a',
+            placeholders["camel_case_separator"], placeholders['non_eng'], placeholders['split_words_end'], '"',
+            '/*', placeholders['non_eng'], placeholders["camel_case_separator"], placeholders['non_eng'],
+            placeholders["underscore_separator"], 'english', placeholders['split_words_end'], '*/',
+            '//', placeholders["camel_case_separator"], placeholders['capitals'], placeholders['non_eng'],
+            placeholders["camel_case_separator"], '8', placeholders['split_words_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -149,15 +154,16 @@ class TeprTest(unittest.TestCase):
 
         expected = [
             '1',
-            '<sc_sep>',
+            placeholders["same_case_separator"],
             '.',
-            '<sc_sep>',
+            placeholders["same_case_separator"],
             '1',
             "*",
-            '<non_eng>',
-            '"', '`C', 'a', '<cc_sep>', '<non_eng>', '"',
-            '/*', '<non_eng>', '<non_eng>', '<us_sep>', 'english', '*/',
-            '//', '`Cs', '<non_eng>', '<cc_sep>', "8",
+            placeholders['non_eng'],
+            '"', placeholders['capital'], 'a', placeholders["camel_case_separator"], placeholders['non_eng'], '"',
+            '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'english',
+            '*/',
+            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8",
         ]
 
         self.assertEqual(expected, actual)
@@ -180,16 +186,19 @@ class TeprTest(unittest.TestCase):
         actual = to_repr(prep_params, tokens, ngramSplittingConfig)
 
         expected = [
-            '<cc_sep>',
+            placeholders["camel_case_separator"],
             '1',
             '.',
             '1',
-            's`',
+            placeholders['split_words_end'],
             "*",
-            '<non_eng>',
-            '"', '<cc_sep>', '`C', 'a', '<cc_sep>', '<non_eng>', 's`', '"',
-            '/*', '<non_eng>', '<cc_sep>', '<non_eng>', '<us_sep>', 'english', 's`', '*/',
-            '//', '<cc_sep>', '`Cs', '<non_eng>', '<cc_sep>', "8", 's`'
+            placeholders['non_eng'],
+            '"', placeholders["camel_case_separator"], placeholders['capital'], 'a',
+            placeholders["camel_case_separator"], placeholders['non_eng'], placeholders['split_words_end'], '"',
+            '/*', placeholders['non_eng'], placeholders["camel_case_separator"], placeholders['non_eng'],
+            placeholders["underscore_separator"], 'english', placeholders['split_words_end'], '*/',
+            '//', placeholders["camel_case_separator"], placeholders['capitals'], placeholders['non_eng'],
+            placeholders["camel_case_separator"], "8", placeholders['split_words_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -249,15 +258,16 @@ class TeprTest(unittest.TestCase):
 
         expected = [
             '1',
-            '<sc_sep>',
+            placeholders["same_case_separator"],
             '.',
-            '<sc_sep>',
+            placeholders["same_case_separator"],
             '1',
             "*",
-            '<non_eng>',
-            '"', '<non_eng_contents>', '"',
-            '/*', '<non_eng>', '<non_eng>', '<us_sep>', 'english', '*/',
-            '//', '`Cs', '<non_eng>', '<cc_sep>', "8",
+            placeholders['non_eng'],
+            '"', placeholders["non_eng_contents"], '"',
+            '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'english',
+            '*/',
+            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8",
         ]
 
         self.assertEqual(expected, actual)
@@ -284,15 +294,16 @@ class TeprTest(unittest.TestCase):
 
         expected = [
             '1',
-            '<sc_sep>',
+            placeholders["same_case_separator"],
             '.',
-            '<sc_sep>',
+            placeholders["same_case_separator"],
             '1',
             "*",
-            '<non_eng>',
-            '"', '`C', 'a', '<cc_sep>', '<non_eng>', '"',
-            '/*', '<non_eng>', '<non_eng>', '<us_sep>', 'engl', '<sc_sep>', 'ish', '*/',
-            '//', '`Cs', '<non_eng>', '<cc_sep>', "8"
+            placeholders['non_eng'],
+            '"', placeholders['capital'], 'a', placeholders["camel_case_separator"], placeholders['non_eng'], '"',
+            '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'engl',
+            placeholders["same_case_separator"], 'ish', '*/',
+            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8"
         ]
 
         self.assertEqual(expected, actual)
@@ -320,15 +331,17 @@ class TeprTest(unittest.TestCase):
 
         expected = [
             '1',
-            '<sc_sep>',
+            placeholders["same_case_separator"],
             '.',
-            '<sc_sep>',
+            placeholders["same_case_separator"],
             '1',
             "*",
             'dinero',
-            '"', '`C', 'a', '<cc_sep>', 'wirklich', '"',
-            '/*', 'ц', 'blanco', '<us_sep>', 'engl', '<sc_sep>', 'ish', '*/',
-            '//', '`Cs', 'die', '<sc_sep>', 'selbe', '<cc_sep>', "8",
+            '"', placeholders['capital'], 'a', placeholders["camel_case_separator"], 'wirklich', '"',
+            '/*', 'ц', 'blanco', placeholders["underscore_separator"], 'engl', placeholders["same_case_separator"],
+            'ish', '*/',
+            '//', placeholders['capitals'], 'die', placeholders["same_case_separator"], 'selbe',
+            placeholders["camel_case_separator"], "8",
         ]
 
         self.assertEqual(expected, actual)
@@ -353,18 +366,21 @@ class TeprTest(unittest.TestCase):
         actual = to_repr(prep_params, tokens, ngramSplittingConfig)
 
         expected = [
-            '<cc_sep>',
+            placeholders["camel_case_separator"],
             '1',
             '.',
             '1',
-            's`',
+            placeholders['split_words_end'],
             "*",
-            '<non_eng>',
-            '"', '<cc_sep>', '`C', 'a', '<cc_sep>', '<non_eng>', 's`', '"',
+            placeholders['non_eng'],
+            '"', placeholders["camel_case_separator"], placeholders['capital'], 'a',
+            placeholders["camel_case_separator"], placeholders['non_eng'], placeholders['split_words_end'], '"',
             '\n',
-            '/*', '<non_eng>', '<cc_sep>', '<non_eng>', '<us_sep>', 'english', 's`', '*/',
+            '/*', placeholders['non_eng'], placeholders["camel_case_separator"], placeholders['non_eng'],
+            placeholders["underscore_separator"], 'english', placeholders['split_words_end'], '*/',
             '\n', '\t',
-            '//', '<cc_sep>', '`Cs', '<non_eng>', '<cc_sep>', "8", 's`'
+            '//', placeholders["camel_case_separator"], placeholders['capitals'], placeholders['non_eng'],
+            placeholders["camel_case_separator"], "8", placeholders['split_words_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -392,15 +408,15 @@ class TeprTest(unittest.TestCase):
 
         expected = [
             '1',
-            '<sc_sep>',
+            placeholders["same_case_separator"],
             '.',
-            '<sc_sep>',
+            placeholders["same_case_separator"],
             '1',
             "*",
-            '<non_eng>',
-            '<str_literal>',
-            '<comment>',
-            '<comment>'
+            placeholders['non_eng'],
+            placeholders["str_literal"],
+            placeholders["comment"],
+            placeholders["comment"]
         ]
 
         self.assertEqual(expected, actual)
@@ -421,23 +437,23 @@ class TeprTest(unittest.TestCase):
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
                                                 sc_splittings={
-                                  'english': ['engl', 'ish'],
-                                  '<non_eng>': ['<non', '_eng>']
+                                                    'english': ['engl', 'ish']
                                                     })
 
         actual = to_repr(prep_params, tokens, ngramSplittingConfig)
 
         expected = [
             '1',
-            '<sc_sep>',
+            placeholders["same_case_separator"],
             '.',
-            '<sc_sep>',
+            placeholders["same_case_separator"],
             '1',
             "*",
-            '<non_eng>',
-            '"', '`C', 'a', '<cc_sep>', '<non_eng>', '"',
-            '/*', '<non_eng>', '<non_eng>', '<us_sep>', 'engl', '<sc_sep>', 'ish', '*/',
-            '//', '`Cs', '<non_eng>', '<cc_sep>', "8"
+            placeholders['non_eng'],
+            '"', placeholders['capital'], 'a', placeholders["camel_case_separator"], placeholders['non_eng'], '"',
+            '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'engl',
+            placeholders["same_case_separator"], 'ish', '*/',
+            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8"
         ]
 
         self.assertEqual(expected, actual)
@@ -463,14 +479,17 @@ class TeprTest(unittest.TestCase):
 
         expected = [
             '1',
-            '<sc_sep>', '.', '<sc_sep>',
+            placeholders["same_case_separator"], '.', placeholders["same_case_separator"],
             '1',
             "*",
-            '<non_eng>',
-            '"', '`C', 'a', '<cc_sep>', '<non_eng>', '"',
-            '/*', '<non_eng>', '<non_eng>', '<us_sep>', 'e', '<sc_sep>', 'n', '<sc_sep>', 'g', '<sc_sep>', 'l',
-            '<sc_sep>', 'i', '<sc_sep>', 's', '<sc_sep>', 'h', '*/',
-            '//', '`Cs', '<non_eng>', '<cc_sep>', "8"
+            placeholders['non_eng'],
+            '"', placeholders['capital'], 'a', placeholders["camel_case_separator"], placeholders['non_eng'], '"',
+            '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'e',
+            placeholders["same_case_separator"], 'n', placeholders["same_case_separator"], 'g',
+            placeholders["same_case_separator"], 'l',
+            placeholders["same_case_separator"], 'i', placeholders["same_case_separator"], 's',
+            placeholders["same_case_separator"], 'h', '*/',
+            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8"
         ]
 
         self.assertEqual(expected, actual)
@@ -498,7 +517,7 @@ class TeprTest(unittest.TestCase):
 
         actual = to_repr(prep_params, tokens, ngramSplittingConfig)
 
-        expected = ["`C", "while"]
+        expected = [placeholders['capital'], "while"]
 
         self.assertEqual(expected, actual)
 

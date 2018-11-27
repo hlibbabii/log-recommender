@@ -5,6 +5,7 @@ from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.general import from_string
 from logrec.dataprep.preprocessors.model.containers import SplitContainer
 from logrec.dataprep.preprocessors.model.numeric import Number, DecimalPoint, E
+from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.model.word import FullWord, SubWord
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
 from logrec.dataprep.split.ngram import NgramSplitConfig, NgramSplittingType
@@ -18,42 +19,57 @@ test_cases = {
     ),
     "Vector": (
         [FullWord.of("Vector")],
-        ['`C', "vector"],
-        ['`C', "vector"]
+        [placeholders["capital"], "vector"],
+        [placeholders["capital"], "vector"]
     ),
     "players": (
         [FullWord.of("players")],
-        ['play', "<sc_sep>", "er", "<sc_sep>", "s"],
-        ['<cc_sep>', 'play', 'er', 's', 's`']
+        ['play', placeholders["same_case_separator"], "er", placeholders["same_case_separator"], "s"],
+        [placeholders["camel_case_separator"], 'play', 'er', 's', placeholders["split_words_end"]]
     ),
     "0.345e+4": (
         [Number(["0", DecimalPoint(), "3", "4", "5", E(), "+", "4"])],
-        ["0.", "<sc_sep>", "3", "<sc_sep>", "4", "<sc_sep>", "5", "<sc_sep>", "e+", "<sc_sep>", "4"],
-        ["<cc_sep>", "0.", "3", "4", "5", "e+", "4", 's`']
+        ["0.", placeholders["same_case_separator"], "3", placeholders["same_case_separator"], "4",
+         placeholders["same_case_separator"], "5", placeholders["same_case_separator"], "e+",
+         placeholders["same_case_separator"], "4"],
+        [placeholders["camel_case_separator"], "0.", "3", "4", "5", "e+", "4", placeholders["split_words_end"]]
     ),
     "bestPlayers": (
         [SplitContainer([SubWord.of("best"), SubWord.of("Players")])],
-        ["best", "<cc_sep>", 'play', "<sc_sep>", "er", "<sc_sep>", "s"],
-        ["<cc_sep>", "best", "<cc_sep>", 'play', "er", "s", "s`"]
+        ["best", placeholders["camel_case_separator"], 'play', placeholders["same_case_separator"], "er",
+         placeholders["same_case_separator"], "s"],
+        [placeholders["camel_case_separator"], "best", placeholders["camel_case_separator"], 'play', "er", "s",
+         placeholders["split_words_end"]]
     ),
     "test_BestPlayers": (
         [SplitContainer([SubWord.of("test"), SubWord.of("_Best"), SubWord.of("Players")])],
-        ["test", "<us_sep>", "`C", "best", "<cc_sep>", 'play', "<sc_sep>", "er", "<sc_sep>", "s"],
-        ["<cc_sep>", "test", "<us_sep>", "`C", "best", "<cc_sep>", 'play', "er", "s", "s`"]
+        ["test", placeholders["underscore_separator"], placeholders["capital"], "best",
+         placeholders["camel_case_separator"], 'play', placeholders["same_case_separator"], "er",
+         placeholders["same_case_separator"], "s"],
+        [placeholders["camel_case_separator"], "test", placeholders["underscore_separator"], placeholders["capital"],
+         "best", placeholders["camel_case_separator"], 'play', "er", "s", placeholders["split_words_end"]]
     ),
     "test_BestPlayers_modified": (
         [SplitContainer(
             [SubWord.of("test"), SubWord.of("_Best"), SubWord.of("Players"), SubWord.of("_modified")]
         )],
-        ["test", "<us_sep>", "`C", "best", "<cc_sep>", 'play', "<sc_sep>", "er", "<sc_sep>", "s", "<us_sep>",
-         "mod", "<sc_sep>", "if", "<sc_sep>", "ied"],
-        ["<cc_sep>", "test", "<us_sep>", "`C", "best", "<cc_sep>", 'play', "er", "s", "<us_sep>", "mod", "if", "ied",
-         's`']
+        ["test", placeholders["underscore_separator"], placeholders["capital"], "best",
+         placeholders["camel_case_separator"], 'play', placeholders["same_case_separator"], "er",
+         placeholders["same_case_separator"], "s", placeholders["underscore_separator"],
+         "mod", placeholders["same_case_separator"], "if", placeholders["same_case_separator"], "ied"],
+        [placeholders["camel_case_separator"], "test", placeholders["underscore_separator"], placeholders["capital"],
+         "best", placeholders["camel_case_separator"], 'play', "er", "s", placeholders["underscore_separator"], "mod",
+         "if", "ied",
+         placeholders["split_words_end"]]
     ),
     "N_PLAYERS_NUM": (
         [SplitContainer([SubWord.of("N"), SubWord.of("_PLAYERS"), SubWord.of("_NUM")])],
-        ["`C", "n", "<us_sep>", "`Cs", "play", "<sc_sep>", "er", "<sc_sep>", "s", "<us_sep>", "`Cs", "num"],
-        ["<cc_sep>", "`C", "n", "<us_sep>", "`Cs", "play", "er", "s", "<us_sep>", "`Cs", "num", 's`']
+        [placeholders["capital"], "n", placeholders["underscore_separator"], placeholders["capitals"], "play",
+         placeholders["same_case_separator"], "er", placeholders["same_case_separator"], "s",
+         placeholders["underscore_separator"], placeholders["capitals"], "num"],
+        [placeholders["camel_case_separator"], placeholders["capital"], "n", placeholders["underscore_separator"],
+         placeholders["capitals"], "play", "er", "s", placeholders["underscore_separator"], placeholders["capitals"],
+         "num", placeholders["split_words_end"]]
     ),
 }
 
