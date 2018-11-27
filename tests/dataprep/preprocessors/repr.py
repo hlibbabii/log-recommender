@@ -414,7 +414,7 @@ class TeprTest(unittest.TestCase):
             '1',
             "*",
             placeholders['non_eng'],
-            placeholders["str_literal"],
+            placeholders["string_literal"],
             placeholders["comment"],
             placeholders["comment"]
         ]
