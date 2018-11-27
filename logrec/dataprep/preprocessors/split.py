@@ -32,7 +32,8 @@ def simple_split(token_list, context):
 
 def simple_split_token(token):
     if isinstance(token, ParseableToken):
-        parts = [m[0] for m in re.finditer('(_+$)|(_*(?:[0-9]+|[a-z]+|[A-Z][a-z]+|(?:[A-Z]+(?![a-z]))))', str(token))]
+        parts = [m[0] for m in
+                 re.finditer('(_+$)|(_*(?:[0-9]+|[^A-Z0-9_]+|[A-Z][^A-Z0-9_]+|(?:[A-Z]+(?![^A-Z0-9_]))))', str(token))]
         if len(parts) > 1:
             processable_tokens = [SubWord.of(p) for p in parts]
             return SplitContainer(processable_tokens)
