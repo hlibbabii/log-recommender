@@ -51,7 +51,7 @@ RESULTING_VOCAB_FILE_NAME = "vocab_res.txt"
 def run(reset, base_dir, n_merges):
     if reset:
         logger.info("Starting the encoding from scratch...")
-        vocab = io_utils.read_dict_from_2_columns(f'{base_dir}/{VOCAB_FILE_NAME}', delim=' ')
+        vocab = io_utils.read_dict_from_2_columns(f'{base_dir}/{VOCAB_FILE_NAME}')
         vocab = {" ".join(k): v for k, v in vocab.items()}
     else:
         logger.info("Using existing merges...")
