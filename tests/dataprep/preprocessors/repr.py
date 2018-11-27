@@ -7,7 +7,7 @@ from logrec.dataprep.preprocessors.model.containers import SplitContainer, OneLi
 from logrec.dataprep.preprocessors.model.noneng import NonEng
 from logrec.dataprep.preprocessors.model.numeric import DecimalPoint, Number
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
-from logrec.dataprep.preprocessors.model.word import FullWord, SubWord, Capitalization, WordStart
+from logrec.dataprep.preprocessors.model.word import FullWord, SubWord
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
 from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplitConfig
 from logrec.dataprep.to_repr import to_repr

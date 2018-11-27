@@ -86,7 +86,7 @@ def merge_tabs(tokens, context):
 
 
 def add_ect(token_list, context):
-    token_list.append("<ect>")
+    token_list.append(placeholders['ect'])
     return token_list
 
 
