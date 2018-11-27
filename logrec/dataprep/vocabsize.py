@@ -16,7 +16,6 @@ from logrec.dataprep import base_project_dir
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.to_repr import REPR_EXTENSION
 from logrec.dataprep.util import AtomicInteger
-from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_VOCABSIZE_ARGS
 from logrec.util import io_utils
 
 logger = logging.getLogger(__name__)
@@ -306,6 +305,8 @@ def run(full_src_dir, full_metadata_dir):
 
 
 if __name__ == '__main__':
+    from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_VOCABSIZE_ARGS
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--base-from', action='store', default=DEFAULT_PARSED_DATASETS_DIR)
     parser.add_argument('dataset', action='store', help=f'dataset name')
