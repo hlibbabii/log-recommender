@@ -84,6 +84,8 @@ class PartialVocab(object):
     def write_stats(self, path_to_stats_file):
         stats = self.__generate_stats()
         with open(path_to_stats_file, 'w') as f:
+            vocabsize = int(stats[-1][1][0])
+            f.write(f"{str(vocabsize)}\n")
             for percent, (v, n) in stats:
                 f.write(f"{percent} {v} {n}\n")
 
