@@ -1,5 +1,6 @@
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocess_params import pp_params
+from logrec.dataprep.preprocessors.general import from_file
 
 __author__ = 'hlib'
 
@@ -25,7 +26,7 @@ class PreprocessTest(unittest.TestCase):
 
         expected = '''public class wr3223activator implements bundle <identifiersep> activator { <comment> \n \t1 private static logger logger = logger <identifiersep> factory . get <identifiersep> logger ( wr3223activator . class ) ; \n \t1 @ override 0 1 <number_literal> \n \t1 public void start ( bundle <identifiersep> context context ) throws exception { \n \t2 logger . debug ( <string_literal> ) ; \n \t1 } \n \n \t1 @ override \n \t1 public void stop ( bundle <identifiersep> context context ) throws exception { \n \t1 <comment> \t1 logger . debug ( <string_literal> ) ; \n <ect>'''
 
-        actual = apply_preprocessors(inp, pp_params["preprocessors"], {'interesting_context_words': []})
+        actual = apply_preprocessors(from_file(inp), pp_params["preprocessors"], {'interesting_context_words': []})
 
         self.assertEqual(repr(expected)[1:-1] + "\n", actual)
 

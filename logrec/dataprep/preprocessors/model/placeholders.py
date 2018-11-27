@@ -10,6 +10,7 @@ placeholders= {
     'split_words_end': 's`',
     'split_words_start': '`s',
     'capital': '`C',
+    'capitals': '`Cs',
     'var': '<var>',
     'string_resource': '<str_res>',
     'ect': '<ect>',

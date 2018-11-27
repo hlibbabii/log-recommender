@@ -1,20 +1,23 @@
 from enum import Enum, auto
 
-from logrec.dataprep.preprocessors.model.general import ProcessableToken
-from logrec.dataprep.preprocessors.model.numeric import Number
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
-from logrec.dataprep.preprocessors.model.split import SplitRepr
 from logrec.dataprep.split.bpe_encode import encode_word
 from logrec.dataprep.util import insert_separators
 
 
+class SplitRepr(Enum):
+    BETWEEN_WORDS = auto()
+    BONDERIES = auto()
+    NONE = auto()
+
+
 class NgramSplittingType(Enum):
-    CUSTOM = auto()
+    NUMBERS_AND_CUSTOM = auto()
     BPE = auto()
     ONLY_NUMBERS = auto()
 
 
-class NgramSplittingConfig(object):
+class NgramSplitConfig(object):
     def __init__(self, splitting_type=None, merges_cache=None, merges=None, sc_splittings=None):
         self._splitting_type = splitting_type
         self._merges_cache = merges_cache
@@ -48,53 +51,50 @@ class NgramSplittingConfig(object):
     def sc_splittings(self, s):
         self._sc_splittings = s
 
-    def is_bpe(self):
-        return self._splitting_type == NgramSplittingType.BPE
-
-    def do_splitting(self, clazz):
-        return (clazz == Number and self._splitting_type == NgramSplittingType.ONLY_NUMBERS) or \
-               ((self._splitting_type == NgramSplittingType.BPE or self._splitting_type == NgramSplittingType.CUSTOM)
-                and (clazz == Number or clazz == ProcessableToken))
+    @property
+    def splitting_type(self):
+        return self._splitting_type
 
 
-def get_bpe_subwords(word, merges, cache):
+def get_bpe_subwords(word, config):
+    merges = config.merges
+    cache = config.merges_cache
     if word in cache:
         return cache[word]
     else:
         return encode_word(word, merges)
 
 
-def get_sc_subwords(word, splittings):
+def get_sc_subwords(word, config):
+    splittings = config.sc_splittings
     if word in splittings:
         return splittings[word]
     else:
         return [word]
 
 
+def get_number_subwords(word, config):
+    return [str(w) for w in word]
+
+
+splitting_type_to_func_map = {
+    NgramSplittingType.ONLY_NUMBERS: get_number_subwords,
+    NgramSplittingType.NUMBERS_AND_CUSTOM: get_sc_subwords,
+    NgramSplittingType.BPE: get_bpe_subwords
+}
+
+
+def do_ngram_splitting(canonic_form, ngram_split_config):
+    return splitting_type_to_func_map[ngram_split_config.splitting_type](canonic_form, ngram_split_config)
+
+
 def insert_borders(subwords, split_repr):
     if split_repr == SplitRepr.NONE:
         return subwords
     elif split_repr == SplitRepr.BONDERIES:
-        return [placeholders['split_words_start']] + subwords + [placeholders['split_words_end']]
+        return subwords
     elif split_repr == SplitRepr.BETWEEN_WORDS:
         return insert_separators(subwords, placeholders['same_case_separator'])
     else:
         raise AssertionError(f"Unknown split repr: {split_repr}")
 
-
-def get_number_subwords(word):
-    return [str(w) for w in word]
-
-
-def do_same_case_splitting(token, ngramSplittingConfig, split_repr):
-    word = token.non_preprocessed_repr()
-    if ngramSplittingConfig.is_bpe():
-        subwords = get_bpe_subwords(word, ngramSplittingConfig.merges, ngramSplittingConfig.merges_cache)
-    elif isinstance(token, Number):
-        subwords = get_number_subwords(word)
-    elif isinstance(token, ProcessableToken):
-        subwords = get_sc_subwords(token.non_preprocessed_repr(), ngramSplittingConfig.sc_splittings)
-    else:
-        raise AssertionError()
-
-    return insert_borders(subwords, split_repr)

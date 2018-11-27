@@ -1,11 +1,9 @@
 import unittest
 
 from logrec.dataprep.preprocessors.general import spl_verbose
-from logrec.dataprep.preprocessors.model.capitals import Capitals
 from logrec.dataprep.preprocessors.model.chars import MultilineCommentStart, MultilineCommentEnd, OneLineCommentStart, \
-    Quote, \
-    Backslash, Tab
-from logrec.dataprep.preprocessors.model.general import ProcessableToken
+    Quote, Backslash, Tab
+from logrec.dataprep.preprocessors.model.word import Word, ParseableToken
 
 
 class GeneralTest(unittest.TestCase):
@@ -14,14 +12,20 @@ class GeneralTest(unittest.TestCase):
 long[] lovely_longs = {/* there should be some longs here*/};
 int[] _my_favoRite_ints_ = {/* ints here*/};
 '''
-        actual = spl_verbose([ProcessableToken(text)], None)
+        actual = spl_verbose([ParseableToken(text)], None)
 
-        expected = ['\n', ProcessableToken("long"), '[', ']', ProcessableToken("lovely_longs"),
-                    '=', '{', MultilineCommentStart(), ProcessableToken("there"), ProcessableToken("should"),
-                    ProcessableToken("be"), ProcessableToken("some"), ProcessableToken("longs"),
-                    ProcessableToken("here"), MultilineCommentEnd(), "}", ';', '\n', ProcessableToken("int"),
-                    '[', ']', ProcessableToken("_my_favoRite_ints_"), '=', '{', MultilineCommentStart(),
-                    ProcessableToken("ints"), ProcessableToken("here"), MultilineCommentEnd(), '}', ';', '\n',
+        expected = ['\n', ParseableToken("long"), '[', ']', ParseableToken("lovely_longs"),
+                    '=', '{', MultilineCommentStart(),
+                    ParseableToken("there"),
+                    ParseableToken("should"),
+                    ParseableToken("be"),
+                    ParseableToken("some"),
+                    ParseableToken("longs"),
+                    ParseableToken("here"),
+                    MultilineCommentEnd(), "}", ';', '\n',
+                    ParseableToken("int"),
+                    '[', ']', ParseableToken("_my_favoRite_ints_"), '=', '{', MultilineCommentStart(),
+                    ParseableToken("ints"), ParseableToken("here"), MultilineCommentEnd(), '}', ';', '\n',
                     ]
 
         self.assertEqual(expected, actual)
@@ -31,13 +35,13 @@ int[] _my_favoRite_ints_ = {/* ints here*/};
 float[] floats = {}; //floats were removed 
 BigAWESOMEString[] a2y = "abc".doSplit("\\"");
 '''
-        actual = spl_verbose([ProcessableToken(text)], None)
+        actual = spl_verbose([ParseableToken(text)], None)
 
-        expected = ['\n', ProcessableToken("float"), '[', ']', ProcessableToken("floats"), '=', '{', '}',
-                    ';', OneLineCommentStart(), ProcessableToken("floats"), ProcessableToken("were"),
-                    ProcessableToken("removed"), '\n', ProcessableToken("BigAWESOMEString"),
-                    '[', ']', ProcessableToken("a2y"), '=', Quote(), ProcessableToken("abc"), Quote(), '.',
-                    ProcessableToken("doSplit"), '(', Quote(), Backslash(), Quote(), Quote(), ')', ';', '\n', ]
+        expected = ['\n', ParseableToken("float"), '[', ']', ParseableToken("floats"), '=', '{', '}',
+                    ';', OneLineCommentStart(), ParseableToken("floats"), ParseableToken("were"),
+                    ParseableToken("removed"), '\n', ParseableToken("BigAWESOMEString"),
+                    '[', ']', ParseableToken("a2y"), '=', Quote(), ParseableToken("abc"), Quote(), '.',
+                    ParseableToken("doSplit"), '(', Quote(), Backslash(), Quote(), Quote(), ')', ';', '\n', ]
 
         self.assertEqual(expected, actual)
 
@@ -47,16 +51,16 @@ BigAWESOMEString[] a2y = "abc".doSplit("\\"");
 9a ** abc1
 ~-|=?==!=/* gj **/
 '''
-        actual = spl_verbose([ProcessableToken(text)], None)
+        actual = spl_verbose([ParseableToken(text)], None)
 
-        expected = ['\n',OneLineCommentStart(),
-                    ProcessableToken("this"), ProcessableToken("code"), ProcessableToken("won"),
-                    "'", ProcessableToken("t"), ProcessableToken("compile"), ProcessableToken("but"),
-                    ProcessableToken("the"), ProcessableToken("preprocessing"), ProcessableToken("still"),
-                    ProcessableToken("has"), ProcessableToken("to"), ProcessableToken("be"),
-                    ProcessableToken("done"), ProcessableToken("corrrectly"), '\n',
-                    ProcessableToken("9a"), '**', ProcessableToken("abc1"), '\n', '~', '-', '|=', '?',
-                    '==', '!=', MultilineCommentStart(), ProcessableToken("gj"), '*',
+        expected = ['\n', OneLineCommentStart(),
+                    ParseableToken("this"), ParseableToken("code"), ParseableToken("won"),
+                    "'", ParseableToken("t"), ParseableToken("compile"), ParseableToken("but"),
+                    ParseableToken("the"), ParseableToken("preprocessing"), ParseableToken("still"),
+                    ParseableToken("has"), ParseableToken("to"), ParseableToken("be"),
+                    ParseableToken("done"), ParseableToken("corrrectly"), '\n',
+                    ParseableToken("9a"), '**', ParseableToken("abc1"), '\n', '~', '-', '|=', '?',
+                    '==', '!=', MultilineCommentStart(), ParseableToken("gj"), '*',
                     MultilineCommentEnd(), '\n']
 
         self.assertEqual(expected, actual)
@@ -87,31 +91,31 @@ r||r
 *//
 _operations
 '''
-        actual = spl_verbose([ProcessableToken(text)], None)
+        actual = spl_verbose([ParseableToken(text)], None)
 
-        expected = ['\n', ProcessableToken('a'), '++', ProcessableToken('a'),
-                    '\n', ProcessableToken('b'), '--', ProcessableToken('b'),
-                    '\n', ProcessableToken('c'), '+=', ProcessableToken('c'),
-                    '\n', ProcessableToken('d'), '-=', ProcessableToken('d'),
-                    '\n', ProcessableToken('e'), '/=', ProcessableToken('e'),
-                    '\n', ProcessableToken('f'), '*=', ProcessableToken('f'),
-                    '\n', ProcessableToken('g'), '%=', ProcessableToken('g'),
-                    '\n', ProcessableToken('h'), '$', ProcessableToken('h'),
-                    '\n', ProcessableToken('i'), '<=', ProcessableToken('i'),
-                    '\n', ProcessableToken('j'), '>=', ProcessableToken('j'),
-                    '\n', ProcessableToken('k'), '@', ProcessableToken('k'),
-                    '\n', ProcessableToken('l'), '^=', ProcessableToken('l'),
-                    '\n', ProcessableToken('m'), '&=', ProcessableToken('m'),
-                    '\n', ProcessableToken('n'), '#', ProcessableToken('n'),
-                    '\n', ProcessableToken('o'), '>>', ProcessableToken('o'),
-                    '\n', ProcessableToken('p'), '<<', ProcessableToken('p'),
-                    '\n', ProcessableToken('q'), '&&', ProcessableToken('q'),
-                    '\n', ProcessableToken('r'), '||', ProcessableToken('r'),
+        expected = ['\n', ParseableToken('a'), '++', ParseableToken('a'),
+                    '\n', ParseableToken('b'), '--', ParseableToken('b'),
+                    '\n', ParseableToken('c'), '+=', ParseableToken('c'),
+                    '\n', ParseableToken('d'), '-=', ParseableToken('d'),
+                    '\n', ParseableToken('e'), '/=', ParseableToken('e'),
+                    '\n', ParseableToken('f'), '*=', ParseableToken('f'),
+                    '\n', ParseableToken('g'), '%=', ParseableToken('g'),
+                    '\n', ParseableToken('h'), '$', ParseableToken('h'),
+                    '\n', ParseableToken('i'), '<=', ParseableToken('i'),
+                    '\n', ParseableToken('j'), '>=', ParseableToken('j'),
+                    '\n', ParseableToken('k'), '@', ParseableToken('k'),
+                    '\n', ParseableToken('l'), '^=', ParseableToken('l'),
+                    '\n', ParseableToken('m'), '&=', ParseableToken('m'),
+                    '\n', ParseableToken('n'), '#', ParseableToken('n'),
+                    '\n', ParseableToken('o'), '>>', ParseableToken('o'),
+                    '\n', ParseableToken('p'), '<<', ParseableToken('p'),
+                    '\n', ParseableToken('q'), '&&', ParseableToken('q'),
+                    '\n', ParseableToken('r'), '||', ParseableToken('r'),
                     '\n', '+', '*', '!', '/', '>', '<', Tab(), '\n', '\n', '{', '}', '[',
                     ']', ',', '.', '-', ':', '(', ')', ';', '&', '|', Backslash(), "'", '~', '%', '^',
-                    '\n', MultilineCommentStart(), ProcessableToken("multi"), '-', ProcessableToken("line"),
-                    ProcessableToken("MyComment_"), '\n', MultilineCommentEnd(), '/', '\n',
-                    ProcessableToken("_operations"), '\n']
+                    '\n', MultilineCommentStart(), ParseableToken("multi"), '-', ParseableToken("line"),
+                    ParseableToken("MyComment_"), '\n', MultilineCommentEnd(), '/', '\n',
+                    ParseableToken("_operations"), '\n']
 
         self.assertEqual(expected, actual)
 
@@ -119,11 +123,11 @@ _operations
         text = '''
 logger.info("The value is " + val);
 '''
-        actual = spl_verbose([ProcessableToken(text)], None)
+        actual = spl_verbose([ParseableToken(text)], None)
 
-        expected = ['\n', ProcessableToken("logger"), '.', ProcessableToken("info"),
-                    '(', Quote(), ProcessableToken("The"), ProcessableToken("value"), ProcessableToken("is"), Quote(),
-                    '+', ProcessableToken('val'), ')', ';', '\n',
+        expected = ['\n', ParseableToken("logger"), '.', ParseableToken("info"),
+                    '(', Quote(), ParseableToken("The"), ParseableToken("value"), ParseableToken("is"), Quote(),
+                    '+', ParseableToken('val'), ')', ';', '\n',
                     ]
 
         self.assertEqual(expected, actual)

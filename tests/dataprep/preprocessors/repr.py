@@ -1,51 +1,61 @@
 import unittest
 
 from logrec.dataprep.preprocessors.model.chars import NewLine, Tab
-from logrec.dataprep.preprocessors.model.general import ProcessableToken, NonEng
-from logrec.dataprep.preprocessors.model.numeric import Number, DecimalPoint
-from logrec.dataprep.preprocessors.model.split import UnderscoreSplit, CamelCaseSplit, WithNumbersSplit
-from logrec.dataprep.preprocessors.model.textcontainers import OneLineComment, StringLiteral, MultilineComment
 # TODO write explanations with normal strings
+from logrec.dataprep.preprocessors.model.containers import SplitContainer, OneLineComment, MultilineComment, \
+    StringLiteral
+from logrec.dataprep.preprocessors.model.noneng import NonEng
+from logrec.dataprep.preprocessors.model.numeric import DecimalPoint, Number
+from logrec.dataprep.preprocessors.model.word import FullWord, SubWord, Capitalization, WordStart
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
-from logrec.dataprep.preprocessors.repr import to_repr
-from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplittingConfig
+from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplitConfig
+from logrec.dataprep.to_repr import to_repr
+
+tokens = [
+    Number([1, DecimalPoint(), 1]),
+    "*",
+    NonEng(FullWord.of("dinero")),
+    StringLiteral([
+        SplitContainer([
+            SubWord.of("A"),
+            NonEng(SubWord.of("Wirklich"))
+        ])
+    ]),
+    NewLine(),
+    MultilineComment([
+        NonEng(FullWord.of('ц')),
+        SplitContainer([
+            NonEng(SubWord.of("blanco")),
+            SubWord.of("_english")
+        ])
+    ]),
+    NewLine(), Tab(),
+    OneLineComment([
+        SplitContainer([
+            NonEng(SubWord.of("DIESELBE")),
+            SubWord.of("8")
+        ])
+    ])
+]
 
 
 class TeprTest(unittest.TestCase):
 
-    def test_both_nosep_and_bpe(self):
+    def test_both_enonly_and_nosplit(self):
         with self.assertRaises(ValueError):
             prep_params = {
                 PreprocessingParam.EN_ONLY: 1,
                 PreprocessingParam.NO_COM_STR: 0,
-                PreprocessingParam.SPL: 4,
-                PreprocessingParam.NO_SEP: 1,
-                PreprocessingParam.NO_NEWLINES_TABS: 1,
-                PreprocessingParam.NO_LOGS: 0
-                           }
-            to_repr(prep_params, [], {})
-
-    ############################################################################################
-    ############################################################################################
-
-    def test_both_nosep_and_same_case_splitting(self):
-        with self.assertRaises(ValueError):
-            prep_params = {
-                PreprocessingParam.EN_ONLY: 1,
-                PreprocessingParam.NO_COM_STR: 0,
-                PreprocessingParam.SPL: 3,
-                PreprocessingParam.NO_SEP: 1,
+                PreprocessingParam.SPL: 0,
+                PreprocessingParam.NO_SEP: 0,
                 PreprocessingParam.NO_NEWLINES_TABS: 1,
                 PreprocessingParam.NO_LOGS: 0
             }
             to_repr(prep_params, [], {})
 
-    ############################################################################################
-    ############################################################################################
-
     def test_to_repr_0(self):
         prep_params = {
-            PreprocessingParam.EN_ONLY: 1,
+            PreprocessingParam.EN_ONLY: 0,
             PreprocessingParam.NO_COM_STR: 0,
             PreprocessingParam.SPL: 0,
             PreprocessingParam.NO_SEP: 0,
@@ -53,44 +63,15 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.NO_LOGS: 0
         }
 
-        ngramSplittingConfig = NgramSplittingConfig()
-
-        tokens = [
-            Number([1, DecimalPoint(), 1]),
-            "*",
-            NonEng(ProcessableToken("dinero")),
-            StringLiteral([
-                CamelCaseSplit([
-                    ProcessableToken("a"),
-                    NonEng(ProcessableToken("wirklich"))
-                ], True)
-            ]),
-            NewLine(),
-            MultilineComment([
-                NonEng(ProcessableToken('ц')),
-                UnderscoreSplit([
-                    NonEng(ProcessableToken("blanco")),
-                    ProcessableToken("english")
-                ])
-            ]),
-            NewLine(), Tab(),
-            OneLineComment([
-                WithNumbersSplit([
-                    NonEng(ProcessableToken("dieselbe")),
-                    ProcessableToken("8")
-                ], True)
-            ])
-        ]
-
-        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+        actual = to_repr(prep_params, tokens, NgramSplitConfig())
 
         expected = [
             '1.1',
             "*",
-            '<non_eng>',
+            'dinero',
             '"', 'AWirklich', '"',
-            '/*', '<non_eng>', 'blanco_english', '*/',
-            '//', "Dieselbe8"
+            '/*', 'ц', 'blanco_english', '*/',
+            '//', "DIESELBE8"
         ]
 
         self.assertEqual(expected, actual)
@@ -108,36 +89,7 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.NO_LOGS: 0
         }
 
-        ngramSplittingConfig = NgramSplittingConfig()
-
-        tokens = [
-            Number([1, DecimalPoint(), 1]),
-            "*",
-            NonEng(ProcessableToken("dinero")),
-            StringLiteral([
-                CamelCaseSplit([
-                    ProcessableToken("a"),
-                    NonEng(ProcessableToken("wirklich"))
-                ], True)
-            ]),
-            NewLine(),
-            MultilineComment([
-                NonEng(ProcessableToken('ц')),
-                UnderscoreSplit([
-                    NonEng(ProcessableToken("blanco")),
-                    ProcessableToken("english")
-                ])
-            ]),
-            NewLine(), Tab(),
-            OneLineComment([
-                WithNumbersSplit([
-                    NonEng(ProcessableToken("dieselbe")),
-                    ProcessableToken("8")
-                ], True)
-            ])
-        ]
-
-        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+        actual = to_repr(prep_params, tokens, NgramSplitConfig())
 
         expected = [
             '1.1',
@@ -145,14 +97,15 @@ class TeprTest(unittest.TestCase):
             '<non_eng>',
             '"', '`C', 'a', '<cc_sep>', '<non_eng>', '"',
             '/*', '<non_eng>', '<non_eng>', '<us_sep>', 'english', '*/',
-            '//', '`C', '<non_eng>', '<cc_sep>', "8"
+            '//', '`Cs', '<non_eng>', '<cc_sep>', "8"
         ]
 
         self.assertEqual(expected, actual)
 
-    ############################################################################################
-    ############################################################################################
-
+    #
+    #     ############################################################################################
+    #     ############################################################################################
+    #
     def test_to_repr_1_nosep(self):
         prep_params = {
             PreprocessingParam.EN_ONLY: 1,
@@ -163,50 +116,21 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.NO_LOGS: 0
         }
 
-        ngramSplittingConfig = NgramSplittingConfig()
-
-        tokens = [
-            Number([1, DecimalPoint(), 1]),
-            "*",
-            NonEng(ProcessableToken("dinero")),
-            StringLiteral([
-                CamelCaseSplit([
-                    ProcessableToken("a"),
-                    NonEng(ProcessableToken("wirklich"))
-                ], True)
-            ]),
-            NewLine(),
-            MultilineComment([
-                NonEng(ProcessableToken('ц')),
-                UnderscoreSplit([
-                    NonEng(ProcessableToken("blanco")),
-                    ProcessableToken("english")
-                ])
-            ]),
-            NewLine(), Tab(),
-            OneLineComment([
-                WithNumbersSplit([
-                    NonEng(ProcessableToken("dieselbe")),
-                    ProcessableToken("8")
-                ], True)
-            ])
-        ]
-
-        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+        actual = to_repr(prep_params, tokens, NgramSplitConfig())
 
         expected = [
             '1.1',
             "*",
             '<non_eng>',
-            '"', '`s', '`C', 'a', '<non_eng>', 's`', '"',
-            '/*', '<non_eng>', '`s', '<non_eng>', 'english', 's`', '*/',
-            '//', '`s', '`C', '<non_eng>', "8", 's`'
+            '"', '<cc_sep>', '`C', 'a', '<cc_sep>', '<non_eng>', 's`', '"',
+            '/*', '<non_eng>', '<cc_sep>', '<non_eng>', '<us_sep>', 'english', 's`', '*/',
+            '//', '<cc_sep>', '`Cs', '<non_eng>', '<cc_sep>', '8', 's`'
         ]
 
         self.assertEqual(expected, actual)
 
     ############################################################################################
-    ############################################################################################
+    ########################k####################################################################
 
     def test_to_repr_2(self):
         prep_params = {
@@ -218,38 +142,8 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.NO_LOGS: 0
         }
 
-        ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS,
-                                                    sc_splittings={
-                                                        'english': ['engl', 'ish'],
-                                                        '<non_eng>': ['<non', '_eng>']
-                                                    })
-
-        tokens = [
-            Number([1, DecimalPoint(), 1]),
-            "*",
-            NonEng(ProcessableToken("dinero")),
-            StringLiteral([
-                CamelCaseSplit([
-                    ProcessableToken("a"),
-                    NonEng(ProcessableToken("wirklich"))
-                ], True)
-            ]),
-            NewLine(),
-            MultilineComment([
-                NonEng(ProcessableToken('ц')),
-                UnderscoreSplit([
-                    NonEng(ProcessableToken("blanco")),
-                    ProcessableToken("english")
-                ])
-            ]),
-            NewLine(), Tab(),
-            OneLineComment([
-                WithNumbersSplit([
-                    NonEng(ProcessableToken("dieselbe")),
-                    ProcessableToken("8")
-                ], True)
-            ])
-        ]
+        ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS,
+                                                sc_splittings={})
 
         actual = to_repr(prep_params, tokens, ngramSplittingConfig)
 
@@ -263,7 +157,7 @@ class TeprTest(unittest.TestCase):
             '<non_eng>',
             '"', '`C', 'a', '<cc_sep>', '<non_eng>', '"',
             '/*', '<non_eng>', '<non_eng>', '<us_sep>', 'english', '*/',
-            '//', '`C', '<non_eng>', '<cc_sep>', "8",
+            '//', '`Cs', '<non_eng>', '<cc_sep>', "8",
         ]
 
         self.assertEqual(expected, actual)
@@ -281,48 +175,21 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.NO_LOGS: 0
         }
 
-        ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS)
-
-        tokens = [
-            Number([1, DecimalPoint(), 1]),
-            "*",
-            NonEng(ProcessableToken("dinero")),
-            StringLiteral([
-                CamelCaseSplit([
-                    ProcessableToken("a"),
-                    NonEng(ProcessableToken("wirklich"))
-                ], True)
-            ]),
-            NewLine(),
-            MultilineComment([
-                NonEng(ProcessableToken('ц')),
-                UnderscoreSplit([
-                    NonEng(ProcessableToken("blanco")),
-                    ProcessableToken("english")
-                ])
-            ]),
-            NewLine(), Tab(),
-            OneLineComment([
-                WithNumbersSplit([
-                    NonEng(ProcessableToken("dieselbe")),
-                    ProcessableToken("8")
-                ], True)
-            ])
-        ]
+        ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS)
 
         actual = to_repr(prep_params, tokens, ngramSplittingConfig)
 
         expected = [
-            '`s',
+            '<cc_sep>',
             '1',
             '.',
             '1',
             's`',
             "*",
             '<non_eng>',
-            '"', '`s', '`C', 'a', '<non_eng>', 's`', '"',
-            '/*', '<non_eng>', '`s', '<non_eng>', 'english', 's`', '*/',
-            '//', '`s', '`C', '<non_eng>', "8", 's`'
+            '"', '<cc_sep>', '`C', 'a', '<cc_sep>', '<non_eng>', 's`', '"',
+            '/*', '<non_eng>', '<cc_sep>', '<non_eng>', '<us_sep>', 'english', 's`', '*/',
+            '//', '<cc_sep>', '`Cs', '<non_eng>', '<cc_sep>', "8", 's`'
         ]
 
         self.assertEqual(expected, actual)
@@ -340,41 +207,41 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.NO_LOGS: 0
         }
 
-        ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.CUSTOM,
-                                                    sc_splittings={})
+        ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
+                                                sc_splittings={})
 
         tokens = [
             Number([1, DecimalPoint(), 1]),
             "*",
-            NonEng(ProcessableToken("dinero")),
+            NonEng(FullWord.of("dinero")),
             StringLiteral([
-                NonEng(ProcessableToken("ich")),
-                NonEng(ProcessableToken("weiss")),
-                NonEng(ProcessableToken("nicht")),
-                NonEng(ProcessableToken("was")),
-                NonEng(ProcessableToken("soll")),
-                NonEng(ProcessableToken("es")),
-                NonEng(ProcessableToken("bedeuten")),
-                NonEng(ProcessableToken("dass")),
-                NonEng(ProcessableToken("ich")),
-                NonEng(ProcessableToken("so")),
-                NonEng(ProcessableToken("traurig")),
-                NonEng(ProcessableToken("bin")),
+                NonEng(SubWord.of("ich")),
+                NonEng(SubWord.of("weiss")),
+                NonEng(SubWord.of("nicht")),
+                NonEng(SubWord.of("was")),
+                NonEng(SubWord.of("soll")),
+                NonEng(SubWord.of("es")),
+                NonEng(SubWord.of("bedeuten")),
+                NonEng(SubWord.of("dass")),
+                NonEng(SubWord.of("ich")),
+                NonEng(SubWord.of("so")),
+                NonEng(SubWord.of("traurig")),
+                NonEng(SubWord.of("bin")),
             ]),
             NewLine(),
             MultilineComment([
-                NonEng(ProcessableToken('ц')),
-                UnderscoreSplit([
-                    NonEng(ProcessableToken("blanco")),
-                    ProcessableToken("english")
+                NonEng(FullWord.of('ц')),
+                SplitContainer([
+                    NonEng(SubWord.of("blanco")),
+                    SubWord.of("_english")
                 ])
             ]),
             NewLine(), Tab(),
             OneLineComment([
-                WithNumbersSplit([
-                    NonEng(ProcessableToken("dieselbe")),
-                    ProcessableToken("8")
-                ], True)
+                SplitContainer([
+                    NonEng(SubWord.of("DIESELBE")),
+                    SubWord.of("8")
+                ])
             ])
         ]
 
@@ -390,7 +257,7 @@ class TeprTest(unittest.TestCase):
             '<non_eng>',
             '"', '<non_eng_contents>', '"',
             '/*', '<non_eng>', '<non_eng>', '<us_sep>', 'english', '*/',
-            '//', '`C', '<non_eng>', '<cc_sep>', "8",
+            '//', '`Cs', '<non_eng>', '<cc_sep>', "8",
         ]
 
         self.assertEqual(expected, actual)
@@ -408,38 +275,10 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.NO_LOGS: 0
         }
 
-        ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.CUSTOM,
-                                                    sc_splittings={
-                                  'english': ['engl', 'ish'],
-                                  '<non_eng>': ['<non', '_eng>']
+        ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
+                                                sc_splittings={
+                                                    'english': ['engl', 'ish']
                                                     })
-
-        tokens = [
-            Number([1, DecimalPoint(), 1]),
-            "*",
-            NonEng(ProcessableToken("dinero")),
-            StringLiteral([
-                CamelCaseSplit([
-                    ProcessableToken("a"),
-                    NonEng(ProcessableToken("wirklich"))
-                ], True)
-            ]),
-            NewLine(),
-            MultilineComment([
-                NonEng(ProcessableToken('ц')),
-                UnderscoreSplit([
-                    NonEng(ProcessableToken("blanco")),
-                    ProcessableToken("english")
-                ])
-            ]),
-            NewLine(), Tab(),
-            OneLineComment([
-                WithNumbersSplit([
-                    NonEng(ProcessableToken("dieselbe")),
-                    ProcessableToken("8")
-                ], True)
-            ])
-        ]
 
         actual = to_repr(prep_params, tokens, ngramSplittingConfig)
 
@@ -453,7 +292,7 @@ class TeprTest(unittest.TestCase):
             '<non_eng>',
             '"', '`C', 'a', '<cc_sep>', '<non_eng>', '"',
             '/*', '<non_eng>', '<non_eng>', '<us_sep>', 'engl', '<sc_sep>', 'ish', '*/',
-            '//', '`C', '<non_eng>', '<cc_sep>', "8"
+            '//', '`Cs', '<non_eng>', '<cc_sep>', "8"
         ]
 
         self.assertEqual(expected, actual)
@@ -471,39 +310,11 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.NO_LOGS: 0
         }
 
-        ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.CUSTOM,
-                                                    sc_splittings={
+        ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
+                                                sc_splittings={
                                   'english': ['engl', 'ish'],
-                                  'dieselbe': ['die', 'selbe'],
-                                  '<non_eng>': ['<non', '_eng>']
+                                                    'dieselbe': ['die', 'selbe']
                                                     })
-
-        tokens = [
-            Number([1, DecimalPoint(), 1]),
-            "*",
-            NonEng(ProcessableToken("dinero")),
-            StringLiteral([
-                CamelCaseSplit([
-                    ProcessableToken("a"),
-                    NonEng("wirklich")
-                ], True)
-            ]),
-            NewLine(),
-            MultilineComment([
-                NonEng(ProcessableToken('ц')),
-                UnderscoreSplit([
-                    NonEng(ProcessableToken("blanco")),
-                    ProcessableToken("english")
-                ])
-            ]),
-            NewLine(), Tab(),
-            OneLineComment([
-                WithNumbersSplit([
-                    NonEng(ProcessableToken("dieselbe")),
-                    ProcessableToken("8")
-                ], True)
-            ])
-        ]
 
         actual = to_repr(prep_params, tokens, ngramSplittingConfig)
 
@@ -517,14 +328,15 @@ class TeprTest(unittest.TestCase):
             'dinero',
             '"', '`C', 'a', '<cc_sep>', 'wirklich', '"',
             '/*', 'ц', 'blanco', '<us_sep>', 'engl', '<sc_sep>', 'ish', '*/',
-            '//', '`C', 'die', '<sc_sep>', 'selbe', '<cc_sep>', "8",
+            '//', '`Cs', 'die', '<sc_sep>', 'selbe', '<cc_sep>', "8",
         ]
 
         self.assertEqual(expected, actual)
 
-    ############################################################################################
-    ############################################################################################
-
+    #
+    #     ############################################################################################
+    #     ############################################################################################
+    #
     def test_to_repr_with_newlines_and_tabs(self):
         prep_params = {
             PreprocessingParam.EN_ONLY: 1,
@@ -535,58 +347,32 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.NO_LOGS: 0
         }
 
-        ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS,
-                                                    )
-
-        tokens = [
-            Number([1, DecimalPoint(), 1]),
-            "*",
-            NonEng(ProcessableToken("dinero")),
-            StringLiteral([
-                CamelCaseSplit([
-                    ProcessableToken("a"),
-                    NonEng(ProcessableToken("wirklich"))
-                ], True)
-            ]),
-            NewLine(),
-            MultilineComment([
-                NonEng(ProcessableToken('ц')),
-                UnderscoreSplit([
-                    NonEng(ProcessableToken("blanco")),
-                    ProcessableToken("english")
-                ])
-            ]),
-            NewLine(), Tab(),
-            OneLineComment([
-                WithNumbersSplit([
-                    NonEng(ProcessableToken("dieselbe")),
-                    ProcessableToken("8")
-                ], True)
-            ])
-        ]
+        ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS,
+                                                )
 
         actual = to_repr(prep_params, tokens, ngramSplittingConfig)
 
         expected = [
-            '`s',
+            '<cc_sep>',
             '1',
             '.',
             '1',
             's`',
             "*",
             '<non_eng>',
-            '"', '`s', '`C', 'a', '<non_eng>', 's`', '"',
+            '"', '<cc_sep>', '`C', 'a', '<cc_sep>', '<non_eng>', 's`', '"',
             '\n',
-            '/*', '<non_eng>', '`s', '<non_eng>', 'english', 's`', '*/',
+            '/*', '<non_eng>', '<cc_sep>', '<non_eng>', '<us_sep>', 'english', 's`', '*/',
             '\n', '\t',
-            '//', '`s', '`C', '<non_eng>', "8", 's`'
+            '//', '<cc_sep>', '`Cs', '<non_eng>', '<cc_sep>', "8", 's`'
         ]
 
         self.assertEqual(expected, actual)
 
-    ############################################################################################
-    ############################################################################################
-
+    #
+    #     ############################################################################################
+    #     ############################################################################################
+    #
     def test_to_repr_no_str_no_com(self):
         prep_params = {
             PreprocessingParam.EN_ONLY: 1,
@@ -597,38 +383,10 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.NO_LOGS: 0
         }
 
-        ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.CUSTOM,
-                                                    sc_splittings={
-                                  'english': ['engl', 'ish'],
-                                  '<non_eng>': ['<non', '_eng>']
+        ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
+                                                sc_splittings={
+                                                    'english': ['engl', 'ish']
                                                     })
-
-        tokens = [
-            Number([1, DecimalPoint(), 1]),
-            "*",
-            NonEng(ProcessableToken("dinero")),
-            StringLiteral([
-                CamelCaseSplit([
-                    ProcessableToken("a"),
-                    NonEng(ProcessableToken("wirklich"))
-                ], True)
-            ]),
-            NewLine(),
-            MultilineComment([
-                NonEng(ProcessableToken('ц')),
-                UnderscoreSplit([
-                    NonEng(ProcessableToken("blanco")),
-                    ProcessableToken("english")
-                ])
-            ]),
-            NewLine(), Tab(),
-            OneLineComment([
-                WithNumbersSplit([
-                    NonEng(ProcessableToken("dieselbe")),
-                    ProcessableToken("8")
-                ], True)
-            ])
-        ]
 
         actual = to_repr(prep_params, tokens, ngramSplittingConfig)
 
@@ -647,9 +405,10 @@ class TeprTest(unittest.TestCase):
 
         self.assertEqual(expected, actual)
 
-    ############################################################################################
-    ############################################################################################
-
+    #
+    #     ############################################################################################
+    #     ############################################################################################
+    #
     def test_to_repr_no_nosep(self):
         prep_params = {
             PreprocessingParam.EN_ONLY: 1,
@@ -660,38 +419,11 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.NO_LOGS: 0
         }
 
-        ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.CUSTOM,
-                                                    sc_splittings={
+        ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
+                                                sc_splittings={
                                   'english': ['engl', 'ish'],
                                   '<non_eng>': ['<non', '_eng>']
                                                     })
-
-        tokens = [
-            Number([1, DecimalPoint(), 1]),
-            "*",
-            NonEng(ProcessableToken("dinero")),
-            StringLiteral([
-                CamelCaseSplit([
-                    ProcessableToken("a"),
-                    NonEng(ProcessableToken("wirklich"))
-                ], True)
-            ]),
-            NewLine(),
-            MultilineComment([
-                NonEng(ProcessableToken('ц')),
-                UnderscoreSplit([
-                    NonEng(ProcessableToken("blanco")),
-                    ProcessableToken("english")
-                ])
-            ]),
-            NewLine(), Tab(),
-            OneLineComment([
-                WithNumbersSplit([
-                    NonEng(ProcessableToken("dieselbe")),
-                    ProcessableToken("8")
-                ], True)
-            ])
-        ]
 
         actual = to_repr(prep_params, tokens, ngramSplittingConfig)
 
@@ -705,14 +437,15 @@ class TeprTest(unittest.TestCase):
             '<non_eng>',
             '"', '`C', 'a', '<cc_sep>', '<non_eng>', '"',
             '/*', '<non_eng>', '<non_eng>', '<us_sep>', 'engl', '<sc_sep>', 'ish', '*/',
-            '//', '`C', '<non_eng>', '<cc_sep>', "8"
+            '//', '`Cs', '<non_eng>', '<cc_sep>', "8"
         ]
 
         self.assertEqual(expected, actual)
 
-    ############################################################################################
-    ############################################################################################
-
+    #
+    #     ############################################################################################
+    #     ############################################################################################
+    #
     def test_to_repr_no_no_sep_with_bpe_no_merges(self):
         prep_params = {
             PreprocessingParam.EN_ONLY: 1,
@@ -723,35 +456,8 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.NO_LOGS: 0
         }
 
-        ngramSplittingConfig = NgramSplittingConfig(splitting_type=NgramSplittingType.BPE,
-                                                    merges=[], merges_cache={})
-
-        tokens = [
-            Number([1, DecimalPoint(), 1]),
-            "*",
-            NonEng(ProcessableToken("dinero")),
-            StringLiteral([
-                CamelCaseSplit([
-                    ProcessableToken("a"),
-                    NonEng(ProcessableToken("wirklich"))
-                ], True)
-            ]),
-            NewLine(),
-            MultilineComment([
-                NonEng(ProcessableToken('ц')),
-                UnderscoreSplit([
-                    NonEng(ProcessableToken("blanco")),
-                    ProcessableToken("english")
-                ])
-            ]),
-            NewLine(), Tab(),
-            OneLineComment([
-                WithNumbersSplit([
-                    NonEng(ProcessableToken("dieselbe")),
-                    ProcessableToken("8")
-                ], True)
-            ])
-        ]
+        ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.BPE,
+                                                merges=[], merges_cache={})
 
         actual = to_repr(prep_params, tokens, ngramSplittingConfig)
 
@@ -764,8 +470,35 @@ class TeprTest(unittest.TestCase):
             '"', '`C', 'a', '<cc_sep>', '<non_eng>', '"',
             '/*', '<non_eng>', '<non_eng>', '<us_sep>', 'e', '<sc_sep>', 'n', '<sc_sep>', 'g', '<sc_sep>', 'l',
             '<sc_sep>', 'i', '<sc_sep>', 's', '<sc_sep>', 'h', '*/',
-            '//', '`C', '<non_eng>', '<cc_sep>', "8"
+            '//', '`Cs', '<non_eng>', '<cc_sep>', "8"
         ]
+
+        self.assertEqual(expected, actual)
+
+    #
+    #
+    # #################################################
+    # ###   Only tests with single word go below
+    # #################################################
+    #
+    def test_1(self):
+        prep_params = {
+            PreprocessingParam.EN_ONLY: 0,
+            PreprocessingParam.NO_COM_STR: 0,
+            PreprocessingParam.SPL: 4,
+            PreprocessingParam.NO_SEP: 0,
+            PreprocessingParam.NO_NEWLINES_TABS: 0,
+            PreprocessingParam.NO_LOGS: 0
+        }
+
+        ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.BPE,
+                                                merges_cache={'while': ['while']})
+
+        tokens = [FullWord.of("While")]
+
+        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+
+        expected = ["`C", "while"]
 
         self.assertEqual(expected, actual)
 

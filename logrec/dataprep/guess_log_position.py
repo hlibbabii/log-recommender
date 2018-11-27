@@ -3,7 +3,7 @@ import logging
 import os
 
 from logrec.dataprep.preprocessors import apply_preprocessors
-from logrec.dataprep.preprocessors.general import to_token_list
+from logrec.dataprep.preprocessors.general import to_token_list, from_file
 from logrec.util import io_utils
 
 logger = logging.getLogger(__name__)
@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 LOG_PLACEHOLDER = "<LOG>"
 
 preprocessors = [
-        "lines_to_one_lines_with_newlines",
         "replace_4whitespaces_with_tabs",
         "spl_verbose",
         "newline_and_tab_remover",
@@ -24,14 +23,15 @@ preprocessors = [
     ]
 
 def get_true_context(log):
-    pp_before = apply_preprocessors(log.context.context_before[1:], preprocessors)
-    pp_after = apply_preprocessors(log.context.context_after[:-1], preprocessors)
+    pp_before = apply_preprocessors(from_file(log.context.context_before[1:]), preprocessors)
+    pp_after = apply_preprocessors(from_file(log.context.context_after[:-1]), preprocessors)
     return apply_preprocessors(pp_before + [LOG_PLACEHOLDER] + pp_after, [to_token_list])
 
 
 def get_false_context(log):
-    pp_before = apply_preprocessors(log.context.context_before[:-1], preprocessors)
-    pp_after = apply_preprocessors([log.context.context_before[-1]] + log.context.context_after[:-2], preprocessors)
+    pp_before = apply_preprocessors(from_file(log.context.context_before[:-1]), preprocessors)
+    pp_after = apply_preprocessors([from_file(log.context.context_before[-1])] + log.context.context_after[:-2],
+                                   preprocessors)
     return apply_preprocessors(pp_before + [LOG_PLACEHOLDER] + pp_after, [to_token_list])
 
 

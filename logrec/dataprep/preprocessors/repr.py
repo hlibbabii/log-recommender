@@ -1,68 +1,39 @@
 import logging
 
-from logrec.dataprep.preprocessors.model.general import NonEng
-from logrec.dataprep.preprocessors.model.split import SplitContainer, split_repr_func_map, SplitRepr
-from logrec.dataprep.preprocessors.model.textcontainers import TextContainer
-from logrec.dataprep.preprocessors.preprocessing_types import recursive, PreprocessingParam, get_types_to_be_repr, \
-    check_preprocessing_params_are_valid
-from logrec.dataprep.split.ngram import do_same_case_splitting
+from logrec.dataprep.split.ngram import NgramSplitConfig, SplitRepr
 
 logger = logging.getLogger(__name__)
 
 
-def to_repr(preprocessing_params, token_list, ngramSplittingConfig):
-    """
-    Preprocesses token list according to given preprocessing params
-    :param preprocessing_params: e.g. {
-        PreprocessingType.EN_ONLY: 1,
-        PreprocessingType.NO_COM_STR: 0,
-        PreprocessingType.SPL: 4,
-        PreprocessingType.NO_SEP: 0
-        PreprocessingType.NO_NEWLINES_TABS: 0,
-        PreprocessingType.NO_LOGS: 0
-    }
-    :param token_list: list of tokens to be preprocessed
-    :return:
-    """
-    check_preprocessing_params_are_valid(preprocessing_params)
+class ReprConfig(object):
+    def __init__(self, types_to_be_repr, ngram_split_config, split_repr):
+        self.types_to_be_repr = types_to_be_repr
+        self.ngram_split_config = ngram_split_config
+        self.split_repr = split_repr
 
-    types_to_be_repr = get_types_to_be_repr(preprocessing_params)
-    splitRepr = SplitRepr.BONDERIES if preprocessing_params[PreprocessingParam.NO_SEP] else SplitRepr.BETWEEN_WORDS
-    repr_list = to_repr_list(types_to_be_repr, token_list, splitRepr, ngramSplittingConfig)
-    return repr_list
+    @classmethod
+    def empty(cls):
+        return cls([], NgramSplitConfig(), SplitRepr.NONE)
 
 
-def to_repr_list(types_to_be_repr, token_list, split_repr, ngramSplittingConfig):
+def to_repr_list(token_list, repr_config):
     repr_res = []
     for token in token_list:
-        repr_token = to_repr_token(types_to_be_repr, token, split_repr, ngramSplittingConfig)
+        repr_token = torepr(token, repr_config)
         repr_res.extend(repr_token if isinstance(repr_token, list) else [repr_token])
     return repr_res
 
 
-def to_repr_token(types_to_be_repr, token, split_repr, ngramSplittingConfig):
+def torepr(token, repr_config):
     clazz = type(token)
+    if clazz.__name__ == 'ParseableToken':
+        raise AssertionError(f"Parseable token cannot be present in the final parsed model: {token}")
+    if clazz == list:
+        return to_repr_list(token, repr_config)
     if clazz == str:
         return token
-    if clazz not in types_to_be_repr and NonEng in types_to_be_repr \
-            and issubclass(clazz, TextContainer) and token.has_non_eng_contents():
-        return token.non_eng_contents()
-    if ngramSplittingConfig.do_splitting(clazz):
-        return do_same_case_splitting(token, ngramSplittingConfig, split_repr)
-    if clazz in types_to_be_repr:
-        if issubclass(clazz, SplitContainer):
-            repr_func = split_repr_func_map[split_repr]
-            repr = getattr(token, repr_func)()
-            split_repr = SplitRepr.NONE if split_repr == SplitRepr.BONDERIES else SplitRepr.BETWEEN_WORDS
-        else:
-            repr = token.preprocessed_repr()
-    else:
-        repr = token.non_preprocessed_repr()
 
-    if clazz in recursive:
-        if isinstance(repr, list):
-            return to_repr_list(types_to_be_repr, repr, split_repr, ngramSplittingConfig)
-        else:
-            return to_repr_token(types_to_be_repr, repr, split_repr, ngramSplittingConfig)
+    if clazz in repr_config.types_to_be_repr:
+        return token.preprocessed_repr(repr_config)
     else:
-        return repr
+        return token.non_preprocessed_repr(repr_config)

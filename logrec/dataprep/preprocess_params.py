@@ -1,16 +1,11 @@
 pp_params = {
     'preprocessors': [
-        "general.lines_to_one_lines_with_newlines",
-
         "java.process_numeric_literals",
 
         "general.replace_4whitespaces_with_tabs",
         "general.spl_verbose",
 
-
-        "split.camel_case",
-        "split.underscore",
-        "split.with_numbers",
+        "split.simple_split",
         # "legacy.merge_tabs",
 
         "java.process_comments_and_str_literals",

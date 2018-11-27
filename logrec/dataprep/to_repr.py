@@ -11,9 +11,9 @@ from multiprocessing.pool import Pool
 from logrec.dataprep import base_project_dir
 from logrec.dataprep.preprocessors.general import to_token_list
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam, parse_preprocessing_params, \
-    check_preprocessing_params_are_valid
-from logrec.dataprep.preprocessors.repr import to_repr
-from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplittingConfig
+    get_types_to_be_repr
+from logrec.dataprep.preprocessors.repr import to_repr_list, ReprConfig
+from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplitConfig, SplitRepr
 from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
 from logrec.util import io_utils
 
@@ -70,6 +70,32 @@ class FinalReprWriter(ReprWriter):
         self.handle.write(to_token_list(token_list))
 
 
+def check_preprocessing_params_are_valid(preprocessing_params):
+    if preprocessing_params[PreprocessingParam.EN_ONLY] == 1 and preprocessing_params[PreprocessingParam.SPL] == 0:
+        raise ValueError("both NO_SPL=0 and EN_ONLY=1 is not supported")
+
+
+def to_repr(preprocessing_params, token_list, ngramSplittingConfig):
+    """
+    Preprocesses token list according to given preprocessing params
+    :param preprocessing_params: e.g. {
+        PreprocessingType.EN_ONLY: 1,
+        PreprocessingType.NO_COM_STR: 0,
+        PreprocessingType.SPL: 4,
+        PreprocessingType.NO_SEP: 0
+        PreprocessingType.NO_NEWLINES_TABS: 0,
+        PreprocessingType.NO_LOGS: 0
+    }
+    :param token_list: list of tokens to be preprocessed
+    :return:
+    """
+    check_preprocessing_params_are_valid(preprocessing_params)
+    types_to_be_repr = get_types_to_be_repr(preprocessing_params)
+    splitRepr = SplitRepr.BONDERIES if preprocessing_params[PreprocessingParam.NO_SEP] else SplitRepr.BETWEEN_WORDS
+    repr_list = to_repr_list(token_list, ReprConfig(types_to_be_repr, ngramSplittingConfig, splitRepr))
+    return repr_list
+
+
 def preprocess_and_write(params):
     src_file, dest_file, preprocessing_params, old_preprocessing_params, ngramSplittingConfig = params
     if not os.path.exists(src_file):
@@ -124,9 +150,8 @@ def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, split
     logger.info(f"Old preprocessing params : {old_preprocessing_params}")
 
     preprocessing_params = parse_preprocessing_params(preprocessing_params)
-    check_preprocessing_params_are_valid(preprocessing_params)
 
-    ngramSplittingConfig = NgramSplittingConfig()
+    ngramSplittingConfig = NgramSplitConfig()
     if preprocessing_params[PreprocessingParam.SPL] == 4:
         if not bpe_merges_cache or not bpe_merges_file:
             raise ValueError("--bpe-merges-file and --bpe-merges-cache must be specified")
@@ -146,7 +171,7 @@ def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, split
 
         splittings = io_utils.read_dict_from_2_columns(splitting_file, val_type=list, delim='|')
         ngramSplittingConfig.sc_splittings = splittings
-        ngramSplittingConfig.set_splitting_type(NgramSplittingType.CUSTOM)
+        ngramSplittingConfig.set_splitting_type(NgramSplittingType.NUMBERS_AND_CUSTOM)
     elif preprocessing_params[PreprocessingParam.SPL] == 2:
         ngramSplittingConfig.set_splitting_type(NgramSplittingType.ONLY_NUMBERS)
 

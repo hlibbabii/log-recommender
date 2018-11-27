@@ -2,8 +2,8 @@ import re
 from enum import Enum, auto
 
 from logrec.dataprep.preprocessors.model.chars import NewLine, Tab
-from logrec.dataprep.preprocessors.model.general import ProcessableToken
 from logrec.dataprep.preprocessors.model.logging import LogStatement
+from logrec.dataprep.preprocessors.model.word import Word
 
 LOGGER_REGEX = re.compile("[Ll]og|LOG|[Ll]ogger|LOGGER")
 METHOD_REGEX = re.compile('[Tt]race|TRACE|[Dd]ebug|DEBUG|[Ii]nfo|INFO|[Ww]arn|WARN|[Ee]rror|ERROR|[Ff]atal'
@@ -24,13 +24,13 @@ class LogSearchState(object):
 
 class Searching(LogSearchState):
     def check(self, token):
-        if isinstance(token, ProcessableToken) and LOGGER_REGEX.fullmatch(token.get_val()):
+        if isinstance(token, Word) and LOGGER_REGEX.fullmatch(str(token)):
             return SearchResult.IN_PROGRESS
         else:
             return SearchResult.NOT_FOUND
 
     def action(self, log_statement, token):
-        log_statement.object_name = token.get_val()
+        log_statement.object_name = str(token)
         return LoggerFound()
 
 
@@ -44,13 +44,13 @@ class LoggerFound(LogSearchState):
 
 class DotFound(LogSearchState):
     def check(self, token):
-        if isinstance(token, ProcessableToken) and METHOD_REGEX.fullmatch(token.get_val()):
+        if isinstance(token, Word) and METHOD_REGEX.fullmatch(str(token)):
             return SearchResult.IN_PROGRESS
         else:
             return SearchResult.FAILED
 
     def action(self, log_statement, token):
-        log_statement.method_name = token.get_val()
+        log_statement.method_name = str(token)
         return MethodFound()
 
 

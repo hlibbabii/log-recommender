@@ -9,6 +9,7 @@ from multiprocessing.pool import Pool
 from pathlib import Path
 
 from logrec.dataprep.preprocessors import apply_preprocessors
+from logrec.dataprep.preprocessors.general import from_file
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
 from logrec.dataprep.preprocess_params import pp_params
 
@@ -68,7 +69,7 @@ def preprocess_and_write(params):
             if (ind+1) % 100 == 0:
                 logger.info(
                     f"[{train_test_valid}/{project}] Parsed {ind+1} out of {total_files} files ({(ind+1)/float(total_files)*100:.2f}%)")
-            parsed = apply_preprocessors(lines_from_file, pp_params["preprocessors"], {
+            parsed = apply_preprocessors(from_file(lines_from_file), pp_params["preprocessors"], {
                 'interesting_context_words': []
             })
             pickle.dump(parsed, f, pickle.HIGHEST_PROTOCOL)

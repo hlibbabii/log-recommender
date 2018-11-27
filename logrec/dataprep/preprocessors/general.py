@@ -2,20 +2,29 @@ import itertools
 import logging
 import re
 
+from logrec.dataprep.preprocessors.model.containers import ProcessableTokenContainer
+from logrec.dataprep.preprocessors.model.word import Word, SubWord, ParseableToken
+
 logger = logging.getLogger(__name__)
 
-###############   File lines level   ###########
 from logrec.dataprep.preprocessors import java
 from logrec.dataprep.preprocessors.model.chars import NewLine, MultilineCommentEnd, MultilineCommentStart, \
-    OneLineCommentStart, \
-    Quote, Backslash, Tab
-from logrec.dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer
+    OneLineCommentStart, Quote, Backslash, Tab
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.util import create_regex_from_token_list
 
 
-def lines_to_one_lines_with_newlines(lines, context):
-    return [w for line in lines for w in (ProcessableToken(line if len(line) > 0 and line[-1] != '\n' else line[:-1]), NewLine())]
+def from_file(lines):
+    return [w for line in lines for w in
+            (ParseableToken(line if len(line) > 0 and line[-1] != '\n' else line[:-1]), NewLine())]
+
+
+def from_string(str):
+    return list(map(lambda x: ParseableToken(x), str.split(" ")))
+
+
+def from_list(lst):
+    return list(map(lambda x: ParseableToken(x), lst))
 
 ###############   Multitoken list level   ###########
 
@@ -23,9 +32,9 @@ def lines_to_one_lines_with_newlines(lines, context):
 def replace_4whitespaces_with_tabs(token_list, context):
     result = []
     for token in token_list:
-        if isinstance(token, ProcessableToken):
-            split_line = re.split("( {4})", token.get_val())
-            result.extend([(Tab() if w == " "*4 else ProcessableToken(w)) for w in split_line])
+        if isinstance(token, ParseableToken):
+            split_line = re.split("( {4})", str(token))
+            result.extend([(Tab() if w == " " * 4 else ParseableToken(w)) for w in split_line])
         elif isinstance(token, ProcessableTokenContainer):
             for subtoken in token.get_subtokens():
                 result.extend(replace_4whitespaces_with_tabs(subtoken))
@@ -63,30 +72,29 @@ def spl_verbose(token_list, context):
 
 characters = set(java.multiline_comments_tokens + java.two_character_tokens + java.two_char_verbose + java.one_character_tokens + java.one_char_verbose)
 
+
 def split_to_key_words_and_identifiers(token, multiline_comments_regex,
                                        two_char_regex, one_char_regex, to_drop):
-
-
-    if isinstance(token, ProcessableToken):
+    if isinstance(token, ParseableToken):
         raw_result = []
         result = []
-        comment_tokens_separated = re.split(multiline_comments_regex, token.get_val())
+        comment_tokens_separated = re.split(multiline_comments_regex, str(token))
         for st in comment_tokens_separated:
             if re.fullmatch(multiline_comments_regex, st):
                 raw_result.append(st)
             else:
                 two_char_tokens_separated = re.split(two_char_regex, st)
-                for str in two_char_tokens_separated:
-                    if re.fullmatch(two_char_regex, str):
-                        raw_result.append(str)
+                for st in two_char_tokens_separated:
+                    if re.fullmatch(two_char_regex, st):
+                        raw_result.append(st)
                     else:
-                        one_char_token_separated = re.split(one_char_regex, str)
+                        one_char_token_separated = re.split(one_char_regex, st)
                         raw_result.extend(list(filter(None, itertools.chain.from_iterable(
-                            [re.split(to_drop, str) for str in one_char_token_separated]
+                            [re.split(to_drop, st) for st in one_char_token_separated]
                         ))))
         for raw_str in raw_result:
             if not raw_str in characters:
-                result.append(ProcessableToken(raw_str))
+                result.append(ParseableToken(raw_str))
             elif raw_str == "/*":
                 result.append(MultilineCommentStart())
             elif raw_str == "*/":

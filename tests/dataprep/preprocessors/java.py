@@ -1,14 +1,16 @@
 import unittest
 
 from logrec.dataprep.preprocessors.java import process_comments_and_str_literals
-from logrec.dataprep.preprocessors.model.chars import OneLineCommentStart, NewLine, Quote, MultilineCommentEnd, \
-    MultilineCommentStart
-from logrec.dataprep.preprocessors.model.general import ProcessableToken
-from logrec.dataprep.preprocessors.model.split import UnderscoreSplit, CamelCaseSplit
-from logrec.dataprep.preprocessors.model.textcontainers import OneLineComment, StringLiteral, MultilineComment
+from logrec.dataprep.preprocessors.model.chars import OneLineCommentStart, NewLine, Quote, MultilineCommentStart, \
+    MultilineCommentEnd
 
 
 # TODO write explanations with normal strings
+from logrec.dataprep.preprocessors.model.containers import SplitContainer, StringLiteral, OneLineComment, \
+    MultilineComment
+from logrec.dataprep.preprocessors.model.word import Word, FullWord, SubWord
+
+
 class JavaTest(unittest.TestCase):
     def test_process_comments_and_str_literals(self):
         '''
@@ -25,9 +27,9 @@ class JavaTest(unittest.TestCase):
         '''
         tokens = [Quote(),
                   OneLineCommentStart(),
-                  UnderscoreSplit([ProcessableToken("test"),
-                                   CamelCaseSplit([ProcessableToken("my"),
-                                                   ProcessableToken("class")], True)]),
+                  SplitContainer([SubWord.of("test"),
+                                  SubWord.of("_my"),
+                                  SubWord.of("Class")]),
                   Quote(),
                   NewLine(),
                   OneLineCommentStart(),
@@ -35,7 +37,7 @@ class JavaTest(unittest.TestCase):
                   NewLine(),
                   Quote(),
                   MultilineCommentStart(),
-                  ProcessableToken("!"),
+                  FullWord.of("!"),
                   Quote(),
                   NewLine(),
                   MultilineCommentStart(),
@@ -46,29 +48,30 @@ class JavaTest(unittest.TestCase):
 
         actual = process_comments_and_str_literals(tokens, {})
 
-        expected = [StringLiteral([OneLineCommentStart(), UnderscoreSplit([ProcessableToken("test"),
-                                                                           CamelCaseSplit([ProcessableToken("my"),
-                                                                                           ProcessableToken("class")],
-                                                                                          True)])]),
+        expected = [StringLiteral([OneLineCommentStart(), SplitContainer([
+            SubWord.of("test"),
+            SubWord.of("_my"),
+            SubWord.of("Class")],
+        )]),
                     NewLine(),
                     OneLineComment([MultilineCommentEnd()]),
                     NewLine(),
-                    StringLiteral([MultilineCommentStart(), ProcessableToken("!")]),
+                    StringLiteral([MultilineCommentStart(), FullWord.of("!")]),
                     NewLine(),
                     MultilineComment([NewLine()]),
                     NewLine()
                     ]
 
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_process_comments_and_str_literals_no_multiline_comment_start(self):
-        tokens = [MultilineCommentEnd(), ProcessableToken("a")]
+        tokens = [MultilineCommentEnd(), FullWord.of("a")]
 
         actual = process_comments_and_str_literals(tokens, {})
 
-        expected = [MultilineCommentEnd(), ProcessableToken("a")]
+        expected = [MultilineCommentEnd(), FullWord.of("a")]
 
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_process_comments_and_str_literals_newline_after_open_quote(self):
         tokens = [Quote(), NewLine()]
@@ -77,7 +80,7 @@ class JavaTest(unittest.TestCase):
 
         expected = [Quote(), NewLine()]
 
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
 
 if __name__ == '__main__':

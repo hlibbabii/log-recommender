@@ -2,10 +2,11 @@ import unittest
 
 from logrec.dataprep.preprocessors.model.chars import OneLineCommentStart, NewLine, MultilineCommentEnd, \
     MultilineCommentStart
-from logrec.dataprep.preprocessors.model.general import ProcessableToken, NonEng
-from logrec.dataprep.preprocessors.model.split import UnderscoreSplit, CamelCaseSplit, WithNumbersSplit
-from logrec.dataprep.preprocessors.model.textcontainers import OneLineComment, StringLiteral, MultilineComment
 # TODO write explanations with normal strings
+from logrec.dataprep.preprocessors.model.containers import SplitContainer, StringLiteral, OneLineComment, \
+    MultilineComment
+from logrec.dataprep.preprocessors.model.noneng import NonEng
+from logrec.dataprep.preprocessors.model.word import Word, FullWord, SubWord, Capitalization, WordStart
 from logrec.dataprep.preprocessors.noneng import mark
 
 
@@ -14,14 +15,14 @@ class NonengTest(unittest.TestCase):
         '''
         All words are english. Nothing changed
         '''
-        tokens = [StringLiteral([OneLineCommentStart(), UnderscoreSplit([ProcessableToken("test"),
-                                                                         CamelCaseSplit([ProcessableToken("my"),
-                                                                                         ProcessableToken("class")],
-                                                                                        True)])]),
+        tokens = [StringLiteral([OneLineCommentStart(), SplitContainer([SubWord.of("test"),
+                                                                        SubWord.of("my"),
+                                                                        SubWord.of("class")]
+                                                                       )]),
                   NewLine(),
-                  OneLineComment([MultilineCommentEnd(), ProcessableToken("lifeisgood")]),
+                  OneLineComment([MultilineCommentEnd(), FullWord.of("lifeisgood")]),
                   NewLine(),
-                  StringLiteral([MultilineCommentStart(), ProcessableToken("!")]),
+                  StringLiteral([MultilineCommentStart(), FullWord.of("!")]),
                   NewLine(),
                   MultilineComment([NewLine()]),
                   NewLine()
@@ -34,23 +35,23 @@ class NonengTest(unittest.TestCase):
     def test_mark_with_noneng(self):
         tokens = [
             StringLiteral([
-                CamelCaseSplit([
-                    ProcessableToken("a"),
-                    ProcessableToken("wirklich")
-                ], True)
+                SplitContainer([
+                    SubWord.of("A"),
+                    SubWord.of("Wirklich")
+                ])
             ]),
             MultilineComment([
-                ProcessableToken('ц'),
-                UnderscoreSplit([
-                    ProcessableToken("blanco"),
-                    ProcessableToken("english")
+                FullWord.of('ц'),
+                SplitContainer([
+                    SubWord.of("blanco"),
+                    SubWord.of("_english")
                 ])
             ]),
             OneLineComment([
-                WithNumbersSplit([
-                    ProcessableToken("dieselbe"),
-                    ProcessableToken("8")
-                ], True)
+                SplitContainer([
+                    SubWord.of("DIESELBE"),
+                    SubWord.of("8")
+                ])
             ])
         ]
 
@@ -58,26 +59,32 @@ class NonengTest(unittest.TestCase):
 
         expected = [
             StringLiteral([
-                CamelCaseSplit([
-                    ProcessableToken("a"),
-                    NonEng(ProcessableToken("wirklich"))
-                ], True)
+                SplitContainer([
+                    SubWord.of("A"),
+                    NonEng(SubWord.of("Wirklich"))
+                ])
             ]),
             MultilineComment([
-                NonEng(ProcessableToken('ц')),
-                UnderscoreSplit([
-                    NonEng(ProcessableToken("blanco")),
-                    ProcessableToken("english")
+                NonEng(FullWord.of('ц')),
+                SplitContainer([
+                    # we have to call constructor manually here,
+                    # case split container cannot set wordStart prefix
+                    # when the first subword is wrapped in NonEng
+                    NonEng(SubWord("blanco", Capitalization.NONE, WordStart())),
+                    SubWord.of("_english")
                 ])
             ]),
             OneLineComment([
-                WithNumbersSplit([
-                    NonEng(ProcessableToken("dieselbe")),
-                    ProcessableToken("8")
-                ], True)
+                SplitContainer([
+                    # we have to call constructor manually here,
+                    # case split container cannot set wordStart prefix
+                    # when the first subword is wrapped in NonEng
+                    NonEng(SubWord("dieselbe", Capitalization.ALL, WordStart())),
+                    SubWord.of("8")
+                ])
             ])
         ]
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
 
 if __name__ == '__main__':

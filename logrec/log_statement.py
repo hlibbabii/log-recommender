@@ -1,7 +1,7 @@
 import sys
 
 from logrec.dataprep.preprocessors import apply_preprocessors
-from logrec.dataprep.preprocessors.general import replace_4whitespaces_with_tabs, spl_verbose
+from logrec.dataprep.preprocessors.general import replace_4whitespaces_with_tabs, spl_verbose, from_list
 
 __author__ = 'hlib'
 
@@ -10,7 +10,7 @@ class LogContext(object):
         self.context_before = context_before
         self.context_after = context_after
         # self.context_words = preprocess_context(self.context_before + self.context_after)
-        self.context_words = apply_preprocessors(self.context_before, [
+        self.context_words = apply_preprocessors(from_list(self.context_before), [
             replace_4whitespaces_with_tabs,
             spl_verbose,
             lambda context_line: [item.lower() for identifier in context_line for item in camel_case_split(identifier)]

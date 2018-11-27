@@ -4,9 +4,8 @@ import re
 import time
 
 from logrec.dataprep import util
-from logrec.dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer
-from logrec.dataprep.preprocessors.model.split import CamelCaseSplit, WithNumbersSplit, UnderscoreSplit, \
-    NonDelimiterSplitContainer
+from logrec.dataprep.preprocessors.model.containers import ProcessableTokenContainer, SplitContainer
+from logrec.dataprep.preprocessors.model.word import Word, WordStart, FullWord, SubWord, ParseableToken
 
 logger = logging.getLogger(__name__)
 
@@ -26,51 +25,21 @@ def get_splitting_dictionary(splitting_file_location):
     return SplittingDict(splitting_file_location).splitting_dict
 
 
-def camel_case(token_list, context):
-    return [apply_splitting_to_token(identifier, split_string_camel_case) for identifier in token_list]
-
-
-def underscore(token_list, context):
-    return [apply_splitting_to_token(identifier, split_string_underscore) for identifier in token_list]
-
-
-def with_numbers(token_list, context):
-    return [apply_splitting_to_token(identifier, split_string_with_numbers) for identifier in token_list]
-
-
-#############  String Level ################
-
-def split_string_camel_case(str):
-    matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', str)
-    return [m.group(0) for m in matches], CamelCaseSplit
-
-def split_string_with_numbers(str):
-    return [w for w in list(filter(None, re.split('(?<=[a-zA-Z0-9])?([0-9])(?=[a-zA-Z0-9]+|$)', str)))], WithNumbersSplit
-
-def split_string_underscore(str):
-    return [w for w in str.split("_")], UnderscoreSplit
+def simple_split(token_list, context):
+    return [simple_split_token(identifier) for identifier in token_list]
 
 #############  Token Level ################
 
-def apply_splitting_to_token(token, str_splitting_func):
-    if isinstance(token, ProcessableToken):
-        parts, cls = str_splitting_func(token.get_val())
-        parts_lowercased = [ProcessableToken(p.lower()) for p in parts]
+def simple_split_token(token):
+    if isinstance(token, ParseableToken):
+        parts = [m[0] for m in re.finditer('(_+$)|(_*(?:[0-9]+|[a-z]+|[A-Z][a-z]+|(?:[A-Z]+(?![a-z]))))', str(token))]
         if len(parts) > 1:
-            if issubclass(cls, NonDelimiterSplitContainer):
-                return cls(parts_lowercased, parts[0][0].isupper())
-            else:
-                return cls(parts_lowercased)
+            processable_tokens = [SubWord.of(p) for p in parts]
+            return SplitContainer(processable_tokens)
         else:
-            return token
+            return FullWord.of(parts[0])
     elif isinstance(token, ProcessableTokenContainer):
-        parts = []
-        for subtoken in token.get_subtokens():
-            parts.append(apply_splitting_to_token(subtoken, str_splitting_func))
-        if isinstance(token, NonDelimiterSplitContainer):
-            return type(token)(parts, token.is_capitalized())
-        else:
-            return type(token)(parts)
+        return type(token)([simple_split_token(subtoken) for subtoken in token.get_subtokens()])
     else:
         return token
 

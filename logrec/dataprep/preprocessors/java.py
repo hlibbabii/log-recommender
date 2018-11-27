@@ -2,12 +2,12 @@ import logging
 import re
 
 from logrec.dataprep.preprocessors.model.chars import MultilineCommentStart, MultilineCommentEnd, OneLineCommentStart, \
-    NewLine, \
-    Backslash, Quote
-from logrec.dataprep.preprocessors.model.general import ProcessableToken, ProcessableTokenContainer
+    NewLine, Backslash, Quote
+from logrec.dataprep.preprocessors.model.containers import MultilineComment, OneLineComment, StringLiteral, \
+    ProcessableTokenContainer
 from logrec.dataprep.preprocessors.model.numeric import Number, D, F, L, DecimalPoint, HexStart, E
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
-from logrec.dataprep.preprocessors.model.textcontainers import MultilineComment, StringLiteral, OneLineComment
+from logrec.dataprep.preprocessors.model.word import ParseableToken
 
 logger = logging.getLogger(__name__)
 
@@ -240,14 +240,15 @@ def process_number_literal(possible_number):
                 parts_of_number.append(ch)
         return Number(parts_of_number)
     else:
-        return ProcessableToken(possible_number)
+        return ParseableToken(possible_number)
 
 
 def process_numeric_literals(token_list, context):
     res = []
     for token in token_list:
-        if isinstance(token, ProcessableToken):
-            numbers_separated = list(filter(None, re.split(f'(?:^|(?<=[^a-zA-Z0-9]))({NUMBER_REGEX})(?=[^a-zA-Z0-9.]|$)', token.get_val())))
+        if isinstance(token, ParseableToken):
+            numbers_separated = list(
+                filter(None, re.split(f'(?:^|(?<=[^a-zA-Z0-9]))({NUMBER_REGEX})(?=[^a-zA-Z0-9.]|$)', str(token))))
             for possible_number in numbers_separated:
                res.append(process_number_literal(possible_number))
         elif isinstance(token, ProcessableTokenContainer):

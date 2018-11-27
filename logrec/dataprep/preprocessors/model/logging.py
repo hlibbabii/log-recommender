@@ -1,4 +1,4 @@
-from logrec.dataprep.preprocessors.model.general import ProcessableTokenContainer, ProcessableToken
+from logrec.dataprep.preprocessors.model.containers import ProcessableTokenContainer
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 
 
@@ -41,11 +41,11 @@ class LogStatement(object):
                and self._method_name == other._method_name and self._log_content == other._log_content \
                and self._tokens_before_final_semicolon == other._tokens_before_final_semicolon
 
-    def non_preprocessed_repr(self):
-        return [ProcessableToken(self._object_name), '.', ProcessableToken(self._method_name), '('] \
+    def non_preprocessed_repr(self, repr_config):
+        return [self._object_name, '.', self._method_name, '('] \
                + self._log_content.get_subtokens() + [')'] + self._tokens_before_final_semicolon + [';']
 
-    def preprocessed_repr(self):
+    def preprocessed_repr(self, repr_config):
         return placeholders['log_statement']
 
 

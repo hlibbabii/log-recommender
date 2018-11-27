@@ -24,7 +24,7 @@ def upload_to_google(dir):
         media = MediaFileUpload(os.path.join(dir, filename),
                                 mimetype='text/csv',
                                 resumable=True)
-        files.create(body=file_metadata, media_body=media).execute()
+        files.from_subword(body=file_metadata, media_body=media).execute()
 
 if __name__ == '__name__':
     upload_to_google(sys.argv[0])
