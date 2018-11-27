@@ -41,6 +41,8 @@ def merge_dicts_(dict1, dict2):
         if k not in dict1:
             dict1[k] = v
             new_words.append(k)
+        else:
+            dict1[k] = dict1[k] + v
     return dict1, new_words
 
 
