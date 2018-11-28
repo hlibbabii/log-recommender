@@ -10,7 +10,8 @@ import deepdiff
 import matplotlib
 matplotlib.use('Agg')
 
-from logrec.langmodel.utils import to_test_mode, gen_text, beautify_text, back_to_train_mode
+from logrec.langmodel.utils import to_test_mode, gen_text, beautify_text, back_to_train_mode, \
+    attach_dataset_aware_handlers_to_loggers
 from logrec.util import io_utils
 
 
@@ -90,14 +91,6 @@ def get_model(model_name, nn_arch):
                                                           min_freq=nn_arch["min_freq"]
                                                           # not important since we remove rare tokens during preprocessing
                                                           )
-    io_utils.dump_dict_into_2_columns(text_field.vocab.freqs, f'{path_to_dataset}/vocab_all.txt')
-    pickle.dump(text_field, open(f'{path_to_dataset}/TEXT.pkl', 'wb'))
-
-    vocab_size=len(text_field.vocab.itos)
-    logger.info(f'Dictionary size is: {vocab_size}')
-    with open(f'{path_to_dataset}/vocab_size', 'w') as f:
-        f.write("# This is automatically generated file! Do not edit!\n")
-        f.write(str(vocab_size))
 
     opt_fn = partial(torch.optim.Adam, betas=nn_arch['betas'])
 
@@ -131,15 +124,17 @@ def get_model(model_name, nn_arch):
 
 def run_and_display_tests(m, text_field, nn_arch, nn_testing, path_to_save=None):
     to_test_mode(m)
-    print("==============        TESTS       ====================")
 
     text = gen_text(m, text_field, nn_testing["starting_words"], nn_testing["how_many_words"])
 
     beautified_text = beautify_text(text)
-    print(beautified_text)
     if path_to_save:
+        logger.info(f"Generating sample text to {path_to_save}")
         with open(path_to_save, 'w') as f:
             f.write(beautified_text)
+    else:
+        logger.info("==============    SAMPLE TEXT    ========================")
+        logger.info(beautified_text)
 
     back_to_train_mode(m, nn_arch['bs'])
 
@@ -225,11 +220,15 @@ def find_and_plot_lr(rnn_learner, path_to_model):
 
 def train_model(rnn_learner, path_to_dataset, model_name, nn_arch):
     dataset_name = params.nn_params["dataset_name"]
+    path_to_model = f"{path_to_dataset}/{model_name}"
     training_start_time = time()
+    training_log_file = os.path.abspath(f'{path_to_model}/training.log')
+    logger.info(f"Starting training, check {training_log_file} for training progress")
     vals, ep_vals = rnn_learner.fit(params.nn_params['lr'], n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
                                     cycle_len=nn_arch['cycle']['len'], cycle_mult=nn_arch['cycle']['mult'],
                                     metrics=list(map(lambda x: getattr(metrics, x), nn_arch['training_metrics'])),
-                                    cycle_save_name=dataset_name, get_ep_vals=True, best_save_name=f'{dataset_name}_best')
+                                    cycle_save_name=dataset_name, get_ep_vals=True,
+                                    best_save_name=f'{dataset_name}_best', file=f"{path_to_model}/training.log")
     training_time_mins = int(time() - training_start_time) // 60
     with open(f'{path_to_dataset}/{model_name}/results.out', 'w') as f:
         f.write(str(training_time_mins) + "\n")
@@ -248,20 +247,29 @@ def get_non_existent_model_name(path_to_dataset, base_model_name):
     return model_name
 
 
+def save_vocab_data(text_field, path_to_dataset):
+    ####  TODO no need to save vocab data if it's already there in metadata
+    # if its not ther esave t metadata
+
+    io_utils.dump_dict_into_2_columns(text_field.vocab.freqs, f'{path_to_dataset}/vocab_all.txt')
+    pickle.dump(text_field, open(f'{path_to_dataset}/TEXT.pkl', 'wb'))
+
+    vocab_size = len(text_field.vocab.itos)
+    logger.info(f'Dictionary size is: {vocab_size}')
+    with open(f'{path_to_dataset}/vocab_size', 'w') as f:
+        f.write("# This is automatically generated file! Do not edit!\n")
+        f.write(str(vocab_size))
+
+    ####
+
+
 def run(params):
     logger.info(f"Using params: {params.nn_params}")
 
     nn_arch = params.nn_params['arch']
     nn_testing = params.nn_params['testing']
 
-    printGPUInfo()
-    logger.info("Using the following parameters:")
-    logger.info(nn_arch)
-
     path_to_dataset = f'{params.nn_params["path_to_data"]}/{params.nn_params["dataset_name"]}'
-    force_rerun = True
-    md = params.nn_params['mode']
-    logger.info(f"Mode: {md}")
 
     if "base_model" in params.nn_params:
         base_model_name = params.nn_params["base_model"]
@@ -283,16 +291,20 @@ def run(params):
         logger.info("Not using base model. Training coefficients from scratch...")
         model_name = get_model_name_by_params(path_to_dataset, nn_arch)
         path_to_model = f'{path_to_dataset}/{model_name}'
+    attach_dataset_aware_handlers_to_loggers(path_to_model, 'main.log')
 
+    printGPUInfo()
+    force_rerun = True
+    md = params.nn_params['mode']
+    logger.info(f"Mode: {md}")
     logger.info(f"Path to model: {os.path.abspath(path_to_model)}")
     if not os.path.exists(path_to_model):
         os.mkdir(path_to_model)
 
     learner, text_field, model_trained = get_model(model_name, nn_arch)
-    vocab_file = f'{path_to_dataset}/TEXT.pkl'
-    if not os.path.exists(vocab_file):
-        with open(vocab_file, 'w') as f:
-            f.dump(text_field)
+
+    save_vocab_data(text_field, path_to_dataset)
+
     rerunning_model = model_trained
     if not rerunning_model or force_rerun:
         with open(f'{path_to_model}/{PARAM_FILE_NAME}', 'w') as f:
@@ -309,7 +321,8 @@ def run(params):
             logger.info("Loading the best model")
             learner.load(f'{params.nn_params["dataset_name"]}_best')
             m = learner.model
-            run_and_display_tests(m, text_field, nn_arch, nn_testing, f'{path_to_model}/gen_text.out')
+            gen_text_path = os.path.abspath(f'{path_to_model}/gen_text.out')
+            run_and_display_tests(m, text_field, nn_arch, nn_testing, gen_text_path)
         else:
             raise AssertionError(f"Unknown mode: {params.nn_params['mode']}")
     else:

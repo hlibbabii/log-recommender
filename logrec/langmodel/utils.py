@@ -1,4 +1,5 @@
 import logging
+import os
 
 from fastai.core import to_np, to_gpu
 from fastai.metrics import top_k, MRR
@@ -98,3 +99,12 @@ def calculate_and_display_metrics(rnn_learner, metrics, vocab):
         elif metric == 'mrr':
             mrr = MRR(*rnn_learner.predict_with_targs(True))
             logger.info(f"mrr: {mrr}")
+
+
+def attach_dataset_aware_handlers_to_loggers(name, main_log_name):
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    handler = logging.FileHandler(os.path.join(name, main_log_name), 'w')
+    formatter = logging.Formatter("%(levelname)s - %(asctime)s :%(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
