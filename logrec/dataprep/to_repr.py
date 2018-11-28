@@ -96,7 +96,7 @@ def to_repr(preprocessing_params, token_list, ngramSplittingConfig):
 
 
 def preprocess_and_write(params):
-    src_file, dest_file, preprocessing_params, old_preprocessing_params, ngramSplittingConfig = params
+    src_file, dest_file, preprocessing_params, old_preprocessing_params = params
     if not os.path.exists(src_file):
         logger.error(f"File {src_file} does not exist")
         exit(2)
@@ -149,7 +149,7 @@ def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, split
     logger.info(f"Old preprocessing params : {old_preprocessing_params}")
 
     preprocessing_params = parse_preprocessing_params(preprocessing_params)
-
+    global ngramSplittingConfig
     ngramSplittingConfig = NgramSplitConfig()
     if preprocessing_params[PreprocessingParam.SPL] == 4:
         if not bpe_merges_cache or not bpe_merges_file:
@@ -219,7 +219,7 @@ def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, split
                     os.makedirs(full_dest_dir_with_sub_dir)
                 params.append((os.path.join(root, file),
                                os.path.join(full_dest_dir_with_sub_dir, file),
-                               preprocessing_params, old_preprocessing_params, ngramSplittingConfig))
+                               preprocessing_params, old_preprocessing_params))
     files_total = len(params)
     current_file = 0
     start_time = time.time()
