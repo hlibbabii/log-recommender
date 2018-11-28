@@ -1,9 +1,9 @@
 import logging
 
-import torch
-
 from fastai.core import to_np, to_gpu
 from fastai.metrics import top_k, MRR
+
+import torch
 
 logger = logging.getLogger(__name__)
 
