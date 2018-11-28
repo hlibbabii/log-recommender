@@ -247,6 +247,7 @@ def process_numeric_literals(token_list, context):
     res = []
     for token in token_list:
         if isinstance(token, ParseableToken):
+            # TODO what about "фотогра4ия" -- this will be split
             numbers_separated = list(
                 filter(None, re.split(f'(?:^|(?<=[^a-zA-Z0-9]))({NUMBER_REGEX})(?=[^a-zA-Z0-9.]|$)', str(token))))
             for possible_number in numbers_separated:

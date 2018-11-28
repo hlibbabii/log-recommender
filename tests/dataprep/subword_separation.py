@@ -4,6 +4,7 @@ from logrec.dataprep.preprocess_params import pp_params
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.general import from_string
 from logrec.dataprep.preprocessors.model.containers import SplitContainer, StringLiteral
+from logrec.dataprep.preprocessors.model.logging import LogStatement
 from logrec.dataprep.preprocessors.model.noneng import NonEngSubWord, NonEngFullWord
 from logrec.dataprep.preprocessors.model.numeric import Number, DecimalPoint, E
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
@@ -114,6 +115,26 @@ test_cases = {
         [StringLiteral([NonEngFullWord(FullWord.of("сегодня"))])],
         ['"', placeholders['non_eng'], '"'],
         ['"', placeholders['non_eng'], '"']
+    ),
+    'logger.info("Установлена licht4bild пользователем" + user.getNick()) ;': (
+        [LogStatement('logger', 'info',
+                      [StringLiteral([
+                          NonEngFullWord(FullWord.of('Установлена')),
+                          SplitContainer([
+                              NonEngSubWord(SubWord('licht', Capitalization.NONE, WordStart())),
+                              SubWord.of('4'),
+                              NonEngSubWord(SubWord.of('bild'))
+                          ]),
+                          NonEngFullWord(FullWord.of('пользователем'))
+                      ]), '+', FullWord.of('user'), '.',
+                          SplitContainer([
+                              SubWord.of('get'),
+                              SubWord.of('Nick')
+                          ]), '(', ')'])],
+        ['logger', '.', 'info', '(', '"', '`C', '`E', '`E', '`c', '4', '`c', '`E', '`E', '"',
+         '+', 'user', '.', 'get', '`c', 'ni', '`s', 'ck', '(', ')', ')', ';'],
+        ['logger', '.', 'info', '(', '"', '`C', '`E', '`c', '`E', '`c', '4', '`c', '`E', 'w`', '`E', '"',
+         '+', 'user', '.', '`c', 'get', '`c', 'ni', 'ck', 'w`', '(', ')', ')', ';']
     )
 }
 
@@ -126,7 +147,10 @@ bpe_merges_cache = {
     "vector": ["vector"],
     "best": ["best"],
     "test": ["test"],
-    "num": ["num"]
+    "num": ["num"],
+    "user": ["user"],
+    "get": ["get"],
+    "nick": ["ni", "ck"]
 }
 
 prep_params_separators = {

@@ -4,7 +4,7 @@ from enum import Enum
 from logrec.dataprep.preprocessors.model.chars import NewLine, Tab
 from logrec.dataprep.preprocessors.model.containers import SplitContainer, StringLiteral, OneLineComment, \
     MultilineComment
-from logrec.dataprep.preprocessors.model.logging import LogStatement
+from logrec.dataprep.preprocessors.model.logging import LogStatement, LogContent
 from logrec.dataprep.preprocessors.model.noneng import NonEngSubWord, NonEngFullWord
 from logrec.dataprep.preprocessors.model.numeric import Number
 from logrec.dataprep.preprocessors.model.word import SubWord, FullWord
@@ -52,5 +52,5 @@ def get_types_to_be_repr(preprocessing_params):
     if preprocessing_params[PreprocessingParam.EN_ONLY]:
         res.extend([NonEngSubWord, NonEngFullWord])
     if preprocessing_params[PreprocessingParam.NO_LOGS]:
-        res.append(LogStatement)
+        res.extend([LogStatement, LogContent])
     return res
