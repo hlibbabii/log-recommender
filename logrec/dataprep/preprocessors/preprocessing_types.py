@@ -25,19 +25,39 @@ class PreprocessingParam(str, Enum):
     NO_NEWLINES_TABS: str = 'nonewlinestabs'
     NO_LOGS: str = 'nologs'
 
+
+class PrepParamsParser(object):
+    @staticmethod
+    def from_arg_str(prep_params_str):
+        res = {}
+        for param in prep_params_str.split(','):
+            key, val = param.split('=')
+            res[key] = int(val)
+        return res
+
+    @staticmethod
+    def from_encoded_string(str):
+        res = {}
+        for ch, pp in zip(str, PreprocessingParam):
+            res[pp] = int(ch)
+        return res
+
+    @staticmethod
+    def encode_dict(prep_params_dict):
+        res = ""
+        for k in PreprocessingParam:
+            if prep_params_dict[k] is None:
+                res += "_"
+            else:
+                res += str(int(prep_params_dict[k]))
+        return res
+
+
 com_str_to_types_to_be_repr = {
     0: [],
     1: [StringLiteral],
     2: [StringLiteral, OneLineComment, MultilineComment],
 }
-
-
-def parse_preprocessing_params(preprocessing_types_str):
-    res = {}
-    for param in preprocessing_types_str.split(','):
-        key, val = param.split('=')
-        res[key] = int(val)
-    return res
 
 
 def get_types_to_be_repr(preprocessing_params):

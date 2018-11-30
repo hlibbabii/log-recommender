@@ -10,8 +10,7 @@ from multiprocessing.pool import Pool
 
 from logrec.dataprep import base_project_dir
 from logrec.dataprep.preprocessors.general import to_token_list
-from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam, parse_preprocessing_params, \
-    get_types_to_be_repr
+from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam, get_types_to_be_repr, PrepParamsParser
 from logrec.dataprep.preprocessors.repr import to_repr_list, ReprConfig
 from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplitConfig, SplitRepr
 from logrec.util import io_utils
@@ -128,16 +127,6 @@ def preprocess_and_write(params):
     os.rename(f'{writer.get_full_dest_name()}.{NOT_FINISHED_EXTENSION}', f'{writer.get_full_dest_name()}')
 
 
-def gen_dir_name(new_preprocessing_param_dict):
-    name = ""
-    for k in PreprocessingParam:
-        if new_preprocessing_param_dict[k] is None:
-            name += "_"
-        else:
-            name += str(int(new_preprocessing_param_dict[k]))
-    return name
-
-
 def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, splitting_file):
     if not os.path.exists(full_src_dir):
         logger.error(f"Dir does not exist: {full_src_dir}")
@@ -148,7 +137,7 @@ def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, split
     old_preprocessing_params = {PreprocessingParam(k): v for (k, v) in old_preprocessing_params_json.items()}
     logger.info(f"Old preprocessing params : {old_preprocessing_params}")
 
-    preprocessing_params = parse_preprocessing_params(preprocessing_params)
+    preprocessing_params = PrepParamsParser.from_arg_str(preprocessing_params)
     global ngramSplittingConfig
     ngramSplittingConfig = NgramSplitConfig()
     if preprocessing_params[PreprocessingParam.SPL] == 4:
@@ -187,7 +176,7 @@ def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, split
         logger.error(f"Partial representation is no longer supported")
         exit(388)
 
-    gen_dir_name_from_verb_param = gen_dir_name(new_preprocessing_types_dict)
+    gen_dir_name_from_verb_param = PrepParamsParser.encode_dict(new_preprocessing_types_dict)
     while os.path.exists(gen_dir_name_from_verb_param):
         gen_dir_name_from_verb_param += '_'
 

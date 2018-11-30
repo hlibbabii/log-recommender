@@ -8,7 +8,6 @@ from logrec.dataprep.util import insert_separators
 class SplitRepr(Enum):
     BETWEEN_WORDS = auto()
     BONDERIES = auto()
-    NONE = auto()
 
 
 class NgramSplittingType(Enum):
@@ -89,9 +88,7 @@ def do_ngram_splitting(canonic_form, ngram_split_config):
 
 
 def insert_borders(subwords, split_repr):
-    if split_repr == SplitRepr.NONE:
-        return subwords
-    elif split_repr == SplitRepr.BONDERIES:
+    if split_repr == SplitRepr.BONDERIES:
         return subwords
     elif split_repr == SplitRepr.BETWEEN_WORDS:
         return insert_separators(subwords, placeholders['same_case_separator'])

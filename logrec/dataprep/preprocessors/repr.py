@@ -13,7 +13,7 @@ class ReprConfig(object):
 
     @classmethod
     def empty(cls):
-        return cls([], NgramSplitConfig(), SplitRepr.NONE)
+        return cls([], NgramSplitConfig(), SplitRepr.BONDERIES)
 
 
 def to_repr_list(token_list, repr_config):
