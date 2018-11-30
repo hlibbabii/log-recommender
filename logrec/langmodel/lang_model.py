@@ -9,9 +9,8 @@ from time import time
 import deepdiff
 import matplotlib
 
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser, PreprocessingParam
-from logrec.dataprep.split.ngram import SplitRepr
+from logrec.langmodel.fullwordfinder import get_curr_seq, get_curr_seq_new
 
 matplotlib.use('Agg')
 
@@ -30,7 +29,7 @@ from functools import partial
 
 import dill as pickle
 
-from fastai.core import USE_GPU
+from fastai.core import USE_GPU, Variable, to_np, np, V, no_grad_context, VV
 from fastai.nlp import LanguageModelData, seq2seq_reg
 from fastai import metrics
 from torchtext import data
@@ -223,9 +222,116 @@ def find_and_plot_lr(rnn_learner, path_to_model):
     logger.info(f"Plot is saved to {path}")
 
 
-def train_model(rnn_learner, path_to_dataset, model_name, nn_arch):
+def one_hot(idx, size, cuda=False):
+    a = np.zeros((1, size), np.float32)
+    a[0][idx] = 1
+    v = Variable(torch.from_numpy(a))
+    if cuda: v = v.cuda()
+    return v
+
+
+def validate_with_cache(get_full_word_func, stepper, dl, metrics, epoch, seq_first, validate_skip, text_field, theta=2,
+                        lambdah=0.0, window=1000):
+    logging.info(f"Using theta: {theta}, lambdah: {lambdah}")
+    bptts, losses, res = [], [], []
+    seq = []
+    ps = []
+    seqs_in_batch_list = []
+    stepper.reset(False)
+    with no_grad_context():
+        next_word_history = None
+        pointer_history = None
+        for (*x, y) in iter(dl):
+            # x - [Variable(x1,x2, ... xn)]
+            # y - Variable(x2...,xn, xn+1)
+            batch_size = x[0].size(1)
+            if batch_size != 1:
+                raise ValueError("For now only batch v  vfrsize 1 is supported for validation with cache")
+            preds, raw_outputs, l, targets = stepper.evaluate_with_cache(VV(x), VV(y))
+            # preds [bptt x vocab size] Variable
+            # raw_outputs [Variables[bptt x batch size x layer size], ...] - list, size: number of layers
+            # l - cross entropy Variable [batch size]
+            # targets [bptt]
+            ntokens = preds.size(1)
+            rnn_out = raw_outputs[-1].squeeze(1)  # from last layer
+            output_flat = preds.view(-1, ntokens)
+            # Fill pointer history
+            start_idx = len(next_word_history) if next_word_history is not None else 0
+            next_word_history = torch.cat(
+                [one_hot(t.data[0], ntokens) for t in targets]) if next_word_history is None else torch.cat(
+                [next_word_history, torch.cat([one_hot(t.data[0], ntokens) for t in targets])])
+            # print(next_word_history)
+            pointer_history = Variable(rnn_out.data) if pointer_history is None else torch.cat(
+                [pointer_history, Variable(rnn_out.data)], dim=0)
+
+            loss = 0
+            seqs_in_batch = 0
+            softmax_output_flat = torch.nn.functional.softmax(output_flat)
+            bptts.append(softmax_output_flat.size(0))
+            preds_with_cache = []
+            for idx, vocab_loss in enumerate(softmax_output_flat):
+                p = vocab_loss
+                if start_idx + idx > window:
+                    valid_next_word = next_word_history[start_idx + idx - window:start_idx + idx]
+                    valid_pointer_history = pointer_history[start_idx + idx - window:start_idx + idx]
+                    logits = torch.mv(valid_pointer_history, rnn_out[idx])
+                    ptr_attn = torch.nn.functional.softmax(theta * logits).view(-1, 1)
+                    ptr_dist = (ptr_attn.expand_as(valid_next_word) * valid_next_word).sum(0).squeeze()
+                    p = lambdah * ptr_dist + (1 - lambdah) * vocab_loss
+                    index = targets[idx].data[0]
+                    # logging.info(f"========================================")
+                    # logging.info(f"Actual word: {text_field.vocab.itos[index]}")
+                    # logging.info("Result:")
+                    # vals, indices = torch.topk(p, 3)
+                    # for c, i in zip(vals, indices):
+                    #     logging.info(f"{text_field.vocab.itos[i.data[0]]} ({c.data[0]})")
+                    # logging.info("From cache:")
+                    # vals, indices = torch.topk(ptr_dist, 3)
+                    # for c,i in zip(vals, indices):
+                    #     logging.info(f"{text_field.vocab.itos[i.data[0]]} ({c.data[0]})")
+                    # logging.info("From nn:")
+                    # vals, indices = torch.topk(vocab_loss, 3)
+                    # for c,i in zip(vals, indices):
+                    #     logging.info(f"{text_field.vocab.itos[i.data[0]]} ({c.data[0]})")
+                ###
+                current_target = targets[idx].data
+                current_p = p[current_target]
+                curr_seq, current_ps, seq, ps = get_full_word_func(seq, ps, current_target, current_p, text_field)
+                if curr_seq is not None:
+                    for pp in current_ps:
+                        loss += (-torch.log(pp)).data[0]
+                    seqs_in_batch += 1
+                    if len(current_ps) > 0:
+                        logger.info(" ".join(map(lambda x: text_field.vocab.itos[x[0]], curr_seq)))
+                        lss = list(map(lambda x: (-torch.log(x)).data[0], current_ps))
+                        logger.info("" + str(list(map(lambda x: f'{x:.3f}', lss))) + f'= {sum(lss):.3f}')
+                        logger.info("============================")
+                preds_with_cache.append(p)
+            ###
+            # hidden = repackage_hidden(hidden)
+            next_word_history = next_word_history[-window:]
+            pointer_history = pointer_history[-window:]
+            res.append([f(torch.stack(preds_with_cache).data, y) for f in metrics])
+
+            if seqs_in_batch > 0:
+                loss = loss / seqs_in_batch
+                losses.append(to_np(V(loss)))
+
+                seqs_in_batch_list.append(seqs_in_batch)
+
+        for pp in ps:
+            loss += (-torch.log(pp)).data[0]
+        losses.append(to_np(V(loss)))
+        seqs_in_batch_list.append(1)
+
+    return [np.average(losses, 0, weights=seqs_in_batch_list)] + list(np.average(np.stack(res), 0, weights=bptts))
+
+
+def train_model(rnn_learner, path_to_dataset, dataset_name, model_name, nn_arch):
     dataset_name = params.nn_params["dataset_name"]
     path_to_model = f"{path_to_dataset}/{model_name}"
+    split_repr = PrepParamsParser.from_encoded_string(dataset_name)[PreprocessingParam.NO_SEP]
+    get_full_word_func = get_curr_seq if split_repr == 0 else get_curr_seq_new
     training_start_time = time()
     training_log_file = os.path.abspath(f'{path_to_model}/training.log')
     logger.info(f"Starting training, check {training_log_file} for training progress")
@@ -233,7 +339,9 @@ def train_model(rnn_learner, path_to_dataset, model_name, nn_arch):
                                     cycle_len=nn_arch['cycle']['len'], cycle_mult=nn_arch['cycle']['mult'],
                                     metrics=list(map(lambda x: getattr(metrics, x), nn_arch['training_metrics'])),
                                     cycle_save_name=dataset_name, get_ep_vals=True,
-                                    best_save_name=f'{dataset_name}_best', file=f"{path_to_model}/training.log")
+                                    best_save_name=f'{dataset_name}_best', file=f"{path_to_model}/training.log",
+                                    valid_func=partial(validate_with_cache, get_full_word_func)
+                                    )
     training_time_mins = int(time() - training_start_time) // 60
     with open(f'{path_to_dataset}/{model_name}/results.out', 'w') as f:
         f.write(str(training_time_mins) + "\n")
@@ -322,7 +430,7 @@ def run(params):
         elif params.nn_params['mode'] == Mode.TRAINING.value:
             if rerunning_model:
                 logger.info(f"Forcing training rerun")
-            train_model(learner, path_to_dataset, model_name, nn_arch)
+            train_model(learner, path_to_dataset, params.nn_params["dataset_name"], model_name, nn_arch)
             logger.info("Loading the best model")
             learner.load(f'{params.nn_params["dataset_name"]}_best')
             m = learner.model

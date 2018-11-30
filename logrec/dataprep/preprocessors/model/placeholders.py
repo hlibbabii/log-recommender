@@ -6,7 +6,6 @@ placeholders= {
     'camel_case_separator': '`c',
     'underscore_separator': '`u',
     'split_words_end': 'w`',
-    'split_words_start': '`w',
     'capital': '`C',
     'capitals': '`Cs',
     'var': '<var>',
