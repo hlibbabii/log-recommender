@@ -291,6 +291,8 @@ def run(params):
         logger.info("Not using base model. Training coefficients from scratch...")
         model_name = get_model_name_by_params(path_to_dataset, nn_arch)
         path_to_model = f'{path_to_dataset}/{model_name}'
+    if not os.path.exists(path_to_model):
+        os.mkdir(path_to_model)
     attach_dataset_aware_handlers_to_loggers(path_to_model, 'main.log')
 
     printGPUInfo()
@@ -298,8 +300,6 @@ def run(params):
     md = params.nn_params['mode']
     logger.info(f"Mode: {md}")
     logger.info(f"Path to model: {os.path.abspath(path_to_model)}")
-    if not os.path.exists(path_to_model):
-        os.mkdir(path_to_model)
 
     learner, text_field, model_trained = get_model(model_name, nn_arch)
 
