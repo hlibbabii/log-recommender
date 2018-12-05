@@ -10,6 +10,10 @@ subword_separators_separators = [placeholders['same_case_separator']] \
 capitals = [placeholders['capital'], placeholders['capitals']]
 
 
+def get_subword(seq, ps, current_target, current_p, text_files):
+    return current_target, current_p, None, None
+    
+
 def get_curr_seq(seq, ps, current_target, current_p, text_field):
     if not seq:  # only the beginning:
         return None, None, [current_target], [current_p]
