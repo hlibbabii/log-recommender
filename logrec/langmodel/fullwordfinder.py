@@ -11,8 +11,8 @@ capitals = [placeholders['capital'], placeholders['capitals']]
 
 
 def get_subword(seq, ps, current_target, current_p, text_files):
-    return current_target, current_p, None, None
-    
+    return [current_target], [current_p], [], []
+
 
 def get_curr_seq(seq, ps, current_target, current_p, text_field):
     if not seq:  # only the beginning:
