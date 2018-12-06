@@ -9,10 +9,10 @@ class Mode(Enum):
     # ONLY_TESTING = auto()
 
 
-nn_params = {
+params = {
     'path_to_data': '../nn-data/',
     'dataset_name': 'guess_possition_566_2_context_lines',
-    # 'model_name': 'baseline',
+    'pretrained_lang_model': '',
     'arch': {
         'bs': 16,
         'bptt': 10,

@@ -8,7 +8,7 @@ import torch
 from fastai.lm_rnn import seq2seq_reg
 from fastai.metrics import accuracy
 from fastai.nlp import TextData
-from logrec.classifier.classifier_params import LEVEL_LABEL, nn_params
+from logrec.classifier.classifier_params import LEVEL_LABEL, params
 from logrec.classifier.context_datasets import ContextsDataset
 from logrec.langmodel.utils import to_test_mode, output_predictions, back_to_train_mode
 
@@ -16,11 +16,11 @@ logging.basicConfig(level=logging.DEBUG)
 
 arch = nn_params['arch']
 
-def get_text_classifier_model(text_field, level_label, model_name, pretrained_lang_model_name=None):
 
-    splits = ContextsDataset.splits(text_field, level_label, path=f'{path_to_data}/{pretrained_lang_model_name}/')
+def get_text_classifier_model(text_field, level_label, base_classifier, base_langmodel=None):
+    splits = ContextsDataset.splits(text_field, level_label, path=f'{path_to_data}/{base_langmodel}/')
 
-    text_data = TextData.from_splits(nn_params['path_to_data'], splits, arch['bs'])
+    text_data = TextData.from_splits(params['path_to_data'], splits, arch['bs'])
     # text_data.classes
 
     opt_fn = partial(torch.optim.Adam, betas=(0.7, 0.99))
@@ -44,14 +44,14 @@ def get_text_classifier_model(text_field, level_label, model_name, pretrained_la
     logging.info(rnn_learner)
 
     try:
-        rnn_learner.load(model_name)
-        logging.info(f"Loaded model {model_name}. ")
+        rnn_learner.load(base_classifier)
+        logging.info(f"Loaded classifier: {base_classifier}. ")
     except FileNotFoundError:
-        logging.warning(f"Model {model_name} not found. Training from pretrained lang model")
+        logging.warning(f"Model {base_classifier} not found. Training from pretrained lang model")
         try:
-            rnn_learner.load_encoder(pretrained_lang_model_name + "_encoder")
+            rnn_learner.load_encoder(base_langmodel + "_encoder")
         except FileNotFoundError:
-            logging.error(f"Model {pretrained_lang_model_name}_encoder not found. Aborting...")
+            logging.error(f"Model {base_langmodel}_encoder not found. Aborting...")
             exit(1)
 
     # rnn_learner.lr_find()
@@ -79,17 +79,21 @@ def get_text_classifier_model(text_field, level_label, model_name, pretrained_la
     # logging.info(f'                    ... {accuracy_gen(*rnn_learner.predict_with_targs())}')
     # rnn_learner.sched.plot_loss()
 
-    logging.info(f'Saving classifier: {model_name}')
+    logging.info(f'Saving classifier: {base_classifier}')
     # rnn_learner.save(model_name)
 
     return rnn_learner
 
 
+CLASSIFIER_NAME_SUFFIX = "_location_classifier"
+
 if __name__ == '__main__':
-    text_field = pickle.load(open(f'{path_to_data}/{pretrained_lang_model_name}/TEXT.pkl', 'rb'))
+    path_to_data = params['path_to_data']
+    pretrained_langmodel = params['pretrained_langmodel']
+    text_field = pickle.load(open(f'{path_to_data}/{pretrained_langmodel}/TEXT.pkl', 'rb'))
     learner = get_text_classifier_model(text_field, LEVEL_LABEL,
-                                        model_name=pretrained_lang_model_name + '_classifier',
-                                        pretrained_lang_model_name=pretrained_lang_model_name)
+                                        base_classifier=pretrained_langmodel + CLASSIFIER_NAME_SUFFIX,
+                                        base_langmodel=pretrained_langmodel)
 
     m = learner.model
     to_test_mode(m)
