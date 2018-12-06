@@ -9,8 +9,10 @@ from time import time
 import deepdiff
 import matplotlib
 
+from fastai.model import validate
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser, PreprocessingParam
-from logrec.langmodel.fullwordfinder import get_curr_seq, get_curr_seq_new
+from logrec.langmodel.fullwordfinder import get_curr_seq, get_curr_seq_new, get_subword
+from logrec.util.io_utils import file_mapper
 
 matplotlib.use('Agg')
 
@@ -46,12 +48,7 @@ class Mode(Enum):
 
 def create_df(dir):
     lines = []
-    files_total = 0
-    for root, dirs, files in os.walk(dir):
-        for file in files:
-            with open(os.path.join(root, file), 'r') as f:
-                if not file.startswith("_"):
-                    files_total += 1
+    files_total = sum(f for f in file_mapper(dir, lambda: 1, extension=None, ignore_prefix="_"))
 
     DATAFRAME_LINES_THRESHOLD = 10 * 3
     cur_file = 0

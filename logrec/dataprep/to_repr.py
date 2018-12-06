@@ -191,13 +191,6 @@ def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, split
     with open(f'{full_dest_dir}/preprocessing_types.json', "w") as f:
         json.dump(new_preprocessing_types_dict, f)
 
-    # TODO remove duplication
-    files_total = 0
-    for root, dirs, files in os.walk(full_src_dir):
-        for file in files:
-            if file.endswith(f".{PARSED_FILE_EXTENSION}"):
-                files_total += 1
-
     params = []
     for root, dirs, files in os.walk(full_src_dir):
         for file in files:

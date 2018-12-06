@@ -12,6 +12,7 @@ from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.general import from_file
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
 from logrec.dataprep.preprocess_params import pp_params
+from logrec.util.io_utils import file_mapper
 
 logger = logging.getLogger(__name__)
 
@@ -24,17 +25,6 @@ def get_two_levels_subdirs(dir):
     for subdir in subdirs:
         for subsubdir in next(os.walk(os.path.join(dir, subdir)))[1]:
             yield dir, subdir, subsubdir
-
-
-
-def java_file_mapper(dir, func):
-    import os
-    for root, dirs, files in os.walk(dir):
-        for file in files:
-            if file.endswith(".java") and not file.startswith("."):
-                ret = func(os.path.join(root, file))
-                if ret is not None:
-                    yield ret
 
 
 def read_file_contents(file_path):
@@ -62,10 +52,11 @@ def preprocess_and_write(params):
         exit(2)
     filenames=[]
     with gzip.GzipFile(f'{path_to_preprocessed_file}.part', 'wb') as f:
-        total_files = sum([f for f in java_file_mapper(dir_with_files_to_preprocess, lambda path: 1)])
+        total_files = sum(f for f in file_mapper(dir_with_files_to_preprocess, lambda path: 1))
         logger.info(f"Preprocessing java files from {dir_with_files_to_preprocess}. Files to process: {total_files}")
         pickle.dump(preprocessing_param_dict, f, pickle.HIGHEST_PROTOCOL)
-        for ind, (lines_from_file, file_path) in enumerate(java_file_mapper(dir_with_files_to_preprocess, read_file_contents)):
+        for ind, (lines_from_file, file_path) in enumerate(
+                file_mapper(dir_with_files_to_preprocess, read_file_contents)):
             if (ind+1) % 100 == 0:
                 logger.info(
                     f"[{train_test_valid}/{project}] Parsed {ind+1} out of {total_files} files ({(ind+1)/float(total_files)*100:.2f}%)")

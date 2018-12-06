@@ -17,6 +17,7 @@ from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.to_repr import REPR_EXTENSION
 from logrec.dataprep.util import AtomicInteger
 from logrec.util import io_utils
+from logrec.util.io_utils import file_mapper
 
 logger = logging.getLogger(__name__)
 config = yaml.load(open(f'{base_project_dir}/logging.yaml').read())
@@ -160,23 +161,6 @@ def avg_ssum(nested_list):
         sm = (sm[0] + i, sm[1] + k)
     return (sm[0] / float(len(nested_list)), sm[1] / float(len(nested_list)))
 
-def calc_total_files(full_src_dir):
-    files_total = 0
-    for root, dirs, files in os.walk(full_src_dir):
-        for file in files:
-            if file.endswith(f".{REPR_EXTENSION}"):
-                files_total += 1
-    return files_total
-
-
-def get_all_files(full_src_dir, ext):
-    res = []
-    for root, dirs, files in os.walk(full_src_dir):
-        for file in files:
-            if file.endswith(f".{ext}"):
-                res.append(os.path.join(root, file))
-    return res
-
 
 def get_vocab(path_to_file):
     vocab = Counter()
@@ -249,7 +233,7 @@ def run(full_src_dir, full_metadata_dir):
 
     logger.info(f"Reading files from: {os.path.abspath(full_src_dir)}")
 
-    all_files = get_all_files(full_src_dir, REPR_EXTENSION)
+    all_files = [file for file in file_mapper(full_src_dir, lambda l: l, REPR_EXTENSION)]
     if not all_files:
         logger.warning("No preprocessed files found.")
         exit(4)
@@ -258,7 +242,7 @@ def run(full_src_dir, full_metadata_dir):
     dumps_valid_file = f'{path_to_dump}/ready'
 
     if os.path.exists(dumps_valid_file):
-        all_files = get_all_files(path_to_dump, PARTVOCAB_EXT)
+        all_files = [file for file in file_mapper(path_to_dump, lambda l: l, PARTVOCAB_EXT)]
         task_list = []
         removed_files = []
         for file in all_files:

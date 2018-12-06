@@ -260,3 +260,13 @@ def dump_list(lst, file):
     with open(file, 'w') as f:
         for elm in lst:
             f.write(f"{' '.join(elm)}\n")
+
+
+def file_mapper(dir, func, extension="java", ignore_prefix="."):
+    import os
+    for root, dirs, files in os.walk(dir):
+        for file in files:
+            if (extension is None or file.endswith(f".{extension}")) and not file.startswith(ignore_prefix):
+                ret = func(os.path.join(root, file))
+                if ret is not None:
+                    yield ret
