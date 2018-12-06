@@ -15,3 +15,21 @@ placeholders= {
     'non_eng_contents': '`Es',
     'log_statement': '`L'
 }
+
+placeholders_beautiful = {
+    'comment': '<comment>',
+    'string_literal': '<str_literal>',
+    'identifier': '<identifier>',
+    'var': '<var>',
+    'string_resource': '<str_res>',
+    'ect': '\n\n',
+    'non_eng': '<non_eng>',
+    'non_eng_contents': '<non_eng_contents>',
+    'log_statement': '<log_statement>'
+}
+
+separators_beautiful = {
+    'same_case_separator': '',
+    'underscore_separator': '_',
+    'split_words_end': '',
+}

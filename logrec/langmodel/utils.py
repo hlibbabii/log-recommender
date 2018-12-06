@@ -1,10 +1,15 @@
 import logging
 import os
+import re
 
 from fastai.core import to_np, to_gpu
 from fastai.metrics import top_k, MRR
 
 import torch
+
+from logrec.dataprep.preprocessors.model.placeholders import placeholders_beautiful, placeholders, separators_beautiful
+from logrec.dataprep.split.ngram import SplitRepr
+from logrec.langmodel.decode_text import beautify_text
 
 logger = logging.getLogger(__name__)
 
@@ -38,16 +43,9 @@ def gen_text(m, text_field, starting_words, how_many_to_gen):
     text += '...'
     return text
 
-def beautify_text(text):
-    text = text.replace('<eos>', '\n').replace('\\n', '\n').replace('<ect>', '\n\n').replace('<identifiersep>', '_')
-    for i in range(1,11):
-        text = text.replace('\\t'+str(i), ' ' * 4 * i)
-    text = text.replace(' _ ', '_').replace(' . ', '.')
-    return text
-
 
 def to_test_mode(m):
-    # Set batch size to 1
+    # Set batch size to 1gen_te
     m[0].bs = 1
     # Turn off dropout
     m.eval()
