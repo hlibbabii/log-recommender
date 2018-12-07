@@ -48,7 +48,7 @@ class Mode(Enum):
 
 def create_df(dir):
     lines = []
-    files_total = sum(f for f in file_mapper(dir, lambda: 1, extension=None, ignore_prefix="_"))
+    files_total = sum(f for f in file_mapper(dir, lambda f: 1, extension=None, ignore_prefix="_"))
 
     DATAFRAME_LINES_THRESHOLD = 10 * 3
     cur_file = 0
