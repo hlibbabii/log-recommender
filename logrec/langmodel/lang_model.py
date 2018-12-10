@@ -42,35 +42,38 @@ from torchtext import data
 LEVEL_LABEL = data.Field(sequential=False)
 logger = logging.getLogger(__name__)
 
+N_CHUNKS = 1000
+
 class Mode(Enum):
     TRAINING = "training"
     LEARNING_RATE_FINDING = "learning_rate_finding"
 
 
-def include_to_df(filename, min_chunk, max_chunk):
-    if filename.startswith("_"):
+def include_to_df(filename, percent, start_from):
+    basename = os.path.basename(filename)
+    if basename.startswith("_"):
         return False
-    chunk = float(get_chunk_prefix(filename))
-    return min_chunk <= chunk <= max_chunk
+    chunk = float(get_chunk_prefix(basename))
+    return start_from <= chunk < percent * N_CHUNKS * 0.01
 
 
-def include_to_df_tester(min_chunk, max_chunk):
+def include_to_df_tester(percent, start_from):
     def tmp(filename):
-        return 1 if include_to_df(filename, min_chunk, max_chunk) else 0
+        return 1 if include_to_df(filename, percent, start_from) else 0
 
     return tmp
 
 
-def create_df_creator(min_chunk, max_chunk):
+def create_df_creator(percent, start_from):
     def tmp(dir):
-        return create_df(dir, min_chunk, max_chunk)
+        return create_df(dir, percent, start_from)
 
     return tmp
 
 
-def create_df(dir, min_chunk, max_chunk):
+def create_df(dir, percent, start_from):
     lines = []
-    files_total = sum(f for f in file_mapper(dir, include_to_df_tester(min_chunk, max_chunk),
+    files_total = sum(f for f in file_mapper(dir, include_to_df_tester(percent, start_from),
                                              extension=None, ignore_prefix="_"))
 
     DATAFRAME_LINES_THRESHOLD = 10 * 3
@@ -79,7 +82,7 @@ def create_df(dir, min_chunk, max_chunk):
     for root, dirs, files in os.walk(dir):
         for file in files:
             with open(os.path.join(root, file), 'r') as f:
-                if include_to_df(file, min_chunk, max_chunk):
+                if include_to_df(file, percent, start_from):
                     cur_file += 1
                     logger.info(f'Adding {os.path.join(root, file)} to dataframe [{cur_file} out of {files_total}]')
                     lines.extend([line for line in f])
@@ -94,7 +97,7 @@ def create_df(dir, min_chunk, max_chunk):
         raise ValueError(f"No data available: {os.path.abspath(dir)}")
 
 
-def get_model(model_name, nn_arch, min_chunk, max_chunk):
+def get_model(model_name, nn_arch, percent, start_from):
     dataset_name = params.nn_params["dataset_name"]
     path_to_dataset = f'{params.nn_params["path_to_data"]}/{dataset_name}'
     path_to_model = f'{path_to_dataset}/{model_name}'
@@ -107,7 +110,7 @@ def get_model(model_name, nn_arch, min_chunk, max_chunk):
 
     text_field = data.Field()
     languageModelData = LanguageModelData.from_dataframes(path_to_model,
-                                                          text_field, 0, create_df_creator(min_chunk, max_chunk),
+                                                          text_field, 0, create_df_creator(percent, start_from),
                                                           train_df_path, valid_df_path, test_df_path,
                                                           bs=nn_arch["bs"], validation_bs=params.nn_params["validation_bs"],
                                                           bptt=nn_arch["bptt"],
@@ -229,7 +232,6 @@ def get_model_name_by_params(percent, start_from, path_to_dataset, nn_arch):
         while os.path.exists(path_to_model):
             name = name + "_"
             path_to_model = f'{path_to_dataset}/{name}'
-        name = folder
     normalized_percent, normalized_start_from = normalize_percent_data(percent, start_from)
     percent_prefix = f"{normalized_percent}_{'' if normalized_start_from == '0' else (normalized_start_from + '_')}"
     return percent_prefix + name
@@ -406,8 +408,8 @@ def run(params):
 
     path_to_dataset = f'{params.nn_params["path_to_data"]}/{params.nn_params["dataset_name"]}'
 
-    min_chunk = params.nn_params['percent']
-    max_chunk = params.nn_params['start_from']
+    percent = params.nn_params['percent']
+    start_from = params.nn_params['start_from']
     if "base_model" in params.nn_params:
         base_model_name = params.nn_params["base_model"]
         path_to_best_model = f'{path_to_dataset}/{base_model_name}/models/{params.nn_params["dataset_name"]}_best.h5'
@@ -427,7 +429,7 @@ def run(params):
     else:
         logger.info("Not using base model. Training coefficients from scratch...")
 
-        model_name = get_model_name_by_params(min_chunk, max_chunk,
+        model_name = get_model_name_by_params(percent, start_from,
                                               path_to_dataset, nn_arch)
         path_to_model = f'{path_to_dataset}/{model_name}'
     if not os.path.exists(path_to_model):
@@ -440,7 +442,7 @@ def run(params):
     logger.info(f"Mode: {md}")
     logger.info(f"Path to model: {os.path.abspath(path_to_model)}")
 
-    learner, text_field, model_trained = get_model(model_name, nn_arch, min_chunk, max_chunk)
+    learner, text_field, model_trained = get_model(model_name, nn_arch, percent, start_from)
 
     save_vocab_data(text_field, path_to_dataset)
 
