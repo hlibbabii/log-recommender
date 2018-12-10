@@ -238,7 +238,7 @@ def get_model_name_by_params(percent, start_from, path_to_dataset, nn_arch):
 
 def find_and_plot_lr(rnn_learner, path_to_model):
     logger.info("Looking for the best learning rate...")
-    rnn_learner.lr_find()
+    rnn_learner.lr_find(file=f"{path_to_model}/training.log")
 
     dir = os.path.dirname(os.path.realpath(__file__))
     path = os.path.join(dir, path_to_model, 'lr_finder_plot.png')
