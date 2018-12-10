@@ -61,6 +61,13 @@ def include_to_df_tester(min_chunk, max_chunk):
     return tmp
 
 
+def create_df_creator(min_chunk, max_chunk):
+    def tmp(dir):
+        return create_df(dir, min_chunk, max_chunk)
+
+    return tmp
+
+
 def create_df(dir, min_chunk, max_chunk):
     lines = []
     files_total = sum(f for f in file_mapper(dir, include_to_df_tester(min_chunk, max_chunk),
@@ -87,7 +94,7 @@ def create_df(dir, min_chunk, max_chunk):
         raise ValueError(f"No data available: {os.path.abspath(dir)}")
 
 
-def get_model(model_name, nn_arch):
+def get_model(model_name, nn_arch, min_chunk, max_chunk):
     dataset_name = params.nn_params["dataset_name"]
     path_to_dataset = f'{params.nn_params["path_to_data"]}/{dataset_name}'
     path_to_model = f'{path_to_dataset}/{model_name}'
@@ -100,7 +107,7 @@ def get_model(model_name, nn_arch):
 
     text_field = data.Field()
     languageModelData = LanguageModelData.from_dataframes(path_to_model,
-                                                          text_field, 0, create_df,
+                                                          text_field, 0, create_df_creator(min_chunk, max_chunk),
                                                           train_df_path, valid_df_path, test_df_path,
                                                           bs=nn_arch["bs"], validation_bs=params.nn_params["validation_bs"],
                                                           bptt=nn_arch["bptt"],
@@ -399,6 +406,8 @@ def run(params):
 
     path_to_dataset = f'{params.nn_params["path_to_data"]}/{params.nn_params["dataset_name"]}'
 
+    min_chunk = params.nn_params['percent']
+    max_chunk = params.nn_params['start_from']
     if "base_model" in params.nn_params:
         base_model_name = params.nn_params["base_model"]
         path_to_best_model = f'{path_to_dataset}/{base_model_name}/models/{params.nn_params["dataset_name"]}_best.h5'
@@ -417,7 +426,8 @@ def run(params):
             exit(1)
     else:
         logger.info("Not using base model. Training coefficients from scratch...")
-        model_name = get_model_name_by_params(params.nn_params['percent'], params.nn_params['start_from'],
+
+        model_name = get_model_name_by_params(min_chunk, max_chunk,
                                               path_to_dataset, nn_arch)
         path_to_model = f'{path_to_dataset}/{model_name}'
     if not os.path.exists(path_to_model):
@@ -430,7 +440,7 @@ def run(params):
     logger.info(f"Mode: {md}")
     logger.info(f"Path to model: {os.path.abspath(path_to_model)}")
 
-    learner, text_field, model_trained = get_model(model_name, nn_arch)
+    learner, text_field, model_trained = get_model(model_name, nn_arch, min_chunk, max_chunk)
 
     save_vocab_data(text_field, path_to_dataset)
 
