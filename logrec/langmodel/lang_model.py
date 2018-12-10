@@ -417,7 +417,8 @@ def run(params):
             exit(1)
     else:
         logger.info("Not using base model. Training coefficients from scratch...")
-        model_name = get_model_name_by_params(params['percent'], params['start_from'], path_to_dataset, nn_arch)
+        model_name = get_model_name_by_params(params.nn_params['percent'], params.nn_params['start_from'],
+                                              path_to_dataset, nn_arch)
         path_to_model = f'{path_to_dataset}/{model_name}'
     if not os.path.exists(path_to_model):
         os.mkdir(path_to_model)
