@@ -2,8 +2,10 @@ from logrec.langmodel.lang_model import Mode
 
 nn_params = {
     'path_to_data': '../../nn-data/test/test1/repr',
-    'dataset_name': '102010',
+    'dataset_name': '104111',
     # 'base_model': 'baseline_',
+    'percent': '1',
+    'start_from': '0',
     'arch': {
         'bs': 16,
         'bptt': 10,

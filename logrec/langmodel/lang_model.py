@@ -13,6 +13,7 @@ from fastai.model import validate
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser, PreprocessingParam
 from logrec.langmodel.fullwordfinder import get_curr_seq, get_curr_seq_new, get_subword
 from logrec.util.io_utils import file_mapper
+from logrec.util.percent_chunks import normalize_percent_data, get_chunk_prefix
 
 matplotlib.use('Agg')
 
@@ -46,9 +47,24 @@ class Mode(Enum):
     LEARNING_RATE_FINDING = "learning_rate_finding"
 
 
-def create_df(dir):
+def include_to_df(filename, min_chunk, max_chunk):
+    if filename.startswith("_"):
+        return False
+    chunk = float(get_chunk_prefix(filename))
+    return min_chunk <= chunk <= max_chunk
+
+
+def include_to_df_tester(min_chunk, max_chunk):
+    def tmp(filename):
+        return 1 if include_to_df(filename, min_chunk, max_chunk) else 0
+
+    return tmp
+
+
+def create_df(dir, min_chunk, max_chunk):
     lines = []
-    files_total = sum(f for f in file_mapper(dir, lambda f: 1, extension=None, ignore_prefix="_"))
+    files_total = sum(f for f in file_mapper(dir, include_to_df_tester(min_chunk, max_chunk),
+                                             extension=None, ignore_prefix="_"))
 
     DATAFRAME_LINES_THRESHOLD = 10 * 3
     cur_file = 0
@@ -56,7 +72,7 @@ def create_df(dir):
     for root, dirs, files in os.walk(dir):
         for file in files:
             with open(os.path.join(root, file), 'r') as f:
-                if not file.startswith("_"):
+                if include_to_df(file, min_chunk, max_chunk):
                     cur_file += 1
                     logger.info(f'Adding {os.path.join(root, file)} to dataframe [{cur_file} out of {files_total}]')
                     lines.extend([line for line in f])
@@ -64,7 +80,6 @@ def create_df(dir):
                         yield pandas.DataFrame(lines)
                         lines = []
                         at_least_one_frame_created = True
-
     if lines:
         yield pandas.DataFrame(lines)
         at_least_one_frame_created = True
@@ -197,17 +212,20 @@ def printGPUInfo():
         logger.info("Number of GPUs available: " + str(torch.cuda.device_count()))
 
 
-def get_model_name_by_params(path_to_dataset, nn_arch):
+def get_model_name_by_params(percent, start_from, path_to_dataset, nn_arch):
     folder, config_diff = find_most_similar_config(path_to_dataset, nn_arch)
     if config_diff == {}:
-        return folder
+        name = folder
     else: #nn wasn't run with this config yet
         name = find_name_for_new_config(config_diff) if folder is not None else "baseline"
         path_to_model = f'{path_to_dataset}/{name}'
         while os.path.exists(path_to_model):
             name = name + "_"
             path_to_model = f'{path_to_dataset}/{name}'
-        return name
+        name = folder
+    normalized_percent, normalized_start_from = normalize_percent_data(percent, start_from)
+    percent_prefix = f"{normalized_percent}_{'' if normalized_start_from == '0' else (normalized_start_from + '_')}"
+    return percent_prefix + name
 
 def find_and_plot_lr(rnn_learner, path_to_model):
     logger.info("Looking for the best learning rate...")
@@ -399,7 +417,7 @@ def run(params):
             exit(1)
     else:
         logger.info("Not using base model. Training coefficients from scratch...")
-        model_name = get_model_name_by_params(path_to_dataset, nn_arch)
+        model_name = get_model_name_by_params(params['percent'], params['start_from'], path_to_dataset, nn_arch)
         path_to_model = f'{path_to_dataset}/{model_name}'
     if not os.path.exists(path_to_model):
         os.mkdir(path_to_model)
