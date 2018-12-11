@@ -2,6 +2,8 @@ from enum import Enum, auto
 
 from torchtext import data
 
+from logrec.dataprep import base_project_dir
+
 
 class Mode(Enum):
     TRAINING = auto()
@@ -10,13 +12,14 @@ class Mode(Enum):
 
 
 params = {
-    'path_to_data': '../nn-data/',
-    'dataset_name': 'guess_possition_566_2_context_lines',
-    'pretrained_lang_model': '',
+    'path_to_data': f'{base_project_dir}/nn-data/test/test1/classification/location/',
+    'dataset_name': '104111',
+    'base_model': '1_baseline',  # if there already exists a classifier with this name it is used, otherwise
+    # lang model with this name is used
     'arch': {
-        'bs': 16,
-        'bptt': 10,
-        'em_sz': 300,  # size of each embedding vector
+        'bs': 64,
+        'bptt': 150,
+        'em_sz': 150,  # size of each embedding vector
         'nh': 300,     # number of hidden activations per layer
         'nl': 3,       # number of layers
         'min_freq': 0,
@@ -28,7 +31,7 @@ params = {
         'cycle': {'n': 1, 'len': 1, 'mult': 2},
         'training_metrics': ['accuracy', 'mrr']
     },
-    'lr': 1e-3,
+    'lr': 5.0 * 1e-3,
     'metrics': ['topk_1_10_100_cat_2', 'mrr'],
     'testing': {
         'how_many_words': 2000,

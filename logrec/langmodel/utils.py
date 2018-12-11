@@ -1,19 +1,17 @@
 import logging
 import os
-import re
 
-from fastai.core import to_np, to_gpu
+from fastai.core import to_np, to_gpu, F
 from fastai.metrics import top_k, MRR
 
 import torch
 
-from logrec.dataprep.preprocessors.model.placeholders import placeholders_beautiful, placeholders, separators_beautiful
-from logrec.dataprep.split.ngram import SplitRepr
 from logrec.langmodel.decode_text import beautify_text
 
 logger = logging.getLogger(__name__)
 
-def output_predictions(m, input_field, output_field, starting_text, how_many, file_to_save):
+
+def output_predictions(m, input_field, output_field, starting_text, how_many, file_to_save=None):
     words = [starting_text.split()]
     t=to_gpu(input_field.numericalize(words, -1))
 
@@ -21,14 +19,15 @@ def output_predictions(m, input_field, output_field, starting_text, how_many, fi
 
     #==========================output predictions
 
-    probs, labels = torch.topk(res[-1], how_many)
+    outputs, labels = torch.topk(res[-1], how_many)
+    probs = F.softmax(outputs)
     text = ""
     text += ("===================" + "\n")
     text += (beautify_text(starting_text) + "\n")
     for probability, label in map(to_np, zip(probs, labels)):
         uu = f'{output_field.vocab.itos[label[0]]}: {probability}'
         text += (uu + "\n")
-    return text
+    print(text)
 
 
 def gen_text(m, text_field, starting_words, how_many_to_gen):

@@ -1,16 +1,29 @@
-import os
+import logging
+import re
+
 from torchtext import data
+
+from logrec.util.io_utils import file_mapper
 
 __author__ = 'hlib'
 
-class ContextsDataset(data.Dataset):
+logger = logging.getLogger(__name__)
 
-    CONTEXTS_FILE = "contexts.src"
-    LEVELS_FILE = "levels.src"
+class ContextsDataset(data.Dataset):
+    CONTEXTS_FILE_EXTENSION = "context.forward"
+    LABEL_FILE_EXTENSION = "label"
 
     @staticmethod
     def sort_key(ex):
         return len(ex.text)
+
+    @staticmethod
+    def _get_pair(file_path):
+        c_file_path = re.sub(f'{ContextsDataset.LABEL_FILE_EXTENSION}$',
+                             f'{ContextsDataset.CONTEXTS_FILE_EXTENSION}',
+                             file_path)
+        return c_file_path, file_path
+
 
     def __init__(self, path, text_field, label_field, **kwargs):
         """Create an IMDB dataset instance given a path and fields.
@@ -25,11 +38,24 @@ class ContextsDataset(data.Dataset):
         fields = [('text', text_field), ('label', label_field)]
         examples = []
 
-        with open(os.path.join(path, self.CONTEXTS_FILE)) as c_file, \
-                open(os.path.join(path, self.LEVELS_FILE)) as l_file:
-            for context, level in zip(c_file, l_file):
-                example = data.Example.fromlist([context, level], fields)
-                examples.append(example)
+        for c_filename, l_filename in file_mapper(path, ContextsDataset._get_pair, extension='label'):
+            c_file = None
+            l_file = None
+            try:
+                c_file = open(c_filename, 'r')
+                l_file = open(l_filename, 'r')
+                for context, level in zip(c_file, l_file):
+                    example = data.Example.fromlist([context, (lambda l: l, level.rstrip('\n'))], fields)
+                    examples.append(example)
+            except FileNotFoundError:
+                project_name = c_filename[:-len(ContextsDataset.CONTEXTS_FILE_EXTENSION)]
+                logger.error(f"Project context not loaded: {project_name}")
+                continue
+            finally:
+                if c_file is not None:
+                    c_file.close()
+                if l_file is not None:
+                    l_file.close()
 
         super(ContextsDataset, self).__init__(examples, fields, **kwargs)
 
