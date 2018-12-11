@@ -306,22 +306,25 @@ def train_model(rnn_learner, path_to_dataset, dataset_name, model_name, nn_arch)
     dataset_name = params.nn_params["dataset_name"]
     path_to_model = f"{path_to_dataset}/{model_name}"
     split_repr = PrepParamsParser.from_encoded_string(dataset_name)[PreprocessingParam.NO_SEP]
-    get_full_word_func = get_curr_seq if split_repr == 0 else get_curr_seq_new
-    training_start_time = time()
-    training_log_file = os.path.abspath(f'{path_to_model}/training.log')
-    logger.info(f"Starting training, check {training_log_file} for training progress")
-    vals, ep_vals = rnn_learner.fit(params.nn_params['lr'], n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
-                                    cycle_len=nn_arch['cycle']['len'], cycle_mult=nn_arch['cycle']['mult'],
-                                    metrics=list(map(lambda x: getattr(metrics, x), nn_arch['training_metrics'])),
-                                    cycle_save_name=dataset_name, get_ep_vals=True,
-                                    best_save_name=f'{dataset_name}_best', file=f"{path_to_model}/training.log",
-                                    valid_func=partial(validate_with_cache, get_full_word_func)
-                                    )
-    training_time_mins = int(time() - training_start_time) // 60
-    with open(f'{path_to_dataset}/{model_name}/results.out', 'w') as f:
-        f.write(str(training_time_mins) + "\n")
-        for _, vals in ep_vals.items():
-            f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
+    if nn_arch['cycle']['n'] > 0:
+        get_full_word_func = get_curr_seq if split_repr == 0 else get_curr_seq_new
+        training_start_time = time()
+        training_log_file = os.path.abspath(f'{path_to_model}/training.log')
+        logger.info(f"Starting training, check {training_log_file} for training progress")
+        vals, ep_vals = rnn_learner.fit(params.nn_params['lr'], n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
+                                        cycle_len=nn_arch['cycle']['len'], cycle_mult=nn_arch['cycle']['mult'],
+                                        metrics=list(map(lambda x: getattr(metrics, x), nn_arch['training_metrics'])),
+                                        cycle_save_name=dataset_name, get_ep_vals=True,
+                                        best_save_name=f'{dataset_name}_best', file=f"{path_to_model}/training.log",
+                                        valid_func=partial(validate_with_cache, get_full_word_func)
+                                        )
+        training_time_mins = int(time() - training_start_time) // 60
+        with open(f'{path_to_dataset}/{model_name}/results.out', 'w') as f:
+            f.write(str(training_time_mins) + "\n")
+            for _, vals in ep_vals.items():
+                f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
+    else:
+        logger.info("Number of epochs specified is 0. Not training...")
 
     logger.info(f'Saving model: {dataset_name}/{model_name}')
     rnn_learner.save(dataset_name)
