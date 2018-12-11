@@ -242,6 +242,8 @@ def get_model_name_by_params(percent, start_from, path_to_dataset, nn_arch):
 
 def find_and_plot_lr(rnn_learner, path_to_model):
     logger.info("Looking for the best learning rate...")
+    # TODO we shouldnt pass file argument, when looking
+    # for learning rate we should log to console
     rnn_learner.lr_find(file=f"{path_to_model}/training.log")
 
     dir = os.path.dirname(os.path.realpath(__file__))
@@ -450,28 +452,29 @@ def run(params):
 
     save_vocab_data(text_field, path_to_dataset)
 
-    rerunning_model = model_trained
-    if not rerunning_model or force_rerun:
-        with open(f'{path_to_model}/{PARAM_FILE_NAME}', 'w') as f:
-            json.dump(nn_arch, f)
-
-        if params.nn_params['mode'] == Mode.LEARNING_RATE_FINDING.value:
-            if rerunning_model:
-                logger.info(f"Forcing lr-finder rerun")
-            find_and_plot_lr(learner, f'{path_to_model}')
-        elif params.nn_params['mode'] == Mode.TRAINING.value:
-            if rerunning_model:
-                logger.info(f"Forcing training rerun")
-            train_model(learner, path_to_dataset, params.nn_params["dataset_name"], model_name, nn_arch)
-            logger.info("Loading the best model")
-            learner.load(f'{params.nn_params["dataset_name"]}_best')
-            m = learner.model
-            gen_text_path = os.path.abspath(f'{path_to_model}/gen_text.out')
-            run_and_display_tests(m, text_field, nn_arch, nn_testing, gen_text_path)
-        else:
-            raise AssertionError(f"Unknown mode: {params.nn_params['mode']}")
-    else:
+    if model_trained and not force_rerun:
         logger.info(f'Model {params.nn_params["dataset_name"]}/{model_name} already trained. Not rerunning training.')
+        return
+
+    with open(f'{path_to_model}/{PARAM_FILE_NAME}', 'w') as f:
+        json.dump(nn_arch, f)
+
+    if params.nn_params['mode'] == Mode.LEARNING_RATE_FINDING.value:
+        if model_trained:
+            logger.info(f"Forcing lr-finder rerun")
+        find_and_plot_lr(learner, f'{path_to_model}')
+    elif params.nn_params['mode'] == Mode.TRAINING.value:
+        if model_trained:
+            logger.info(f"Forcing training rerun")
+        train_model(learner, path_to_dataset, params.nn_params["dataset_name"], model_name, nn_arch)
+        logger.info("Loading the best model")
+        learner.load(f'{params.nn_params["dataset_name"]}_best')
+        m = learner.model
+        gen_text_path = os.path.abspath(f'{path_to_model}/gen_text.out')
+        run_and_display_tests(m, text_field, nn_arch, nn_testing, gen_text_path)
+    else:
+        raise AssertionError(f"Unknown mode: {params.nn_params['mode']}")
+
 
 
 if __name__ == '__main__':
