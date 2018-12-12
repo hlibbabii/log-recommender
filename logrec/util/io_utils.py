@@ -264,6 +264,8 @@ def dump_list(lst, file):
 
 def file_mapper(dir, func, extension="java", ignore_prefix="."):
     import os
+    if not os.path.exists(dir):
+        raise ValueError(f"Directory doesnt exist: {dir}")
     for root, dirs, files in os.walk(dir):
         for file in files:
             if (extension is None or file.endswith(f".{extension}")) and not file.startswith(ignore_prefix):

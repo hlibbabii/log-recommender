@@ -136,7 +136,7 @@ def get_model(model_name, nn_arch, percent, start_from):
         model_trained = True
         # calculate_and_display_metrics(rnn_learner, nn_params['metrics'], text_field.vocab)
     except FileNotFoundError:
-        logger.warning(f"Model {dataset_name}/{model_name} not found")
+        logger.info(f"Model {dataset_name}/{model_name} not found")
         model_trained = False
         try:
             rnn_learner.load(f'{params.nn_params["dataset_name"]}_best_base')
@@ -325,6 +325,7 @@ def train_model(rnn_learner, path_to_dataset, dataset_name, model_name, nn_arch)
                 f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
     else:
         logger.info("Number of epochs specified is 0. Not training...")
+        rnn_learner.save(f'{dataset_name}_best')
 
     logger.info(f'Saving model: {dataset_name}/{model_name}')
     rnn_learner.save(dataset_name)

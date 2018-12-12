@@ -39,14 +39,11 @@ def load_pretrained_langmodel(rnn_learner, dataset_name, pretrained_langmodel):
         exit(1)
 
 
-def get_text_classifier_model(text_field, level_label, dataset_name, base_model):
+def get_text_classifier_model(text_field, level_label, path_to_log_location_dataset, lang_model_dataset_name,
+                              base_model):
+    splits = ContextsDataset.splits(text_field, level_label, path_to_log_location_dataset)
 
-    splits = ContextsDataset.splits(text_field, level_label,
-                                    path=f'/home/hlib/thesis/log-recommender/nn-data/test/test1/classification/location/104111')
-
-    clas9n_dataset_name = PrepParamsParser.to_classification_prep_params(dataset_name)
-    text_data = TextData.from_splits(f'{params["path_to_classification_data"]}/{clas9n_dataset_name}', splits,
-                                     arch["bs"])
+    text_data = TextData.from_splits(path_to_log_location_dataset, splits, arch["bs"])
     # text_data.classes
 
     opt_fn = partial(torch.optim.Adam, betas=(0.7, 0.99))
@@ -74,7 +71,7 @@ def get_text_classifier_model(text_field, level_label, dataset_name, base_model)
         logger.info(f"Loaded classifier: {base_model}. ")
     except FileNotFoundError:
         logger.warning(f"Pretrained classifier model {base_model} not found.")
-        load_pretrained_langmodel(rnn_learner, dataset_name, base_model)
+        load_pretrained_langmodel(rnn_learner, lang_model_dataset_name, base_model)
 
     # rnn_learner.lr_find()
     # rnn_learner.sched.plot()
@@ -123,15 +120,19 @@ def run():
     base_model = params['base_model']
 
     path_to_langmodel_data = f"{path_to_log_location_data}/../../repr"
+    clas9n_dataset_name = PrepParamsParser.to_classification_prep_params(dataset_name)
+    path_to_log_location_dataset = os.path.join(path_to_log_location_data, clas9n_dataset_name)
+
     text_field = pickle.load(open(f'{path_to_langmodel_data}/{dataset_name}/TEXT.pkl', 'rb'))
-    learner = get_text_classifier_model(text_field, LEVEL_LABEL, dataset_name, base_model=base_model)
+    learner = get_text_classifier_model(text_field, LEVEL_LABEL, path_to_log_location_dataset, dataset_name,
+                                        base_model=base_model)
 
     m = learner.model
     to_test_mode(m)
 
     # logger.info(f'Accuracy is {accuracy_np(*learner.predict_with_targs())}')
     # counter = 0
-    path_to_test_set = f'{path_to_log_location_data}/{dataset_name}/test'
+    path_to_test_set = f'{path_to_log_location_dataset}/test'
     for c_filename, l_filename in file_mapper(path_to_test_set, ContextsDataset._get_pair, extension='label'):
         c_file = None
         l_file = None

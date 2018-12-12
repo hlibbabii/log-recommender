@@ -57,6 +57,9 @@ class ContextsDataset(data.Dataset):
                 if l_file is not None:
                     l_file.close()
 
+        if not examples:
+            raise ValueError(f"Examples list is empty")
+
         super(ContextsDataset, self).__init__(examples, fields, **kwargs)
 
     @classmethod
