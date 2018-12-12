@@ -12,7 +12,7 @@ class Mode(Enum):
 
 
 params = {
-    'path_to_data': f'{base_project_dir}/nn-data/test/test1/classification/location/',
+    'path_to_classification_data': f'{base_project_dir}/nn-data/test/test1/classification/location/',
     'dataset_name': '104111',
     'base_model': '1_baseline',  # if there already exists a classifier with this name it is used, otherwise
     # lang model with this name is used

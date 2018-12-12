@@ -5,6 +5,7 @@ import random
 import re
 
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.util.io_utils import file_mapper
 
 CLASSIFICATION_DIR_NAME = "classification"
@@ -87,7 +88,8 @@ if __name__ == '__main__':
     args = args[0]
 
     full_src_dir = f'{args.base}/{args.dataset}/repr/{args.repr}'
-    dest_dir = f'{args.base}/{args.dataset}/{CLASSIFICATION_DIR_NAME}/{CLASSIFICATION_TYPE}/{args.repr}'
+    clas9n_dataset_name = PrepParamsParser.to_classification_prep_params(args.repr)
+    dest_dir = f'{args.base}/{args.dataset}/{CLASSIFICATION_DIR_NAME}/{CLASSIFICATION_TYPE}/{clas9n_dataset_name}'
     logger.info(f"Writing to {dest_dir}")
 
     os.makedirs(f"{dest_dir}/train", exist_ok=True)

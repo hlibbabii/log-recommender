@@ -52,6 +52,12 @@ class PrepParamsParser(object):
                 res += str(int(prep_params_dict[k]))
         return res
 
+    @staticmethod
+    def to_classification_prep_params(st):
+        nologs_pos_index = list(PreprocessingParam).index(PreprocessingParam.NO_LOGS)
+        return st[:nologs_pos_index] + st[nologs_pos_index + 1:]
+
+
 
 com_str_to_types_to_be_repr = {
     0: [],
