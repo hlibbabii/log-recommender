@@ -12,6 +12,7 @@ from fastai.metrics import accuracy
 from fastai.nlp import TextData
 from logrec.classifier.classifier_params import LEVEL_LABEL, params
 from logrec.classifier.context_datasets import ContextsDataset
+from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.langmodel.utils import to_test_mode, output_predictions, back_to_train_mode
 from logrec.util.io_utils import file_mapper
 
@@ -38,14 +39,14 @@ def load_pretrained_langmodel(rnn_learner, dataset_name, pretrained_langmodel):
         exit(1)
 
 
-def get_text_classifier_model(text_field, level_label, base_model):
-    path_to_dataset = f'{params["path_to_data"]}/{params["dataset_name"]}'
-    path_to_model = f'{path_to_dataset}/models/{base_model}'
+def get_text_classifier_model(text_field, level_label, dataset_name, base_model):
 
     splits = ContextsDataset.splits(text_field, level_label,
                                     path=f'/home/hlib/thesis/log-recommender/nn-data/test/test1/classification/location/104111')
 
-    text_data = TextData.from_splits(f'{params["path_to_data"]}/{params["dataset_name"]}', splits, arch["bs"])
+    clas9n_dataset_name = PrepParamsParser.to_classification_prep_params(dataset_name)
+    text_data = TextData.from_splits(f'{params["path_to_classification_data"]}/{clas9n_dataset_name}', splits,
+                                     arch["bs"])
     # text_data.classes
 
     opt_fn = partial(torch.optim.Adam, betas=(0.7, 0.99))
@@ -116,14 +117,14 @@ def read_lines(filename):
         return f.readlines()
 
 
-if __name__ == '__main__':
-    path_to_log_location_data = params['path_to_data']
-    path_to_langmodel_data = f"{path_to_log_location_data}/../../repr"
+def run():
+    path_to_log_location_data = params['path_to_classification_data']
     dataset_name = params['dataset_name']
     base_model = params['base_model']
+
+    path_to_langmodel_data = f"{path_to_log_location_data}/../../repr"
     text_field = pickle.load(open(f'{path_to_langmodel_data}/{dataset_name}/TEXT.pkl', 'rb'))
-    learner = get_text_classifier_model(text_field, LEVEL_LABEL,
-                                        base_model=base_model)
+    learner = get_text_classifier_model(text_field, LEVEL_LABEL, dataset_name, base_model=base_model)
 
     m = learner.model
     to_test_mode(m)
@@ -159,3 +160,7 @@ if __name__ == '__main__':
     # from sklearn.metrics import confusion_matrix
     # cm = confusion_matrix(y, preds)
     # plot_confusion_matrix(cm, data.classes)
+
+
+if __name__ == '__main__':
+    run()
