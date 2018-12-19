@@ -8,7 +8,7 @@ from logrec.dataprep.preprocessors.model.word import Word
 LOGGER_REGEX = re.compile("[Ll]og|LOG|[Ll]ogger|LOGGER")
 METHOD_REGEX = re.compile('[Tt]race|TRACE|[Dd]ebug|DEBUG|[Ii]nfo|INFO|[Ww]arn|WARN|[Ee]rror|ERROR|[Ff]atal'
                           '|FATAL|[Ff]inest|FINEST|[Ff]iner|FINER|[Ff]ine|FINE|[Cc]onfig|CONFIG'
-                          '|[Ww]arning|WARNING|[Ss]evere|SEVERE')
+                          '|[Ww]arning|WARNING|[Ss]evere|SEVERE|log[DVIWE]]|[tdviwesf]]')
 
 
 class SearchResult(Enum):
