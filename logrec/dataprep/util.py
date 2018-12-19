@@ -27,6 +27,23 @@ def create_regex_from_token_list(token_list):
     ) +")"
 
 
+def merge_dicts_(dict1, dict2):
+    '''
+    this method returns modified dict1! and new words are added to the dictionary
+    :param dict1:
+    :param dict2:
+    :return:
+    '''
+    new_words = []
+    for k, v in dict2.items():
+        if k not in dict1:
+            dict1[k] = v
+            new_words.append(k)
+        else:
+            dict1[k] = dict1[k] + v
+    return dict1, new_words
+
+
 class Singleton(type):
     _instances = {}
 

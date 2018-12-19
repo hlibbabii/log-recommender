@@ -11,14 +11,19 @@ from logrec.util.io_utils import file_mapper
 CLASSIFICATION_DIR_NAME = "classification"
 CLASSIFICATION_TYPE = "location"
 
-LIMIT = 1000
+FORWARD_CONTEXT_EXTENSION = "context.forward"
+BACKWARD_CONTEXT_EXTENSION = "context.backward"
+LABEL_EXTENSION = "label"
+
+WORDS_IN_CONTEXT_LIMIT = 1000
 
 logger = logging.getLogger(__name__)
 
 
 def create_case(list_of_words, indices):
     position = random.choice(indices)
-    return list_of_words[position - LIMIT:position], list_of_words[position + 1:position + LIMIT]
+    return list_of_words[position - WORDS_IN_CONTEXT_LIMIT:position], list_of_words[
+                                                                      position + 1:position + WORDS_IN_CONTEXT_LIMIT]
 
 
 def create_negative_case(list_of_words):
@@ -61,12 +66,11 @@ def do(filename):
                 res.append((create_negative_case(list_of_words), False))
     return res, rel_path
 
-
 def run(full_src_dir, dest_dir):
     for lines, rel_path in file_mapper(full_src_dir, do, "parsed.repr"):
-        forward_path = dest_dir + "/" + re.sub("parsed\\.repr", "context.forward", rel_path)
-        backward_path = dest_dir + "/" + re.sub("parsed\\.repr", "context.backward", rel_path)
-        label_path = dest_dir + "/" + re.sub("parsed\\.repr", "label", rel_path)
+        forward_path = dest_dir + "/" + re.sub("parsed\\.repr", FORWARD_CONTEXT_EXTENSION, rel_path)
+        backward_path = dest_dir + "/" + re.sub("parsed\\.repr", BACKWARD_CONTEXT_EXTENSION, rel_path)
+        label_path = dest_dir + "/" + re.sub("parsed\\.repr", LABEL_EXTENSION, rel_path)
         with open(forward_path, 'w') as f, open(backward_path, 'w') as b, open(label_path, 'w') as l:
             for line in lines:
                 l.write(f'{1 if line[1] else 0}\n')

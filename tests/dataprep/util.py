@@ -1,9 +1,9 @@
 import unittest
 
-from logrec.dataprep.vocabsize import merge_dicts_
+from logrec.dataprep.util import merge_dicts_
 
 
-class VocabsizeTest(unittest.TestCase):
+class UtilTest(unittest.TestCase):
     def test_merge_dicts(self):
         dict1 = {"a": 3, "b": 4}
         dict2 = {"b": 5, "c": 6}

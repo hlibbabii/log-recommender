@@ -15,7 +15,7 @@ import yaml
 from logrec.dataprep import base_project_dir
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.to_repr import REPR_EXTENSION
-from logrec.dataprep.util import AtomicInteger
+from logrec.dataprep.util import AtomicInteger, merge_dicts_
 from logrec.util import io_utils
 from logrec.util.io_utils import file_mapper
 
@@ -28,22 +28,6 @@ queue_elm_counter = AtomicInteger()
 PARTVOCAB_EXT = 'partvocab'
 
 SECONDS_TO_BLOCK_FOR = random.randint(5, 15)
-
-def merge_dicts_(dict1, dict2):
-    '''
-    this method returns modified dict1! and new words are added to the dictionary
-    :param dict1:
-    :param dict2:
-    :return:
-    '''
-    new_words = []
-    for k, v in dict2.items():
-        if k not in dict1:
-            dict1[k] = v
-            new_words.append(k)
-        else:
-            dict1[k] = dict1[k] + v
-    return dict1, new_words
 
 
 class PartialVocab(object):
