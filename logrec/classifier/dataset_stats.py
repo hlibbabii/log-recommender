@@ -29,7 +29,7 @@ def calc_logged_stats(path_to_label_file):
             else:
                 raise AssertionError(f"Invalid line: {stripped_line} in file: {path_to_label_file}")
     if stats == {}:
-        logger.warning(f"The project {path_to_label_file} contains no files. Ignoring...")
+        logger.warning(f"The project {path_to_label_file} contains no files. Skipping...")
         return None
     else:
         return stats, re.sub(f"\.{LABEL_EXTENSION}$", "", get_dir_and_file(path_to_label_file))
@@ -48,8 +48,14 @@ def calc_stats(dest_dir):
 
 
 def run(dest_dir):
+    logger.info(f"Getting stats for {dest_dir}")
+    logger.info(
+        f"Ignoring projects where the percentage of file that contain logging is less than {PERCENT_OF_LOGGED_FILES_THRESHOLD}")
     projects_to_ignore, logged_stats = calc_stats(dest_dir)
-    logger.info(f"Ignored projects: {projects_to_ignore}")
+    logger.info(f"Ignored projects ({len(projects_to_ignore)}):")
+    for i, p in enumerate(projects_to_ignore):
+        logger.info(f"{i}: {p}")
+    logger.info("")
     logger.info(logged_stats)
 
 
@@ -68,6 +74,5 @@ if __name__ == '__main__':
 
     clas9n_dataset_name = PrepParamsParser.to_classification_prep_params(args.repr)
     dest_dir = f'{args.base}/{args.dataset}/{CLASSIFICATION_DIR_NAME}/{CLASSIFICATION_TYPE}/{clas9n_dataset_name}'
-    logger.info(f"Getting stats for {dest_dir}")
 
     run(dest_dir)
