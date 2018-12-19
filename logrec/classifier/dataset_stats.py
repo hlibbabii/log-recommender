@@ -9,8 +9,6 @@ from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.dataprep.util import merge_dicts_
 from logrec.util.io_utils import file_mapper
 
-PERCENT_OF_LOGGED_FILES_THRESHOLD = 7
-
 WITH_LOGGING = "with_logging"
 NO_LOGGING = "no logging"
 
@@ -35,23 +33,23 @@ def calc_logged_stats(path_to_label_file):
         return stats, re.sub(f"\.{LABEL_EXTENSION}$", "", get_dir_and_file(path_to_label_file))
 
 
-def calc_stats(dest_dir):
+def calc_stats(dest_dir, threshold):
     projects_to_ignore = []
     res_logged_stats = {}
     for logged_stats, proj_name in file_mapper(dest_dir, calc_logged_stats, LABEL_EXTENSION):
         if float(logged_stats[WITH_LOGGING]) / (logged_stats[WITH_LOGGING] + logged_stats[NO_LOGGING]) < (
-                PERCENT_OF_LOGGED_FILES_THRESHOLD * 0.01):
+                threshold * 0.01):
             projects_to_ignore.append(proj_name)
         else:
             merge_dicts_(res_logged_stats, logged_stats)
     return projects_to_ignore, res_logged_stats
 
 
-def run(dest_dir):
+def run(dest_dir, threshold):
     logger.info(f"Getting stats for {dest_dir}")
     logger.info(
-        f"Ignoring projects where the percentage of file that contain logging is less than {PERCENT_OF_LOGGED_FILES_THRESHOLD}")
-    projects_to_ignore, logged_stats = calc_stats(dest_dir)
+        f"Ignoring projects where the percentage of file that contain logging is less than {threshold} %")
+    projects_to_ignore, logged_stats = calc_stats(dest_dir, threshold)
     logger.info(f"Ignored projects ({len(projects_to_ignore)}):")
     for i, p in enumerate(projects_to_ignore):
         logger.info(f"{i}: {p}")
@@ -60,19 +58,20 @@ def run(dest_dir):
 
 
 if __name__ == '__main__':
-    from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_DATASET_GENERATOR_ARGS
+    from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_DATASET_STATS_ARGS
 
     logging.basicConfig(level=logging.DEBUG)
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--base', action='store', default=DEFAULT_PARSED_DATASETS_DIR)
-    parser.add_argument('dataset', action='store', help=f'path to the repr dataset')
-    parser.add_argument('repr', action='store', help=f'path to the repr dataset')
+    parser.add_argument('dataset', action='store', help=f'dataset name')
+    parser.add_argument('repr', action='store', help=f'repr name')
+    parser.add_argument('threshold', action='store', help=f'threshold under which project is ignored')
 
-    args = parser.parse_known_args(*DEFAULT_DATASET_GENERATOR_ARGS)
+    args = parser.parse_known_args(*DEFAULT_DATASET_STATS_ARGS)
     args = args[0]
 
     clas9n_dataset_name = PrepParamsParser.to_classification_prep_params(args.repr)
     dest_dir = f'{args.base}/{args.dataset}/{CLASSIFICATION_DIR_NAME}/{CLASSIFICATION_TYPE}/{clas9n_dataset_name}'
 
-    run(dest_dir)
+    run(dest_dir, float(args.threshold))
