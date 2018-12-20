@@ -44,7 +44,13 @@ class IoUtilsTest(unittest.TestCase):
         self.assertEqual(sample, result)
 
     def test_dump_read_list(self):
-        sample = [['a', 'b', 'c'], ['m', 'h', 'hj']]
+        sample = [['aa', 'bb', 'cc'], ['mm', 'hh', 'j']]
+        io_utils.dump_list(sample, PATH_TO_FILE)
+        result = io_utils.read_list(PATH_TO_FILE)
+        self.assertEqual(sample, result)
+
+    def test_dump_read_list_not_nested(self):
+        sample = ['aa', 'bb', 'c']
         io_utils.dump_list(sample, PATH_TO_FILE)
         result = io_utils.read_list(PATH_TO_FILE)
         self.assertEqual(sample, result)

@@ -41,8 +41,8 @@ def load_pretrained_langmodel(rnn_learner, dataset_name, pretrained_langmodel):
 
 
 def get_text_classifier_model(text_field, level_label, path_to_log_location_dataset, lang_model_dataset_name,
-                              base_model):
-    splits = ContextsDataset.splits(text_field, level_label, path_to_log_location_dataset)
+                              base_model, threshold):
+    splits = ContextsDataset.splits(text_field, level_label, path_to_log_location_dataset, threshold=threshold)
 
     text_data = TextData.from_splits(path_to_log_location_dataset, splits, arch["bs"])
     # text_data.classes
@@ -127,7 +127,7 @@ def run():
 
     text_field = pickle.load(open(f'{path_to_langmodel_data}/{dataset_name}/TEXT.pkl', 'rb'))
     learner = get_text_classifier_model(text_field, LEVEL_LABEL, path_to_log_location_dataset, dataset_name,
-                                        base_model=base_model)
+                                        base_model=base_model, threshold=params['threshold'])
 
     m = learner.model
     to_test_mode(m)
@@ -144,7 +144,7 @@ def run():
             for context, level in zip(c_file, l_file):
                 output_predictions(m, text_field, LEVEL_LABEL, context.rstrip("\n"), 3)
         except FileNotFoundError:
-            project_name = c_filename[:-len(ContextsDataset.CONTEXTS_FILE_EXTENSION)]
+            project_name = c_filename[:-len(ContextsDataset.FW_CONTEXTS_FILE_EXT)]
             logger.error(f"Project context not loaded: {project_name}")
             continue
         finally:

@@ -1,12 +1,14 @@
 import argparse
 import logging
+import os
 import re
 from collections import defaultdict
 
-from logrec.classifier.dataset_generator import LABEL_EXTENSION, CLASSIFICATION_DIR_NAME, CLASSIFICATION_TYPE, \
-    get_dir_and_file
+from logrec.classifier.context_datasets import ContextsDataset, IGNORED_PROJECTS_FILE_NAME, get_dir_and_file
+from logrec.classifier.dataset_generator import CLASSIFICATION_DIR_NAME, CLASSIFICATION_TYPE
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.dataprep.util import merge_dicts_
+from logrec.util import io_utils
 from logrec.util.io_utils import file_mapper
 
 WITH_LOGGING = "with_logging"
@@ -30,14 +32,14 @@ def calc_logged_stats(path_to_label_file):
         logger.warning(f"The project {path_to_label_file} contains no files. Skipping...")
         return None
     else:
-        return stats, re.sub(f"\.{LABEL_EXTENSION}$", "", get_dir_and_file(path_to_label_file))
+        return stats, re.sub(f"\.{ContextsDataset.LABEL_FILE_EXT}$", "", get_dir_and_file(path_to_label_file))
 
 
 def calc_stats(dest_dir, threshold):
     projects_to_ignore = []
     res_logged_stats = {}
-    for logged_stats, proj_name in file_mapper(dest_dir, calc_logged_stats, LABEL_EXTENSION):
-        if float(logged_stats[WITH_LOGGING]) / (logged_stats[WITH_LOGGING] + logged_stats[NO_LOGGING]) < (
+    for logged_stats, proj_name in file_mapper(dest_dir, calc_logged_stats, ContextsDataset.LABEL_FILE_EXT):
+        if float(logged_stats[WITH_LOGGING]) / (logged_stats[WITH_LOGGING] + logged_stats[NO_LOGGING]) <= (
                 threshold * 0.01):
             projects_to_ignore.append(proj_name)
         else:
@@ -50,11 +52,14 @@ def run(dest_dir, threshold):
     logger.info(
         f"Ignoring projects where the percentage of file that contain logging is less than {threshold} %")
     projects_to_ignore, logged_stats = calc_stats(dest_dir, threshold)
-    logger.info(f"Ignored projects ({len(projects_to_ignore)}):")
     for i, p in enumerate(projects_to_ignore):
         logger.info(f"{i}: {p}")
     logger.info("")
     logger.info(logged_stats)
+    output_file_path = os.path.join(dest_dir, f"{IGNORED_PROJECTS_FILE_NAME}.{threshold}")
+    io_utils.dump_list(projects_to_ignore, output_file_path)
+    logger.info(f"Ignored files with threshold {threshold} % were written to {output_file_path}")
+    logger.info(f"Total ignored projects: {len(projects_to_ignore)}")
 
 
 if __name__ == '__main__':

@@ -4,16 +4,13 @@ import os
 import random
 import re
 
+from logrec.classifier.context_datasets import ContextsDataset, get_dir_and_file
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.util.io_utils import file_mapper
 
 CLASSIFICATION_DIR_NAME = "classification"
 CLASSIFICATION_TYPE = "location"
-
-FORWARD_CONTEXT_EXTENSION = "context.forward"
-BACKWARD_CONTEXT_EXTENSION = "context.backward"
-LABEL_EXTENSION = "label"
 
 WORDS_IN_CONTEXT_LIMIT = 1000
 
@@ -47,11 +44,6 @@ def create_positive_case(list_of_words):
     return create_case(list_of_words, indices)
 
 
-def get_dir_and_file(path_to_file):
-    dir, file = os.path.split(path_to_file)
-    return os.path.join(os.path.basename(dir), file)
-
-
 def do(filename):
     rel_path = get_dir_and_file(filename)
     with open(filename, 'r') as f:
@@ -68,9 +60,9 @@ def do(filename):
 
 def run(full_src_dir, dest_dir):
     for lines, rel_path in file_mapper(full_src_dir, do, "parsed.repr"):
-        forward_path = dest_dir + "/" + re.sub("parsed\\.repr", FORWARD_CONTEXT_EXTENSION, rel_path)
-        backward_path = dest_dir + "/" + re.sub("parsed\\.repr", BACKWARD_CONTEXT_EXTENSION, rel_path)
-        label_path = dest_dir + "/" + re.sub("parsed\\.repr", LABEL_EXTENSION, rel_path)
+        forward_path = dest_dir + "/" + re.sub("parsed\\.repr", ContextsDataset.FW_CONTEXTS_FILE_EXT, rel_path)
+        backward_path = dest_dir + "/" + re.sub("parsed\\.repr", ContextsDataset.BW_CONTEXTS_FILE_EXT, rel_path)
+        label_path = dest_dir + "/" + re.sub("parsed\\.repr", ContextsDataset.LABEL_FILE_EXT, rel_path)
         with open(forward_path, 'w') as f, open(backward_path, 'w') as b, open(label_path, 'w') as l:
             for line in lines:
                 l.write(f'{1 if line[1] else 0}\n')

@@ -250,16 +250,19 @@ def read_list(file):
     res = []
     with open(file, 'r') as f:
         for line in f:
-            line = line[:-1] if line[-1] else line
+            line = line.rstrip('\n')
             splits = line.split(' ')
-            res.append(splits)
+            res.append(splits if len(splits) > 1 else splits[0])
     return res
 
 
 def dump_list(lst, file):
     with open(file, 'w') as f:
         for elm in lst:
-            f.write(f"{' '.join(elm)}\n")
+            if isinstance(elm, list):
+                f.write(f"{' '.join(elm)}\n")
+            else:
+                f.write(f"{elm}\n")
 
 
 def file_mapper(dir, func, extension="java", ignore_prefix="."):

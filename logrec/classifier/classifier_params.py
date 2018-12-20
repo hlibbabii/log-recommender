@@ -16,6 +16,7 @@ params = {
     'dataset_name': '104111',
     'base_model': '1_baseline',  # if there already exists a classifier with this name it is used, otherwise
     # lang model with this name is used
+    'threshold': '5.0',
     'arch': {
         'bs': 64,
         'bptt': 150,
