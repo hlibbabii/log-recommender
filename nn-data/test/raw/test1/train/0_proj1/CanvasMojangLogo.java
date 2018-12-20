@@ -23,7 +23,7 @@ class CanvasMojangLogo extends Canvas {
 			this.logo = TextureUtils.getResourceAsBufferedImage("/gui/crash_logo.png");
 			// Spout HD End
 		} catch (IOException var2) {
-			;
+			log.error("IOException");
 		}
 
 		byte var1 = 100;
