@@ -4,7 +4,7 @@ import os
 import random
 import re
 
-from logrec.classifier.context_datasets import ContextsDataset, get_dir_and_file
+from logrec.classifier.context_datasets import ContextsDataset, get_dir_and_file, WORDS_IN_CONTEXT_LIMIT
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.util.io_utils import file_mapper
@@ -12,15 +12,18 @@ from logrec.util.io_utils import file_mapper
 CLASSIFICATION_DIR_NAME = "classification"
 CLASSIFICATION_TYPE = "location"
 
-WORDS_IN_CONTEXT_LIMIT = 1000
-
 logger = logging.getLogger(__name__)
 
 
 def create_case(list_of_words, indices):
     position = random.choice(indices)
-    return list_of_words[position - WORDS_IN_CONTEXT_LIMIT:position], list_of_words[
-                                                                      position + 1:position + WORDS_IN_CONTEXT_LIMIT]
+
+    before = list_of_words[max(0, position - WORDS_IN_CONTEXT_LIMIT):position]
+    before = (['<pad>'] * (WORDS_IN_CONTEXT_LIMIT - len(before))) + before
+
+    after = list_of_words[position + 1:position + WORDS_IN_CONTEXT_LIMIT + 1]
+    after = after + (['<pad>'] * (WORDS_IN_CONTEXT_LIMIT - len(after)))
+    return before, after
 
 
 def create_negative_case(list_of_words):
@@ -59,7 +62,11 @@ def do(filename):
     return res, rel_path
 
 def run(full_src_dir, dest_dir):
+    total_files = sum(file_mapper(full_src_dir, lambda f: 1, "parsed.repr"))
+    count = 0
     for lines, rel_path in file_mapper(full_src_dir, do, "parsed.repr"):
+        count += 1
+        logger.info(f"Processing {count} out of {total_files}")
         forward_path = dest_dir + "/" + re.sub("parsed\\.repr", ContextsDataset.FW_CONTEXTS_FILE_EXT, rel_path)
         backward_path = dest_dir + "/" + re.sub("parsed\\.repr", ContextsDataset.BW_CONTEXTS_FILE_EXT, rel_path)
         label_path = dest_dir + "/" + re.sub("parsed\\.repr", ContextsDataset.LABEL_FILE_EXT, rel_path)
