@@ -12,6 +12,7 @@ from fastai.metrics import accuracy
 from fastai.nlp import TextData
 from logrec.classifier.classifier_params import LEVEL_LABEL, params
 from logrec.classifier.context_datasets import ContextsDataset
+from logrec.classifier.dataset_generator import WORDS_IN_CONTEXT_LIMIT
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.langmodel.utils import to_test_mode, output_predictions, back_to_train_mode
 from logrec.util.io_utils import file_mapper
@@ -48,7 +49,8 @@ def get_text_classifier_model(text_field, level_label, path_to_log_location_data
 
     opt_fn = partial(torch.optim.Adam, betas=(0.7, 0.99))
 
-    rnn_learner = text_data.get_model(opt_fn, 50, arch['bptt'], arch['em_sz'], arch['nh'], arch['nl'],
+    rnn_learner = text_data.get_model(opt_fn, WORDS_IN_CONTEXT_LIMIT, arch['bptt'], arch['em_sz'], arch['nh'],
+                                      arch['nl'],
                                       dropouti=arch['drop']['outi'],
                                       dropout=arch['drop']['out'],
                                       wdrop=arch['drop']['w'],
@@ -88,7 +90,7 @@ def get_text_classifier_model(text_field, level_label, path_to_log_location_data
         base_lr])
 
     rnn_learner.freeze_to(-1)
-    rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=1, n_cycle=1,
+    rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=1, n_cycle=1, cycle_mult=1
                     # file=f"{path_to_model}/training.log"
                     )
     # rnn_learner.freeze_to(-2)
