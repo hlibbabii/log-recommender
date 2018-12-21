@@ -12,7 +12,7 @@ from multiprocessing.pool import Pool
 
 import yaml
 
-from logrec.dataprep import base_project_dir
+from logrec.dataprep import base_project_dir, TRAIN_DIR, METADATA_DIR, REPR_DIR
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.to_repr import REPR_EXTENSION
 from logrec.dataprep.util import AtomicInteger, merge_dicts_
@@ -20,7 +20,7 @@ from logrec.util import io_utils
 from logrec.util.io_utils import file_mapper
 
 logger = logging.getLogger(__name__)
-config = yaml.load(open(f'{base_project_dir}/logging.yaml').read())
+config = yaml.load(open(os.path.join(base_project_dir, 'logging.yaml')).read())
 logging.config.dictConfig(config)
 
 queue_elm_counter = AtomicInteger()
@@ -130,7 +130,7 @@ class VocabMerger(multiprocessing.Process):
             first.add_vocab(second)
 
             first.renew_id()
-            path_to_new_file = f'{self.path_to_dump}/{first_id}_{second_id}_{first.id}.{PARTVOCAB_EXT}'
+            path_to_new_file = os.path.join(self.path_to_dump, f'{first_id}_{second_id}_{first.id}.{PARTVOCAB_EXT}')
             pickle.dump(first, open(path_to_new_file, 'wb'))
             finish_file_dumping(path_to_new_file)
 
@@ -165,17 +165,17 @@ def finish_file_dumping(path_to_new_file):
         raise AssertionError(f'Wrong file: {path_to_new_file}')
     first_id, second_id, new_id = spl[0], spl[1], spl[2]
 
-    first_file = f'{dir}/{first_id}.{PARTVOCAB_EXT}'
+    first_file = os.path.join(dir, f'{first_id}.{PARTVOCAB_EXT}')
     logger.debug(f'Removing if doesnt exist: {first_file}')
     if os.path.exists(first_file):
         os.remove(first_file)
 
-    second_file = f'{dir}/{second_id}.{PARTVOCAB_EXT}'
+    second_file = os.path.join(dir, f'{second_id}.{PARTVOCAB_EXT}')
     logger.debug(f'Removing if doesnt exist: {second_file}')
     if os.path.exists(second_file):
         os.remove(second_file)
 
-    new_file = f'{dir}/{new_id}.{PARTVOCAB_EXT}'
+    new_file = os.path.join(dir, f'{new_id}.{PARTVOCAB_EXT}')
     os.rename(path_to_new_file, new_file)
     logger.debug(f'Renaming {path_to_new_file} --> {new_file}')
     return new_file, (first_file, second_file)
@@ -211,8 +211,8 @@ def run(full_src_dir, full_metadata_dir):
         logger.error(f"Dir does not exist: {full_src_dir}")
         exit(3)
 
-    if os.path.exists(f'{full_metadata_dir}/vocabsize'):
-        logger.warning(f"File already exists: {full_metadata_dir}/vocabsize. Doing nothing.")
+    if os.path.exists(os.path.join(full_metadata_dir, 'vocabsize')):
+        logger.warning(f"File already exists: {os.path.join(full_metadata_dir, 'vocabsize')}. Doing nothing.")
         exit(0)
 
     logger.info(f"Reading files from: {os.path.abspath(full_src_dir)}")
@@ -222,8 +222,8 @@ def run(full_src_dir, full_metadata_dir):
         logger.warning("No preprocessed files found.")
         exit(4)
 
-    path_to_dump = f'{full_metadata_dir}/part_vocab/'
-    dumps_valid_file = f'{path_to_dump}/ready'
+    path_to_dump = os.path.join(full_metadata_dir, 'part_vocab')
+    dumps_valid_file = os.path.join(path_to_dump, 'ready')
 
     if os.path.exists(dumps_valid_file):
         all_files = [file for file in file_mapper(path_to_dump, lambda l: l, PARTVOCAB_EXT)]
@@ -248,7 +248,7 @@ def run(full_src_dir, full_metadata_dir):
         os.makedirs(path_to_dump)
         task_list = create_initial_partial_vocabs(all_files)
         for partial_vocab in task_list:
-            pickle.dump(partial_vocab, open(f'{path_to_dump}/{partial_vocab.id}.{PARTVOCAB_EXT}', 'wb'))
+            pickle.dump(partial_vocab, open(os.path.join(path_to_dump, f'{partial_vocab.id}.{PARTVOCAB_EXT}'), 'wb'))
         open(dumps_valid_file, 'a').close()
 
     task_queue = list_to_queue(task_list)
@@ -267,8 +267,8 @@ def run(full_src_dir, full_metadata_dir):
         logger.debug(f"Waiting for merger [{merger.id}] to join")
         merger.join()
 
-    final_vocab.write_stats(f'{full_metadata_dir}/vocabsize')
-    final_vocab.write_vocab(f'{full_metadata_dir}/vocab')
+    final_vocab.write_stats(os.path.join(full_metadata_dir, 'vocabsize'))
+    final_vocab.write_vocab(os.path.join(full_metadata_dir, 'vocab'))
     shutil.rmtree(path_to_dump)
 
 
@@ -283,7 +283,8 @@ if __name__ == '__main__':
     args = parser.parse_known_args(*DEFAULT_VOCABSIZE_ARGS)
     args = args[0]
 
-    full_src_dir = f'{args.base_from}/{args.dataset}/repr/{args.repr}/train'
-    full_metadata_dir = f'{args.base_from}/{args.dataset}/metadata/{args.repr}'
+    path_to_dataset = os.path.join(args.base_from, args.dataset)
+    full_src_dir = os.path.join(path_to_dataset, REPR_DIR, args.repr, TRAIN_DIR)
+    full_metadata_dir = os.path.join(path_to_dataset, METADATA_DIR, args.repr)
 
     run(full_src_dir, full_metadata_dir)

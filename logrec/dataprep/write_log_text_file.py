@@ -3,6 +3,7 @@ import collections
 import logging
 import os
 
+from logrec.dataprep import TRAIN_DIR, TEST_DIR
 from logrec.util import io_utils
 
 logger = logging.getLogger(__name__)
@@ -13,19 +14,24 @@ class FileDefaultDict(collections.defaultdict):
         self.output_dir = output_dir
 
     def __missing__(self, key):
-        self[key] = value = open(f'{self.output_dir}/context.{key}.src', 'w')
+        self[key] = value = open(os.path.join(self.output_dir, f'context.{key}.src'), 'w')
         return value
 
 
 def write_log_text_to_corpus_files(preprocessed_logs, output_dir):
-    if not os.path.exists(f'{output_dir}'):
-        os.mkdir(f'{output_dir}')
-    if not os.path.exists(f'{output_dir}/train'):
-        os.mkdir(f'{output_dir}/train')
-    if not os.path.exists(f'{output_dir}/test'):
-        os.mkdir(f'{output_dir}/test')
-    train_files = FileDefaultDict(f'{output_dir}/train')
-    test_files = FileDefaultDict(f'{output_dir}/test')
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
+
+    train_dir = os.path.join(output_dir, TRAIN_DIR)
+    if not os.path.exists(train_dir):
+        os.mkdir(train_dir)
+    train_files = FileDefaultDict(train_dir)
+
+    test_dir = os.path.join(output_dir, TEST_DIR)
+    if not os.path.exists(test_dir):
+        os.mkdir(test_dir)
+    test_files = FileDefaultDict(test_dir)
+
     for ind, l in enumerate(preprocessed_logs):
         n_words = len(l.text_words)
         line = str(" ".join(l.text_words)) + "\n"

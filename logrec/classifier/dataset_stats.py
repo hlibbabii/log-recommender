@@ -77,6 +77,6 @@ if __name__ == '__main__':
     args = args[0]
 
     clas9n_dataset_name = PrepParamsParser.to_classification_prep_params(args.repr)
-    dest_dir = f'{args.base}/{args.dataset}/{CLASSIFICATION_DIR_NAME}/{CLASSIFICATION_TYPE}/{clas9n_dataset_name}'
+    dest_dir = os.path.join(args.base, args.dataset, CLASSIFICATION_DIR_NAME, CLASSIFICATION_TYPE, clas9n_dataset_name)
 
     run(dest_dir, float(args.threshold))

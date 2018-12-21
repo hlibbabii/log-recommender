@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 import re, collections
 
 from logrec.util import io_utils
@@ -51,15 +52,15 @@ RESULTING_VOCAB_FILE_NAME = "vocab_res.txt"
 def run(reset, base_dir, n_merges):
     if reset:
         logger.info("Starting the encoding from scratch...")
-        vocab = io_utils.read_dict_from_2_columns(f'{base_dir}/{VOCAB_FILE_NAME}')
+        vocab = io_utils.read_dict_from_2_columns(os.path.join(base_dir, VOCAB_FILE_NAME))
         vocab = {" ".join(k): v for k, v in vocab.items()}
     else:
         logger.info("Using existing merges...")
-        vocab = io_utils.read_dict_from_2_columns(f'{base_dir}/{REASSEMBLED_VOCAB_FILE_NAME}')
+        vocab = io_utils.read_dict_from_2_columns(os.path.join(base_dir, REASSEMBLED_VOCAB_FILE_NAME))
     pairs = get_stats(vocab)
 
     if not reset:
-        merges = io_utils.read_list(f'{base_dir}/{MERGES_FILE_NAME}')
+        merges = io_utils.read_list(os.path.join(base_dir, MERGES_FILE_NAME))
     else:
         merges = []
     n_done_merges = len(merges)
@@ -84,10 +85,10 @@ def run(reset, base_dir, n_merges):
         key = ''.join(subword_list)
         merges_cache[key] = subword_list
 
-    io_utils.dump_list(merges, f'{base_dir}/{MERGES_FILE_NAME}')
-    io_utils.dump_dict_into_2_columns(vocab, f'{base_dir}/{REASSEMBLED_VOCAB_FILE_NAME}')
-    io_utils.dump_dict_into_2_columns(merges_cache, f'{base_dir}/{MERGES_CACHE_FILE_NAME}', val_type=list)
-    io_utils.dump_dict_into_2_columns(resulting_vocab_sorted, f'{base_dir}/{RESULTING_VOCAB_FILE_NAME}')
+    io_utils.dump_list(merges, os.path.join(base_dir, MERGES_FILE_NAME))
+    io_utils.dump_dict_into_2_columns(vocab, os.path.join(base_dir, REASSEMBLED_VOCAB_FILE_NAME))
+    io_utils.dump_dict_into_2_columns(merges_cache, os.path.join(base_dir, MERGES_CACHE_FILE_NAME), val_type=list)
+    io_utils.dump_dict_into_2_columns(resulting_vocab_sorted, os.path.join(base_dir, RESULTING_VOCAB_FILE_NAME))
 
 
 if __name__ == '__main__':

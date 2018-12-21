@@ -1,5 +1,6 @@
 import csv
 import logging
+import os
 from pprint import pprint
 
 from fastai.imports import tqdm
@@ -13,8 +14,8 @@ from logrec.util.param_mutator import ParamMutator
 logger = logging.getLogger(__name__)
 
 base_dataset_dir = f'{base_project_dir}/nn-data/devanbu_no_replaced_identifier_split_no_tabs_new_splits3_under_5000_15_percent/'
-path_manually_tagged_splittings = f'{base_project_dir}/manually_tagged_splittings.txt'
-path_to_mutations = f'{base_dataset_dir}/mutations.csv'
+path_manually_tagged_splittings = os.path.join(base_project_dir, 'manually_tagged_splittings.txt')
+path_to_mutations = os.path.join(base_dataset_dir, 'mutations.csv')
 path_to_general_dictionary = '/usr/share/dict/words'
 
 
@@ -104,10 +105,10 @@ if __name__ == '__main__':
     print_different_token_types_stats(stats)
 
     dataset_name = nn_params["dataset_name"]
-    path_to_dataset = f'{nn_params["path_to_data"]}/{dataset_name}'
-    path_to_splits = f'{path_to_dataset}/splits'
+    path_to_dataset = os.path.join(nn_params["path_to_data"], dataset_name)
+    path_to_splits = os.path.join(path_to_dataset, 'splits')
 
-    general_dict = load_english_dict(f'{base_project_dir}/dicts/eng')
+    general_dict = load_english_dict(os.path.join(base_project_dir, 'dicts', 'eng'))
 
     possibel_var_values, (keys, mutations) = ParamMutator(
         [{'name': 'alpha', 'start': 0.1, 'end': 1000000.0, 'plus_or_mult': 'mult', 'koef': 2.0},
@@ -118,7 +119,7 @@ if __name__ == '__main__':
          {'name': 'd', 'start': 1.0, 'end': 100.0, 'plus_or_mult': 'mult', 'koef': 1.5}]) \
         .mutate(5000, 1000)
 
-    freqs = io_utils.read_dict_from_2_columns(f'{path_to_dataset}/vocab.txt')
+    freqs = io_utils.read_dict_from_2_columns(os.path.join(path_to_dataset, 'vocab.txt'))
 
     print(possibel_var_values)
     print("======================")

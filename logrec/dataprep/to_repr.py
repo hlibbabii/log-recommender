@@ -8,7 +8,7 @@ import time
 from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import Pool
 
-from logrec.dataprep import base_project_dir
+from logrec.dataprep import base_project_dir, METADATA_DIR
 from logrec.dataprep.preprocessors.general import to_token_list
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam, get_types_to_be_repr, PrepParamsParser
 from logrec.dataprep.preprocessors.repr import to_repr_list, ReprConfig
@@ -132,7 +132,7 @@ def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, split
         logger.error(f"Dir does not exist: {full_src_dir}")
         exit(3)
     logger.info(f"Reading parsed files from: {os.path.abspath(full_src_dir)}")
-    with open(f'{full_src_dir}/preprocessing_types.json', 'r') as f:
+    with open(os.path.join(full_src_dir, 'preprocessing_types.json'), 'r') as f:
         old_preprocessing_params_json = json.load(f)
     old_preprocessing_params = {PreprocessingParam(k): v for (k, v) in old_preprocessing_params_json.items()}
     logger.info(f"Old preprocessing params : {old_preprocessing_params}")
@@ -180,15 +180,15 @@ def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, split
     while os.path.exists(gen_dir_name_from_verb_param):
         gen_dir_name_from_verb_param += '_'
 
-    full_dest_dir = f'{dest_dir}/{REPR_EXTENSION}/{gen_dir_name_from_verb_param}'
-    full_metadata_dir = f'{dest_dir}/metadata/{gen_dir_name_from_verb_param}'
+    full_dest_dir = os.path.join(dest_dir, REPR_EXTENSION, gen_dir_name_from_verb_param)
+    full_metadata_dir = os.path.join(dest_dir, METADATA_DIR, gen_dir_name_from_verb_param)
     logger.info(f"Writing preprocessed files to {os.path.abspath(full_dest_dir)}")
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir)
     if not os.path.exists(full_metadata_dir):
         os.makedirs(full_metadata_dir)
 
-    with open(f'{full_dest_dir}/preprocessing_types.json', "w") as f:
+    with open(os.path.join(full_dest_dir, 'preprocessing_types.json'), "w") as f:
         json.dump(new_preprocessing_types_dict, f)
 
     params = []
@@ -231,12 +231,12 @@ if __name__ == '__main__':
     parser.add_argument('--bpe-merges-file', action='store', help='Full path to the file with bpe merges')
     parser.add_argument('--bpe-merges-cache', action='store', help='Full path to the file with bpe split words')
     parser.add_argument('--splitting-file', action='store', help='Full path to the file with sc split words',
-                        default=f'{base_project_dir}/splittings.txt')
+                        default=os.path.join(base_project_dir, 'splittings.txt'))
 
     args = parser.parse_known_args(*DEFAULT_TO_REPR_ARGS)
     args = args[0]
 
-    full_src_dir = f'{args.base_from}/{args.src}'
-    dest_dir = f'{args.base_to}/{args.dest}'
+    full_src_dir = os.path.join(args.base_from, args.src)
+    dest_dir = os.path.join(args.base_to, args.dest)
 
     run(args.preprocessing_params, dest_dir, args.bpe_merges_file, args.bpe_merges_cache, args.splitting_file)

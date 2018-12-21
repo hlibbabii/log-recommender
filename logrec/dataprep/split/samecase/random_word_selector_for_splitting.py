@@ -1,5 +1,6 @@
 import logging
 import math
+import os
 import random
 import re
 from collections import defaultdict
@@ -9,9 +10,9 @@ from logrec.dataprep import base_project_dir
 logger = logging.getLogger(__name__)
 
 base_dataset_dir = f'{base_project_dir}/nn-data/devanbu_no_replaced_identifier_split_no_tabs_new_splits3_under_5000_15_percent/'
-path_to_labeled_data = f'{base_dataset_dir}/sample.txt'
-path_to_labeled_data2 = f'{base_dataset_dir}/sample2.txt'
-vocab_file = f'{base_dataset_dir}/vocab.txt'
+path_to_labeled_data = os.path.join(base_dataset_dir, 'sample.txt')
+path_to_labeled_data2 = os.path.join(base_dataset_dir, 'sample2.txt')
+vocab_file = os.path.join(base_dataset_dir, 'vocab.txt')
 
 
 def get_already_selected_words():

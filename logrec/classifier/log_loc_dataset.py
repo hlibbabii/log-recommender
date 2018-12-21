@@ -1,6 +1,8 @@
 import os
 from torchtext import data
 
+from logrec.dataprep import TRAIN_DIR, TEST_DIR
+
 __author__ = 'hlib'
 
 class LogLocationDataset(data.Dataset):
@@ -37,7 +39,7 @@ class LogLocationDataset(data.Dataset):
         super(LogLocationDataset, self).__init__(examples, fields, **kwargs)
 
     @classmethod
-    def splits(cls, text_field, label_field, path, train='train', test='test', **kwargs):
+    def splits(cls, text_field, label_field, path, train=TRAIN_DIR, test=TEST_DIR, **kwargs):
         """Create dataset objects for splits of the IMDB dataset.
 
         Arguments:

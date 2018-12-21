@@ -7,23 +7,23 @@ __author__ = 'hlib'
 PATH_TO_CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 PATH_TO_PROJECT = PATH_TO_CURRENT_DIR = PATH_TO_CURRENT_DIR + '/../../'
 
-CLASSES_FILE= PATH_TO_PROJECT + '/classes.csv'
-MAJOR_CLASSES_LOGS_FILE= PATH_TO_PROJECT + '/major_classes_logs.pkl'
-CLASSIFIED_LOGS_FILE= PATH_TO_PROJECT + '/classified_logs.pkl'
-INTERESTING_WORDS_FILE= PATH_TO_PROJECT + '/interesting_context_words.csv'
-PREPROCESSED_LOGS_FILE= PATH_TO_PROJECT + '/pplogs.pkl'
-PROJECT_STATS_FILE= PATH_TO_PROJECT + '/project_stats.csv'
-FREQUENCIES_FILE= PATH_TO_PROJECT + '/generated_stats/frequencies.csv'
-FREQUENCIES_FILE_BINARY= PATH_TO_PROJECT + '/frequencies.pkl'
-CONTEXT_VECTOR_FILE= PATH_TO_PROJECT + '/context_vectors.dat'
-BINARY_CONTEXT_VECTOR_FILE= PATH_TO_PROJECT + '/binary_context_vectors.dat'
-DISTRIBUTION_BY_LEVELS_FILE= PATH_TO_PROJECT + '/generated_stats/level_distribution.csv'
-DISTRIBUTION_BY_N_VARS_FILE= PATH_TO_PROJECT + '/generated_stats/n_vars_distribution.csv'
-PEARSONS_FILE= PATH_TO_PROJECT + '/generated_stats/output_pearsons.csv'
-K_MEANS_CLUSTERING_STATS_FILE= PATH_TO_PROJECT + '/generated_stats/k_means_clustering_stats.csv'
-FIRST_WORD_FREQUENCIES_FILE= PATH_TO_PROJECT + '/generated_stats/frequencies_first_word.csv'
-FIRST_WORD_FREQUENCIES_FILE_BINARY= PATH_TO_PROJECT + '/frequencies_first_word.pkl'
-CONTEXT_FREQUENCIES_FILE_BINARY= PATH_TO_PROJECT + '/frequencies_context.pkl'
+CLASSES_FILE = os.path.join(PATH_TO_PROJECT, 'classes.csv')
+MAJOR_CLASSES_LOGS_FILE = os.path.join(PATH_TO_PROJECT, 'major_classes_logs.pkl')
+CLASSIFIED_LOGS_FILE = os.path.join(PATH_TO_PROJECT, 'classified_logs.pkl')
+INTERESTING_WORDS_FILE = os.path.join(PATH_TO_PROJECT, 'interesting_context_words.csv')
+PREPROCESSED_LOGS_FILE = os.path.join(PATH_TO_PROJECT, 'pplogs.pkl')
+PROJECT_STATS_FILE = os.path.join(PATH_TO_PROJECT, 'project_stats.csv')
+FREQUENCIES_FILE = os.path.join(PATH_TO_PROJECT, 'generated_stats', 'frequencies.csv')
+FREQUENCIES_FILE_BINARY = os.path.join(PATH_TO_PROJECT, 'frequencies.pkl')
+CONTEXT_VECTOR_FILE = os.path.join(PATH_TO_PROJECT, 'context_vectors.dat')
+BINARY_CONTEXT_VECTOR_FILE = os.path.join(PATH_TO_PROJECT, 'binary_context_vectors.dat')
+DISTRIBUTION_BY_LEVELS_FILE = os.path.join(PATH_TO_PROJECT, 'generated_stats', 'level_distribution.csv')
+DISTRIBUTION_BY_N_VARS_FILE = os.path.join(PATH_TO_PROJECT, 'generated_stats', 'n_vars_distribution.csv')
+PEARSONS_FILE = os.path.join(PATH_TO_PROJECT, 'generated_stats', 'output_pearsons.csv')
+K_MEANS_CLUSTERING_STATS_FILE = os.path.join(PATH_TO_PROJECT, 'generated_stats', 'k_means_clustering_stats.csv')
+FIRST_WORD_FREQUENCIES_FILE = os.path.join(PATH_TO_PROJECT, 'generated_stats', 'frequencies_first_word.csv')
+FIRST_WORD_FREQUENCIES_FILE_BINARY = os.path.join(PATH_TO_PROJECT, 'frequencies_first_word.pkl')
+CONTEXT_FREQUENCIES_FILE_BINARY = os.path.join(PATH_TO_PROJECT, 'frequencies_context.pkl')
 
 def output_to_csv(filename, header, lambda1, dim1, dim2):
     with open(filename, 'w', newline='') as csvfile:

@@ -59,7 +59,7 @@ def preprocess_and_write(params):
                 file_mapper(dir_with_files_to_preprocess, read_file_contents)):
             if (ind+1) % 100 == 0:
                 logger.info(
-                    f"[{train_test_valid}/{project}] Parsed {ind+1} out of {total_files} files ({(ind+1)/float(total_files)*100:.2f}%)")
+                    f"[{os.path.join(train_test_valid, project)}] Parsed {ind+1} out of {total_files} files ({(ind+1)/float(total_files)*100:.2f}%)")
             parsed = apply_preprocessors(from_file(lines_from_file), pp_params["preprocessors"], {
                 'interesting_context_words': []
             })
@@ -89,9 +89,9 @@ def run(raw_dataset_dir, dest_dataset_dir):
 
     if not os.path.exists(dest_dataset_dir):
         os.makedirs(dest_dataset_dir)
-    with open(f'{dest_dataset_dir}/params.json', 'w') as f:
+    with open(os.path.join(dest_dataset_dir, 'params.json'), 'w') as f:
         json.dump(pp_params, f)
-    with open(f'{dest_dataset_dir}/preprocessing_types.json', 'w') as f:
+    with open(os.path.join(dest_dataset_dir, 'preprocessing_types.json'), 'w') as f:
         json.dump(preprocessing_types_dict, f)
 
     params = []
@@ -128,7 +128,7 @@ if __name__ == '__main__':
     args = parser.parse_known_args(*DEFAULT_PARSE_PROJECTS_ARGS)
     args = args[0]
 
-    raw_dataset_dir=f'{args.base_from}/{args.src}/'
-    dest_dataset_dir = f'{args.base_to}/{args.dest}/'
+    raw_dataset_dir = os.path.join(args.base_from, args.src)
+    dest_dataset_dir = os.path.join(args.base_to, args.dest)
 
     run(raw_dataset_dir, dest_dataset_dir)

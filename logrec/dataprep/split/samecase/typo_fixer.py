@@ -42,7 +42,7 @@ def run(path_to_typo_candidates, file_with_fixes):
         for line in f:
             words_with_typos.append(line[:-1])
 
-    general_dict = load_english_dict(f'{base_project_dir}/dicts/eng')
+    general_dict = load_english_dict(os.path.join(base_project_dir, 'dicts', 'eng'))
     len_to_words_in_dict = defaultdict(list)
     for w in general_dict:
         len_to_words_in_dict[len(w)].append(w)
@@ -65,8 +65,8 @@ if __name__ == '__main__':
     parser.add_argument('--path-to-typo-candidates', action='store', default="100_percent/splits/typo-candidates.txt")
     args = parser.parse_args()
 
-    base_dir = base_from = f'{base_project_dir}/nn-data/new-framework/'
-    path_to_typo_candidates = f"{base_dir}/{args.path_to_typo_candidates}"
+    base_dir = base_from = os.path.join(base_project_dir, 'nn-data', 'new-framework')
+    path_to_typo_candidates = os.path.join(base_dir, args.path_to_typo_candidates)
     file_with_fixes = os.path.join(os.path.split(path_to_typo_candidates)[0], 'typo-fixes.txt')
 
     run(path_to_typo_candidates, file_with_fixes)

@@ -4,6 +4,7 @@ import os
 from operator import attrgetter
 
 from logrec.classify_and_select_major_logs import select_logs_from_major_classes
+from logrec.dataprep import TRAIN_DIR, TEST_DIR
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocess_params import pp_params
 from logrec.util import io_utils
@@ -56,8 +57,8 @@ if __name__ == '__main__':
     logs_for_fast_ai_training = logs_by_levels[int(n_logs_for_1_class * fraction_for_testing * len(classes)):]
     logs_for_fast_ai_testing = logs_by_levels[:int(n_logs_for_1_class * fraction_for_testing * len(classes))]
 
-    train_dir = f'{args.fastai_input_file}/train/'
-    test_dir = f'{args.fastai_input_file}/test/'
+    train_dir = os.path.join(args.fastai_input_file, TRAIN_DIR)
+    test_dir = os.path.join(args.fastai_input_file, TEST_DIR)
     if not os.path.exists(train_dir):
         os.makedirs(train_dir)
     if not os.path.exists(test_dir):

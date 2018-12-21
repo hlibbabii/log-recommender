@@ -231,7 +231,7 @@ def get_splittings(words_to_split, freqs, general_dict, non_eng_dicts, cache_fil
 def load_english_dict(path_to_dict_dir):
     english_dict = set()
     for file in os.listdir(path_to_dict_dir):
-        with open(f'{path_to_dict_dir}/{file}', 'r') as f:
+        with open(os.path.join(path_to_dict_dir, file), 'r') as f:
             for line in f:
                 english_dict.add(line[:-1].lower())
     return english_dict
@@ -241,7 +241,7 @@ def load_non_english_dicts(path_to_dicts):
     dict = set()
     dict_files_names = [f for f in os.listdir(path_to_dicts)]
     for file in dict_files_names:
-        with open(f'{path_to_dicts}/{file}') as f:
+        with open(os.path.join(path_to_dicts, file)) as f:
             for l in f:
                 dict.add(l[:-1] if l[-1] == '\n' else l)
     return dict
@@ -278,41 +278,42 @@ def generate_sample(transformed, nontransformed, nn, where):
 
 
 def run():
-    path_to_splits = f'{base_project_dir}/splits'
-    vocab_file = f'{base_project_dir}/vocab'
+    path_to_splits = os.path.join(base_project_dir, 'splits')
+    vocab_file = os.path.join(base_project_dir, 'vocab')
 
     logging.info(f"Loading vocabulary into memory from {vocab_file} ...")
     freqs = io_utils.read_dict_from_2_columns(vocab_file)
 
     logging.info("Loading dictionaries")
-    general_dict = load_english_dict(f'{base_project_dir}/dicts/eng')
-    non_eng_dicts = load_non_english_dicts(f'{base_project_dir}/dicts/non-eng')
+    general_dict = load_english_dict(os.path.join(base_project_dir, 'dicts', 'eng'))
+    non_eng_dicts = load_non_english_dicts(os.path.join(base_project_dir, 'dicts', 'non-eng'))
 
     path_to_split_folder = path_to_splits
     if not os.path.exists(path_to_splits):
         os.makedirs(path_to_split_folder)
 
-    split_file = f'{path_to_split_folder}/splitting.txt'
-    nonsplit_file = f"{path_to_split_folder}/nonsplit.txt"
-    typo_candidates_file = f"{path_to_split_folder}/typo-candidates.txt"
+    split_file = os.path.join(path_to_split_folder, 'splitting.txt')
+    nonsplit_file = os.path.join(path_to_split_folder, 'nonsplit.txt')
+    typo_candidates_file = os.path.join(path_to_split_folder, 'typo-candidates.txt')
 
     split_cache_file = f'{split_file}.cache'
     nonsplit_cache_file = f'{nonsplit_file}.cache'
     typo_candidates_cache_file = f'{typo_candidates_file}.cache'
 
     transformed, nontransformed, typo_candidates = get_splittings(freqs.keys(), freqs, general_dict, non_eng_dicts,
-                                                                 (split_cache_file, nonsplit_cache_file, typo_candidates_cache_file),
-                                                                  params, f'{path_to_split_folder}/split_cache.txt')
+                                                                  (split_cache_file, nonsplit_cache_file, typo_candidates_cache_file),
+                                                                  params,
+                                                                  os.path.join(path_to_split_folder, 'split_cache.txt'))
     logging.info(f"Splitting done! Saving sata to '{path_to_splits}")
 
-    with open(f'{path_to_split_folder}/params.json', 'w') as f:
+    with open(os.path.join(path_to_split_folder, 'params.json'), 'w') as f:
         json.dump({'params': params, 'typo_params': typo_params, 'max_subwords': max_subwords}, f)
 
     dump_split(transformed, split_file)
     dump_non_split(nontransformed, nonsplit_file)
     dump_typo_candidates(typo_candidates, typo_candidates_file)
 
-    generate_sample(transformed, nontransformed, (1000, 4000), f'{path_to_split_folder}/sample.txt')
+    generate_sample(transformed, nontransformed, (1000, 4000), os.path.join(path_to_split_folder, 'sample.txt'))
 
 
 if __name__ == '__main__':

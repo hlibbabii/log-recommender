@@ -3,7 +3,7 @@ import os
 from logrec.util import io_utils
 
 PATH_TO_CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-MARKED_UP_CONTEXTS_FILE=PATH_TO_CURRENT_DIR + '/../marked_up_contexts.txt'
+MARKED_UP_CONTEXTS_FILE = os.path.join(PATH_TO_CURRENT_DIR, '..', 'marked_up_contexts.txt')
 
 def markup_contexts(logs, important_context_words):
     marked_up_contexts = []

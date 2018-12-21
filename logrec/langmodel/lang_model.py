@@ -8,6 +8,7 @@ from time import time
 import matplotlib
 
 from fastai.model import validate
+from logrec.dataprep import TRAIN_DIR, TEST_DIR, VALID_DIR, TEXT_FIELD_FILE, MODELS_DIR
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser, PreprocessingParam
 from logrec.langmodel.config_manager import find_name_for_new_config, find_most_similar_config, PARAM_FILE_NAME
 from logrec.langmodel.fullwordfinder import get_curr_seq, get_curr_seq_new, get_subword
@@ -98,12 +99,12 @@ def create_df(dir, percent, start_from):
 
 def get_model(model_name, nn_arch, percent, start_from):
     dataset_name = params.nn_params["dataset_name"]
-    path_to_dataset = f'{params.nn_params["path_to_data"]}/{dataset_name}'
-    path_to_model = f'{path_to_dataset}/{model_name}'
+    path_to_dataset = os.path.join(params.nn_params["path_to_data"], dataset_name)
+    path_to_model = os.path.join(path_to_dataset, model_name)
 
-    train_df_path = f'{path_to_dataset}/train/'
-    test_df_path =  f'{path_to_dataset}/test/'
-    valid_df_path = f'{path_to_dataset}/valid/'
+    train_df_path = os.path.join(path_to_dataset, TRAIN_DIR)
+    test_df_path = os.path.join(path_to_dataset, TEST_DIR)
+    valid_df_path = os.path.join(path_to_dataset, VALID_DIR)
     if not os.path.exists(valid_df_path):
         valid_df_path = test_df_path
 
@@ -136,7 +137,7 @@ def get_model(model_name, nn_arch, percent, start_from):
         model_trained = True
         # calculate_and_display_metrics(rnn_learner, nn_params['metrics'], text_field.vocab)
     except FileNotFoundError:
-        logger.info(f"Model {dataset_name}/{model_name} not found")
+        logger.info(f"Model {os.path.join(dataset_name, model_name)} not found")
         model_trained = False
         try:
             rnn_learner.load(f'{params.nn_params["dataset_name"]}_best_base')
@@ -179,17 +180,17 @@ def get_model_name_by_params(percent, start_from, path_to_dataset, nn_arch):
     else: #nn wasn't run with this config yet
         name = find_name_for_new_config(percent_prefix,
                                         config_diff) if most_similar_model_name is not None else f"{percent_prefix}baseline"
-        path_to_model = f'{path_to_dataset}/{name}'
+        path_to_model = os.path.join(path_to_dataset, name)
         while os.path.exists(path_to_model):
             name = name + "_"
-            path_to_model = f'{path_to_dataset}/{name}'
+            path_to_model = os.path.join(path_to_dataset, name)
         return name
 
 def find_and_plot_lr(rnn_learner, path_to_model):
     logger.info("Looking for the best learning rate...")
     # TODO we shouldnt pass file argument, when looking
     # for learning rate we should log to console
-    rnn_learner.lr_find(file=f"{path_to_model}/training.log")
+    rnn_learner.lr_find(file=open(os.path.join(path_to_model, 'training.log'), 'w'))
 
     dir = os.path.dirname(os.path.realpath(__file__))
     path = os.path.join(dir, path_to_model, 'lr_finder_plot.png')
@@ -302,16 +303,15 @@ def validate_with_cache(get_full_word_func, stepper, dl, metrics, epoch, seq_fir
     return [np.average(losses, 0, weights=seqs_in_batch_list)] + list(np.average(np.stack(res), 0, weights=bptts))
 
 
-def train_model(rnn_learner, path_to_dataset, dataset_name, model_name, nn_arch):
-    dataset_name = params.nn_params["dataset_name"]
-    path_to_model = f"{path_to_dataset}/{model_name}"
+def train_model(rnn_learner, path_to_dataset, dataset_name, model_name, nn_arch, lr):
+    path_to_model = os.path.abspath(os.path.join(path_to_dataset, model_name))
     split_repr = PrepParamsParser.from_encoded_string(dataset_name)[PreprocessingParam.NO_SEP]
     if nn_arch['cycle']['n'] > 0:
         get_full_word_func = get_curr_seq if split_repr == 0 else get_curr_seq_new
         training_start_time = time()
-        training_log_file = os.path.abspath(f'{path_to_model}/training.log')
+        training_log_file = os.path.join(path_to_model, 'training.log')
         logger.info(f"Starting training, check {training_log_file} for training progress")
-        vals, ep_vals = rnn_learner.fit(params.nn_params['lr'], n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
+        vals, ep_vals = rnn_learner.fit(lr, n_cycle=nn_arch['cycle']['n'], wds=nn_arch['wds'],
                                         cycle_len=nn_arch['cycle']['len'], cycle_mult=nn_arch['cycle']['mult'],
                                         metrics=list(map(lambda x: getattr(metrics, x), nn_arch['training_metrics'])),
                                         cycle_save_name=dataset_name, get_ep_vals=True,
@@ -319,7 +319,7 @@ def train_model(rnn_learner, path_to_dataset, dataset_name, model_name, nn_arch)
                                         valid_func=partial(validate_with_cache, get_full_word_func)
                                         )
         training_time_mins = int(time() - training_start_time) // 60
-        with open(f'{path_to_dataset}/{model_name}/results.out', 'w') as f:
+        with open(os.path.join(path_to_model, 'results.out'), 'w') as f:
             f.write(str(training_time_mins) + "\n")
             for _, vals in ep_vals.items():
                 f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
@@ -327,14 +327,14 @@ def train_model(rnn_learner, path_to_dataset, dataset_name, model_name, nn_arch)
         logger.info("Number of epochs specified is 0. Not training...")
         rnn_learner.save(f'{dataset_name}_best')
 
-    logger.info(f'Saving model: {dataset_name}/{model_name}')
+    logger.info(f'Saving model: {path_to_model}')
     rnn_learner.save(dataset_name)
     rnn_learner.save_encoder(dataset_name + "_encoder")
 
 
 def get_non_existent_model_name(path_to_dataset, base_model_name):
     model_name = base_model_name + "_extratrained"
-    while os.path.exists(f'{path_to_dataset}/{model_name}'):
+    while os.path.exists(os.path.join(path_to_dataset, model_name)):
         model_name = model_name + "_"
     return model_name
 
@@ -343,12 +343,12 @@ def save_vocab_data(text_field, path_to_dataset):
     ####  TODO no need to save vocab data if it's already there in metadata
     # if its not ther esave t metadata
 
-    io_utils.dump_dict_into_2_columns(text_field.vocab.freqs, f'{path_to_dataset}/vocab_all.txt')
-    pickle.dump(text_field, open(f'{path_to_dataset}/TEXT.pkl', 'wb'))
+    io_utils.dump_dict_into_2_columns(text_field.vocab.freqs, os.path.join(path_to_dataset, 'vocab_all.txt'))
+    pickle.dump(text_field, open(os.path.join(path_to_dataset, TEXT_FIELD_FILE), 'wb'))
 
     vocab_size = len(text_field.vocab.itos)
     logger.info(f'Dictionary size is: {vocab_size}')
-    with open(f'{path_to_dataset}/vocab_size', 'w') as f:
+    with open(os.path.join(path_to_dataset, 'vocab_size'), 'w') as f:
         f.write("# This is automatically generated file! Do not edit!\n")
         f.write(str(vocab_size))
 
@@ -361,22 +361,23 @@ def run(params):
     nn_arch = params.nn_params['arch']
     nn_testing = params.nn_params['testing']
 
-    path_to_dataset = f'{params.nn_params["path_to_data"]}/{params.nn_params["dataset_name"]}'
+    path_to_dataset = os.path.abspath(os.path.join(params.nn_params["path_to_data"], params.nn_params["dataset_name"]))
 
     percent = params.nn_params['percent']
     start_from = params.nn_params['start_from']
     if "base_model" in params.nn_params:
         base_model_name = params.nn_params["base_model"]
-        path_to_best_model = f'{path_to_dataset}/{base_model_name}/models/{params.nn_params["dataset_name"]}_best.h5'
+        path_to_best_model = os.path.join(path_to_dataset, base_model_name, MODELS_DIR,
+                                          f'{params.nn_params["dataset_name"]}_best.h5')
         logger.info(f"Using base model: {base_model_name}")
         model_name = get_non_existent_model_name(path_to_dataset, base_model_name)
-        path_to_model = f'{path_to_dataset}/{model_name}'
-        path_to_model_models = f'{path_to_model}/models'
+        path_to_model = os.path.join(path_to_dataset, model_name)
+        path_to_model_models = os.path.join(path_to_model, MODELS_DIR)
         os.makedirs(path_to_model_models)
-        path_to_model_best_base = f'{path_to_model_models}/{params.nn_params["dataset_name"]}_best_base.h5'
+        path_to_model_best_base = os.path.join(path_to_model_models, f'{params.nn_params["dataset_name"]}_best_base.h5')
         try:
-            logger.info(f"Copying from {os.path.abspath(path_to_best_model)} "
-                         f"to {os.path.abspath(path_to_model_best_base)}")
+            logger.info(f"Copying from {path_to_best_model} "
+                        f"to {path_to_model_best_base}")
             copyfile(path_to_best_model, path_to_model_best_base)
         except IOError:
             logger.error("Error copying file!")
@@ -386,7 +387,7 @@ def run(params):
 
         model_name = get_model_name_by_params(percent, start_from,
                                               path_to_dataset, nn_arch)
-        path_to_model = f'{path_to_dataset}/{model_name}'
+        path_to_model = os.path.join(path_to_dataset, model_name)
     if not os.path.exists(path_to_model):
         os.mkdir(path_to_model)
     attach_dataset_aware_handlers_to_loggers(path_to_model, 'main.log')
@@ -395,17 +396,17 @@ def run(params):
     force_rerun = True
     md = params.nn_params['mode']
     logger.info(f"Mode: {md}")
-    logger.info(f"Path to model: {os.path.abspath(path_to_model)}")
+    logger.info(f"Path to model: {path_to_model}")
 
     learner, text_field, model_trained = get_model(model_name, nn_arch, percent, start_from)
 
     save_vocab_data(text_field, path_to_dataset)
 
     if model_trained and not force_rerun:
-        logger.info(f'Model {params.nn_params["dataset_name"]}/{model_name} already trained. Not rerunning training.')
+        logger.info(f'Model {path_to_model} already trained. Not rerunning training.')
         return
 
-    with open(f'{path_to_model}/{PARAM_FILE_NAME}', 'w') as f:
+    with open(os.path.join(path_to_model, PARAM_FILE_NAME), 'w') as f:
         json.dump(nn_arch, f)
 
     if params.nn_params['mode'] == Mode.LEARNING_RATE_FINDING.value:
@@ -415,11 +416,12 @@ def run(params):
     elif params.nn_params['mode'] == Mode.TRAINING.value:
         if model_trained:
             logger.info(f"Forcing training rerun")
-        train_model(learner, path_to_dataset, params.nn_params["dataset_name"], model_name, nn_arch)
+        train_model(learner, path_to_dataset, params.nn_params["dataset_name"], model_name, nn_arch,
+                    params.nn_params['lr'])
         logger.info("Loading the best model")
         learner.load(f'{params.nn_params["dataset_name"]}_best')
         m = learner.model
-        gen_text_path = os.path.abspath(f'{path_to_model}/gen_text.out')
+        gen_text_path = os.path.join(path_to_model, 'gen_text.out')
         run_and_display_tests(m, text_field, nn_arch, nn_testing, gen_text_path)
     else:
         raise AssertionError(f"Unknown mode: {params.nn_params['mode']}")

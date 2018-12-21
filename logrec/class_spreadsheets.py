@@ -1,5 +1,6 @@
 import csv
 import logging
+import os
 
 from logrec.util import io_utils
 
@@ -9,7 +10,7 @@ def write_to_classification_spreadsheet(dir_name, logs):
     logging.info("There are " + str(len(logs)) + " logs. Writing them into " + str(n_chunks) + " files")
     log_sets = [logs[i::n_chunks] for i in range(n_chunks)]
     for index, log_set in enumerate(log_sets):
-        with open(dir_name + '/logs' + str(index) + '.csv', 'w', newline='') as csvfile:
+        with open(os.path.join(dir_name, f'logs{index}.csv'), 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             for log in log_set:
                 writer.writerow([log.id, log.text, log.level, log.n_variables,

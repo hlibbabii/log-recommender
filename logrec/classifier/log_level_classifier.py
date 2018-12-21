@@ -13,6 +13,7 @@ from fastai.nlp import TextData
 from logrec.classifier.classifier_params import LEVEL_LABEL, params
 from logrec.classifier.context_datasets import ContextsDataset
 from logrec.classifier.dataset_generator import WORDS_IN_CONTEXT_LIMIT
+from logrec.dataprep import TEST_DIR, TEXT_FIELD_FILE, REPR_DIR, MODELS_DIR
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.langmodel.utils import to_test_mode, output_predictions, back_to_train_mode
 from logrec.util.io_utils import file_mapper
@@ -24,7 +25,8 @@ arch = params['arch']
 
 
 def load_pretrained_langmodel(rnn_learner, dataset_name, pretrained_langmodel):
-    path_to_lang_model = f'{rnn_learner.models_path}/../../../../repr/{dataset_name}/{pretrained_langmodel}/models/{dataset_name}_encoder.h5'
+    path_to_lang_model = os.path.join(rnn_learner.models_path, '../../../..', REPR_DIR, dataset_name,
+                                      pretrained_langmodel, MODELS_DIR, f'{dataset_name}_encoder.h5')
     new_dir = os.path.join(rnn_learner.models_path, pretrained_langmodel)
     if not os.path.exists(new_dir):
         os.makedirs(new_dir)
@@ -121,11 +123,11 @@ def run():
     dataset_name = params['dataset_name']
     base_model = params['base_model']
 
-    path_to_langmodel_data = f"{path_to_log_location_data}/../../repr"
+    path_to_langmodel_data = os.path.join(path_to_log_location_data, '..', '..', REPR_DIR)
     clas9n_dataset_name = PrepParamsParser.to_classification_prep_params(dataset_name)
     path_to_log_location_dataset = os.path.join(path_to_log_location_data, clas9n_dataset_name)
 
-    text_field = pickle.load(open(f'{path_to_langmodel_data}/{dataset_name}/TEXT.pkl', 'rb'))
+    text_field = pickle.load(open(os.path.join(path_to_langmodel_data, dataset_name, TEXT_FIELD_FILE), 'rb'))
     learner = get_text_classifier_model(text_field, LEVEL_LABEL, path_to_log_location_dataset, dataset_name,
                                         base_model=base_model, threshold=params['threshold'])
 
@@ -134,7 +136,7 @@ def run():
 
     # logger.info(f'Accuracy is {accuracy_np(*learner.predict_with_targs())}')
     # counter = 0
-    path_to_test_set = f'{path_to_log_location_dataset}/test'
+    path_to_test_set = os.path.join(path_to_log_location_dataset, TEST_DIR)
     for c_filename, l_filename in file_mapper(path_to_test_set, ContextsDataset._get_pair, extension='label'):
         c_file = None
         l_file = None

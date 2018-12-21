@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 
+from logrec.dataprep import TRAIN_DIR, TEST_DIR
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.general import to_token_list, from_file
 from logrec.util import io_utils
@@ -37,16 +38,18 @@ def get_false_context(log):
 
 def write_corpus(preprocessed_logs, output_dir):
     dirs = [
-        f'{output_dir}/train/true',
-        f'{output_dir}/train/false',
-        f'{output_dir}/test/true',
-        f'{output_dir}/test/false'
+        os.path.join(output_dir, TRAIN_DIR, 'true'),
+        os.path.join(output_dir, TRAIN_DIR, 'false'),
+        os.path.join(output_dir, TEST_DIR, 'true'),
+        os.path.join(output_dir, TEST_DIR, 'false')
     ]
     for dir in dirs:
         if not os.path.exists(dir):
             os.makedirs(dir)
     name = "context.0.src"
-    with open(f'{dirs[0]}/{name}', 'w') as train_true, open(f'{dirs[1]}/{name}', 'w') as train_false, open(f'{dirs[2]}/{name}', 'w') as test_true, open(f'{dirs[3]}/{name}', 'w') as test_false:
+    with open(os.path.join(dirs[0], name), 'w') as train_true, open(os.path.join(dirs[1], name),
+                                                                    'w') as train_false, open(
+            os.path.join(dirs[2], name), 'w') as test_true, open(os.path.join(dirs[3], name), 'w') as test_false:
         for ind, log in enumerate(preprocessed_logs):
             if ind % 2 == 0:
                 context = get_true_context(log)

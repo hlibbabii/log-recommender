@@ -91,7 +91,7 @@ def run():
 
     args = parser.parse_args(*DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS)
 
-    path_to_dir_with_preprocessed_projects = f'{args.base_dataset_dir}/{args.preprocessed_dataset}'
+    path_to_dir_with_preprocessed_projects = os.path.join(args.base_dataset_dir, args.preprocessed_dataset)
 
     logging.basicConfig(level=logging.DEBUG)
     if not os.path.exists(path_to_dir_with_preprocessed_projects):
@@ -130,7 +130,7 @@ def run():
 
     params = (0.006, 2.01, 2.01, 0.019, 3.939599999999999, 2.01)
     non_eng_projects = dao.select_noneng_projects(*params)
-    noneng_projects_file = f'{args.base_dataset_dir}/noneng-projects.txt'
+    noneng_projects_file = os.path.join(args.base_dataset_dir, 'noneng-projects.txt')
     logger.info(f"Writing non-english projects list to {noneng_projects_file}")
     with open(noneng_projects_file, 'w') as f:
         f.write(str(params) + '\n')

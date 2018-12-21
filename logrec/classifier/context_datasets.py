@@ -4,6 +4,7 @@ import re
 
 from torchtext import data
 
+from logrec.dataprep import TRAIN_DIR, TEST_DIR
 from logrec.util import io_utils
 from logrec.util.io_utils import file_mapper
 
@@ -48,7 +49,7 @@ class ContextsDataset(data.Dataset):
                 data.Dataset.
         """
         threshold = kwargs.pop("threshold", 0.0)
-        path_to_ignored_projects = os.path.join(path, f"../{IGNORED_PROJECTS_FILE_NAME}.{threshold}")
+        path_to_ignored_projects = os.path.join(path, '..', f"{IGNORED_PROJECTS_FILE_NAME}.{threshold}")
         logger.info(f"Loading ignored projects from {path_to_ignored_projects} ...")
         ignored_projects_set = set(io_utils.read_list(path_to_ignored_projects))
 
@@ -85,7 +86,7 @@ class ContextsDataset(data.Dataset):
         super(ContextsDataset, self).__init__(examples, fields, **kwargs)
 
     @classmethod
-    def splits(cls, text_field, label_field, path, train='train', test='test', **kwargs):
+    def splits(cls, text_field, label_field, path, train=TRAIN_DIR, test=TEST_DIR, **kwargs):
         """Create dataset objects for splits of the IMDB dataset.
 
         Arguments:
