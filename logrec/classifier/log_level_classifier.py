@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 arch = params['arch']
 
+EXAMPLES_TO_SHOW = 100
 
 def load_pretrained_langmodel(rnn_learner, dataset_name, pretrained_langmodel):
     path_to_lang_model = os.path.join(rnn_learner.models_path, '../../../..', REPR_DIR, dataset_name,
@@ -118,6 +119,34 @@ def read_lines(filename):
         return f.readlines()
 
 
+def show_tests(path_to_test_set, m, text_field):
+    counter = 0
+    for c_filename, l_filename in file_mapper(path_to_test_set, ContextsDataset._get_pair, extension='label'):
+        c_file = None
+        l_file = None
+        try:
+            c_file = open(c_filename, 'r')
+            l_file = open(l_filename, 'r')
+            for context, level in zip(c_file, l_file):
+                if counter >= EXAMPLES_TO_SHOW:
+                    return
+                output_predictions(m, text_field, LEVEL_LABEL, context.rstrip("\n"), 3)
+                counter += 1
+        except FileNotFoundError:
+            project_name = c_filename[:-len(ContextsDataset.FW_CONTEXTS_FILE_EXT)]
+            logger.error(f"Project context not loaded: {project_name}")
+            continue
+        finally:
+            if c_file is not None:
+                c_file.close()
+            if l_file is not None:
+                l_file.close()
+            # if counter > 30:
+            #     break
+            # counter += 1
+            # print(f'{counter}\n')
+
+
 def run():
     path_to_log_location_data = params['path_to_classification_data']
     dataset_name = params['dataset_name']
@@ -137,27 +166,8 @@ def run():
     # logger.info(f'Accuracy is {accuracy_np(*learner.predict_with_targs())}')
     # counter = 0
     path_to_test_set = os.path.join(path_to_log_location_dataset, TEST_DIR)
-    for c_filename, l_filename in file_mapper(path_to_test_set, ContextsDataset._get_pair, extension='label'):
-        c_file = None
-        l_file = None
-        try:
-            c_file = open(c_filename, 'r')
-            l_file = open(l_filename, 'r')
-            for context, level in zip(c_file, l_file):
-                output_predictions(m, text_field, LEVEL_LABEL, context.rstrip("\n"), 3)
-        except FileNotFoundError:
-            project_name = c_filename[:-len(ContextsDataset.FW_CONTEXTS_FILE_EXT)]
-            logger.error(f"Project context not loaded: {project_name}")
-            continue
-        finally:
-            if c_file is not None:
-                c_file.close()
-            if l_file is not None:
-                l_file.close()
-            # if counter > 30:
-            #     break
-            # counter += 1
-            # print(f'{counter}\n')
+
+    show_tests(path_to_test_set, m, text_field)
 
     # plotting confusion matrix
     # preds = np.argmax(probs, axis=1)
