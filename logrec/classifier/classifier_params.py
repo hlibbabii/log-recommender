@@ -41,4 +41,4 @@ params = {
     'mode': Mode.TRAINING
 }
 
-LEVEL_LABEL = data.Field(sequential=False)
+LEVEL_LABEL = data.LabelField()
