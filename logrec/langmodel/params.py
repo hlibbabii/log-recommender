@@ -23,7 +23,7 @@ nn_params = {
     },
     'lr': 1e-3,
     'metrics': ['topk_1_10_100_cat_2', 'mrr'],
-    'validation_bs': 1,
+    'validation_bs': 64,
     'testing': {
         'how_many_words': 2000,
         'starting_words': "<comment> public static class"

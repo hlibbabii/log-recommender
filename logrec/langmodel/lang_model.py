@@ -76,9 +76,7 @@ def create_df(dir, percent, start_from):
     files_total = sum(f for f in file_mapper(dir, include_to_df_tester(percent, start_from),
                                              extension=None, ignore_prefix="_"))
 
-    DATAFRAME_LINES_THRESHOLD = 10 * 3
     cur_file = 0
-    at_least_one_frame_created = False
     for root, dirs, files in os.walk(dir):
         for file in files:
             with open(os.path.join(root, file), 'r') as f:
@@ -86,15 +84,9 @@ def create_df(dir, percent, start_from):
                     cur_file += 1
                     logger.info(f'Adding {os.path.join(root, file)} to dataframe [{cur_file} out of {files_total}]')
                     lines.extend([line for line in f])
-                    if len(lines) > DATAFRAME_LINES_THRESHOLD:
-                        yield pandas.DataFrame(lines)
-                        lines = []
-                        at_least_one_frame_created = True
-    if lines:
-        yield pandas.DataFrame(lines)
-        at_least_one_frame_created = True
-    if not at_least_one_frame_created:
+    if not lines:
         raise ValueError(f"No data available: {os.path.abspath(dir)}")
+    return pandas.DataFrame(lines)
 
 
 def get_model(model_name, nn_arch, percent, start_from):
@@ -103,15 +95,20 @@ def get_model(model_name, nn_arch, percent, start_from):
     path_to_model = os.path.join(path_to_dataset, model_name)
 
     train_df_path = os.path.join(path_to_dataset, TRAIN_DIR)
+    train_df= create_df(train_df_path, percent, start_from)
+
     test_df_path = os.path.join(path_to_dataset, TEST_DIR)
+    test_df = create_df(test_df_path, percent, start_from)
+
     valid_df_path = os.path.join(path_to_dataset, VALID_DIR)
     if not os.path.exists(valid_df_path):
         valid_df_path = test_df_path
+    valid_df = create_df(valid_df_path, percent, start_from)
 
     text_field = data.Field()
     languageModelData = LanguageModelData.from_dataframes(path_to_model,
-                                                          text_field, 0, create_df_creator(percent, start_from),
-                                                          train_df_path, valid_df_path, test_df_path,
+                                                          text_field, 0,
+                                                          train_df, valid_df, test_df,
                                                           bs=nn_arch["bs"], validation_bs=params.nn_params["validation_bs"],
                                                           bptt=nn_arch["bptt"],
                                                           min_freq=nn_arch["min_freq"]
@@ -363,8 +360,8 @@ def run(params):
 
     path_to_dataset = os.path.abspath(os.path.join(params.nn_params["path_to_data"], params.nn_params["dataset_name"]))
 
-    percent = params.nn_params['percent']
-    start_from = params.nn_params['start_from']
+    percent = float(params.nn_params['percent'])
+    start_from = float(params.nn_params['start_from'])
     if "base_model" in params.nn_params:
         base_model_name = params.nn_params["base_model"]
         path_to_best_model = os.path.join(path_to_dataset, base_model_name, MODELS_DIR,
