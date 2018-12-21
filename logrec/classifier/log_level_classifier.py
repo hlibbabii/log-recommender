@@ -130,7 +130,7 @@ def show_tests(path_to_test_set, m, text_field):
             for context, level in zip(c_file, l_file):
                 if counter >= EXAMPLES_TO_SHOW:
                     return
-                output_predictions(m, text_field, LEVEL_LABEL, context.rstrip("\n"), 3)
+                output_predictions(m, text_field, LEVEL_LABEL, context.rstrip("\n"), 2)
                 counter += 1
         except FileNotFoundError:
             project_name = c_filename[:-len(ContextsDataset.FW_CONTEXTS_FILE_EXT)]
