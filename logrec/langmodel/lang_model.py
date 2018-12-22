@@ -123,7 +123,7 @@ def get_model(model_name, nn_arch, percent, start_from):
                                               wdrop=nn_arch['drop']['w'],
                                               dropoute=nn_arch['drop']['oute'],
                                               dropouth=nn_arch['drop']['outh'],
-                                              text_field=text_field)
+                                              text_field=text_field, bidir=bool(nn_arch['bidir']))
     rnn_learner.reg_fn = partial(seq2seq_reg, alpha=nn_arch['reg_fn']['alpha'], beta=nn_arch['reg_fn']['beta'])
     rnn_learner.clip = nn_arch['clip']
 

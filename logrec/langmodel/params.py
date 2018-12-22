@@ -7,6 +7,7 @@ nn_params = {
     'percent': '1',
     'start_from': '0',
     'arch': {
+        'bidir': 0,
         'bs': 16,
         'bptt': 10,
         'em_sz': 300,  # size of each embedding vector
