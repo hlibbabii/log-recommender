@@ -94,13 +94,13 @@ def get_text_classifier_model(text_field, level_label, path_to_log_location_data
         base_lr])
 
     rnn_learner.freeze_to(-1)
-    rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=1, n_cycle=1, cycle_mult=1
+    rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=3, n_cycle=1, cycle_mult=2
                     # file=f"{path_to_model}/training.log"
                     )
-    # rnn_learner.freeze_to(-2)
-    # rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=1, n_cycle=1)
-    # rnn_learner.unfreeze()
-    # rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=1, n_cycle=1)
+    rnn_learner.freeze_to(-2)
+    rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=2, n_cycle=1, cycle_mult=2)
+    rnn_learner.unfreeze()
+    rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=1, n_cycle=1)
 
     # logger.info(f'Current accuracy is ...')
     # logger.info(f'                    ... {accuracy_gen(*rnn_learner.predict_with_targs())}')
