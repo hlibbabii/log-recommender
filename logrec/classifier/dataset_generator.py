@@ -16,9 +16,7 @@ CLASSIFICATION_TYPE = "location"
 logger = logging.getLogger(__name__)
 
 
-def create_case(list_of_words, indices):
-    position = random.choice(indices)
-
+def create_case(list_of_words, position):
     before = list_of_words[max(0, position - WORDS_IN_CONTEXT_LIMIT):position]
     before = (['<pad>'] * (WORDS_IN_CONTEXT_LIMIT - len(before))) + before
 
@@ -34,18 +32,23 @@ def create_negative_case(list_of_words):
     - after {
     - after {
     '''
-    symbol_to_insert_after = random.choices(['{', '}', ';'], [0.25, 0.25, 0.5])[0]
-    indices = [i for i, x in enumerate(list_of_words) if x == symbol_to_insert_after]
-    if not indices:
-        indices = [random.randint(0, len(list_of_words))]
-    return create_case(list_of_words, indices)
+    symbol_to_insert_after = ['{', '}', ';']
+    indices = [i + 1 for i, x in enumerate(list_of_words) if x in symbol_to_insert_after]
+    if indices:
+        position = random.choice(indices)
+        list_of_words.insert(position, 'fake log st')
+    else:
+        position = random.randint(0, len(list_of_words))
+    return create_case(list_of_words, position)
 
 
 def create_positive_case(list_of_words):
     indices = [i for i, x in enumerate(list_of_words) if x == placeholders['log_statement']]
-    if not indices:
+    if indices:
+        position = random.choice(indices)
+    else:
         raise AssertionError("")
-    return create_case(list_of_words, indices)
+    return create_case(list_of_words, position)
 
 
 def do(filename):
