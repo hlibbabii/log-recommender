@@ -10,6 +10,7 @@ import torch
 from fastai.lm_rnn import seq2seq_reg
 from fastai.metrics import accuracy
 from fastai.nlp import TextData
+from logrec.classifier.classifier import printGPUInfo
 from logrec.classifier.classifier_params import LEVEL_LABEL, params
 from logrec.classifier.context_datasets import ContextsDataset
 from logrec.classifier.dataset_generator import WORDS_IN_CONTEXT_LIMIT
@@ -151,6 +152,7 @@ def run():
     path_to_log_location_data = params['path_to_classification_data']
     dataset_name = params['dataset_name']
     base_model = params['base_model']
+    printGPUInfo()
 
     path_to_langmodel_data = os.path.join(path_to_log_location_data, '..', '..', REPR_DIR)
     clas9n_dataset_name = PrepParamsParser.to_classification_prep_params(dataset_name)
@@ -160,6 +162,8 @@ def run():
     learner = get_text_classifier_model(text_field, LEVEL_LABEL, path_to_log_location_dataset, dataset_name,
                                         base_model=base_model, threshold=params['threshold'])
 
+    logger.info(f"Saving model: {base_model}")
+    learner.save(base_model)
     m = learner.model
     to_test_mode(m)
 
