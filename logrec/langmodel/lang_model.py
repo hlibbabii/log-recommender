@@ -312,7 +312,8 @@ def train_model(rnn_learner, path_to_dataset, dataset_name, model_name, nn_arch,
                                         cycle_len=nn_arch['cycle']['len'], cycle_mult=nn_arch['cycle']['mult'],
                                         metrics=list(map(lambda x: getattr(metrics, x), nn_arch['training_metrics'])),
                                         cycle_save_name=dataset_name, get_ep_vals=True,
-                                        best_save_name=f'{dataset_name}_best', file=f"{path_to_model}/training.log",
+                                        file=open(training_log_file, 'w'),
+                                        best_save_name=f'{dataset_name}_best',
                                         valid_func=partial(validate_with_cache, get_full_word_func)
                                         )
         training_time_mins = int(time() - training_start_time) // 60
