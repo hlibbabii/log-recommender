@@ -192,7 +192,7 @@ class FS(object):
         learner.save_encoder('encoder')
 
     def save_best(self, learner):
-        learner.save(f'{self._dataset}_best')
+        learner.save(f'best')
 
     def load_best(self, learner) -> bool:
         try:
