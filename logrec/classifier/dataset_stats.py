@@ -5,9 +5,10 @@ import re
 from collections import defaultdict
 
 from logrec.classifier.context_datasets import ContextsDataset, IGNORED_PROJECTS_FILE_NAME, get_dir_and_file
-from logrec.classifier.dataset_generator import CLASSIFICATION_DIR_NAME, CLASSIFICATION_TYPE
+from logrec.classifier.log_position_classifier import CLASSIFICATION_TYPE
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.dataprep.util import merge_dicts_
+from logrec.infrastructure.fs import CLASSIFICATION_DIR_NAME
 from logrec.util import io_utils
 from logrec.util.io_utils import file_mapper
 

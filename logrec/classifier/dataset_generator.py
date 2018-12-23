@@ -4,14 +4,15 @@ import os
 import random
 import re
 
+CLASSIFICATION_TYPE = 'location'
+
 from logrec.classifier.context_datasets import ContextsDataset, get_dir_and_file, WORDS_IN_CONTEXT_LIMIT
 from logrec.dataprep import REPR_DIR, TRAIN_DIR, TEST_DIR, VALID_DIR
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
+from logrec.infrastructure.fs import CLASSIFICATION_DIR_NAME
 from logrec.util.io_utils import file_mapper
 
-CLASSIFICATION_DIR_NAME = "classification"
-CLASSIFICATION_TYPE = "location"
 
 logger = logging.getLogger(__name__)
 

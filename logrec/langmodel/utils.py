@@ -1,7 +1,7 @@
 import logging
 import os
 
-from fastai.core import to_np, to_gpu, F
+from fastai.core import to_np, to_gpu, F, USE_GPU
 from fastai.metrics import top_k, MRR
 
 import torch
@@ -105,3 +105,9 @@ def attach_dataset_aware_handlers_to_loggers(name, main_log_name):
     formatter = logging.Formatter("%(levelname)s - %(asctime)s :%(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
+
+
+def printGPUInfo():
+    logger.info("Using GPU: " + str(USE_GPU))
+    if USE_GPU:
+        logger.info("Number of GPUs available: " + str(torch.cuda.device_count()))

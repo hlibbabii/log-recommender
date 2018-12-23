@@ -1,8 +1,8 @@
-import json
 import os
 from collections import defaultdict
 
 import deepdiff
+import jsons
 
 PARAM_FILE_NAME = 'params.json'
 DEEPDIFF_ADDED = 'dictionary_item_added'
@@ -10,7 +10,7 @@ DEEPDIFF_REMOVED = 'dictionary_item_removed'
 DEEPDIFF_CHANGED = 'values_changed'
 
 
-def find_most_similar_config(percent_prefix, path_to_dataset, current_config):
+def find_most_similar_config(percent_prefix: str, path_to_dataset: str, current_config):
     config_diff_dict = defaultdict(list)
     for (dirpath, dirnames, filenames) in os.walk(path_to_dataset):
         for dirname in dirnames:
@@ -19,7 +19,8 @@ def find_most_similar_config(percent_prefix, path_to_dataset, current_config):
             file_path = os.path.join(dirpath, dirname, PARAM_FILE_NAME)
             if os.path.exists(file_path):
                 with open(file_path, 'r') as f:
-                    config = json.load(f)
+                    json_str = f.read()
+                    config = jsons.loads(json_str)
                 config_diff = deepdiff.DeepDiff(config, current_config)
                 if config_diff == {}:
                     return dirname, {}
