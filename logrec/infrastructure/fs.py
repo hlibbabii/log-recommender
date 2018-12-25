@@ -14,13 +14,19 @@ from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.infrastructure.config_manager import find_most_similar_config, find_name_for_new_config
 from logrec.infrastructure.fractions_manager import normalize_percent_data
 from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR
-from logrec.param.model import Data, Arch
+from logrec.param.model import Data, TrainingConfig
 from logrec.util import io_utils
 
 logger = logging.getLogger(__name__)
 
-CLASSIFICATION_DIR_NAME = "classification"
-
+CLASSIFICATION_DIR_NAME = 'classification'
+EXTRATRAINED_SUFFIX = '_extratrained'
+BASELINE_NAME = 'baseline'
+BEST_MODEL_NAME = 'best'
+BEST_BASE_MODEL_NAME = 'best_base'
+ENCODER_NAME = 'encoder'
+LM_ENCODER_NAME = 'lm_encoder'
+LAST_MODEL_NAME = 'last'
 
 class FS(object):
     def __init__(self, dataset: str, repr: str, base_model: str, classification_type: Optional[str] = None):
@@ -71,9 +77,14 @@ class FS(object):
     @property
     def path_to_best_base_model(self):
         if not self._base_model:
-            raise ValueError("Base model is not set!")
+            raise ValueError('Base model is not set!')
 
-        return os.path.join(self.path_to_lang_model_dataset, self._base_model, MODELS_DIR, f'{self._dataset}_best.h5')
+        path_to_base_langmodel = os.path.join(self.path_to_lang_model_dataset, self._base_model)
+        if not os.path.exists(path_to_base_langmodel):
+            logger.error(f'Base model {self._base_model} does not exist')
+            exit(321)
+
+        return os.path.join(path_to_base_langmodel, MODELS_DIR, f'{BEST_MODEL_NAME}.h5')
 
     @property
     def path_to_langmodel(self):
@@ -114,34 +125,32 @@ class FS(object):
 
     ######################################
 
-    def _get_non_existent_model_name(self):
-        model_name = self._base_model + "_extratrained"
-        while os.path.exists(os.path.join(self.path_to_lang_model_dataset, model_name)):
-            model_name = model_name + "_"
-        return model_name
+    @staticmethod
+    def _get_non_existent_file_name(path, basename):
+        while os.path.exists(os.path.join(path, basename)):
+            basename = basename + "_"
+        return basename
 
-    def _get_model_name_by_params(self, data: Data, arch: Arch):
+    def _get_model_name_by_params(self, data: Data, training_config: TrainingConfig):
         normalized_percent, normalized_start_from = normalize_percent_data(data.percent, data.start_from)
         percent_prefix = f"{normalized_percent}_{'' if normalized_start_from == '0' else (normalized_start_from + '_')}"
         most_similar_model_name, config_diff = find_most_similar_config(percent_prefix, self.path_to_lang_model_dataset,
-                                                                        arch)
+                                                                        training_config)
         if config_diff == {}:
-            model_name = most_similar_model_name
+            logger.info(f'Model with identical params found: {most_similar_model_name}')
+            return most_similar_model_name
         else:  # nn wasn't run with this config yet
-            name = find_name_for_new_config(percent_prefix,
-                                            config_diff) if most_similar_model_name is not None else f"{percent_prefix}baseline"
-            path_to_model = os.path.join(self.path_to_lang_model_dataset, name)
-            while os.path.exists(path_to_model):
-                name = name + "_"
-                path_to_model = os.path.join(self.path_to_lang_model_dataset, name)
-            model_name = name
-        return model_name
+            name = find_name_for_new_config(percent_prefix, config_diff) \
+                if most_similar_model_name is not None \
+                else f"{percent_prefix}{BASELINE_NAME}"
+            return FS._get_non_existent_file_name(self.path_to_lang_model_dataset, name)
 
-    def create_and_get_path_to_model(self, data: Data, arch: Arch):
+    def create_and_get_path_to_model(self, data: Data, training_config: TrainingConfig):
         if self._base_model:
-            model_name = self._get_non_existent_model_name()
+            model_name = FS._get_non_existent_file_name(self.path_to_lang_model_dataset,
+                                                        self._base_model + EXTRATRAINED_SUFFIX)
         else:
-            model_name = self._get_model_name_by_params(data, arch)
+            model_name = self._get_model_name_by_params(data, training_config)
         self._model_name = model_name
         path_to_model = os.path.join(self.path_to_lang_model_dataset, model_name)
         if not os.path.exists(path_to_model):
@@ -177,38 +186,39 @@ class FS(object):
         return f'{self._dataset}.{self.repr}.{self._model_name}'
 
     def copy_best_base_model(self):
-        path_to_model_best_base = os.path.join(self.path_to_classification_model, MODELS_DIR, f'best_base.h5')
+        path_to_langmodel_models = os.path.join(self.path_to_langmodel, MODELS_DIR)
+        if not os.path.exists(path_to_langmodel_models):
+            os.mkdir(path_to_langmodel_models)
+        path_to_model_best_base = os.path.join(path_to_langmodel_models, f'{BEST_BASE_MODEL_NAME}.h5')
         try:
             logger.info(f"Copying from {self.path_to_best_base_model} to {path_to_model_best_base}")
             copyfile(self.path_to_best_base_model, path_to_model_best_base)
-        except IOError:
+        except IOError as err:
             logger.error("Error copying file!")
-            exit(1)
+            raise err
 
     def save(self, learner):
-        learner.save(self._dataset)
+        learner.save(LAST_MODEL_NAME)
 
     def save_encoder(self, learner):
-        learner.save_encoder('encoder')
+        learner.save_encoder(ENCODER_NAME)
 
     def save_best(self, learner):
-        learner.save(f'best')
+        learner.save(BEST_MODEL_NAME)
 
     def load_best(self, learner) -> bool:
         try:
-            learner.load('best')
+            learner.load(BEST_MODEL_NAME)
             return True
         except FileNotFoundError:
-            logger.info(f"Best model not found")
             return False
 
     def load_best_base(self, rnn_learner) -> bool:
         try:
-            rnn_learner.load(f'{self._dataset}_best_base')
+            rnn_learner.load(BEST_BASE_MODEL_NAME)
             logger.info("Base model detected and loaded")
             return True
         except FileNotFoundError:
-            logger.info(f"Base model not found")
             return False
 
     def load_text_field(self):
@@ -217,4 +227,4 @@ class FS(object):
     def load_pretrained_langmodel(self, rnn_learner: RNN_Learner) -> None:
         logger.info(f"Copying {self.path_to_langmodel_encoder} to {self.path_to_classifier_encoder}")
         shutil.copy(self.path_to_langmodel_encoder, self.path_to_classifier_encoder)
-        rnn_learner.load_encoder('lm_encoder')
+        rnn_learner.load_encoder(LM_ENCODER_NAME)

@@ -4,10 +4,18 @@ from collections import defaultdict
 import deepdiff
 import jsons
 
+from logrec.param.model import TrainingConfig
+
 PARAM_FILE_NAME = 'params.json'
 DEEPDIFF_ADDED = 'dictionary_item_added'
 DEEPDIFF_REMOVED = 'dictionary_item_removed'
 DEEPDIFF_CHANGED = 'values_changed'
+
+
+def save_config(config, path_to_model):
+    with open(os.path.join(path_to_model, PARAM_FILE_NAME), 'w') as f:
+        json_str = jsons.dumps(config)
+        f.write(json_str)
 
 
 def find_most_similar_config(percent_prefix: str, path_to_dataset: str, current_config):
@@ -20,7 +28,7 @@ def find_most_similar_config(percent_prefix: str, path_to_dataset: str, current_
             if os.path.exists(file_path):
                 with open(file_path, 'r') as f:
                     json_str = f.read()
-                    config = jsons.loads(json_str)
+                    config = jsons.loads(json_str, TrainingConfig)
                 config_diff = deepdiff.DeepDiff(config, current_config)
                 if config_diff == {}:
                     return dirname, {}
@@ -36,8 +44,8 @@ def find_most_similar_config(percent_prefix: str, path_to_dataset: str, current_
 
 
 def extract_last_key(keys):
-    last_apostrophe = keys.rindex('\'')
-    return keys[keys[:last_apostrophe].rindex('\'') + 1:last_apostrophe]
+    last_dot = keys.rindex('.')
+    return keys[last_dot + 1:]
 
 
 def find_name_for_new_config(percent_prefix, config_diff):

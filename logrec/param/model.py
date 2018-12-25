@@ -1,4 +1,4 @@
-from typing import Sequence, Optional
+from typing import Optional, List
 
 
 class Droupouts(object):
@@ -24,7 +24,7 @@ class Cycle(object):
 
 
 class Training(object):
-    def __init__(self, cycle: Cycle, metrics: Sequence[str], lr: float, wds: float):
+    def __init__(self, cycle: Cycle, metrics: List[str], lr: float, wds: float):
         self.cycle = cycle
         self.metrics = metrics
         self.lr = lr
@@ -32,7 +32,7 @@ class Training(object):
 
 
 class Validation(object):
-    def __init__(self, bs: int, metrics: Sequence[str]):
+    def __init__(self, bs: int, metrics: List[str]):
         self.bs = bs
         self.metrics = metrics
 
@@ -53,7 +53,7 @@ class Data(object):
 
 class Arch(object):
     def __init__(self, bidir: bool, bs: int, bptt: int, em_sz: int, nh: int, nl: int, min_freq: int,
-                 betas: Sequence[float],
+                 betas: List[float],
                  clip: float, reg_fn: RegFn, drop: Droupouts):
         self.bidir = bidir
         self.bs = bs
@@ -78,6 +78,9 @@ class LangModelTrainingParams(object):
         self.validation = validation
         self.testing = testing
 
+    @property
+    def training_config(self):
+        return TrainingConfig(arch=self.arch, training=self.training)
 
 class LangModelLrLearningParams(object):
     def __init__(self, data: Data, base_model: Optional[str], arch: Arch):
@@ -97,3 +100,13 @@ class ClassifierTrainingParams(object):
         self.testing = testing
         self.threshold = threshold
         self.classification_type = classification_type
+
+    @property
+    def training_config(self):
+        return TrainingConfig(arch=self.arch, training=self.training)
+
+
+class TrainingConfig(object):
+    def __init__(self, arch: Arch, training: Training):
+        self.arch = arch
+        self.training = training

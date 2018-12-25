@@ -1,4 +1,5 @@
 import logging
+from argparse import ArgumentParser
 from functools import partial
 
 import numpy as np
@@ -11,7 +12,8 @@ from fastai.metrics import accuracy
 from fastai.nlp import TextData, RNN_Learner
 from logrec.classifier.context_datasets import ContextsDataset
 from logrec.classifier.dataset_generator import WORDS_IN_CONTEXT_LIMIT
-from logrec.infrastructure.fs import FS
+from logrec.infrastructure import config_manager
+from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
 from logrec.langmodel.lang_model import printGPUInfo
 from logrec.langmodel.utils import to_test_mode, output_predictions
 from logrec.param.model import Arch, Training
@@ -48,17 +50,19 @@ def get_text_classifier_model(fs: FS, text_field: Field, level_label: Field, arc
     logger.info(f'Dictionary size is: {len(text_field.vocab.itos)}')
     logger.info(rnn_learner)
 
+    logger.info("Checking if pretrained classifier exists...")
     model_loaded = fs.load_best(rnn_learner)
+    logger.info('Pretrained classifier is found and loaded.')
     if not model_loaded:
-        logger.warning(f"Pretrained classifier model not found.")
+        logger.info(f"Pretrained classifier model not found. Loading pretrained langmodel...")
         fs.load_pretrained_langmodel(rnn_learner)
 
     rnn_learner.clip = 25.
 
-    return rnn_learner
+    return rnn_learner, model_loaded
 
 
-def train(rnn_learner: RNN_Learner, training: Training):
+def train(fs: FS, rnn_learner: RNN_Learner, training: Training):
     base_lr = 1e-3
     factor = 2.6
     lrs = np.array([
@@ -69,7 +73,9 @@ def train(rnn_learner: RNN_Learner, training: Training):
         base_lr])
 
     rnn_learner.freeze_to(-1)
-    rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=3, n_cycle=1, cycle_mult=2
+    rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=3, n_cycle=1, cycle_mult=1,
+                    best_save_name=BEST_MODEL_NAME,
+                    cycle_save_name=''
                     # file=f"{path_to_model}/training.log"
                     )
     # rnn_learner.freeze_to(-2)
@@ -81,8 +87,7 @@ def train(rnn_learner: RNN_Learner, training: Training):
     # logger.info(f'                    ... {accuracy_gen(*rnn_learner.predict_with_targs())}')
     # rnn_learner.sched.plot_loss()
 
-    # logger.info(f'Saving classifier: {base_classifier}')
-    # rnn_learner.save(model_name)
+    fs.save(rnn_learner)
 
     return rnn_learner
 
@@ -119,7 +124,7 @@ def show_tests(path_to_test_set, m, text_field):
                 l_file.close()
 
 
-def run():
+def run(force_rerun: bool):
     base_model = classifier_training_param.base_model
 
     fs = FS(classifier_training_param.data.dataset, classifier_training_param.data.repr, base_model,
@@ -127,16 +132,24 @@ def run():
     printGPUInfo()
 
     text_field = fs.load_text_field()
-    learner = get_text_classifier_model(fs, text_field, LEVEL_LABEL, classifier_training_param.arch,
-                                        threshold=classifier_training_param.threshold)
+    learner, classifier_model_trained = get_text_classifier_model(fs, text_field, LEVEL_LABEL,
+                                                                  classifier_training_param.arch,
+                                                                  threshold=classifier_training_param.threshold)
 
-    learner = train(learner, classifier_training_param.training)
-    logger.info(f"Saving model: {base_model}")
-    learner.save(base_model)
-    m = learner.model
-    to_test_mode(m)
+    if classifier_model_trained and not force_rerun:
+        logger.info(f'Model {fs.path_to_classification_model} already trained. Not rerunning training.')
+        return
+    elif classifier_model_trained:
+        logger.info(f"Forcing rerun")
 
-    show_tests(fs.classification_test_path, m, text_field)
+    config_manager.save_config(classifier_training_param.training_config, fs.path_to_classification_model)
+
+    train(fs, learner, classifier_training_param.training)
+
+    model = learner.model
+
+    to_test_mode(model)
+    show_tests(fs.classification_test_path, model, text_field)
 
     # plotting confusion matrix
     # preds = np.argmax(probs, axis=1)
@@ -147,4 +160,7 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    parser = ArgumentParser()
+    parser.add_argument('--force-rerun', action='store_const', const=True, default=False)
+    args = parser.parse_args(['--force-rerun'])
+    run(args.force_rerun)

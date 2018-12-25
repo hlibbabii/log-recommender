@@ -8,9 +8,9 @@ from torchtext.data import Field
 from fastai.model import validate
 from logrec.dataprep import base_project_dir
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser, PreprocessingParam
+from logrec.infrastructure import config_manager
 from logrec.infrastructure.fractions_manager import create_df
-from logrec.infrastructure.fs import FS
-from logrec.infrastructure.config_manager import PARAM_FILE_NAME
+from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
 from logrec.langmodel.cache import validate_with_cache
 from logrec.langmodel.fullwordfinder import get_subword, get_curr_seq_new, get_curr_seq
 from logrec.param.model import Data, Arch, Training, Testing
@@ -121,10 +121,10 @@ def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: Training):
         vals, ep_vals = rnn_learner.fit(lrs=training.lr, n_cycle=training.cycle.n, wds=training.wds,
                                         cycle_len=training.cycle.len, cycle_mult=training.cycle.mult,
                                         metrics=list(map(lambda x: getattr(metrics, x), training.metrics)),
-                                        cycle_save_name='cycle', get_ep_vals=True,
+                                        cycle_save_name='', get_ep_vals=True,
                                         file=open(training_log_file, 'w'),
-                                        best_save_name=f'best',
-                                        valid_func=partial(validate_with_cache, get_full_word_func)
+                                        best_save_name=BEST_MODEL_NAME,
+                                        valid_func=validate
                                         )
         training_time_mins = int(time() - training_start_time) // 60
         with open(os.path.join(fs.path_to_langmodel, 'results.out'), 'w') as f:
@@ -143,7 +143,7 @@ def run(find_lr: bool, force_rerun: bool):
     params = langmodel_lr_learning_params if find_lr else langmodel_training_params
     fs = FS(params.data.dataset, params.data.repr, params.base_model)
 
-    path_to_model = fs.create_and_get_path_to_model(params.data, params.arch)
+    path_to_model = fs.create_and_get_path_to_model(params.data, params.training_config)
     attach_dataset_aware_handlers_to_loggers(path_to_model, 'main.log')
 
     printGPUInfo()
@@ -160,9 +160,8 @@ def run(find_lr: bool, force_rerun: bool):
     elif model_trained:
         logger.info(f"Forcing rerun")
 
-    with open(os.path.join(path_to_model, PARAM_FILE_NAME), 'w') as f:
-        json_str = jsons.dumps({'arch': params.arch, 'training': params.training})
-        f.write(json_str)
+    config_manager.save_config(params.training_config, path_to_model)
+
     if find_lr:
         find_and_plot_lr(learner, fs)
     else:
@@ -176,8 +175,6 @@ def run(find_lr: bool, force_rerun: bool):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
     parser = ArgumentParser()
     parser.add_argument('--find-lr', action='store_const', const=True, default=False)
     parser.add_argument('--force-rerun', action='store_const', const=True, default=False)

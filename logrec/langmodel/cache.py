@@ -31,7 +31,7 @@ def validate_with_cache(get_full_word_func, stepper, dl, metrics, epoch, seq_fir
             # y - Variable(x2...,xn, xn+1)
             batch_size = x[0].size(1)
             if batch_size != 1:
-                raise ValueError("For now only batch v  vfrsize 1 is supported for validation with cache")
+                raise ValueError("For now only batch size 1 is supported for validation with cache")
             preds, raw_outputs, l, targets = stepper.evaluate_with_cache(VV(x), VV(y))
             # preds [bptt x vocab size] Variable
             # raw_outputs [Variables[bptt x batch size x layer size], ...] - list, size: number of layers
