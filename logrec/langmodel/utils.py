@@ -30,15 +30,15 @@ def output_predictions(m, input_field, output_field, starting_text, how_many, fi
     print(text)
 
 
-def gen_text(m, text_field, starting_words, how_many_to_gen):
+def gen_text(learner, starting_words, how_many_to_gen):
     text = ''
-    t = to_gpu(text_field.numericalize([starting_words.split()], -1))
-    res, *_ = m(t)
+    t = to_gpu(learner.text_field.numericalize([starting_words.split()], -1))
+    res, *_ = learner.model(t)
     for i in range(how_many_to_gen):
         n = torch.multinomial(res[-1].exp(), 1)
         # n = n[1] if n.data[0] == 0 else n[0]
-        text += text_field.vocab.itos[n.data[0]] + ' '
-        res, *_ = m(n[0].unsqueeze(0))
+        text += learner.text_field.vocab.itos[n.data[0]] + ' '
+        res, *_ = learner.model(n[0].unsqueeze(0))
     text += '...'
     return text
 

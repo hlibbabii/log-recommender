@@ -1,6 +1,6 @@
 from logrec.local_properties import DEFAULT_DATASET
-from logrec.param.model import Droupouts, RegFn, Cycle, Training, Validation, Testing, Data, Arch, \
-    LangModelTrainingParams, LangModelLrLearningParams, ClassifierTrainingParams
+from logrec.param.model import Droupouts, RegFn, Cycle, LangmodelTraining, Validation, Testing, Data, Arch, \
+    LangModelTrainingParams, LangModelLrLearningParams, ClassifierTrainingParams, ClassifierTraining, Stage
 
 data = Data(
     dataset=DEFAULT_DATASET,
@@ -29,16 +29,18 @@ langmodel_lr_learning_params = LangModelLrLearningParams(
     arch=arch
 )
 
+langmodel_training = LangmodelTraining(
+    metrics=['accuracy', 'mrr'],
+    lr=1.1e-3,
+    wds=1e-6,
+    cycle=Cycle(n=0, len=1, mult=2),
+)
+
 langmodel_training_params = LangModelTrainingParams(
     data=data,
     base_model=None,
     arch=arch,
-    training=Training(
-        cycle=Cycle(n=1, len=1, mult=2),
-        metrics=['accuracy', 'mrr'],
-        lr=1e-3,
-        wds=1e-6,
-    ),
+    langmodel_training=langmodel_training,
     validation=Validation(
         bs=64,
         metrics=['accuracy', 'mrr']
@@ -49,15 +51,29 @@ langmodel_training_params = LangModelTrainingParams(
     )
 )
 
+base_lr = 1e-3
+factor = 2.6
+
 classifier_training_param = ClassifierTrainingParams(
     data=data,
-    base_model='1_baseline',
+    pretrained_model='1_baseline',
+    base_model='1_baseline$baseline',
     arch=arch,
-    training=Training(
-        cycle=Cycle(n=1, len=1, mult=2),
+    langmodel_training=langmodel_training,
+    classifier_training=ClassifierTraining(
         metrics=['accuracy', 'mrr'],
-        lr=1e-3,
-        wds=1e-6,
+        lrs=[base_lr / factor ** 4,
+             base_lr / factor ** 3,
+             base_lr / factor ** 2.5,
+             base_lr / factor,
+             base_lr
+             ],
+        wds=1.1e-6,
+        stages=[
+            Stage(-1, Cycle(len=0, n=1, mult=1)),
+            Stage(-1, Cycle(len=0, n=1, mult=1))
+        ]
+
     ),
     validation=Validation(
         bs=64,

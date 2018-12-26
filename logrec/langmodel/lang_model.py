@@ -1,4 +1,3 @@
-import jsons
 from argparse import ArgumentParser
 from time import time
 
@@ -6,14 +5,13 @@ import matplotlib
 from torchtext.data import Field
 
 from fastai.model import validate
-from logrec.dataprep import base_project_dir
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser, PreprocessingParam
 from logrec.infrastructure import config_manager
 from logrec.infrastructure.fractions_manager import create_df
 from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
 from logrec.langmodel.cache import validate_with_cache
 from logrec.langmodel.fullwordfinder import get_subword, get_curr_seq_new, get_curr_seq
-from logrec.param.model import Data, Arch, Training, Testing
+from logrec.param.model import Data, Arch, LangmodelTraining, Testing
 from logrec.param.templates import langmodel_training_params, langmodel_lr_learning_params
 
 matplotlib.use('Agg')
@@ -38,7 +36,7 @@ LEVEL_LABEL = data.Field(sequential=False)
 logger = logging.getLogger(__name__)
 
 
-def get_best_available_model(fs: FS, data: Data, arch: Arch, validation_bs: int):
+def create_nn_architecture(fs: FS, data: Data, arch: Arch, validation_bs: int) -> RNN_Learner:
     train_df_path = fs.train_path
     train_df = create_df(train_df_path, data.percent, data.start_from)
 
@@ -72,21 +70,28 @@ def get_best_available_model(fs: FS, data: Data, arch: Arch, validation_bs: int)
     rnn_learner.reg_fn = partial(seq2seq_reg, alpha=arch.reg_fn.alpha, beta=arch.reg_fn.beta)
     rnn_learner.clip = arch.clip
 
+    return rnn_learner
+
+
+def get_best_available_model(fs: FS, data: Data, arch: Arch, validation_bs: int):
+    rnn_learner = create_nn_architecture(fs, data, arch, validation_bs)
     logger.info(rnn_learner)
 
+    logger.info("Checking if there exists a model with the same architecture")
     model_loaded = fs.load_best(rnn_learner)
-    # calculate_and_display_metrics(rnn_learner, nn_params['metrics'], text_field.vocab)
-    if not model_loaded:
-        # TODO why do we load this?
-        fs.load_best_base(rnn_learner)
+    if not model_loaded and fs.base_model_present:
+        # checking if there is a base model and trying to load it
+        loaded_base_model = fs.load_best_base_langmodel(rnn_learner)
+        if not loaded_base_model:
+            logger.info("Not using base model. Training model from scratch")
 
-    return rnn_learner, text_field, model_loaded
+    return rnn_learner, model_loaded
 
 
-def run_and_display_tests(model: SequentialRNN, text_field: Field, arch: Arch, testing: Testing, path_to_save=None):
-    to_test_mode(model)
+def run_and_display_tests(learner: RNN_Learner, arch: Arch, testing: Testing, path_to_save=None):
+    to_test_mode(learner.model)
 
-    text = gen_text(model, text_field, testing.starting_words, testing.how_many_words)
+    text = gen_text(learner, testing.starting_words, testing.how_many_words)
 
     beautified_text = beautify_text(text)
     if path_to_save:
@@ -97,7 +102,7 @@ def run_and_display_tests(model: SequentialRNN, text_field: Field, arch: Arch, t
         logger.info("==============    SAMPLE TEXT    ========================")
         logger.info(beautified_text)
 
-    back_to_train_mode(model, arch.bs)
+    back_to_train_mode(learner.model, arch.bs)
 
 
 def find_and_plot_lr(rnn_learner: RNN_Learner, fs: FS):
@@ -106,12 +111,11 @@ def find_and_plot_lr(rnn_learner: RNN_Learner, fs: FS):
     # for learning rate we should log to console
     rnn_learner.lr_find(file=open(os.path.join(fs.path_to_langmodel, 'training.log'), 'w'))
 
-    path = os.path.join(base_project_dir, 'lr_finder_plot.png')
-    rnn_learner.sched.plot(path)
-    logger.info(f"Plot is saved to {path}")
+    rnn_learner.sched.plot(fs.path_to_lr_plot)
+    logger.info(f"Plot is saved to {fs.path_to_lr_plot}")
 
 
-def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: Training):
+def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LangmodelTraining):
     split_repr = PrepParamsParser.from_encoded_string(fs.repr)[PreprocessingParam.NO_SEP]
     if training.cycle.n > 0:
         get_full_word_func = get_curr_seq if split_repr == 0 else get_curr_seq_new
@@ -143,35 +147,32 @@ def run(find_lr: bool, force_rerun: bool):
     params = langmodel_lr_learning_params if find_lr else langmodel_training_params
     fs = FS(params.data.dataset, params.data.repr, params.base_model)
 
-    path_to_model = fs.create_and_get_path_to_model(params.data, params.training_config)
-    attach_dataset_aware_handlers_to_loggers(path_to_model, 'main.log')
+    fs.create_path_to_langmodel(params.data, params.langmodel_training_config)
+    attach_dataset_aware_handlers_to_loggers(fs.path_to_langmodel, 'main.log')
 
     printGPUInfo()
-    if params.base_model:
-        fs.copy_best_base_model()
 
-    learner, text_field, model_trained = get_best_available_model(fs, params.data, params.arch, params.validation.bs)
+    learner, model_trained = get_best_available_model(fs, params.data, params.arch, params.validation_bs)
 
-    fs.save_vocab_data(text_field)
+    fs.save_vocab_data(learner.text_field)
 
     if model_trained and not force_rerun:
-        logger.info(f'Model {path_to_model} already trained. Not rerunning training.')
+        logger.info(f'Model {fs.path_to_langmodel} already trained. Not rerunning training.')
         return
     elif model_trained:
         logger.info(f"Forcing rerun")
 
-    config_manager.save_config(params.training_config, path_to_model)
+    config_manager.save_config(params.langmodel_training_config, fs.path_to_langmodel)
 
     if find_lr:
         find_and_plot_lr(learner, fs)
     else:
-        train_and_save_model(learner, fs, params.training)
+        train_and_save_model(learner, fs, params.langmodel_training)
         model_loaded = fs.load_best(learner)
         if not model_loaded:
             raise AssertionError("The best model should have been trained and saved!")
-        model = learner.model
-        gen_text_path = os.path.join(path_to_model, 'gen_text.out')
-        run_and_display_tests(model, text_field, params.arch, params.testing, gen_text_path)
+        gen_text_path = os.path.join(fs.path_to_langmodel, 'gen_text.out')
+        run_and_display_tests(learner, params.arch, params.testing, gen_text_path)
 
 
 if __name__ == '__main__':

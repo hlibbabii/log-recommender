@@ -23,12 +23,26 @@ class Cycle(object):
         self.mult = mult
 
 
-class Training(object):
-    def __init__(self, cycle: Cycle, metrics: List[str], lr: float, wds: float):
-        self.cycle = cycle
+class LangmodelTraining(object):
+    def __init__(self, metrics: List[str], lr: float, wds: float, cycle: Cycle):
         self.metrics = metrics
         self.lr = lr
         self.wds = wds
+        self.cycle = cycle
+
+
+class Stage(object):
+    def __init__(self, freeze_to: int, cycle: Cycle):
+        self.freeze_to = freeze_to
+        self.cycle = cycle
+
+
+class ClassifierTraining(object):
+    def __init__(self, metrics: List[str], lrs: List[float], wds: float, stages: List[Stage]):
+        self.metrics = metrics
+        self.lrs = lrs
+        self.wds = wds
+        self.stages = stages
 
 
 class Validation(object):
@@ -69,18 +83,26 @@ class Arch(object):
 
 
 class LangModelTrainingParams(object):
-    def __init__(self, data: Data, base_model: Optional[str], arch: Arch, training: Training, validation: Validation,
+    def __init__(self, data: Data, base_model: Optional[str], arch: Arch, langmodel_training: LangmodelTraining,
+                 validation: Validation,
                  testing: Testing):
         self.data = data
         self.base_model = base_model
         self.arch = arch
-        self.training = training
+        self.langmodel_training = langmodel_training
         self.validation = validation
         self.testing = testing
 
     @property
-    def training_config(self):
-        return TrainingConfig(arch=self.arch, training=self.training)
+    def validation_bs(self):
+        return self.validation.bs
+
+    @property
+    def langmodel_training_config(self):
+        return LangmodelTrainingConfig(arch=self.arch,
+                                       training=self.langmodel_training,
+                                       base_model=self.base_model)
+
 
 class LangModelLrLearningParams(object):
     def __init__(self, data: Data, base_model: Optional[str], arch: Arch):
@@ -88,25 +110,50 @@ class LangModelLrLearningParams(object):
         self.base_model = base_model
         self.arch = arch
 
+    @property
+    def validation_bs(self):
+        return self.arch.bs
+
+    @property
+    def langmodel_training_config(self):
+        return LangmodelTrainingConfig(arch=self.arch,
+                                       training=None,
+                                       base_model=self.base_model)
+
 
 class ClassifierTrainingParams(object):
-    def __init__(self, data: Data, base_model: Optional[str], arch: Arch, training: Training, validation: Validation,
+    def __init__(self, data: Data, base_model: Optional[str],
+                 pretrained_model: Optional[str], arch: Arch,
+                 langmodel_training: LangmodelTraining,
+                 classifier_training: ClassifierTraining, validation: Validation,
                  testing: Testing, threshold: float, classification_type: str):
         self.data = data
         self.base_model = base_model
+        self.pretrained_model = pretrained_model
         self.arch = arch
-        self.training = training
+        self.langmodel_training = langmodel_training
+        self.classifier_training = classifier_training
         self.validation = validation
         self.testing = testing
         self.threshold = threshold
         self.classification_type = classification_type
 
     @property
-    def training_config(self):
-        return TrainingConfig(arch=self.arch, training=self.training)
+    def classifier_training_config(self):
+        return ClassifierTrainingConfig(arch=self.arch,
+                                        training=self.classifier_training,
+                                        base_model=self.base_model)
 
 
-class TrainingConfig(object):
-    def __init__(self, arch: Arch, training: Training):
+class LangmodelTrainingConfig(object):
+    def __init__(self, arch: Arch, training: Optional[LangmodelTraining], base_model: Optional[str]):
         self.arch = arch
         self.training = training
+        self.base_model = base_model
+
+
+class ClassifierTrainingConfig(object):
+    def __init__(self, arch: Arch, training: ClassifierTraining, base_model: Optional[str]):
+        self.arch = arch
+        self.training = training
+        self.base_model = base_model

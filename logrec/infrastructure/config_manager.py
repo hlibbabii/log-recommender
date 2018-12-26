@@ -1,10 +1,11 @@
 import os
 from collections import defaultdict
+from typing import Union
 
 import deepdiff
 import jsons
 
-from logrec.param.model import TrainingConfig
+from logrec.param.model import LangmodelTrainingConfig, ClassifierTraining, ClassifierTrainingConfig
 
 PARAM_FILE_NAME = 'params.json'
 DEEPDIFF_ADDED = 'dictionary_item_added'
@@ -12,13 +13,14 @@ DEEPDIFF_REMOVED = 'dictionary_item_removed'
 DEEPDIFF_CHANGED = 'values_changed'
 
 
-def save_config(config, path_to_model):
+def save_config(config: Union[LangmodelTrainingConfig or ClassifierTrainingConfig], path_to_model: str):
     with open(os.path.join(path_to_model, PARAM_FILE_NAME), 'w') as f:
-        json_str = jsons.dumps(config)
+        json_str = jsons.dumps(config, indent=4)
         f.write(json_str)
 
 
-def find_most_similar_config(percent_prefix: str, path_to_dataset: str, current_config):
+def find_most_similar_config(percent_prefix: str, path_to_dataset: str,
+                             current_config: Union[LangmodelTrainingConfig or ClassifierTrainingConfig]):
     config_diff_dict = defaultdict(list)
     for (dirpath, dirnames, filenames) in os.walk(path_to_dataset):
         for dirname in dirnames:
@@ -28,7 +30,7 @@ def find_most_similar_config(percent_prefix: str, path_to_dataset: str, current_
             if os.path.exists(file_path):
                 with open(file_path, 'r') as f:
                     json_str = f.read()
-                    config = jsons.loads(json_str, TrainingConfig)
+                    config = jsons.loads(json_str, type(current_config))
                 config_diff = deepdiff.DeepDiff(config, current_config)
                 if config_diff == {}:
                     return dirname, {}

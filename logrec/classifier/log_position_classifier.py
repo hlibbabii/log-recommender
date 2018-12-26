@@ -2,21 +2,20 @@ import logging
 from argparse import ArgumentParser
 from functools import partial
 
-import numpy as np
 import torch
 from torchtext import data
 from torchtext.data import Field
 
 from fastai.lm_rnn import seq2seq_reg
-from fastai.metrics import accuracy
+from fastai import metrics
 from fastai.nlp import TextData, RNN_Learner
 from logrec.classifier.context_datasets import ContextsDataset
 from logrec.classifier.dataset_generator import WORDS_IN_CONTEXT_LIMIT
 from logrec.infrastructure import config_manager
 from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
 from logrec.langmodel.lang_model import printGPUInfo
-from logrec.langmodel.utils import to_test_mode, output_predictions
-from logrec.param.model import Arch, Training
+from logrec.langmodel.utils import to_test_mode, output_predictions, attach_dataset_aware_handlers_to_loggers
+from logrec.param.model import Arch, ClassifierTraining
 from logrec.param.templates import classifier_training_param
 from logrec.util.io_utils import file_mapper
 
@@ -29,7 +28,7 @@ LEVEL_LABEL = data.LabelField()
 CLASSIFICATION_TYPE = "location"
 
 
-def get_text_classifier_model(fs: FS, text_field: Field, level_label: Field, arch: Arch, threshold: float):
+def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, arch: Arch, threshold: float):
     splits = ContextsDataset.splits(text_field, level_label, fs.path_to_classification_dataset, threshold=threshold)
 
     text_data = TextData.from_splits(fs.path_to_classification_model, splits, arch.bs)
@@ -48,40 +47,38 @@ def get_text_classifier_model(fs: FS, text_field: Field, level_label: Field, arc
     rnn_learner.reg_fn = partial(seq2seq_reg, alpha=arch.reg_fn.alpha, beta=arch.reg_fn.beta)
 
     logger.info(f'Dictionary size is: {len(text_field.vocab.itos)}')
+    return rnn_learner
+
+
+def get_text_classifier_model(fs: FS, text_field: Field, level_label: Field, arch: Arch, threshold: float):
+    rnn_learner = create_nn_architecture(fs, text_field, level_label, arch, threshold)
     logger.info(rnn_learner)
 
-    logger.info("Checking if pretrained classifier exists...")
+    logger.info("Checking if there exists a model with the same architecture")
     model_loaded = fs.load_best(rnn_learner)
-    logger.info('Pretrained classifier is found and loaded.')
-    if not model_loaded:
-        logger.info(f"Pretrained classifier model not found. Loading pretrained langmodel...")
-        fs.load_pretrained_langmodel(rnn_learner)
+    if not model_loaded and fs.base_model_present:
+        # checking if there is a base model and trying to load it
+        base_model_loaded = fs.load_best_base_classifier(rnn_learner)
+        if not base_model_loaded:
+            logger.info("Not using base model. Loading pretrained lang model...")
+            fs.load_pretrained_langmodel(rnn_learner)
 
     rnn_learner.clip = 25.
 
     return rnn_learner, model_loaded
 
 
-def train(fs: FS, rnn_learner: RNN_Learner, training: Training):
-    base_lr = 1e-3
-    factor = 2.6
-    lrs = np.array([
-        base_lr / factor ** 4,
-        base_lr / factor ** 3,
-        base_lr / factor ** 2,
-        base_lr / factor,
-        base_lr])
-
-    rnn_learner.freeze_to(-1)
-    rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=3, n_cycle=1, cycle_mult=1,
-                    best_save_name=BEST_MODEL_NAME,
-                    cycle_save_name=''
-                    # file=f"{path_to_model}/training.log"
-                    )
-    # rnn_learner.freeze_to(-2)
-    # rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=2, n_cycle=1, cycle_mult=2)
-    # rnn_learner.unfreeze()
-    # rnn_learner.fit(lrs, metrics=[accuracy], cycle_len=1, n_cycle=1)
+def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining):
+    for stage in training.stages:
+        cycle = stage.cycle
+        rnn_learner.freeze_to(stage.freeze_to)
+        rnn_learner.fit(lrs=training.lrs,
+                        metrics=list(map(lambda x: getattr(metrics, x), training.metrics)),
+                        wds=training.wds,
+                        cycle_len=cycle.len, n_cycle=cycle.n, cycle_mult=cycle.mult,
+                        best_save_name=BEST_MODEL_NAME, cycle_save_name='',
+                        file=open(f'{fs.path_to_classification_model}/training.log', 'w')
+                        )
 
     # logger.info(f'Current accuracy is ...')
     # logger.info(f'                    ... {accuracy_gen(*rnn_learner.predict_with_targs())}')
@@ -126,9 +123,15 @@ def show_tests(path_to_test_set, m, text_field):
 
 def run(force_rerun: bool):
     base_model = classifier_training_param.base_model
+    pretrained_model = classifier_training_param.pretrained_model
 
-    fs = FS(classifier_training_param.data.dataset, classifier_training_param.data.repr, base_model,
+    fs = FS(classifier_training_param.data.dataset, classifier_training_param.data.repr,
+            base_model=base_model, pretrained_model=pretrained_model,
             classification_type=CLASSIFICATION_TYPE)
+
+    fs.create_path_to_classifier(classifier_training_param.data, classifier_training_param.classifier_training_config)
+    attach_dataset_aware_handlers_to_loggers(fs.path_to_classification_model, 'main.log')
+
     printGPUInfo()
 
     text_field = fs.load_text_field()
@@ -142,9 +145,9 @@ def run(force_rerun: bool):
     elif classifier_model_trained:
         logger.info(f"Forcing rerun")
 
-    config_manager.save_config(classifier_training_param.training_config, fs.path_to_classification_model)
+    config_manager.save_config(classifier_training_param.classifier_training_config, fs.path_to_classification_model)
 
-    train(fs, learner, classifier_training_param.training)
+    train(fs, learner, classifier_training_param.classifier_training)
 
     model = learner.model
 
@@ -162,5 +165,5 @@ def run(force_rerun: bool):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--force-rerun', action='store_const', const=True, default=False)
-    args = parser.parse_args(['--force-rerun'])
+    args = parser.parse_args()
     run(args.force_rerun)
