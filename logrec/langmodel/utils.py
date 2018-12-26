@@ -1,21 +1,26 @@
 import logging
 import os
 
+from torchtext.data import Field
+
 from fastai.core import to_np, to_gpu, F, USE_GPU
+from fastai.lm_rnn import SequentialRNN
 from fastai.metrics import top_k, MRR
 
 import torch
 
+from fastai.nlp import RNN_Learner
 from logrec.langmodel.decode_text import beautify_text
 
 logger = logging.getLogger(__name__)
 
 
-def output_predictions(m, input_field, output_field, starting_text, how_many, file_to_save=None):
+def output_predictions(model: SequentialRNN, input_field: Field, output_field: Field, starting_text: str, how_many: int,
+                       actual_label: str, file_to_save=None, ) -> None:
     words = [starting_text.split()]
     t=to_gpu(input_field.numericalize(words, -1))
 
-    res,*_ = m(t)
+    res, *_ = model(t)
 
     #==========================output predictions
 
@@ -27,10 +32,11 @@ def output_predictions(m, input_field, output_field, starting_text, how_many, fi
     for probability, label in map(to_np, zip(probs, labels)):
         uu = f'{output_field.vocab.itos[label[0]]}: {probability}'
         text += (uu + "\n")
+    text += f'Actusl label: {actual_label}\n'
     print(text)
 
 
-def gen_text(learner, starting_words, how_many_to_gen):
+def gen_text(learner: RNN_Learner, starting_words: str, how_many_to_gen: int):
     text = ''
     t = to_gpu(learner.text_field.numericalize([starting_words.split()], -1))
     res, *_ = learner.model(t)
@@ -43,13 +49,13 @@ def gen_text(learner, starting_words, how_many_to_gen):
     return text
 
 
-def to_test_mode(m):
+def to_test_mode(model: SequentialRNN):
     # Set batch size to 1gen_te
-    m[0].bs = 1
+    model[0].bs = 1
     # Turn off dropout
-    m.eval()
+    model.eval()
     # Reset hidden state
-    m.reset()
+    model.reset()
 
 
 def back_to_train_mode(m, bs):

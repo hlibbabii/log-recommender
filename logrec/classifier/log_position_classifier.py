@@ -6,7 +6,7 @@ import torch
 from torchtext import data
 from torchtext.data import Field
 
-from fastai.lm_rnn import seq2seq_reg
+from fastai.lm_rnn import seq2seq_reg, SequentialRNN
 from fastai import metrics
 from fastai.nlp import TextData, RNN_Learner
 from logrec.classifier.context_datasets import ContextsDataset
@@ -50,7 +50,11 @@ def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, arch: 
     return rnn_learner
 
 
-def get_text_classifier_model(fs: FS, text_field: Field, level_label: Field, arch: Arch, threshold: float):
+def get_text_classifier_model(fs: FS,
+                              text_field: Field,
+                              level_label: Field,
+                              arch: Arch,
+                              threshold: float) -> (RNN_Learner, bool):
     rnn_learner = create_nn_architecture(fs, text_field, level_label, arch, threshold)
     logger.info(rnn_learner)
 
@@ -97,7 +101,7 @@ def read_lines(filename):
         return f.readlines()
 
 
-def show_tests(path_to_test_set, m, text_field):
+def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field):
     counter = 0
     for c_filename, l_filename in file_mapper(path_to_test_set, ContextsDataset._get_pair, extension='label'):
         c_file = None
@@ -105,10 +109,10 @@ def show_tests(path_to_test_set, m, text_field):
         try:
             c_file = open(c_filename, 'r')
             l_file = open(l_filename, 'r')
-            for context, level in zip(c_file, l_file):
+            for context, label in zip(c_file, l_file):
                 if counter >= EXAMPLES_TO_SHOW:
                     return
-                output_predictions(m, text_field, LEVEL_LABEL, context.rstrip("\n"), 2)
+                output_predictions(model, text_field, LEVEL_LABEL, context.rstrip("\n"), 2, label.rstrip("\n"))
                 counter += 1
         except FileNotFoundError:
             project_name = c_filename[:-len(ContextsDataset.FW_CONTEXTS_FILE_EXT)]
