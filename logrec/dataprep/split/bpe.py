@@ -2,9 +2,11 @@ import argparse
 import logging
 import os
 import re, collections
+from typing import Optional
 
 from logrec.util import io_utils
 from logrec.util.priority_counter import PriorityCounter
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -47,22 +49,60 @@ REASSEMBLED_VOCAB_FILE_NAME = "vocab_reassembled.txt"
 MERGES_FILE_NAME = "merges.txt"
 MERGES_CACHE_FILE_NAME = "merges_cache.txt"
 RESULTING_VOCAB_FILE_NAME = "vocab_res.txt"
+BPE_COMMON_DIR = 'bpe'
 
 
-def run(reset, base_dir, n_merges):
+def get_most_recent_bpe_dir(base_dir: str) -> Optional[str]:
+    common_bpe_dir = os.path.join(base_dir, BPE_COMMON_DIR)
+    if not os.path.exists(common_bpe_dir):
+        logger.warning(f'Directory {common_bpe_dir} does not exist!')
+        return None
+    subdirs = next(os.walk(common_bpe_dir))[1]
+    max_number = 0
+    for subdir in subdirs:
+        try:
+            num = int(subdir)
+            if num > max_number:
+                max_number = num
+        except ValueError:
+            pass
+    if max_number != 0:
+        return os.path.join(common_bpe_dir, str(max_number))
+    else:
+        logger.warning(f'No bpe dirs found inside {common_bpe_dir}')
+        return None
+
+
+def archive_existing_common_bpe_folder(base_dir: str) -> None:
+    common_bpe_dir = os.path.join(base_dir, BPE_COMMON_DIR)
+    if os.path.exists(common_bpe_dir):
+        logger.info(f'Archiving existing bpe dir. '
+                    f'{common_bpe_dir} -> {common_bpe_dir}.{str(int(time.time()))}')
+        os.rename(common_bpe_dir, f'{common_bpe_dir}.{str(int(time.time()))}')
+
+
+def run(reset: bool, base_dir: str, n_merges: int) -> None:
     if reset:
+        starting_from_scratch = True
+        archive_existing_common_bpe_folder(base_dir)
+    else:
+        logger.info("Using existing merges...")
+        most_recent_bpe_dir = get_most_recent_bpe_dir(base_dir)
+        if not most_recent_bpe_dir:
+            logger.warning("Existing merges not found ")
+            starting_from_scratch = True
+        else:
+            vocab = io_utils.read_dict_from_2_columns(os.path.join(most_recent_bpe_dir, REASSEMBLED_VOCAB_FILE_NAME))
+            merges = io_utils.read_list(os.path.join(most_recent_bpe_dir, MERGES_FILE_NAME))
+            starting_from_scratch = False
+
+    if starting_from_scratch:
         logger.info("Starting the encoding from scratch...")
         vocab = io_utils.read_dict_from_2_columns(os.path.join(base_dir, VOCAB_FILE_NAME))
         vocab = {" ".join(k): v for k, v in vocab.items()}
-    else:
-        logger.info("Using existing merges...")
-        vocab = io_utils.read_dict_from_2_columns(os.path.join(base_dir, REASSEMBLED_VOCAB_FILE_NAME))
-    pairs = get_stats(vocab)
-
-    if not reset:
-        merges = io_utils.read_list(os.path.join(base_dir, MERGES_FILE_NAME))
-    else:
         merges = []
+
+    pairs = get_stats(vocab)
     n_done_merges = len(merges)
     for i in range(n_merges):
         try:
@@ -85,11 +125,17 @@ def run(reset, base_dir, n_merges):
         key = ''.join(subword_list)
         merges_cache[key] = subword_list
 
-    io_utils.dump_list(merges, os.path.join(base_dir, MERGES_FILE_NAME))
-    io_utils.dump_dict_into_2_columns(vocab, os.path.join(base_dir, REASSEMBLED_VOCAB_FILE_NAME))
-    io_utils.dump_dict_into_2_columns(merges_cache, os.path.join(base_dir, MERGES_CACHE_FILE_NAME), val_type=list)
-    io_utils.dump_dict_into_2_columns(resulting_vocab_sorted, os.path.join(base_dir, RESULTING_VOCAB_FILE_NAME))
+    new_bpe_dir = os.path.join(base_dir, BPE_COMMON_DIR, str(len(merges)))
+    if os.path.exists(new_bpe_dir):
+        raise AssertionError(f'Dir {new_bpe_dir} already exists? Something went wrong.'
+                             f'Check the contents of {os.path.join(base_dir, BPE_COMMON_DIR)} folder')
+    os.makedirs(new_bpe_dir)
 
+    io_utils.dump_list(merges, os.path.join(new_bpe_dir, MERGES_FILE_NAME))
+    io_utils.dump_dict_into_2_columns(vocab, os.path.join(new_bpe_dir, REASSEMBLED_VOCAB_FILE_NAME))
+    io_utils.dump_dict_into_2_columns(merges_cache, os.path.join(new_bpe_dir, MERGES_CACHE_FILE_NAME), val_type=list)
+    io_utils.dump_dict_into_2_columns(resulting_vocab_sorted, os.path.join(new_bpe_dir, RESULTING_VOCAB_FILE_NAME))
+    logger.info(f'Bpe output file are save into {new_bpe_dir} folder')
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
