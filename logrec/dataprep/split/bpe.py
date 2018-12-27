@@ -67,7 +67,7 @@ def run(reset, base_dir, n_merges):
     for i in range(n_merges):
         try:
             best = pairs.pop_pair()
-            print(f'Processing pair number {n_done_merges + i+1} ({best})')
+            print(f'Processing pair number {n_done_merges + i+1} {best}')
             merges.append(best)
         except KeyError:
             break

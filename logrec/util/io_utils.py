@@ -259,7 +259,7 @@ def read_list(file):
 def dump_list(lst, file):
     with open(file, 'w') as f:
         for elm in lst:
-            if isinstance(elm, list):
+            if isinstance(elm, list) or isinstance(elm, tuple):
                 f.write(f"{' '.join(elm)}\n")
             else:
                 f.write(f"{elm}\n")
