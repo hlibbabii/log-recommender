@@ -2,8 +2,9 @@ import argparse
 import logging
 import os
 import re, collections
-from typing import Optional
+from typing import Optional, Dict
 
+from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.util import io_utils
 from logrec.util.priority_counter import PriorityCounter
 import time
@@ -81,6 +82,18 @@ def archive_existing_common_bpe_folder(base_dir: str) -> None:
         os.rename(common_bpe_dir, f'{common_bpe_dir}.{str(int(time.time()))}')
 
 
+def separate_non_splittable_vocab(all_vocab: Dict[str, int], from_reassambled: bool) -> (
+Dict[str, int], Dict[str, int]):
+    vocab = {}
+    non_splitable_vocab = {}
+    for k, v in all_vocab.items():
+        placeholders_values = placeholders.values()
+        if k not in placeholders_values:
+            vocab[k if from_reassambled else " ".join(k)] = v
+        else:
+            non_splitable_vocab[k] = v
+    return vocab, non_splitable_vocab
+
 def run(reset: bool, base_dir: str, n_merges: int) -> None:
     if reset:
         starting_from_scratch = True
@@ -92,14 +105,16 @@ def run(reset: bool, base_dir: str, n_merges: int) -> None:
             logger.warning("Existing merges not found ")
             starting_from_scratch = True
         else:
-            vocab = io_utils.read_dict_from_2_columns(os.path.join(most_recent_bpe_dir, REASSEMBLED_VOCAB_FILE_NAME))
+            all_vocab = io_utils.read_dict_from_2_columns(
+                os.path.join(most_recent_bpe_dir, REASSEMBLED_VOCAB_FILE_NAME))
+            vocab, non_splitable_vocab = separate_non_splittable_vocab(all_vocab, from_reassambled=True)
             merges = io_utils.read_list(os.path.join(most_recent_bpe_dir, MERGES_FILE_NAME))
             starting_from_scratch = False
 
     if starting_from_scratch:
         logger.info("Starting the encoding from scratch...")
-        vocab = io_utils.read_dict_from_2_columns(os.path.join(base_dir, VOCAB_FILE_NAME))
-        vocab = {" ".join(k): v for k, v in vocab.items()}
+        all_vocab = io_utils.read_dict_from_2_columns(os.path.join(base_dir, VOCAB_FILE_NAME))
+        vocab, non_splitable_vocab = separate_non_splittable_vocab(all_vocab, from_reassambled=False)
         merges = []
 
     pairs = get_stats(vocab)
@@ -113,6 +128,8 @@ def run(reset: bool, base_dir: str, n_merges: int) -> None:
             break
         vocab = merge_vocab(best, vocab, pairs)
 
+    for k, v in non_splitable_vocab.items():
+        vocab[k] = v
     resulting_vocab = collections.defaultdict(int)
     for entry, frequency in vocab.items():
         for subword in entry.split(" "):
