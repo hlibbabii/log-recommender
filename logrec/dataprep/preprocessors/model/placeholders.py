@@ -13,7 +13,9 @@ placeholders= {
     'ect': '``',
     'non_eng': '`E',
     'non_eng_contents': '`Es',
-    'log_statement': '`L'
+    'log_statement': '`L',
+    'loggable_block': '`l',
+    'loggable_block_end': 'l`',
 }
 
 placeholders_beautiful = {

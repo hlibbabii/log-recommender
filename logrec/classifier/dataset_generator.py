@@ -3,6 +3,7 @@ import logging
 import os
 import random
 import re
+from typing import List, Tuple
 
 CLASSIFICATION_TYPE = 'location'
 
@@ -26,15 +27,42 @@ def create_case(list_of_words, position):
     return before, after
 
 
-def create_negative_case(list_of_words):
+def extract_loggable_blocks_positions(list_of_words: List[str]) -> List[Tuple[int, int]]:
+    blocks = []
+    search_start_position = 0
+    while True:
+        try:
+            block_start_pos = list_of_words.index(placeholders['loggable_block'], search_start_position)
+        except ValueError:
+            break
+        try:
+            block_end_pos = list_of_words.index(placeholders['loggable_block_end'], block_start_pos + 1)
+        except ValueError:
+            logger.warning("Invalid file. Loggable block end not found: {}")
+            break
+        blocks.append((block_start_pos + 1, block_end_pos - 1))
+        search_start_position = block_end_pos + 1
+    return blocks
+
+
+def get_possible_log_locations(list_of_words: List[str]) -> List[int]:
     '''
     possible places where we insert:
     - after semicolon
     - after {
     - after {
     '''
+    locations = []
     symbol_to_insert_after = ['{', '}', ';']
-    indices = [i + 1 for i, x in enumerate(list_of_words) if x in symbol_to_insert_after]
+    blocks_positions = extract_loggable_blocks_positions(list_of_words)
+    for start, end in blocks_positions:
+        for i in range(start, end):
+            if list_of_words[i] in symbol_to_insert_after:
+                locations.append(i + 1)
+    return locations
+
+def create_negative_case(list_of_words):
+    indices = get_possible_log_locations(list_of_words)
     if indices:
         position = random.choice(indices)
         list_of_words.insert(position, 'fake log st')

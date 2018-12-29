@@ -1,6 +1,7 @@
 import unittest
 
-from logrec.classifier.dataset_generator import create_case, create_negative_case, create_positive_case
+from logrec.classifier.dataset_generator import create_case, create_negative_case, create_positive_case, \
+    get_possible_log_locations
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 
 
@@ -46,22 +47,42 @@ class DataGeneratorTest(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_create_negative_case(self):
-        lst = ["int", "a", "=", "0", ";", "//", "comment"]
+        lst = [placeholders["loggable_block"], "int", "a", "=", "0", ";", "//", "comment",
+               placeholders["loggable_block_end"]]
 
         actual = create_negative_case(lst)
 
-        expected = ["<pad>"] * 995 + ["int", "a", "=", "0", ";"], \
-                   ["//", "comment"] + ["<pad>"] * 998
+        expected = ["<pad>"] * 994 + [placeholders["loggable_block"], "int", "a", "=", "0", ";"], \
+                   ["//", "comment", placeholders["loggable_block_end"]] + ["<pad>"] * 997
 
         self.assertEqual(expected, actual)
 
     def test_create_positive_case(self):
-        lst = ["int", "a", "=", "0", ";", placeholders['log_statement'], "//", "comment"]
+        lst = [placeholders["loggable_block"], "int", "a", "=", "0", ";", placeholders['log_statement'], "//",
+               "comment", placeholders["loggable_block_end"]]
 
         actual = create_positive_case(lst)
 
-        expected = ["<pad>"] * 995 + ["int", "a", "=", "0", ";"], \
-                   ["//", "comment"] + ["<pad>"] * 998
+        expected = ["<pad>"] * 994 + [placeholders["loggable_block"], "int", "a", "=", "0", ";"], \
+                   ["//", "comment", placeholders["loggable_block_end"]] + ["<pad>"] * 997
+
+        self.assertEqual(expected, actual)
+
+    def test_get_possible_log_locations(self):
+        lst = [placeholders["loggable_block"], "{", "{",
+               "int", "a", "=", "0", ";",
+               "//", "comment",
+               "}", "}", placeholders["loggable_block_end"],
+               "int", "b", "=", "3",
+               placeholders["loggable_block"], "{",
+               "int", "a", "=", "0", ";",
+               "//", "comment",
+               "}", placeholders["loggable_block_end"]
+               ]
+
+        actual = get_possible_log_locations(lst)
+
+        expected = [2, 3, 8, 11, 19, 24]
 
         self.assertEqual(expected, actual)
 
