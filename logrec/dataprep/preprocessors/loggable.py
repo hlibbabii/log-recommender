@@ -99,6 +99,20 @@ class NonLoggable(State):
         return WaitingForClassDefinition(), new_tokens
 
 
+def is_class_like_declaration(token, new_tokens):
+    if not token in [FullWord.of('class'),
+                     FullWord.of('enum'),
+                     FullWord.of('interface')]:
+        return False
+
+    if new_tokens:
+        if new_tokens[-1] == '.':
+            return False
+        if isinstance(new_tokens[-1], LoggableBlock) and new_tokens[-1].get_subtokens()[-1] == '.':
+            return False
+
+    return True
+
 def mark(token_list, context):
     new_tokens = []
     block_nestedness = []
@@ -109,7 +123,7 @@ def mark(token_list, context):
                 state, new_tokens = state.on_open_bracket(block_nestedness, new_tokens)
             elif token == '}':
                 state, new_tokens = state.on_closing_bracket(block_nestedness, new_tokens)
-            elif token in [FullWord.of('class'), FullWord.of('enum'), FullWord.of('interface')]:
+            elif is_class_like_declaration(token, new_tokens):
                 state, new_tokens = state.on_class_declaration(block_nestedness, new_tokens, token)
             elif isinstance(state, Loggable):
                 new_tokens[-1].add(token)
