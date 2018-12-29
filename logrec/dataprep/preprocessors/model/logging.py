@@ -61,3 +61,15 @@ class LogStatement(object):
 class LogContent(ProcessableTokenContainer):
     def __init__(self, log_content_token_list):
         super().__init__(log_content_token_list)
+
+
+class LoggableBlock(ProcessableTokenContainer):
+    def __init__(self, content):
+        super().__init__(content)
+
+    def non_preprocessed_repr(self, repr_config):
+        return torepr(self.subtokens, repr_config)
+
+    def preprocessed_repr(self, repr_config):
+        return [placeholders['loggable_block']] + torepr(self.subtokens, repr_config) + [
+            placeholders['loggable_block_end']]

@@ -10,6 +10,7 @@ pp_params = {
 
         "java.process_comments_and_str_literals",
         "logs.mark",
+        "loggable.mark",
         "noneng.mark",  # this should be applied after all splittings
 
         # "java.strip_off_identifiers"
