@@ -18,10 +18,10 @@ class WaitingForClassDefinition(State):
         return NonLoggable(), new_tokens
 
     def on_closing_bracket(self, block_nestedness: List[int], new_tokens: list) -> (State, list):
-        raise ValueError("Closing bracket is not possible here!")
+        raise ValueError(f"Closing bracket is not possible here: {new_tokens}")
 
     def on_class_declaration(self, block_nestedness: List[int], new_tokens: list) -> (State, list):
-        raise ValueError("Closing bracket is not possible here!")
+        raise ValueError(f"Closing bracket is not possible here: {new_tokens}!")
 
 
 class Loggable(State):
@@ -62,7 +62,7 @@ class NonLoggable(State):
         self._check_state_invariant(block_nestedness)
 
         if not block_nestedness:
-            raise ValueError("Opening bracket is not possible here!")
+            raise ValueError(f"Opening bracket is not possible here: {new_tokens}")
 
         block_nestedness[-1] += 1
         new_tokens.append(LoggableBlock(['{']))
@@ -72,7 +72,7 @@ class NonLoggable(State):
         self._check_state_invariant(block_nestedness)
 
         if not block_nestedness:
-            raise ValueError("Closing bracket is not possible here!")
+            raise ValueError(f"Closing bracket is not possible here: {new_tokens}")
 
         if block_nestedness[-1] == 0:
             del block_nestedness[-1]
