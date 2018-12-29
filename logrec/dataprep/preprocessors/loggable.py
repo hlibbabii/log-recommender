@@ -27,7 +27,7 @@ class WaitingForClassDefinition(State):
     def on_closing_bracket(self, block_nestedness: List[int], new_tokens: list) -> (State, list):
         raise ValueError(f"Closing bracket is not possible here: {to_repr_l(new_tokens)}")
 
-    def on_class_declaration(self, block_nestedness: List[int], new_tokens: list) -> (State, list):
+    def on_class_declaration(self, block_nestedness: List[int], new_tokens: list, token: str) -> (State, list):
         raise ValueError(f"Closing bracket is not possible here: {to_repr_l(new_tokens)}!")
 
 
@@ -53,10 +53,10 @@ class Loggable(State):
         else:
             return NonLoggable(), new_tokens
 
-    def on_class_declaration(self, block_nestedness: List[int], new_tokens: list) -> (State, list):
+    def on_class_declaration(self, block_nestedness: List[int], new_tokens: list, token: str) -> (State, list):
         self._check_state_invariant(block_nestedness)
 
-        new_tokens.append('class')
+        new_tokens.append(token)
         return WaitingForClassDefinition(), new_tokens
 
 
@@ -92,10 +92,10 @@ class NonLoggable(State):
         else:
             return NonLoggable(), new_tokens
 
-    def on_class_declaration(self, block_nestedness: List[int], new_tokens: list) -> (State, list):
+    def on_class_declaration(self, block_nestedness: List[int], new_tokens: list, token: str) -> (State, list):
         self._check_state_invariant(block_nestedness)
 
-        new_tokens.append(FullWord.of('class'))
+        new_tokens.append(token)
         return WaitingForClassDefinition(), new_tokens
 
 
@@ -109,8 +109,8 @@ def mark(token_list, context):
                 state, new_tokens = state.on_open_bracket(block_nestedness, new_tokens)
             elif token == '}':
                 state, new_tokens = state.on_closing_bracket(block_nestedness, new_tokens)
-            elif token == FullWord.of('class'):
-                state, new_tokens = state.on_class_declaration(block_nestedness, new_tokens)
+            elif token in [FullWord.of('class'), FullWord.of('enum'), FullWord.of('interface')]:
+                state, new_tokens = state.on_class_declaration(block_nestedness, new_tokens, token)
             elif isinstance(state, Loggable):
                 new_tokens[-1].add(token)
             else:
