@@ -4,7 +4,6 @@ from logrec.dataprep.preprocessors import loggable
 from logrec.dataprep.preprocessors.model.chars import NewLine
 from logrec.dataprep.preprocessors.model.containers import MultilineComment, StringLiteral
 from logrec.dataprep.preprocessors.model.logging import LoggableBlock
-from logrec.dataprep.preprocessors.model.numeric import Number
 from logrec.dataprep.preprocessors.model.word import FullWord
 
 

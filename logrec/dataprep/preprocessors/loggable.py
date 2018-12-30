@@ -69,7 +69,8 @@ class NonLoggable(State):
         self._check_state_invariant(block_nestedness)
 
         if not block_nestedness:
-            raise ValueError(f"Opening bracket is not possible here: {to_repr_l(new_tokens)}")
+            logger.warning(f"Strange location of opening bracket: {to_repr_l(new_tokens)}")
+            block_nestedness.append(0)
 
         block_nestedness[-1] += 1
         new_tokens.append(LoggableBlock(['{']))
@@ -86,10 +87,11 @@ class NonLoggable(State):
         else:
             block_nestedness[-1] -= 1
 
-        new_tokens.append('}')
         if block_nestedness and block_nestedness[-1] > 0:
+            new_tokens.append(LoggableBlock(['}']))
             return Loggable(), new_tokens
         else:
+            new_tokens.append('}')
             return NonLoggable(), new_tokens
 
     def on_class_declaration(self, block_nestedness: List[int], new_tokens: list, token: str) -> (State, list):
