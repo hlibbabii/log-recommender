@@ -9,52 +9,52 @@ from logrec.dataprep.preprocessors.model.word import FullWord
 
 class MarkLogTest(unittest.TestCase):
     def test_nested_data_class(self):
-        input = [
-            MultilineComment([FullWord.of("class")]),
-            FullWord.of('import'), FullWord.of("a"),
-            NewLine(),
-            FullWord.of('class'), FullWord.of('A'), '{',
-            FullWord.of('void'), FullWord.of('print1'), '(', ')', '{',
-            FullWord.of('if'), '(', FullWord.of('True'), ')', '{', '}',
+        input = ['{', '}',
+                 MultilineComment([FullWord.of("class")]),
+                 FullWord.of('import'), FullWord.of("a"),
+                 NewLine(),
+                 FullWord.of('class'), FullWord.of('A'), '{',
+                 FullWord.of('void'), FullWord.of('print1'), '(', ')', '{',
+                 FullWord.of('if'), '(', FullWord.of('True'), ')', '{', '}',
             '}',
-            FullWord.of('static'), FullWord.of('private'),
-            FullWord.of('class'), FullWord.of('B'), FullWord.of('extends'), FullWord.of('D'), '{',
-            FullWord.of('private'), FullWord.of('String'), FullWord.of('b'), ';',
-            FullWord.of('B'), '(', ')', '{', '}',
-            FullWord.of('static'), '{', FullWord.of('c'), '=', StringLiteral([FullWord('class')]), '.',
-            FullWord.of('class'), '}',
+                 FullWord.of('static'), FullWord.of('private'),
+                 FullWord.of('class'), FullWord.of('B'), FullWord.of('extends'), FullWord.of('D'), '{',
+                 FullWord.of('private'), FullWord.of('String'), FullWord.of('b'), ';',
+                 FullWord.of('B'), '(', ')', '{', '}',
+                 FullWord.of('static'), '{', FullWord.of('c'), '=', StringLiteral([FullWord('class')]), '.',
+                 FullWord.of('class'), '}',
             '}',
-            FullWord.of('void'), FullWord.of('print'), '(', ')', '{',
-            FullWord.of('if'), '(', FullWord.of('True'), ')', '{', '}',
+                 FullWord.of('void'), FullWord.of('print'), '(', ')', '{',
+                 FullWord.of('if'), '(', FullWord.of('True'), ')', '{', '}',
             '}',
-            FullWord.of('int'), FullWord.of('a'), ';',
+                 FullWord.of('int'), FullWord.of('a'), ';',
             '}',
-        ]
+                 ]
 
         actual = loggable.mark(input, None)
 
-        expected = [
-            MultilineComment([FullWord.of("class")]),
-            FullWord.of('import'), FullWord.of("a"),
-            NewLine(),
-            FullWord.of('class'), FullWord.of('A'), '{',
-            FullWord.of('void'), FullWord.of('print1'), '(', ')', LoggableBlock(['{',
+        expected = ['{', '}',
+                    MultilineComment([FullWord.of("class")]),
+                    FullWord.of('import'), FullWord.of("a"),
+                    NewLine(),
+                    FullWord.of('class'), FullWord.of('A'), '{',
+                    FullWord.of('void'), FullWord.of('print1'), '(', ')', LoggableBlock(['{',
                                                                                  FullWord.of('if'), '(',
                                                                                  FullWord.of('True'), ')', '{', '}',
                                                                                  '}']),
-            FullWord.of('static'), FullWord.of('private'),
-            FullWord.of('class'), FullWord.of('B'), FullWord.of('extends'), FullWord.of('D'), '{',
-            FullWord.of('private'), FullWord.of('String'), FullWord.of('b'), ';',
-            FullWord.of('B'), '(', ')', LoggableBlock(['{', '}']),
-            FullWord.of('static'),
-            LoggableBlock(
+                    FullWord.of('static'), FullWord.of('private'),
+                    FullWord.of('class'), FullWord.of('B'), FullWord.of('extends'), FullWord.of('D'), '{',
+                    FullWord.of('private'), FullWord.of('String'), FullWord.of('b'), ';',
+                    FullWord.of('B'), '(', ')', LoggableBlock(['{', '}']),
+                    FullWord.of('static'),
+                    LoggableBlock(
                 ['{', FullWord.of('c'), '=', StringLiteral([FullWord('class')]), '.', FullWord.of('class'), '}']),
-            '}',
-            FullWord.of('void'), FullWord.of('print'), '(', ')',
-            LoggableBlock(['{', FullWord.of('if'), '(', FullWord.of('True'), ')', '{', '}', '}']),
-            FullWord.of('int'), FullWord.of('a'), ';',
-            '}'
-        ]
+                    '}',
+                    FullWord.of('void'), FullWord.of('print'), '(', ')',
+                    LoggableBlock(['{', FullWord.of('if'), '(', FullWord.of('True'), ')', '{', '}', '}']),
+                    FullWord.of('int'), FullWord.of('a'), ';',
+                    '}'
+                    ]
 
         self.assertEqual(expected, actual)
 
@@ -70,11 +70,6 @@ class MarkLogTest(unittest.TestCase):
 
     def test_closing_bracket(self):
         input = ['}']
-
-        actual = loggable.mark(input, None)
-
-    def test_opening_bracket(self):
-        input = ['{']
 
         actual = loggable.mark(input, None)
 
