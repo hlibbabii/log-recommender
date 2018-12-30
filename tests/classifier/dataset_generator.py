@@ -57,6 +57,13 @@ class DataGeneratorTest(unittest.TestCase):
 
         self.assertEqual(expected, actual)
 
+    def test_create_negative_case_no_loggable_blocks(self):
+        lst = ["int", "a", "=", "0", ";", "//", "comment"]
+
+        actual = create_negative_case(lst)
+
+        self.assertIsNone(actual)
+
     def test_create_positive_case(self):
         lst = [placeholders["loggable_block"], "int", "a", "=", "0", ";", placeholders['log_statement'], "//",
                "comment", placeholders["loggable_block_end"]]

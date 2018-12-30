@@ -66,9 +66,10 @@ def create_negative_case(list_of_words):
     if indices:
         position = random.choice(indices)
         list_of_words.insert(position, 'fake log st')
+        return create_case(list_of_words, position)
     else:
-        position = random.randint(0, len(list_of_words))
-    return create_case(list_of_words, position)
+        return None
+
 
 
 def create_positive_case(list_of_words):
@@ -91,7 +92,9 @@ def do(filename):
             if placeholders['log_statement'] in list_of_words:
                 res.append((create_positive_case(list_of_words), True))
             else:
-                res.append((create_negative_case(list_of_words), False))
+                case = create_negative_case(list_of_words)
+                if case:
+                    res.append((case, False))
     return res, rel_path
 
 def run(full_src_dir, dest_dir):
