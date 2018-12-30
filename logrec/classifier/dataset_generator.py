@@ -3,7 +3,7 @@ import logging
 import os
 import random
 import re
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 
 CLASSIFICATION_TYPE = 'location'
 
@@ -18,12 +18,42 @@ from logrec.util.io_utils import file_mapper
 logger = logging.getLogger(__name__)
 
 
-def create_case(list_of_words, position):
-    before = list_of_words[max(0, position - WORDS_IN_CONTEXT_LIMIT):position]
-    before = (['<pad>'] * (WORDS_IN_CONTEXT_LIMIT - len(before))) + before
+def create_side_of_case(
+        list_of_words: list,
+        position: int,
+        end: int,
+        step: Callable[[int], int],
+        can_iterate: Callable[[int, int], bool],
+        last_possible_elm: int) -> list:
+    current_position = step(position)
+    context = []
+    while can_iterate(current_position, end):
+        if list_of_words[current_position] in [placeholders['loggable_block'], placeholders['loggable_block_end']]:
+            if can_iterate(end, last_possible_elm):
+                end = step(end)
+        else:
+            context.append(list_of_words[current_position])
+        current_position = step(current_position)
+    context += (['<pad>'] * (WORDS_IN_CONTEXT_LIMIT - len(context)))
+    return context
 
-    after = list_of_words[position + 1:position + WORDS_IN_CONTEXT_LIMIT + 1]
-    after = after + (['<pad>'] * (WORDS_IN_CONTEXT_LIMIT - len(after)))
+
+def create_case(list_of_words: list, position: int) -> (list, list):
+    before = create_side_of_case(list_of_words=list_of_words,
+                                 position=position,
+                                 end=max(-1, position - WORDS_IN_CONTEXT_LIMIT - 1),
+                                 step=lambda i: i - 1,
+                                 can_iterate=lambda iter, border: iter > border,
+                                 last_possible_elm=-1)
+    before.reverse()
+
+    after = create_side_of_case(list_of_words=list_of_words,
+                                position=position,
+                                end=min(position + WORDS_IN_CONTEXT_LIMIT + 1, len(list_of_words)),
+                                step=lambda i: i + 1,
+                                can_iterate=lambda iter, border: iter < border,
+                                last_possible_elm=len(list_of_words))
+
     return before, after
 
 
@@ -69,7 +99,6 @@ def create_negative_case(list_of_words):
         return create_case(list_of_words, position)
     else:
         return None
-
 
 
 def create_positive_case(list_of_words):

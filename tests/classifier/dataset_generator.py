@@ -39,7 +39,7 @@ class DataGeneratorTest(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_create_case_zero_position(self):
-        lst = ['a'] * 5000
+        lst = ['fake_log', placeholders["loggable_block"]] + ['a'] * 5000
         position = 0
         actual = create_case(lst, position)
 
@@ -52,8 +52,8 @@ class DataGeneratorTest(unittest.TestCase):
 
         actual = create_negative_case(lst)
 
-        expected = ["<pad>"] * 994 + [placeholders["loggable_block"], "int", "a", "=", "0", ";"], \
-                   ["//", "comment", placeholders["loggable_block_end"]] + ["<pad>"] * 997
+        expected = ["<pad>"] * 995 + ["int", "a", "=", "0", ";"], \
+                   ["//", "comment"] + ["<pad>"] * 998
 
         self.assertEqual(expected, actual)
 
@@ -70,8 +70,8 @@ class DataGeneratorTest(unittest.TestCase):
 
         actual = create_positive_case(lst)
 
-        expected = ["<pad>"] * 994 + [placeholders["loggable_block"], "int", "a", "=", "0", ";"], \
-                   ["//", "comment", placeholders["loggable_block_end"]] + ["<pad>"] * 997
+        expected = ["<pad>"] * 995 + ["int", "a", "=", "0", ";"], \
+                   ["//", "comment"] + ["<pad>"] * 998
 
         self.assertEqual(expected, actual)
 
