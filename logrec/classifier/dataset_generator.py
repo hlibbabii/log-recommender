@@ -5,15 +5,15 @@ import random
 import re
 from typing import List, Tuple, Callable
 
-CLASSIFICATION_TYPE = 'location'
+from logrec.classifier.utils import get_dir_and_file
 
-from logrec.classifier.context_datasets import ContextsDataset, get_dir_and_file, WORDS_IN_CONTEXT_LIMIT
-from logrec.dataprep import REPR_DIR, TRAIN_DIR, TEST_DIR, VALID_DIR
+from logrec.dataprep import REPR_DIR, TRAIN_DIR, TEST_DIR, VALID_DIR, CLASSIFICATION_DIR
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
-from logrec.infrastructure.fs import CLASSIFICATION_DIR_NAME
 from logrec.util.io_utils import file_mapper
 
+CLASSIFICATION_TYPE = 'location'
+WORDS_IN_CONTEXT_LIMIT = 1000
 
 logger = logging.getLogger(__name__)
 
@@ -127,6 +127,8 @@ def do(filename):
     return res, rel_path
 
 def run(full_src_dir, dest_dir):
+    from logrec.classifier.context_datasets import ContextsDataset
+
     total_files = sum(file_mapper(full_src_dir, lambda f: 1, "parsed.repr"))
     count = 0
     for lines, rel_path in file_mapper(full_src_dir, do, "parsed.repr"):
@@ -158,7 +160,7 @@ if __name__ == '__main__':
     path_to_dataset = os.path.join(args.base, args.dataset)
     full_src_dir = os.path.join(path_to_dataset, REPR_DIR, args.repr)
     clas9n_dataset_name = PrepParamsParser.to_classification_prep_params(args.repr)
-    dest_dir = os.path.join(path_to_dataset, CLASSIFICATION_DIR_NAME, CLASSIFICATION_TYPE, clas9n_dataset_name)
+    dest_dir = os.path.join(path_to_dataset, CLASSIFICATION_DIR, CLASSIFICATION_TYPE, clas9n_dataset_name)
     logger.info(f"Writing to {dest_dir}")
 
     os.makedirs(os.path.join(dest_dir, TRAIN_DIR), exist_ok=True)

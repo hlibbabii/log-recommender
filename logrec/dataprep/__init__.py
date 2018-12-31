@@ -13,6 +13,7 @@ VALID_DIR = 'valid'
 
 METADATA_DIR = 'metadata'
 REPR_DIR = 'repr'
+CLASSIFICATION_DIR = 'classification'
 
 TEXT_FIELD_FILE = 'TEXT.pkl'
 

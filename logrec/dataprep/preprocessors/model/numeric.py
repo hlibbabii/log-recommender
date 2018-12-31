@@ -1,7 +1,6 @@
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.repr import ReprConfig
 from logrec.dataprep.split.ngram import SplitRepr, NgramSplittingType, do_ngram_splitting, insert_borders
-from logrec.dataprep.util import insert_separators
 
 
 class Number(object):

@@ -5,7 +5,7 @@ from typing import Union
 import deepdiff
 import jsons
 
-from logrec.param.model import LangmodelTrainingConfig, ClassifierTraining, ClassifierTrainingConfig
+from logrec.param.model import LangmodelTrainingConfig, ClassifierTrainingConfig
 
 PARAM_FILE_NAME = 'params.json'
 DEEPDIFF_ADDED = 'dictionary_item_added'

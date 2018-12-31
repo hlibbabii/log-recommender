@@ -3,7 +3,7 @@ import unittest
 from logrec.dataprep.preprocessors.general import spl_verbose
 from logrec.dataprep.preprocessors.model.chars import MultilineCommentStart, MultilineCommentEnd, OneLineCommentStart, \
     Quote, Backslash, Tab
-from logrec.dataprep.preprocessors.model.word import Word, ParseableToken
+from logrec.dataprep.preprocessors.model.word import ParseableToken
 
 
 class GeneralTest(unittest.TestCase):

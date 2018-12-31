@@ -26,6 +26,7 @@ EXAMPLES_TO_SHOW = 100
 
 LEVEL_LABEL = data.LabelField()
 CLASSIFICATION_TYPE = "location"
+CLASSIFIER_NAME_SUFFIX = "_location_classifier"
 
 
 def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, arch: Arch, threshold: float):
@@ -91,9 +92,6 @@ def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining):
     fs.save(rnn_learner)
 
     return rnn_learner
-
-
-CLASSIFIER_NAME_SUFFIX = "_location_classifier"
 
 
 def read_lines(filename):

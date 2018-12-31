@@ -4,11 +4,12 @@ import os
 import re
 from collections import defaultdict
 
-from logrec.classifier.context_datasets import ContextsDataset, IGNORED_PROJECTS_FILE_NAME, get_dir_and_file
+from logrec.classifier.context_datasets import ContextsDataset, IGNORED_PROJECTS_FILE_NAME
 from logrec.classifier.log_position_classifier import CLASSIFICATION_TYPE
+from logrec.classifier.utils import get_dir_and_file
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.dataprep.util import merge_dicts_
-from logrec.infrastructure.fs import CLASSIFICATION_DIR_NAME
+from logrec.infrastructure.fs import CLASSIFICATION_DIR
 from logrec.util import io_utils
 from logrec.util.io_utils import file_mapper
 
@@ -78,6 +79,6 @@ if __name__ == '__main__':
     args = args[0]
 
     clas9n_dataset_name = PrepParamsParser.to_classification_prep_params(args.repr)
-    dest_dir = os.path.join(args.base, args.dataset, CLASSIFICATION_DIR_NAME, CLASSIFICATION_TYPE, clas9n_dataset_name)
+    dest_dir = os.path.join(args.base, args.dataset, CLASSIFICATION_DIR, CLASSIFICATION_TYPE, clas9n_dataset_name)
 
     run(dest_dir, float(args.threshold))

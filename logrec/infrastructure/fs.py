@@ -9,7 +9,8 @@ from shutil import copyfile
 from torchtext.data import Field
 
 from fastai.nlp import RNN_Learner
-from logrec.dataprep import MODELS_DIR, TEXT_FIELD_FILE, REPR_DIR, TRAIN_DIR, VALID_DIR, TEST_DIR
+from logrec.dataprep import MODELS_DIR, TEXT_FIELD_FILE, REPR_DIR, TRAIN_DIR, VALID_DIR, TEST_DIR, \
+    CLASSIFICATION_DIR
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.infrastructure.config_manager import find_most_similar_config, find_name_for_new_config
 from logrec.infrastructure.fractions_manager import normalize_percent_data
@@ -19,7 +20,6 @@ from logrec.util import io_utils
 
 logger = logging.getLogger(__name__)
 
-CLASSIFICATION_DIR_NAME = 'classification'
 EXTRATRAINED_SUFFIX = '_extratrained'
 BASELINE_NAME = 'baseline'
 BEST_MODEL_NAME = 'best'
@@ -106,7 +106,7 @@ class FS(object):
     @property
     def path_to_classification_dataset(self) -> str:
         clas9n_repr = PrepParamsParser.to_classification_prep_params(self._repr)
-        return os.path.join(DEFAULT_PARSED_DATASETS_DIR, self._dataset, CLASSIFICATION_DIR_NAME,
+        return os.path.join(DEFAULT_PARSED_DATASETS_DIR, self._dataset, CLASSIFICATION_DIR,
                             self.classification_type, clas9n_repr)
 
     @property

@@ -4,6 +4,7 @@ import re
 
 from torchtext import data
 
+from logrec.classifier.utils import get_dir_and_file
 from logrec.dataprep import TRAIN_DIR, TEST_DIR
 from logrec.util import io_utils
 from logrec.util.io_utils import file_mapper
@@ -13,13 +14,6 @@ __author__ = 'hlib'
 logger = logging.getLogger(__name__)
 
 IGNORED_PROJECTS_FILE_NAME = "ignored_projects"
-
-WORDS_IN_CONTEXT_LIMIT = 1000
-
-def get_dir_and_file(path_to_file):
-    dir, file = os.path.split(path_to_file)
-    return os.path.join(os.path.basename(dir), file)
-
 
 class ContextsDataset(data.Dataset):
     FW_CONTEXTS_FILE_EXT = "context.forward"

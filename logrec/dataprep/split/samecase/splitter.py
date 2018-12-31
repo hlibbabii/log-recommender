@@ -6,9 +6,9 @@ from multiprocessing.pool import Pool
 from operator import itemgetter
 from random import shuffle
 
-from logrec.util import io_utils
+from tqdm import tqdm
 
-from fastai.imports import tqdm
+from logrec.util import io_utils
 from logrec.dataprep import base_project_dir
 
 logger = logging.getLogger(__name__)
