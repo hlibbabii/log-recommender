@@ -26,7 +26,7 @@ def calc_logged_stats(path_to_label_file):
             stripped_line = line.rstrip('\n')
             if stripped_line == '1':
                 stats[WITH_LOGGING] += 1
-            elif stripped_line == '0':
+            elif stripped_line == '0' or stripped_line == '':
                 stats[NO_LOGGING] += 1
             else:
                 raise AssertionError(f"Invalid line: {stripped_line} in file: {path_to_label_file}")

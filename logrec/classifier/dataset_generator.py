@@ -124,6 +124,8 @@ def do(filename):
                 case = create_negative_case(list_of_words)
                 if case:
                     res.append((case, False))
+                else:
+                    res.append(None)
     return res, rel_path
 
 def run(full_src_dir, dest_dir):
@@ -139,9 +141,14 @@ def run(full_src_dir, dest_dir):
         label_path = os.path.join(dest_dir, re.sub("parsed\\.repr", ContextsDataset.LABEL_FILE_EXT, rel_path))
         with open(forward_path, 'w') as f, open(backward_path, 'w') as b, open(label_path, 'w') as l:
             for line in lines:
-                l.write(f'{1 if line[1] else 0}\n')
-                f.write(f'{" ".join(line[0][0])}\n')
-                b.write(f'{" ".join(line[0][1])}\n')
+                if line:
+                    l.write(f'{1 if line[1] else 0}\n')
+                    f.write(f'{" ".join(line[0][0])}\n')
+                    b.write(f'{" ".join(line[0][1])}\n')
+                else:
+                    l.write('\n')
+                    f.write('\n')
+                    b.write('\n')
 
 
 if __name__ == '__main__':

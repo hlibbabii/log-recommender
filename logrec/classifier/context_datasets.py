@@ -61,8 +61,10 @@ class ContextsDataset(data.Dataset):
                 c_file = open(c_filename, 'r')
                 l_file = open(l_filename, 'r')
                 for context, level in zip(c_file, l_file):
-                    example = data.Example.fromlist([context, level.rstrip('\n')], fields)
-                    examples.append(example)
+                    level = level.rstrip('\n')
+                    if level:
+                        example = data.Example.fromlist([context, level], fields)
+                        examples.append(example)
             except FileNotFoundError:
                 project_name = c_filename[:-len(ContextsDataset.FW_CONTEXTS_FILE_EXT)]
                 logger.error(f"Project context not loaded: {project_name}")
