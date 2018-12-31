@@ -4,7 +4,7 @@ import logging
 import operator
 from collections import Counter
 
-from logrec.classify_and_select_major_logs import get_top_projects_by_log_number
+from logrec.legacy.classify_and_select_major_logs import get_top_projects_by_log_number
 from logrec.util import io_utils
 
 __author__ = 'hlib'
