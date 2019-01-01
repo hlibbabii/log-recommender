@@ -28,7 +28,8 @@ def create_side_of_case(
     current_position = step(position)
     context = []
     while can_iterate(current_position, end):
-        if list_of_words[current_position] in [placeholders['loggable_block'], placeholders['loggable_block_end']]:
+        if list_of_words[current_position] in [placeholders['loggable_block'], placeholders['loggable_block_end']] \
+                or (list_of_words[current_position] == placeholders["log_statement"] and random.choice([True, False])):
             if can_iterate(end, last_possible_elm):
                 end = step(end)
         else:
@@ -83,7 +84,7 @@ def get_possible_log_locations(list_of_words: List[str]) -> List[int]:
     - after {
     '''
     locations = []
-    symbol_to_insert_after = ['{', '}', ';']
+    symbol_to_insert_after = ['{', '}', ';', '`L']
     blocks_positions = extract_loggable_blocks_positions(list_of_words)
     for start, end in blocks_positions:
         for i in range(start, end):
@@ -119,13 +120,12 @@ def do(filename):
             line = line if line[-1] != '\n' else line[:-1]
             list_of_words = line.split(" ")
             if placeholders['log_statement'] in list_of_words:
-                res.append((create_positive_case(list_of_words), True))
-            else:
-                case = create_negative_case(list_of_words)
-                if case:
-                    res.append((case, False))
+                if random.choice([True, False]):
+                    res.append((create_positive_case(list_of_words), True))
                 else:
-                    res.append(None)
+                    res.append((create_negative_case(list_of_words), False))
+            else:
+                res.append(None)
     return res, rel_path
 
 def run(full_src_dir, dest_dir):
