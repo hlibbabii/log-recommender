@@ -99,6 +99,7 @@ def create_negative_case(list_of_words):
         list_of_words.insert(position, 'fake log st')
         return create_case(list_of_words, position)
     else:
+        logger.warning(f"Loggable blocks not found, but should be: {list_of_words}")
         return None
 
 
@@ -123,7 +124,11 @@ def do(filename):
                 if random.choice([True, False]):
                     res.append((create_positive_case(list_of_words), True))
                 else:
-                    res.append((create_negative_case(list_of_words), False))
+                    case = create_negative_case(list_of_words)
+                    if case:
+                        res.append((case, False))
+                    else:
+                        res.append(None)
             else:
                 res.append(None)
     return res, rel_path
