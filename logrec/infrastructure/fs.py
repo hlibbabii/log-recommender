@@ -100,13 +100,17 @@ class FS(object):
     #################################################333
 
     @property
+    def path_to_dataset(self) -> str:
+        return os.path.join(DEFAULT_PARSED_DATASETS_DIR, self._dataset)
+
+    @property
     def path_to_lang_model_dataset(self) -> str:
-        return os.path.join(DEFAULT_PARSED_DATASETS_DIR, self._dataset, REPR_DIR, self._repr)
+        return os.path.join(self.path_to_dataset, REPR_DIR, self._repr)
 
     @property
     def path_to_classification_dataset(self) -> str:
         clas9n_repr = PrepParamsParser.to_classification_prep_params(self._repr)
-        return os.path.join(DEFAULT_PARSED_DATASETS_DIR, self._dataset, CLASSIFICATION_DIR,
+        return os.path.join(self.path_to_dataset, CLASSIFICATION_DIR,
                             self.classification_type, clas9n_repr)
 
     @property

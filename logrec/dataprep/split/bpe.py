@@ -4,6 +4,7 @@ import os
 import re, collections
 from typing import Optional, Dict
 
+from logrec.dataprep import BPE_DIR
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.util import io_utils
 from logrec.util.priority_counter import PriorityCounter
@@ -50,11 +51,10 @@ REASSEMBLED_VOCAB_FILE_NAME = "vocab_reassembled.txt"
 MERGES_FILE_NAME = "merges.txt"
 MERGES_CACHE_FILE_NAME = "merges_cache.txt"
 RESULTING_VOCAB_FILE_NAME = "vocab_res.txt"
-BPE_COMMON_DIR = 'bpe'
 
 
 def get_most_recent_bpe_dir(base_dir: str) -> Optional[str]:
-    common_bpe_dir = os.path.join(base_dir, BPE_COMMON_DIR)
+    common_bpe_dir = os.path.join(base_dir, BPE_DIR)
     if not os.path.exists(common_bpe_dir):
         logger.warning(f'Directory {common_bpe_dir} does not exist!')
         return None
@@ -75,7 +75,7 @@ def get_most_recent_bpe_dir(base_dir: str) -> Optional[str]:
 
 
 def archive_existing_common_bpe_folder(base_dir: str) -> None:
-    common_bpe_dir = os.path.join(base_dir, BPE_COMMON_DIR)
+    common_bpe_dir = os.path.join(base_dir, BPE_DIR)
     if os.path.exists(common_bpe_dir):
         logger.info(f'Archiving existing bpe dir. '
                     f'{common_bpe_dir} -> {common_bpe_dir}.{str(int(time.time()))}')
@@ -142,10 +142,10 @@ def run(reset: bool, base_dir: str, n_merges: int) -> None:
         key = ''.join(subword_list)
         merges_cache[key] = subword_list
 
-    new_bpe_dir = os.path.join(base_dir, BPE_COMMON_DIR, str(len(merges)))
+    new_bpe_dir = os.path.join(base_dir, BPE_DIR, str(len(merges)))
     if os.path.exists(new_bpe_dir):
         raise AssertionError(f'Dir {new_bpe_dir} already exists? Something went wrong.'
-                             f'Check the contents of {os.path.join(base_dir, BPE_COMMON_DIR)} folder')
+                             f'Check the contents of {os.path.join(base_dir, BPE_DIR)} folder')
     os.makedirs(new_bpe_dir)
 
     io_utils.dump_list(merges, os.path.join(new_bpe_dir, MERGES_FILE_NAME))

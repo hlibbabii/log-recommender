@@ -8,7 +8,7 @@ import time
 from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import Pool
 
-from logrec.dataprep import base_project_dir, METADATA_DIR
+from logrec.dataprep import base_project_dir, METADATA_DIR, BPE_DIR, PARSED_DIR
 from logrec.dataprep.preprocessors.general import to_token_list
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam, get_types_to_be_repr, PrepParamsParser
 from logrec.dataprep.preprocessors.repr import to_repr_list, ReprConfig
@@ -127,7 +127,10 @@ def preprocess_and_write(params):
     os.rename(f'{writer.get_full_dest_name()}.{NOT_FINISHED_EXTENSION}', f'{writer.get_full_dest_name()}')
 
 
-def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, splitting_file):
+def run(base_dir, dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, splitting_file):
+    full_src_dir = os.path.join(base_dir, args.dataset, PARSED_DIR)
+    dest_dir = os.path.join(base_dir, args.dataset)
+
     if not os.path.exists(full_src_dir):
         logger.error(f"Dir does not exist: {full_src_dir}")
         exit(3)
@@ -141,8 +144,13 @@ def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, split
     global ngramSplittingConfig
     ngramSplittingConfig = NgramSplitConfig()
     if preprocessing_params[PreprocessingParam.SPL] == 4:
-        if not bpe_merges_cache or not bpe_merges_file:
-            raise ValueError("--bpe-merges-file and --bpe-merges-cache must be specified")
+        if not bpe_base_repr or not bpe_n_merges:
+            raise ValueError("--bpe-base-repr and --bpe-n-merges must be specified")
+
+        path_to_merges_dir = os.path.join(DEFAULT_PARSED_DATASETS_DIR, dataset, METADATA_DIR, bpe_base_repr, BPE_DIR,
+                                          bpe_n_merges)
+        bpe_merges_file = os.path.join(path_to_merges_dir, 'merges.txt')
+        bpe_merges_cache = os.path.join(path_to_merges_dir, 'merges_cache.txt')
 
         merges_cache = io_utils.read_dict_from_2_columns(bpe_merges_cache, val_type=list)
         merges = []
@@ -221,22 +229,19 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--base-from',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
-    parser.add_argument('--base-to',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
-    parser.add_argument('src', action='store', help=f'path to the parsed dataset')
-    parser.add_argument('dest', action='store', help=f'destination for representation')
+    parser.add_argument('--base-dir', action='store', default=DEFAULT_PARSED_DATASETS_DIR)
+    parser.add_argument('dataset', action='store', help=f'path to the parsed dataset')
     parser.add_argument('-p', '--preprocessing-params', required=True, action='store',
                         help='preprocessing params line, \n Example: '
                              'enonly=1,nocomstr=0,spl=1,nosep=1,nonewlinestabs=0,nologs=0,')
-    parser.add_argument('--bpe-merges-file', action='store', help='Full path to the file with bpe merges')
-    parser.add_argument('--bpe-merges-cache', action='store', help='Full path to the file with bpe split words')
+
+    parser.add_argument('--bpe-base-repr', action='store', help='TODO')
+    parser.add_argument('--bpe-n-merges', action='store', help='TODO')
     parser.add_argument('--splitting-file', action='store', help='Full path to the file with sc split words',
                         default=os.path.join(base_project_dir, 'splittings.txt'))
 
     args = parser.parse_known_args(*DEFAULT_TO_REPR_ARGS)
     args = args[0]
 
-    full_src_dir = os.path.join(args.base_from, args.src)
-    dest_dir = os.path.join(args.base_to, args.dest)
-
-    run(args.preprocessing_params, dest_dir, args.bpe_merges_file, args.bpe_merges_cache, args.splitting_file)
+    run(args.base_dir, args.dataset, args.preprocessing_params, args.bpe_base_repr, args.bpe_n_merges,
+        args.splitting_file)
