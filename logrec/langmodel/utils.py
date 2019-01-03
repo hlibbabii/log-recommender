@@ -15,9 +15,9 @@ from logrec.langmodel.decode_text import beautify_text
 logger = logging.getLogger(__name__)
 
 
-def output_predictions(model: SequentialRNN, input_field: Field, output_field: Field, starting_text: str, how_many: int,
-                       actual_label: str, file_to_save=None, ) -> None:
-    words = [starting_text.split(" ")]
+def output_predictions(model: SequentialRNN, input_field: Field, output_field: Field, context: str, how_many: int,
+                       actual_label: str) -> str:
+    words = [context.split(" ")]
     t=to_gpu(input_field.numericalize(words, -1))
 
     res, *_ = model(t)
@@ -28,12 +28,12 @@ def output_predictions(model: SequentialRNN, input_field: Field, output_field: F
     probs = F.softmax(outputs)
     text = ""
     text += ("===================" + "\n")
-    text += (beautify_text(starting_text) + "\n")
+    text += (beautify_text(context) + "\n")
     for probability, label in map(to_np, zip(probs, labels)):
         uu = f'{output_field.vocab.itos[label[0]]}: {probability}'
         text += (uu + "\n")
-    text += f'Actusl label: {actual_label}\n'
-    print(text)
+    text += f'Actual label: {actual_label}\n'
+    return text
 
 
 def gen_text(learner: RNN_Learner, starting_words: str, how_many_to_gen: int):

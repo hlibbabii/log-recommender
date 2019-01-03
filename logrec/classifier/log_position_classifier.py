@@ -1,4 +1,5 @@
 import logging
+import os
 from argparse import ArgumentParser
 from functools import partial
 
@@ -74,6 +75,8 @@ def get_text_classifier_model(fs: FS,
 
 
 def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining):
+    training_log_file = os.path.join(fs.path_to_classification_model, 'training.log')
+    logger.info(f"Starting training, check {training_log_file} for training progress")
     for stage in training.stages:
         cycle = stage.cycle
         rnn_learner.freeze_to(stage.freeze_to)
@@ -99,8 +102,10 @@ def read_lines(filename):
         return f.readlines()
 
 
-def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field):
+def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, sample_test_runs_file: str) -> None:
+    logger.info("================    Running tests ============")
     counter = 0
+    text = ""
     for c_filename, l_filename in file_mapper(path_to_test_set, ContextsDataset._get_pair, extension='label'):
         c_file = None
         l_file = None
@@ -110,7 +115,7 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field):
             for context, label in zip(c_file, l_file):
                 if counter >= EXAMPLES_TO_SHOW:
                     return
-                output_predictions(model, text_field, LEVEL_LABEL, context.rstrip("\n"), 2, label.rstrip("\n"))
+                text += output_predictions(model, text_field, LEVEL_LABEL, context.rstrip("\n"), 2, label.rstrip("\n"))
                 counter += 1
         except FileNotFoundError:
             project_name = c_filename[:-len(ContextsDataset.FW_CONTEXTS_FILE_EXT)]
@@ -121,6 +126,9 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field):
                 c_file.close()
             if l_file is not None:
                 l_file.close()
+    logger.info(text)
+    with open(sample_test_runs_file, 'w') as f:
+        f.write(text)
 
 
 def run(force_rerun: bool):
@@ -154,7 +162,8 @@ def run(force_rerun: bool):
     model = learner.model
 
     to_test_mode(model)
-    show_tests(fs.classification_test_path, model, text_field)
+    sample_test_runs_file = os.path.join(fs.path_to_classification_model, 'test_runs.out')
+    show_tests(fs.classification_test_path, model, text_field, sample_test_runs_file)
 
     # plotting confusion matrix
     # preds = np.argmax(probs, axis=1)
