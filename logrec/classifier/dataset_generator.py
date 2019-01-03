@@ -157,7 +157,7 @@ def run(full_src_dir, dest_dir):
 
 
 if __name__ == '__main__':
-    from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_DATASET_GENERATOR_ARGS
+    from logrec.properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_DATASET_GENERATOR_ARGS
 
     logging.basicConfig(level=logging.DEBUG)
 

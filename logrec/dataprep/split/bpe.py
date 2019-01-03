@@ -162,7 +162,7 @@ if __name__ == '__main__':
     argument_parser.add_argument('--base-dir', action='store',
                                  default='/home/hlib/thesis/log-recommender/')
     argument_parser.add_argument('--reset', action='store_true')
-    from logrec.local_properties import DEFAULT_BPE_ARGS
+    from logrec.properties import DEFAULT_BPE_ARGS
     args = argument_parser.parse_args(*DEFAULT_BPE_ARGS)
 
     run(args.reset, args.base_dir, args.n_merges)

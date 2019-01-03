@@ -6,7 +6,7 @@ class DAO(object):
     PROJECTS_TABLE = 'PROJECTS'
 
     def __init__(self):
-        from logrec.local_properties import DB_DBNAME, DB_USER, DB_HOST, DB_PASSWORD
+        from logrec.properties import DB_DBNAME, DB_USER, DB_HOST, DB_PASSWORD
         conn = psycopg2.connect(f"dbname='{DB_DBNAME}' user='{DB_USER}' host='{DB_HOST}' password='{DB_PASSWORD}'")
         conn.set_session(autocommit=True)
         self.cur = conn.cursor()

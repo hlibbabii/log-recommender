@@ -14,7 +14,7 @@ from logrec.dataprep import MODELS_DIR, TEXT_FIELD_FILE, REPR_DIR, TRAIN_DIR, VA
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.infrastructure.config_manager import find_most_similar_config, find_name_for_new_config
 from logrec.infrastructure.fractions_manager import normalize_percent_data
-from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR
+from logrec.properties import DEFAULT_PARSED_DATASETS_DIR
 from logrec.param.model import Data, LangmodelTrainingConfig, ClassifierTrainingConfig
 from logrec.util import io_utils
 

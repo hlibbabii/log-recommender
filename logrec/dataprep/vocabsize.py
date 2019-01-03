@@ -273,7 +273,7 @@ def run(full_src_dir, full_metadata_dir):
 
 
 if __name__ == '__main__':
-    from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_VOCABSIZE_ARGS
+    from logrec.properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_VOCABSIZE_ARGS
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--base-from', action='store', default=DEFAULT_PARSED_DATASETS_DIR)

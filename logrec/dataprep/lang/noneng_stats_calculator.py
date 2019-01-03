@@ -82,7 +82,7 @@ def parsed_files_generator(path_to_dir_with_preprocessed_projects, dao):
 
 
 def run():
-    from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS
+    from logrec.properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--base-dataset-dir', default=DEFAULT_PARSED_DATASETS_DIR)

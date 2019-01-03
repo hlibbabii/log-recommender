@@ -216,7 +216,7 @@ def run(preprocessing_params, dest_dir, bpe_merges_file, bpe_merges_cache, split
 
 
 if __name__ == '__main__':
-    from logrec.local_properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
+    from logrec.properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
 
     logging.basicConfig(level=logging.DEBUG)
 
