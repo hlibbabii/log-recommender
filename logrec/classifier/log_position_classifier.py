@@ -143,6 +143,7 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, s
             if l_file is not None:
                 l_file.close()
     logger.info(text)
+    logger.info(f"Saving test output to {sample_test_runs_file}")
     with open(sample_test_runs_file, 'w') as f:
         f.write(text)
 
