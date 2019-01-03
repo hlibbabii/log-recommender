@@ -2,7 +2,9 @@ language: python
 python:
   - "3.6"
 env:
-  - THESIS_DIR="$TRAVIS_BUILD_DIR/.."
+  global:
+    - CC_TEST_REPORTER_ID=7b2a8d89ec2d09fea972c4475e21285a4e7d055c72db35d026f263f9a8027395
+    - THESIS_DIR="$TRAVIS_BUILD_DIR/.."
 before_install:
   - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
@@ -26,8 +28,15 @@ install:
   - conda activate fastai
   - cd $TRAVIS_BUILD_DIR
   - conda env update -f environment.yml
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
 script:
-  - python -m unittest discover -v -s "tests" -p "*.py"
+  - coverage run -m unittest discover -v -s "tests" -p "*.py"
+  - coverage report -m
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
 # blocklist
 branches:
   except:
