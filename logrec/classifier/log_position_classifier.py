@@ -44,7 +44,8 @@ def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, arch: 
                                       dropout=arch.drop.out,
                                       wdrop=arch.drop.w,
                                       dropoute=arch.drop.oute,
-                                      dropouth=arch.drop.outh)
+                                      dropouth=arch.drop.outh,
+                                      bidir=arch.bidir)
 
     # reguarizing LSTM paper -- penalizing large activations -- reduce overfitting
     rnn_learner.reg_fn = partial(seq2seq_reg, alpha=arch.reg_fn.alpha, beta=arch.reg_fn.beta)
