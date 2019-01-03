@@ -24,7 +24,7 @@ from logrec.util.io_utils import file_mapper
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-EXAMPLES_TO_SHOW = 100
+EXAMPLES_TO_SHOW = 200
 
 LEVEL_LABEL = data.LabelField()
 CLASSIFICATION_TYPE = "location"
@@ -119,7 +119,10 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, s
     logger.info("================    Running tests ============")
     counter = 0
     text = ""
+    stop_showing_examples = False
     for c_filename, l_filename in file_mapper(path_to_test_set, ContextsDataset._get_pair, extension='label'):
+        if stop_showing_examples:
+            break
         c_file = None
         l_file = None
         try:
@@ -130,7 +133,8 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, s
                     continue
 
                 if counter >= EXAMPLES_TO_SHOW:
-                    return
+                    stop_showing_examples = True
+                    break
                 text += output_predictions(model, text_field, LEVEL_LABEL, context.rstrip("\n"), 2, label.rstrip("\n"))
                 counter += 1
         except FileNotFoundError:
@@ -143,6 +147,7 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, s
             if l_file is not None:
                 l_file.close()
     logger.info(text)
+    logger.info(f"Saving test output to {sample_test_runs_file}")
     with open(sample_test_runs_file, 'w') as f:
         f.write(text)
 
