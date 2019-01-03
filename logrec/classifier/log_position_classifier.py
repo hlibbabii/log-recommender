@@ -91,7 +91,7 @@ def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining):
                                             wds=training.wds,
                                             cycle_len=cycle.len, n_cycle=cycle.n, cycle_mult=cycle.mult,
                                             best_save_name=BEST_MODEL_NAME, cycle_save_name='', get_ep_vals=True,
-                                            file=open(f'{fs.path_to_classification_model}/training.log', 'w')
+                                            file=open(training_log_file, 'w+')
                                             )
             training_time_mins = int(time() - training_start_time) // 60
             with open(os.path.join(fs.path_to_classification_model, 'results.out'), 'w') as f:
