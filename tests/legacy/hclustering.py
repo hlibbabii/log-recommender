@@ -1,4 +1,5 @@
-from logrec.cluster.hclustering import ClusteringTree, tree_from_dendrogram, break_into_multiple_trees_by_wfs, jaccard
+from logrec.legacy.cluster.hclustering import ClusteringTree, tree_from_dendrogram, break_into_multiple_trees_by_wfs, \
+    jaccard
 
 __author__ = 'hlib'
 
