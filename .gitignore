@@ -4,6 +4,7 @@ grepped_logs.*
 *.pyc
 /.Projects/
 /.Logs/
+/nn-data/new_framework
 logs.csv
 interesting_context_words.csv
 **/logs*.csv
