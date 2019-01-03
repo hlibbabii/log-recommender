@@ -113,6 +113,9 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, s
             c_file = open(c_filename, 'r')
             l_file = open(l_filename, 'r')
             for context, label in zip(c_file, l_file):
+                if label.rstrip('\n') == '':
+                    continue
+
                 if counter >= EXAMPLES_TO_SHOW:
                     return
                 text += output_predictions(model, text_field, LEVEL_LABEL, context.rstrip("\n"), 2, label.rstrip("\n"))
