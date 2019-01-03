@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 def output_predictions(model: SequentialRNN, input_field: Field, output_field: Field, starting_text: str, how_many: int,
                        actual_label: str, file_to_save=None, ) -> None:
-    words = [starting_text.split()]
+    words = [starting_text.split(" ")]
     t=to_gpu(input_field.numericalize(words, -1))
 
     res, *_ = model(t)
