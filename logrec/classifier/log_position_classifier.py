@@ -2,6 +2,7 @@ import logging
 import os
 from argparse import ArgumentParser
 from functools import partial
+from time import time
 
 import torch
 from torchtext import data
@@ -76,17 +77,29 @@ def get_text_classifier_model(fs: FS,
 
 def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining):
     training_log_file = os.path.join(fs.path_to_classification_model, 'training.log')
+    if not training.stages:
+        logger.warning("No stages specified in the config")
+        return
+    training_start_time = time()
     logger.info(f"Starting training, check {training_log_file} for training progress")
     for stage in training.stages:
         cycle = stage.cycle
-        rnn_learner.freeze_to(stage.freeze_to)
-        rnn_learner.fit(lrs=training.lrs,
-                        metrics=list(map(lambda x: getattr(metrics, x), training.metrics)),
-                        wds=training.wds,
-                        cycle_len=cycle.len, n_cycle=cycle.n, cycle_mult=cycle.mult,
-                        best_save_name=BEST_MODEL_NAME, cycle_save_name='',
-                        file=open(f'{fs.path_to_classification_model}/training.log', 'w')
-                        )
+        if cycle.n > 0 and cycle.len > 0:
+            rnn_learner.freeze_to(stage.freeze_to)
+            vals, ep_vals = rnn_learner.fit(lrs=training.lrs,
+                                            metrics=list(map(lambda x: getattr(metrics, x), training.metrics)),
+                                            wds=training.wds,
+                                            cycle_len=cycle.len, n_cycle=cycle.n, cycle_mult=cycle.mult,
+                                            best_save_name=BEST_MODEL_NAME, cycle_save_name='', get_ep_vals=True,
+                                            file=open(f'{fs.path_to_classification_model}/training.log', 'w')
+                                            )
+            training_time_mins = int(time() - training_start_time) // 60
+            with open(os.path.join(fs.path_to_classification_model, 'results.out'), 'w') as f:
+                f.write(str(training_time_mins) + "\n")
+                for _, vals in ep_vals.items():
+                    f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
+        else:
+            logger.warning("Number of epochs specified at this stage is 0. Not training...")
 
     # logger.info(f'Current accuracy is ...')
     # logger.info(f'                    ... {accuracy_gen(*rnn_learner.predict_with_targs())}')
@@ -167,6 +180,7 @@ def run(force_rerun: bool):
     to_test_mode(model)
     sample_test_runs_file = os.path.join(fs.path_to_classification_model, 'test_runs.out')
     show_tests(fs.classification_test_path, model, text_field, sample_test_runs_file)
+    logger.info("Classifier training finished successfully.")
 
     # plotting confusion matrix
     # preds = np.argmax(probs, axis=1)
