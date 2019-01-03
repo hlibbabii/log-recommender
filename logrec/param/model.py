@@ -66,10 +66,11 @@ class Data(object):
 
 
 class Arch(object):
-    def __init__(self, bidir: bool, bs: int, bptt: int, em_sz: int, nh: int, nl: int, min_freq: int,
+    def __init__(self, bidir: bool, qrnn: bool, bs: int, bptt: int, em_sz: int, nh: int, nl: int, min_freq: int,
                  betas: List[float],
                  clip: float, reg_fn: RegFn, drop: Droupouts):
         self.bidir = bidir
+        self.qrnn = qrnn
         self.bs = bs
         self.bptt = bptt
         self.em_sz = em_sz

@@ -10,7 +10,7 @@ from torchtext.data import Field
 
 from fastai.lm_rnn import seq2seq_reg, SequentialRNN
 from fastai import metrics
-from fastai.nlp import TextData, RNN_Learner
+from fastai.nlp import TextData, RNN_Learner, USE_GPU
 from logrec.classifier.context_datasets import ContextsDataset
 from logrec.classifier.dataset_generator import WORDS_IN_CONTEXT_LIMIT
 from logrec.infrastructure import config_manager
@@ -38,6 +38,9 @@ def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, arch: 
 
     opt_fn = partial(torch.optim.Adam, betas=(0.7, 0.99))
 
+    if arch.qrnn and not USE_GPU:
+        logger.warning("Cuda not available, not using qrnn. Using lstm instead")
+        arch.qrnn = False
     rnn_learner = text_data.get_model(opt_fn, WORDS_IN_CONTEXT_LIMIT, arch.bptt, arch.em_sz, arch.nh,
                                       arch.nl,
                                       dropouti=arch.drop.outi,
@@ -45,7 +48,8 @@ def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, arch: 
                                       wdrop=arch.drop.w,
                                       dropoute=arch.drop.oute,
                                       dropouth=arch.drop.outh,
-                                      bidir=arch.bidir)
+                                      bidir=arch.bidir,
+                                      qrnn=arch.qrnn)
 
     # reguarizing LSTM paper -- penalizing large activations -- reduce overfitting
     rnn_learner.reg_fn = partial(seq2seq_reg, alpha=arch.reg_fn.alpha, beta=arch.reg_fn.beta)

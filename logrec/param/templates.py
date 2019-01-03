@@ -11,6 +11,7 @@ data = Data(
 
 arch = Arch(
     bidir=False,
+    qrnn=False,
     bs=16,
     bptt=10,
     em_sz=300,  # size of each embedding vector

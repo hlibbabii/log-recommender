@@ -8,3 +8,4 @@ dependencies:
 - deepdiff
 - pip:
   - typing_inspect
+  - cupy-cuda91
