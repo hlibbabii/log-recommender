@@ -9,3 +9,4 @@ dependencies:
 - pip:
   - typing_inspect
   - cupy-cuda91
+  - coverage
