@@ -24,3 +24,4 @@ classes.csv
 !/nn-data/replaced_some_identifiers_0005/TEXT.pkl
 
 local_properties.py
+/.coverage
