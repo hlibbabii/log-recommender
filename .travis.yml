@@ -26,6 +26,8 @@ install:
   - cd $HOME/fastai-fork
   - conda env create -f environment.yml
   - conda activate fastai
+  - export PYTHONPATH="$HOME/fastai-fork:$PYTHONPATH"
+  - echo "PYTHON_PATH is now $PYTHON_PATH"
   - cd $TRAVIS_BUILD_DIR
   - conda env update -f environment.yml
   - cd $HOME
