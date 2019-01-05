@@ -21,7 +21,7 @@ before_install:
 install:
   # Useful for debugging any issues with conda
   - conda info -a
-  - git clone https://github.com/hlibbabii/fastai $$HOME/fastai-fork
+  - git clone https://github.com/hlibbabii/fastai $HOME/fastai-fork
   - cd $HOME/fastai-fork
   - conda env create -f environment.yml
   - conda activate fastai
