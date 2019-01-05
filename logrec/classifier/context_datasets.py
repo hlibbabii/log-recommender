@@ -26,10 +26,13 @@ class ContextsDataset(data.Dataset):
 
     @staticmethod
     def _get_pair(file_path):
-        c_file_path = re.sub(f'{ContextsDataset.LABEL_FILE_EXT}$',
+        c_file_path_before = re.sub(f'{ContextsDataset.LABEL_FILE_EXT}$',
                              f'{ContextsDataset.FW_CONTEXTS_FILE_EXT}',
-                             file_path)
-        return c_file_path, file_path
+                                    file_path)
+        c_file_path_after = re.sub(f'{ContextsDataset.LABEL_FILE_EXT}$',
+                                   f'{ContextsDataset.BW_CONTEXTS_FILE_EXT}',
+                                   file_path)
+        return c_file_path_before, c_file_path_after, file_path
 
 
     def __init__(self, path, text_field, label_field, **kwargs):
@@ -50,28 +53,36 @@ class ContextsDataset(data.Dataset):
         fields = [('text', text_field), ('label', label_field)]
         examples = []
 
-        for c_filename, l_filename in file_mapper(path, ContextsDataset._get_pair, extension='label'):
+        for c_filename_before, c_filename_after, l_filename in file_mapper(path, ContextsDataset._get_pair,
+                                                                           extension='label'):
             proj_name = re.sub(f"\.{ContextsDataset.LABEL_FILE_EXT}$", "", get_dir_and_file(l_filename))
             if proj_name in ignored_projects_set:
                 continue
 
-            c_file = None
+            c_file_before = None
+            c_file_after = None
             l_file = None
             try:
-                c_file = open(c_filename, 'r')
+                c_file_before = open(c_filename_before, 'r')
+                c_file_after = open(c_filename_after, 'r')
                 l_file = open(l_filename, 'r')
-                for context, level in zip(c_file, l_file):
+                for context_before, context_after, level in zip(c_file_before, c_file_after, l_file):
                     level = level.rstrip('\n')
+                    context_after_reversed = context_after.split(" ")
+                    context_after_reversed.reverse()
                     if level:
-                        example = data.Example.fromlist([context, level], fields)
+                        example = data.Example.fromlist(
+                            [" ".join([context_before, " ".join(context_after_reversed)]), level], fields)
                         examples.append(example)
             except FileNotFoundError:
-                project_name = c_filename[:-len(ContextsDataset.FW_CONTEXTS_FILE_EXT)]
+                project_name = c_filename_before[:-len(ContextsDataset.FW_CONTEXTS_FILE_EXT)]
                 logger.error(f"Project context not loaded: {project_name}")
                 continue
             finally:
-                if c_file is not None:
-                    c_file.close()
+                if c_file_before is not None:
+                    c_file_before.close()
+                if c_file_after is not None:
+                    c_file_after.close()
                 if l_file is not None:
                     l_file.close()
 

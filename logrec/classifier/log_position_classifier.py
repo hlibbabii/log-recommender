@@ -125,30 +125,39 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, s
     counter = 0
     text = ""
     stop_showing_examples = False
-    for c_filename, l_filename in file_mapper(path_to_test_set, ContextsDataset._get_pair, extension='label'):
+    for c_filename_before, c_filename_after, l_filename in file_mapper(path_to_test_set, ContextsDataset._get_pair,
+                                                                       extension='label'):
         if stop_showing_examples:
             break
-        c_file = None
+        c_file_before = None
+        c_file_after = None
         l_file = None
         try:
-            c_file = open(c_filename, 'r')
+            c_file_before = open(c_filename_before, 'r')
+            c_file_after = open(c_filename_after, 'r')
             l_file = open(l_filename, 'r')
-            for context, label in zip(c_file, l_file):
+            for context_before, context_after, label in zip(c_file_before, c_file_after, l_file):
                 if label.rstrip('\n') == '':
                     continue
 
                 if counter >= EXAMPLES_TO_SHOW:
                     stop_showing_examples = True
                     break
-                text += output_predictions(model, text_field, LEVEL_LABEL, context.rstrip("\n"), 2, label.rstrip("\n"))
+
+                context_after_reversed = context_after.rstrip("\n").split(" ")
+                context_after_reversed.reverse()
+                text += output_predictions(model, text_field, LEVEL_LABEL, context_before.rstrip("\n"),
+                                           " ".join(context_after_reversed), 2, label.rstrip("\n"))
                 counter += 1
         except FileNotFoundError:
-            project_name = c_filename[:-len(ContextsDataset.FW_CONTEXTS_FILE_EXT)]
+            project_name = c_filename_before[:-len(ContextsDataset.FW_CONTEXTS_FILE_EXT)]
             logger.error(f"Project context not loaded: {project_name}")
             continue
         finally:
-            if c_file is not None:
-                c_file.close()
+            if c_file_before is not None:
+                c_file_before.close()
+            if c_file_after is not None:
+                c_file_after.close()
             if l_file is not None:
                 l_file.close()
     logger.info(text)
