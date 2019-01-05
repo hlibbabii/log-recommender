@@ -1,7 +1,7 @@
 import os
 
 base_dir = os.path.join(os.environ['HOME'], 'build')
-base_project_dir = os.path.join(base_dir, 'log-recommender')
+base_project_dir = os.path.join(base_dir, 'hlibbabii', 'log-recommender')
 
 REWRITE_PARSED_FILE = False
 
