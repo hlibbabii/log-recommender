@@ -25,3 +25,5 @@ classes.csv
 
 local_properties.py
 /.coverage
+/cc-test-reporter
+/coverage.xml
