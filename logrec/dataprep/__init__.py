@@ -1,7 +1,4 @@
-import os
-
-base_dir = os.environ['THESIS_DIR'] if 'THESIS_DIR' in os.environ else os.environ['HOME']
-base_project_dir = f'{base_dir}/log-recommender/'
+from logrec.properties import base_project_dir
 
 path_to_dicts = f"{base_project_dir}/dicts/"
 path_to_non_eng_dicts = f"{path_to_dicts}/non-eng"
