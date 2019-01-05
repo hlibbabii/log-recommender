@@ -1,6 +1,8 @@
 # log-recommender
 
 [![Build Status](https://travis-ci.org/hlibbabii/log-recommender.svg?branch=master)](https://travis-ci.org/hlibbabii/log-recommender)
+[![Maintainability](https://api.codeclimate.com/v1/badges/09b85278219863d435c7/maintainability)](https://codeclimate.com/github/hlibbabii/log-recommender/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/a99a88d28ad37a79dbf6/test_coverage)](https://codeclimate.com/github/codeclimate/codeclimate/test_coverage)
 
 This is a project for a master thesis with a title "Supporting logging activities by mining software repositories"
 
