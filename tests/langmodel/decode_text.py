@@ -8,10 +8,39 @@ public `c `C ar ti fact `c request `c builder w` `c ar ti fact w` ( final `C str
 '''
 
 text_boundaries_expected = '''
-public ArtifactRequestBuilder artifact ( final String coordinates ) { setArtifact ( new DefaultArtifact ( coordinates ) ) ; return this ; } public ArtifactRequestBuilder artifact ( final String groupId , final String artifactId , final String version , final String extension , final String classifier ) { setArtifact ( new DefaultArtifact ( groupId , artifactId , classifier , extension , version ) ) ; return this ; } public ArtifactRequestBuilder artifact ( final String groupId , final String artifactId , final String version , final String extension ) { setArtifact ( new DefaultArtifact ( groupId , artifactId , extension , version ) ) ; return this ; } public ArtifactRequestBuilder artifact ( final String groupId , final String artifactId , final String version ) { return artifact ( groupId , artifactId , version , " jar " ) ; } public ArtifactRequestBuilder repository ( final RemoteRepository...repositories ) { for ( RemoteRepository repository : repositories ) { addRepository ( repository ) ; } return this ; } } 
+public ArtifactRequestBuilder artifact ( final String coordinates ){
+setArtifact ( new DefaultArtifact ( coordinates ) );
+return this;
+}
+public ArtifactRequestBuilder artifact ( final String groupId , final String artifactId , final String version , final String extension , final String classifier ){
+setArtifact ( new DefaultArtifact ( groupId , artifactId , classifier , extension , version ) );
+return this;
+}
+public ArtifactRequestBuilder artifact ( final String groupId , final String artifactId , final String version , final String extension ){
+setArtifact ( new DefaultArtifact ( groupId , artifactId , extension , version ) );
+return this;
+}
+public ArtifactRequestBuilder artifact ( final String groupId , final String artifactId , final String version ){
+return artifact ( groupId , artifactId , version , " jar " );
+}
+public ArtifactRequestBuilder repository ( final RemoteRepository...repositories ){
+for ( RemoteRepository repository : repositories ){
+addRepository ( repository );
+}
+return this;
+}
+}
 
 
-/* * Copyright ( c ) 2009 - 2011 Sonatype , Inc.* All rights reserved.This program and the accompanying materials * are made available under the terms of the Eclipse Public License v1.0 * and Apache License v2.0 which accompanies this distribution.* The Eclipse Public License is available at * http : // www.eclipse.org / legal / epl - v10.html * The Apache License v2.0 is available at * http : // www.apache.org / licenses / LICENSE - 2.0.html * You may elect to redistribute this code under either of these licenses.*/ package org.sonatype.sisu.maven.bridge.support ; import java.util.ArrayList ; import java.util.Collection ; import org.apache.maven.model.Repository ; import org.sonatype.aether.repository.RemoteRepository ; import org.sonatype.aether.repository.RepositoryPolicy ; /* * * TODO
+
+/* * Copyright ( c ) 2009 - 2011 Sonatype , Inc.* All rights reserved.This program and the accompanying materials * are made available under the terms of the Eclipse Public License v1.0 * and Apache License v2.0 which accompanies this distribution.* The Eclipse Public License is available at * http : // www.eclipse.org / legal / epl - v10.html * The Apache License v2.0 is available at * http : // www.apache.org / licenses / LICENSE - 2.0.html * You may elect to redistribute this code under either of these licenses.*/
+package org.sonatype.sisu.maven.bridge.support;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.apache.maven.model.Repository;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.repository.RepositoryPolicy;
+/* * * TODO
 '''
 
 
