@@ -19,7 +19,7 @@ class DataGeneratorTest(unittest.TestCase):
         position = 400
         actual = create_case(lst, position)
 
-        expected = ['<pad>'] * 600 + ['a'] * 400, ['a'] * 1000
+        expected = placeholders['pad_token'] * 600 + ['a'] * 400, ['a'] * 1000
         self.assertEqual(expected, actual)
 
     def test_create_case_after_padding(self):
@@ -27,7 +27,7 @@ class DataGeneratorTest(unittest.TestCase):
         position = 4599
         actual = create_case(lst, position)
 
-        expected = ['a'] * 1000, ['a'] * 400 + ['<pad>'] * 600
+        expected = ['a'] * 1000, ['a'] * 400 + [placeholders['pad_token']] * 600
         self.assertEqual(expected, actual)
 
     def test_create_case_before_and_after_padding(self):
@@ -35,7 +35,7 @@ class DataGeneratorTest(unittest.TestCase):
         position = 400
         actual = create_case(lst, position)
 
-        expected = ['<pad>'] * 600 + ['a'] * 400, ['a'] * 600 + ['<pad>'] * 400
+        expected = [placeholders['pad_token']] * 600 + ['a'] * 400, ['a'] * 600 + [placeholders['pad_token']] * 400
         self.assertEqual(expected, actual)
 
     def test_create_case_zero_position(self):
@@ -43,7 +43,7 @@ class DataGeneratorTest(unittest.TestCase):
         position = 0
         actual = create_case(lst, position)
 
-        expected = ['<pad>'] * 1000, ['a'] * 1000
+        expected = [placeholders['pad_token']] * 1000, ['a'] * 1000
         self.assertEqual(expected, actual)
 
     def test_create_negative_case(self):
@@ -52,8 +52,8 @@ class DataGeneratorTest(unittest.TestCase):
 
         actual = create_negative_case(lst)
 
-        expected = ["<pad>"] * 995 + ["int", "a", "=", "0", ";"], \
-                   ["//", "comment"] + ["<pad>"] * 998
+        expected = [placeholders['pad_token']] * 995 + ["int", "a", "=", "0", ";"], \
+                   ["//", "comment"] + [placeholders['pad_token']] * 998
 
         self.assertEqual(expected, actual)
 
@@ -70,8 +70,8 @@ class DataGeneratorTest(unittest.TestCase):
 
         actual = create_positive_case(lst)
 
-        expected = ["<pad>"] * 995 + ["int", "a", "=", "0", ";"], \
-                   ["//", "comment"] + ["<pad>"] * 998
+        expected = [placeholders['pad_token']] * 995 + ["int", "a", "=", "0", ";"], \
+                   ["//", "comment"] + [placeholders['pad_token']] * 998
 
         self.assertEqual(expected, actual)
 

@@ -16,6 +16,7 @@ placeholders= {
     'log_statement': '`L',
     'loggable_block': '`l',
     'loggable_block_end': 'l`',
+    'pad_token': '<pad>'
 }
 
 placeholders_beautiful = {
@@ -27,7 +28,8 @@ placeholders_beautiful = {
     'ect': '\n\n',
     'non_eng': '<non_eng>',
     'non_eng_contents': '<non_eng_contents>',
-    'log_statement': '<log_statement>'
+    'log_statement': '<log_statement>',
+    'pad_token': '<pad>'
 }
 
 separators_beautiful = {

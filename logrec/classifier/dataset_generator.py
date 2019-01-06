@@ -35,7 +35,7 @@ def create_side_of_case(
         else:
             context.append(list_of_words[current_position])
         current_position = step(current_position)
-    context += (['<pad>'] * (WORDS_IN_CONTEXT_LIMIT - len(context)))
+    context += ([placeholders['pad_token']] * (WORDS_IN_CONTEXT_LIMIT - len(context)))
     return context
 
 

@@ -5,6 +5,7 @@ import matplotlib
 from torchtext.data import Field
 
 from fastai.model import validate
+from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser, PreprocessingParam
 from logrec.infrastructure import config_manager
 from logrec.infrastructure.fractions_manager import create_df
@@ -35,7 +36,6 @@ from torchtext import data
 LEVEL_LABEL = data.Field(sequential=False)
 logger = logging.getLogger(__name__)
 
-
 def create_nn_architecture(fs: FS, data: Data, arch: Arch, validation_bs: int) -> RNN_Learner:
     train_df_path = fs.train_path
     train_df = create_df(train_df_path, data.percent, data.start_from)
@@ -48,7 +48,7 @@ def create_nn_architecture(fs: FS, data: Data, arch: Arch, validation_bs: int) -
         valid_df_path = test_df_path
     valid_df = create_df(valid_df_path, data.percent, data.start_from)
 
-    text_field = Field(tokenize=lambda s: s.split(" "))
+    text_field = Field(tokenize=lambda s: s.split(" "), pad_token=placeholders['pad_token'])
     languageModelData = LanguageModelData.from_dataframes(fs.path_to_langmodel,
                                                           text_field, 0,
                                                           train_df, valid_df, test_df,
