@@ -27,7 +27,7 @@ BEST_BASE_MODEL_NAME = 'best_base'
 ENCODER_NAME = 'encoder'
 LM_ENCODER_NAME = 'lm_encoder'
 LAST_MODEL_NAME = 'last'
-PRETRAINED_MODELS_SEPARATOR = '$'
+PRETRAINED_MODELS_SEPARATOR = '_-_'
 PLOT_FILENAME = 'lr_finder_plot.png'
 LR_FINDING_MODEL_NAME = 'lr_finding'
 
