@@ -19,7 +19,7 @@ class DataGeneratorTest(unittest.TestCase):
         position = 400
         actual = create_case(lst, position)
 
-        expected = placeholders['pad_token'] * 600 + ['a'] * 400, ['a'] * 1000
+        expected = [placeholders['pad_token']] * 600 + ['a'] * 400, ['a'] * 1000
         self.assertEqual(expected, actual)
 
     def test_create_case_after_padding(self):
