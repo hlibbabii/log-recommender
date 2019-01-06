@@ -144,10 +144,9 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, s
                     stop_showing_examples = True
                     break
 
-                context_after_reversed = context_after.rstrip("\n").split(" ")
-                context_after_reversed.reverse()
+
                 text += output_predictions(model, text_field, LEVEL_LABEL, context_before.rstrip("\n"),
-                                           " ".join(context_after_reversed), 2, label.rstrip("\n"))
+                                           context_after.rstrip("\n"), 2, label.rstrip("\n"))
                 counter += 1
         except FileNotFoundError:
             project_name = c_filename_before[:-len(ContextsDataset.FW_CONTEXTS_FILE_EXT)]

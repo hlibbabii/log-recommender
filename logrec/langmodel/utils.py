@@ -18,7 +18,10 @@ logger = logging.getLogger(__name__)
 def output_predictions(model: SequentialRNN, input_field: Field, output_field: Field, context: str, context_after: str,
                        how_many: int,
                        actual_label: str) -> str:
-    words = [context.split(" ")] + [context_after.split(" ")]
+    context_after_reversed = context_after.split(" ")
+    context_after_reversed.reverse()
+
+    words = [context.split(" ")] + [context_after_reversed]
     t=to_gpu(input_field.numericalize(words, -1))
 
     res, *_ = model(t)
