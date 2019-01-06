@@ -6,6 +6,7 @@ from logrec.dataprep.split.ngram import SplitRepr
 cc = placeholders['camel_case_separator']
 we = placeholders['split_words_end']
 
+
 def cap_non_init_cc_words(w):
     sub = re.sub(f'{placeholders["camel_case_separator"]} (.*?) (?={placeholders["camel_case_separator"]}|$)',
                  lambda n: "".join(n.group(1).capitalize().split(" ")), w)

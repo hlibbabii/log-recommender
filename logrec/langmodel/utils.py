@@ -10,7 +10,7 @@ from fastai.metrics import top_k, MRR
 import torch
 
 from fastai.nlp import RNN_Learner
-from logrec.langmodel.decode_text import beautify_text
+from logrec.dataprep.text_beautifier import beautify_text
 
 logger = logging.getLogger(__name__)
 
