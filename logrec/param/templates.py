@@ -1,4 +1,4 @@
-from logrec.local_properties import DEFAULT_DATASET
+from logrec.properties import DEFAULT_DATASET
 from logrec.param.model import Droupouts, RegFn, Cycle, LangmodelTraining, Validation, Testing, Data, Arch, \
     LangModelTrainingParams, LangModelLrLearningParams, ClassifierTrainingParams, ClassifierTraining, Stage
 
@@ -58,7 +58,7 @@ factor = 2.6
 classifier_training_param = ClassifierTrainingParams(
     data=data,
     pretrained_model='1_baseline',
-    base_model='1_baseline$baseline',
+    base_model=None,
     arch=arch,
     langmodel_training=langmodel_training,
     classifier_training=ClassifierTraining(
