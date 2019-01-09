@@ -5,6 +5,7 @@ env:
   global:
     - CC_TEST_REPORTER_ID=7b2a8d89ec2d09fea972c4475e21285a4e7d055c72db35d026f263f9a8027395
 cache:
+  timeout: 600
   directories:
     - $HOME/miniconda
 before_install:
