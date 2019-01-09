@@ -35,6 +35,15 @@ class ContextsDataset(data.Dataset):
                                    file_path)
         return c_file_path_before, c_file_path_after, file_path
 
+    @staticmethod
+    def _prepare_context(context: str, context_len: int, reverse: bool = False) -> str:
+        tokens = context.split(" ")
+        if reverse:
+            tokens.reverse()
+        tokens = tokens[-context_len:]
+        merged_tokens = " ".join(tokens)
+        return merged_tokens
+
 
     def __init__(self, path, text_field, label_field, **kwargs):
         """Create an IMDB dataset instance given a path and fields.
@@ -47,6 +56,8 @@ class ContextsDataset(data.Dataset):
                 data.Dataset.
         """
         threshold = kwargs.pop("threshold", 0.0)
+        context_len = kwargs.pop("context_len", 0)
+
         path_to_ignored_projects = os.path.join(path, '..', f"{IGNORED_PROJECTS_FILE_NAME}.{threshold}")
         logger.info(f"Loading ignored projects from {path_to_ignored_projects} ...")
         ignored_projects_set = set(io_utils.read_list(path_to_ignored_projects))
@@ -69,11 +80,12 @@ class ContextsDataset(data.Dataset):
                 l_file = open(l_filename, 'r')
                 for context_before, context_after, level in zip(c_file_before, c_file_after, l_file):
                     level = level.rstrip('\n')
-                    context_after_reversed = context_after.split(" ")
-                    context_after_reversed.reverse()
                     if level:
+                        prepared_context_before = ContextsDataset._prepare_context(context_before, context_len)
+                        prepared_context_after = ContextsDataset._prepare_context(context_after, context_len,
+                                                                                  reverse=True)
                         example = data.Example.fromlist(
-                            [" ".join([context_before, " ".join(context_after_reversed)]), level], fields)
+                            [" ".join([prepared_context_before, prepared_context_after]), level], fields)
                         examples.append(example)
                         random.shuffle(examples)
             except FileNotFoundError:

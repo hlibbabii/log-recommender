@@ -12,7 +12,6 @@ from fastai.lm_rnn import seq2seq_reg, SequentialRNN
 from fastai import metrics
 from fastai.nlp import TextData, RNN_Learner, USE_GPU
 from logrec.classifier.context_datasets import ContextsDataset
-from logrec.classifier.dataset_generator import WORDS_IN_CONTEXT_LIMIT
 from logrec.infrastructure import config_manager
 from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
 from logrec.langmodel.lang_model import printGPUInfo
@@ -32,7 +31,8 @@ CLASSIFIER_NAME_SUFFIX = "_location_classifier"
 
 
 def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, arch: Arch, threshold: float):
-    splits = ContextsDataset.splits(text_field, level_label, fs.path_to_classification_dataset, threshold=threshold)
+    splits = ContextsDataset.splits(text_field, level_label, fs.path_to_classification_dataset, context_len=arch.bptt,
+                                    threshold=threshold)
 
     text_data = TextData.from_splits(fs.path_to_classification_model, splits, arch.bs)
 
@@ -41,7 +41,7 @@ def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, arch: 
     if arch.qrnn and not USE_GPU:
         logger.warning("Cuda not available, not using qrnn. Using lstm instead")
         arch.qrnn = False
-    rnn_learner = text_data.get_model(opt_fn, WORDS_IN_CONTEXT_LIMIT + 1, arch.bptt, arch.em_sz, arch.nh,
+    rnn_learner = text_data.get_model(opt_fn, arch.bptt + 1, arch.bptt, arch.em_sz, arch.nh,
                                       arch.nl,
                                       dropouti=arch.drop.outi,
                                       dropout=arch.drop.out,
