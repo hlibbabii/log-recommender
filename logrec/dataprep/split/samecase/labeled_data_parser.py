@@ -7,7 +7,6 @@ from fastai.imports import tqdm
 from logrec.dataprep import base_project_dir
 from logrec.dataprep.split.samecase import manually_tagged_splittings_file_reader
 from logrec.dataprep.split.samecase.splitter import load_english_dict, get_splittings
-from logrec.langmodel.params import nn_params
 from logrec.util import io_utils
 from logrec.util.param_mutator import ParamMutator
 
@@ -104,9 +103,12 @@ if __name__ == '__main__':
 
     print_different_token_types_stats(stats)
 
-    dataset_name = nn_params["dataset_name"]
-    path_to_dataset = os.path.join(nn_params["path_to_data"], dataset_name)
-    path_to_splits = os.path.join(path_to_dataset, 'splits')
+    # TODO fix and clean this up!
+    # dataset_name = nn_params["dataset_name"]
+    # path_to_dataset = os.path.join(nn_params["path_to_data"], dataset_name)
+    # path_to_splits = os.path.join(path_to_dataset, 'splits')
+    path_to_dataset = None
+    path_to_splits = None
 
     general_dict = load_english_dict(os.path.join(base_project_dir, 'dicts', 'eng'))
 

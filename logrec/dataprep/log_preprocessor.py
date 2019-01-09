@@ -10,7 +10,7 @@ from logrec.dataprep.preprocessors import java
 from logrec.dataprep.preprocessors.legacy import replace_string_resources_names, strip_line, \
     replace_variable_place_holders, \
     split_log_text_to_keywords_and_identifiers, to_lower, add_ect
-from logrec.log_statement import LogStatement
+from logrec.legacy.log_statement import LogStatement
 from logrec.util import io_utils
 
 logger = logging.getLogger(__name__)
