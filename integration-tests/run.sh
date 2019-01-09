@@ -17,5 +17,5 @@ function show_test_dir_contents() {
 python logrec/dataprep/parse_projects.py test1
 show_test_dir_contents
 
-python logrec/dataprep/to_repr.py --preprocessing-params "enonly=1,nocomstr=0,spl=0,nosep=1,nonewlinestabs=1,nologs=0" test1
+python logrec/dataprep/to_repr.py --preprocessing-params "enonly=1,nocomstr=0,spl=1,nosep=1,nonewlinestabs=1,nologs=0" test1
 show_test_dir_contents
