@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 import re
 
 from torchtext import data
@@ -74,6 +75,7 @@ class ContextsDataset(data.Dataset):
                         example = data.Example.fromlist(
                             [" ".join([context_before, " ".join(context_after_reversed)]), level], fields)
                         examples.append(example)
+                        random.shuffle(examples)
             except FileNotFoundError:
                 project_name = c_filename_before[:-len(ContextsDataset.FW_CONTEXTS_FILE_EXT)]
                 logger.error(f"Project context not loaded: {project_name}")
