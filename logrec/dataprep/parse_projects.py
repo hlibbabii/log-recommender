@@ -1,6 +1,5 @@
 import argparse
 import gzip
-import json
 import logging
 import os
 import pickle
@@ -12,19 +11,16 @@ from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.general import from_file
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
 from logrec.dataprep.preprocess_params import pp_params
+from logrec.infrastructure.fs import FS
+from logrec.properties import DEFAULT_PARSE_PROJECTS_ARGS
 from logrec.util.io_utils import file_mapper
 
+logging.basicConfig(level=logging.DEBUG)
+logging.getLogger('matplotlib').setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
 
 EXTENSION = "parsed"
 FILENAMES_EXTENSION = "filenames"
-
-
-def get_two_levels_subdirs(dir):
-    subdirs = next(os.walk(dir))[1]
-    for subdir in subdirs:
-        for subsubdir in next(os.walk(os.path.join(dir, subdir)))[1]:
-            yield dir, subdir, subsubdir
 
 
 def read_file_contents(file_path):
@@ -80,24 +76,23 @@ def split_two_last_levels(root):
     return os.path.dirname(os.path.dirname(os.path.dirname(root))), Path(root).parts[-2], Path(root).parts[-1]
 
 
-def run(raw_dataset_dir, dest_dataset_dir):
-    logger.info(f"Getting files from {os.path.abspath(raw_dataset_dir)}")
-    logger.info(f"Writing preprocessed files to {os.path.abspath(dest_dataset_dir)}")
+def run(dataset):
+    fs = FS.for_parse_projects(dataset)
+
+    logger.info(f"Getting files from {fs.path_to_raw_dataset}")
+    logger.info(f"Writing preprocessed files to {fs.path_to_parsed_dataset}")
     preprocessing_types_dict = {k: None for k in PreprocessingParam}
     logger.info(f"To get preprocessing represantation, "
                 f"resolve the following preprocessing params: {', '.join([pt.value for pt in PreprocessingParam])}")
 
-    if not os.path.exists(dest_dataset_dir):
-        os.makedirs(dest_dataset_dir)
-    with open(os.path.join(dest_dataset_dir, 'params.json'), 'w') as f:
-        json.dump(pp_params, f)
-    with open(os.path.join(dest_dataset_dir, 'preprocessing_types.json'), 'w') as f:
-        json.dump(preprocessing_types_dict, f)
+    fs.save_pp_params(pp_params)
+    fs.save_preprocessing_types(preprocessing_types_dict)
 
     params = []
 
-    for _, train_test_valid, project in get_two_levels_subdirs(raw_dataset_dir):
-        params.append((raw_dataset_dir, dest_dataset_dir, train_test_valid, project, preprocessing_types_dict))
+    for train_test_valid, project in fs.get_raw_projects():
+        params.append(
+            (fs.path_to_raw_dataset, fs.path_to_parsed_dataset, train_test_valid, project, preprocessing_types_dict))
 
     files_total = len(params)
     current_file = 0
@@ -113,22 +108,11 @@ def run(raw_dataset_dir, dest_dataset_dir):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    logging.getLogger('matplotlib').setLevel(logging.INFO)
-
-    from logrec.properties import DEFAULT_RAW_DATASETS_DIR, DEFAULT_PARSED_DATASETS_DIR, \
-        DEFAULT_PARSE_PROJECTS_ARGS
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--base-from',action='store', default=DEFAULT_RAW_DATASETS_DIR)
-    parser.add_argument('--base-to',action='store', default=DEFAULT_PARSED_DATASETS_DIR)
-    parser.add_argument('src', help="name of the 'raw' dataset")
-    parser.add_argument('dest', help='destination for parsed files, recommended format <dataset name>/parsed')
+    parser.add_argument('dataset', help='dataset name')
 
     args = parser.parse_known_args(*DEFAULT_PARSE_PROJECTS_ARGS)
     args = args[0]
 
-    raw_dataset_dir = os.path.join(args.base_from, args.src)
-    dest_dataset_dir = os.path.join(args.base_to, args.dest)
-
-    run(raw_dataset_dir, dest_dataset_dir)
+    run(args.dataset)

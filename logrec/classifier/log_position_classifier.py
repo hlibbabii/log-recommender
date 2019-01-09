@@ -169,9 +169,9 @@ def run(force_rerun: bool):
     base_model = classifier_training_param.base_model
     pretrained_model = classifier_training_param.pretrained_model
 
-    fs = FS(classifier_training_param.data.dataset, classifier_training_param.data.repr,
-            base_model=base_model, pretrained_model=pretrained_model,
-            classification_type=CLASSIFICATION_TYPE)
+    fs = FS.for_classifier(classifier_training_param.data.dataset, classifier_training_param.data.repr,
+                           base_model=base_model, pretrained_model=pretrained_model,
+                           classification_type=CLASSIFICATION_TYPE)
 
     fs.create_path_to_classifier(classifier_training_param.data, classifier_training_param.classifier_training_config)
     attach_dataset_aware_handlers_to_loggers(fs.path_to_classification_model, 'main.log')

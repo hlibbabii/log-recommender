@@ -145,7 +145,7 @@ def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LangmodelTr
 
 def run(find_lr: bool, force_rerun: bool):
     params = langmodel_lr_learning_params if find_lr else langmodel_training_params
-    fs = FS(params.data.dataset, params.data.repr, params.base_model)
+    fs = FS.for_lang_model(params.data.dataset, params.data.repr, params.base_model)
 
     fs.create_path_to_langmodel(params.data, params.langmodel_training_config)
     attach_dataset_aware_handlers_to_loggers(fs.path_to_langmodel, 'main.log')

@@ -1,7 +1,8 @@
+import json
 import logging
 import os
 import shutil
-from typing import Optional, Union
+from typing import Optional, Union, TypeVar, Type
 
 import dill as pickle
 from shutil import copyfile
@@ -10,13 +11,14 @@ from torchtext.data import Field
 
 from fastai.nlp import RNN_Learner
 from logrec.dataprep import MODELS_DIR, TEXT_FIELD_FILE, REPR_DIR, TRAIN_DIR, VALID_DIR, TEST_DIR, \
-    CLASSIFICATION_DIR
+    CLASSIFICATION_DIR, PARSED_DIR
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.infrastructure.config_manager import find_most_similar_config, find_name_for_new_config
 from logrec.infrastructure.fractions_manager import normalize_percent_data
 from logrec.properties import DEFAULT_PARSED_DATASETS_DIR
 from logrec.param.model import Data, LangmodelTrainingConfig, ClassifierTrainingConfig
 from logrec.util import io_utils
+from logrec.properties import DEFAULT_RAW_DATASETS_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -29,11 +31,23 @@ LM_ENCODER_NAME = 'lm_encoder'
 LAST_MODEL_NAME = 'last'
 PRETRAINED_MODELS_SEPARATOR = '_-_'
 PLOT_FILENAME = 'lr_finder_plot.png'
+PP_PARAMS_FILENAME = 'params.json'
+PREPROCESSING_TYPES_FILENAME = 'preprocessing_types.json'
 LR_FINDING_MODEL_NAME = 'lr_finding'
 
 
+def get_two_levels_subdirs(dir):
+    subdirs = next(os.walk(dir))[1]
+    for subdir in subdirs:
+        for subsubdir in next(os.walk(os.path.join(dir, subdir)))[1]:
+            yield dir, subdir, subsubdir
+
+
+T = TypeVar('T', bound='TrivialClass')
+
+
 class FS(object):
-    def __init__(self, dataset: str, repr: str, base_model: str,
+    def __init__(self, dataset: str, repr: Optional[str], base_model: Optional[str],
                  pretrained_model: Optional[str] = None, classification_type: Optional[str] = None):
         self._dataset = dataset
         self._repr = repr
@@ -43,6 +57,26 @@ class FS(object):
 
         self._langmodel_name = None
         self._classification_model_name = None
+
+    #####################################################
+
+    @classmethod
+    def for_lang_model(cls: Type[T], dataset: str, repr: str, base_model: str) -> T:
+        return cls(dataset, repr, base_model)
+
+    @classmethod
+    def for_classifier(cls: Type[T], dataset: str, repr: str, base_model: str,
+                       pretrained_model: str, classification_type: str) -> T:
+        return cls(dataset, repr, base_model, pretrained_model, classification_type)
+
+    @classmethod
+    def for_parse_projects(cls: Type[T], dataset: str) -> T:
+        fs = cls(dataset, None, None)
+        if not os.path.exists(fs.path_to_parsed_dataset):
+            os.makedirs(fs.path_to_parsed_dataset)
+        return fs
+
+    #####################################################
 
     @property
     def dataset(self) -> str:
@@ -100,16 +134,24 @@ class FS(object):
     #################################################333
 
     @property
+    def path_to_raw_dataset(self) -> str:
+        return os.path.join(DEFAULT_RAW_DATASETS_DIR, self.dataset)
+
+    @property
     def path_to_dataset(self) -> str:
-        return os.path.join(DEFAULT_PARSED_DATASETS_DIR, self._dataset)
+        return os.path.join(DEFAULT_PARSED_DATASETS_DIR, self.dataset)
+
+    @property
+    def path_to_parsed_dataset(self) -> str:
+        return os.path.join(self.path_to_dataset, PARSED_DIR)
 
     @property
     def path_to_lang_model_dataset(self) -> str:
-        return os.path.join(self.path_to_dataset, REPR_DIR, self._repr)
+        return os.path.join(self.path_to_dataset, REPR_DIR, self.repr)
 
     @property
     def path_to_classification_dataset(self) -> str:
-        clas9n_repr = PrepParamsParser.to_classification_prep_params(self._repr)
+        clas9n_repr = PrepParamsParser.to_classification_prep_params(self.repr)
         return os.path.join(self.path_to_dataset, CLASSIFICATION_DIR,
                             self.classification_type, clas9n_repr)
 
@@ -243,6 +285,14 @@ class FS(object):
             logger.error("Error copying file!")
             raise err
 
+    def save_pp_params(self, pp_params):
+        with open(os.path.join(self.path_to_parsed_dataset, PP_PARAMS_FILENAME), 'w') as f:
+            json.dump(pp_params, f)
+
+    def save_preprocessing_types(self, preprocessing_types):
+        with open(os.path.join(self.path_to_parsed_dataset, PREPROCESSING_TYPES_FILENAME), 'w') as f:
+            json.dump(preprocessing_types, f)
+
     def save(self, learner):
         learner.save(LAST_MODEL_NAME)
 
@@ -285,3 +335,6 @@ class FS(object):
         shutil.copy(self.path_to_langmodel_encoder, self.path_to_classifier_encoder)
         rnn_learner.load_encoder(LM_ENCODER_NAME)
 
+    def get_raw_projects(self):
+        for _, train_test_valid, project in get_two_levels_subdirs(self.path_to_raw_dataset):
+            yield (train_test_valid, project)
