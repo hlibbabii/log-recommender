@@ -4,6 +4,9 @@ python:
 env:
   global:
     - CC_TEST_REPORTER_ID=7b2a8d89ec2d09fea972c4475e21285a4e7d055c72db35d026f263f9a8027395
+cache:
+  directories:
+    - $HOME/miniconda
 before_install:
   - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
@@ -27,7 +30,7 @@ install:
   - conda env create -f environment.yml
   - conda activate fastai
   - export PYTHONPATH="$HOME/fastai-fork:$PYTHONPATH"
-  - echo "PYTHON_PATH is now $PYTHON_PATH"
+  - echo "PYTHONPATH is now $PYTHONPATH"
   - cd $TRAVIS_BUILD_DIR
   - conda env update -f environment.yml
   - cd $HOME
