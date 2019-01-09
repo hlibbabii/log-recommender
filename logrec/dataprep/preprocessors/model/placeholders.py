@@ -16,7 +16,8 @@ placeholders= {
     'log_statement': '`L',
     'loggable_block': '`l',
     'loggable_block_end': 'l`',
-    'pad_token': '<pad>'
+    'pad_token': '<pad>',
+    'olc_end': 'm`'
 }
 
 placeholders_beautiful = {

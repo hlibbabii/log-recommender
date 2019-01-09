@@ -72,7 +72,7 @@ class TeprTest(unittest.TestCase):
             'dinero',
             '"', 'AWirklich', '"',
             '/*', 'ц', 'blanco_english', '*/',
-            '//', "DIESELBE8"
+            '//', "DIESELBE8", placeholders['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -99,7 +99,8 @@ class TeprTest(unittest.TestCase):
             '"', placeholders['capital'], 'a', placeholders["camel_case_separator"], placeholders['non_eng'], '"',
             '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'english',
             '*/',
-            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8"
+            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8",
+            placeholders['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -129,7 +130,7 @@ class TeprTest(unittest.TestCase):
             '/*', placeholders['non_eng'], placeholders["camel_case_separator"], placeholders['non_eng'],
             placeholders["underscore_separator"], 'english', placeholders['split_words_end'], '*/',
             '//', placeholders["camel_case_separator"], placeholders['capitals'], placeholders['non_eng'],
-            placeholders["camel_case_separator"], '8', placeholders['split_words_end']
+            placeholders["camel_case_separator"], '8', placeholders['split_words_end'], placeholders['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -164,6 +165,7 @@ class TeprTest(unittest.TestCase):
             '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'english',
             '*/',
             '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8",
+            placeholders['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -198,7 +200,7 @@ class TeprTest(unittest.TestCase):
             '/*', placeholders['non_eng'], placeholders["camel_case_separator"], placeholders['non_eng'],
             placeholders["underscore_separator"], 'english', placeholders['split_words_end'], '*/',
             '//', placeholders["camel_case_separator"], placeholders['capitals'], placeholders['non_eng'],
-            placeholders["camel_case_separator"], "8", placeholders['split_words_end']
+            placeholders["camel_case_separator"], "8", placeholders['split_words_end'], placeholders['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -268,6 +270,7 @@ class TeprTest(unittest.TestCase):
             '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'english',
             '*/',
             '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8",
+            placeholders['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -303,7 +306,8 @@ class TeprTest(unittest.TestCase):
             '"', placeholders['capital'], 'a', placeholders["camel_case_separator"], placeholders['non_eng'], '"',
             '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'engl',
             placeholders["same_case_separator"], 'ish', '*/',
-            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8"
+            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8",
+            placeholders['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -341,7 +345,7 @@ class TeprTest(unittest.TestCase):
             '/*', 'ц', 'blanco', placeholders["underscore_separator"], 'engl', placeholders["same_case_separator"],
             'ish', '*/',
             '//', placeholders['capitals'], 'die', placeholders["same_case_separator"], 'selbe',
-            placeholders["camel_case_separator"], "8",
+            placeholders["camel_case_separator"], "8", placeholders['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -380,7 +384,7 @@ class TeprTest(unittest.TestCase):
             placeholders["underscore_separator"], 'english', placeholders['split_words_end'], '*/',
             '\n', '\t',
             '//', placeholders["camel_case_separator"], placeholders['capitals'], placeholders['non_eng'],
-            placeholders["camel_case_separator"], "8", placeholders['split_words_end']
+            placeholders["camel_case_separator"], "8", placeholders['split_words_end'], placeholders['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -453,7 +457,8 @@ class TeprTest(unittest.TestCase):
             '"', placeholders['capital'], 'a', placeholders["camel_case_separator"], placeholders['non_eng'], '"',
             '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'engl',
             placeholders["same_case_separator"], 'ish', '*/',
-            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8"
+            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8",
+            placeholders['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -489,7 +494,8 @@ class TeprTest(unittest.TestCase):
             placeholders["same_case_separator"], 'l',
             placeholders["same_case_separator"], 'i', placeholders["same_case_separator"], 's',
             placeholders["same_case_separator"], 'h', '*/',
-            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8"
+            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8",
+            placeholders['olc_end']
         ]
 
         self.assertEqual(expected, actual)

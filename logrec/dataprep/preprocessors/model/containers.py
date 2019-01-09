@@ -91,9 +91,9 @@ class OneLineComment(TextContainer):
         # TODO this condition despite being right seems to be not robust enough
         # because only one NonEng subclass is mentioned
         if NonEngFullWord in repr_config.types_to_be_repr and self.has_non_eng_contents():
-            return ["//", placeholders['non_eng_contents']]
+            return ["//", placeholders['non_eng_contents'], placeholders['olc_end']]
         else:
-            return ["//"] + torepr(self.subtokens, repr_config)
+            return ["//"] + torepr(self.subtokens, repr_config) + [placeholders['olc_end']]
 
     def preprocessed_repr(self, repr_config):
         return placeholders['comment']
