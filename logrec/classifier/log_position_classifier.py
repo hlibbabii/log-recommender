@@ -41,7 +41,7 @@ def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, arch: 
     if arch.qrnn and not USE_GPU:
         logger.warning("Cuda not available, not using qrnn. Using lstm instead")
         arch.qrnn = False
-    rnn_learner = text_data.get_model(opt_fn, WORDS_IN_CONTEXT_LIMIT, arch.bptt, arch.em_sz, arch.nh,
+    rnn_learner = text_data.get_model(opt_fn, WORDS_IN_CONTEXT_LIMIT + 1, arch.bptt, arch.em_sz, arch.nh,
                                       arch.nl,
                                       dropouti=arch.drop.outi,
                                       dropout=arch.drop.out,
