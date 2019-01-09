@@ -14,6 +14,7 @@ before_install:
   - if [[ -d $HOME/miniconda/bin ]]; then
       echo "Miniconda already installed!";
     else
+      rm -rf $HOME/miniconda
       if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
         wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
       else
