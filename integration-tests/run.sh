@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 PROJECT_ROOT="$CURRENT_DIR/.."
@@ -7,7 +9,13 @@ PROJECT_ROOT="$CURRENT_DIR/.."
 echo "doing cd to $PROJECT_ROOT"
 cd "$PROJECT_ROOT"
 
-echo "Running parse_projects.py ..."
+function show_test_dir_contents() {
+    echo "Showing contents of nn-data/test:"
+    tree -L 3 nn-data/test
+}
+
 python logrec/dataprep/parse_projects.py test1
-echo "Showing contents of nn-data/test after parse_projects.py command:"
-tree -L 2 nn-data/test
+show_test_dir_contents
+
+python logrec/dataprep/to_repr.py --preprocessing-params "enonly=1,nocomstr=0,spl=0,nosep=1,nonewlinestabs=1,nologs=0" test1
+show_test_dir_contents
