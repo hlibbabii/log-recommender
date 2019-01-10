@@ -6,6 +6,7 @@ dependencies:
 - google-api-python-client
 - httplib2
 - deepdiff
+- python-levenshtein
 - pip:
   - typing_inspect
   - cupy-cuda91
