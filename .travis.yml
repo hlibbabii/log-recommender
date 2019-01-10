@@ -55,7 +55,7 @@ script:
   - cd $TRAVIS_BUILD_DIR
   - coverage run -m unittest discover -v -s "tests" -p "*.py"
   - coverage report -m
-  - coverage xml
+  - coverage xml -i
   - echo "Running integration tests pipeline..."
   - chmod +x integration-tests/run.sh
   - integration-tests/run.sh
