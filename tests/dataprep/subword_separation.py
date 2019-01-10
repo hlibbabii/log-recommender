@@ -4,7 +4,7 @@ from logrec.dataprep.preprocess_params import pp_params
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.general import from_string
 from logrec.dataprep.preprocessors.model.containers import SplitContainer, StringLiteral
-from logrec.dataprep.preprocessors.model.logging import LogStatement
+from logrec.dataprep.preprocessors.model.logging import LogStatement, INFO
 from logrec.dataprep.preprocessors.model.noneng import NonEngSubWord, NonEngFullWord
 from logrec.dataprep.preprocessors.model.numeric import Number, DecimalPoint, E
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
@@ -117,7 +117,7 @@ test_cases = {
         ['"', placeholders['non_eng'], '"']
     ),
     'logger.info("Установлена licht4bild пользователем" + user.getNick()) ;': (
-        [LogStatement('logger', 'info',
+        [LogStatement('logger', 'info', INFO,
                       [StringLiteral([
                           NonEngFullWord(FullWord.of('Установлена')),
                           SplitContainer([
