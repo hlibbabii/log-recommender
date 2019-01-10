@@ -9,7 +9,7 @@ class DataGeneratorTest(unittest.TestCase):
     def test_create_case_no_padding(self):
         lst = ['a'] * 5000
         position = 2000
-        actual = create_case(lst, position)
+        actual = create_case(lst, (position, position))
 
         expected = ['a'] * 1000, ['a'] * 1000
         self.assertEqual(expected, actual)
@@ -17,7 +17,7 @@ class DataGeneratorTest(unittest.TestCase):
     def test_create_case_before_padding(self):
         lst = ['a'] * 5000
         position = 400
-        actual = create_case(lst, position)
+        actual = create_case(lst, (position, position))
 
         expected = [placeholders['pad_token']] * 600 + ['a'] * 400, ['a'] * 1000
         self.assertEqual(expected, actual)
@@ -25,7 +25,7 @@ class DataGeneratorTest(unittest.TestCase):
     def test_create_case_after_padding(self):
         lst = ['a'] * 5000
         position = 4599
-        actual = create_case(lst, position)
+        actual = create_case(lst, (position, position))
 
         expected = ['a'] * 1000, ['a'] * 400 + [placeholders['pad_token']] * 600
         self.assertEqual(expected, actual)
@@ -33,7 +33,7 @@ class DataGeneratorTest(unittest.TestCase):
     def test_create_case_before_and_after_padding(self):
         lst = ['a'] * 1001
         position = 400
-        actual = create_case(lst, position)
+        actual = create_case(lst, (position, position))
 
         expected = [placeholders['pad_token']] * 600 + ['a'] * 400, ['a'] * 600 + [placeholders['pad_token']] * 400
         self.assertEqual(expected, actual)
@@ -41,7 +41,7 @@ class DataGeneratorTest(unittest.TestCase):
     def test_create_case_zero_position(self):
         lst = ['fake_log', placeholders["loggable_block"]] + ['a'] * 5000
         position = 0
-        actual = create_case(lst, position)
+        actual = create_case(lst, (position, position))
 
         expected = [placeholders['pad_token']] * 1000, ['a'] * 1000
         self.assertEqual(expected, actual)
@@ -65,7 +65,8 @@ class DataGeneratorTest(unittest.TestCase):
         self.assertIsNone(actual)
 
     def test_create_positive_case(self):
-        lst = [placeholders["loggable_block"], "int", "a", "=", "0", ";", placeholders['log_statement'], "//",
+        lst = [placeholders["loggable_block"], "int", "a", "=", "0", ";", placeholders['log_statement'],
+               "`info", placeholders['log_statement_end'], "//",
                "comment", placeholders["loggable_block_end"]]
 
         actual = create_positive_case(lst)

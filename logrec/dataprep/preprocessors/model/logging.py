@@ -3,11 +3,41 @@ from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.repr import torepr
 
 
+class LogLevel(object):
+    def __init__(self, value, repr):
+        self._value = value
+        self._repr = repr
+
+    @property
+    def value(self):
+        return self._value
+
+    @property
+    def repr(self):
+        return self._repr
+
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.__dict__ == other.__dict__
+
+    def __repr__(self):
+        return self._repr
+
+
+TRACE = LogLevel(0, '`trace')
+DEBUG = LogLevel(1, '`debug')
+INFO = LogLevel(2, '`info')
+WARN = LogLevel(3, '`warn')
+ERROR = LogLevel(4, '`error')
+FATAL = LogLevel(5, '`fatal')
+UNKNOWN = LogLevel(100, '`unknown')
+
+
 class LogStatement(object):
-    def __init__(self, object_name=None, method_name=None,
+    def __init__(self, object_name=None, method_name=None, level=None,
                  log_content_token_list=None, tokens_before_final_semicolon=None):
         self._object_name = object_name
         self._method_name = method_name
+        self._level = level
         self._log_content = LogContent(log_content_token_list if log_content_token_list is not None else [])
         self._tokens_before_final_semicolon = (tokens_before_final_semicolon
                                                if tokens_before_final_semicolon is not None else [])
@@ -26,6 +56,10 @@ class LogStatement(object):
     def method_name(self):
         return self._method_name
 
+    @property
+    def level(self):
+        return self._level
+
     @object_name.setter
     def object_name(self, name):
         self._object_name = name
@@ -34,6 +68,10 @@ class LogStatement(object):
     def method_name(self, name):
         self._method_name = name
 
+    @level.setter
+    def level(self, level):
+        self._level = level
+
     def add_to_log_content(self, token):
         self._log_content.add(token)
 
@@ -41,12 +79,10 @@ class LogStatement(object):
         self._tokens_before_final_semicolon.append(token)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.object_name}#{self.method_name}){self._log_content}{self._tokens_before_final_semicolon}'
+        return f'{self.__class__.__name__}({self.object_name}#{self.method_name}({self.level})){self._log_content}{self._tokens_before_final_semicolon}'
 
     def __eq__(self, other):
-        return self.__class__ == other.__class__ and self._object_name == other._object_name \
-               and self._method_name == other._method_name and self._log_content == other._log_content \
-               and self._tokens_before_final_semicolon == other._tokens_before_final_semicolon
+        return self.__class__ == other.__class__ and self.__dict__ == other.__dict__
 
     def non_preprocessed_repr(self, repr_config):
         return [torepr(self._object_name, repr_config), '.',
@@ -55,7 +91,7 @@ class LogStatement(object):
                + torepr(self._tokens_before_final_semicolon, repr_config) + [';']
 
     def preprocessed_repr(self, repr_config):
-        return placeholders['log_statement']
+        return [placeholders['log_statement'], str(self.level), placeholders['log_statement_end']]
 
 
 class LogContent(ProcessableTokenContainer):

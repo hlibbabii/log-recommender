@@ -14,6 +14,7 @@ placeholders= {
     'non_eng': '`E',
     'non_eng_contents': '`Es',
     'log_statement': '`L',
+    'log_statement_end': 'L`',
     'loggable_block': '`l',
     'loggable_block_end': 'l`',
     'pad_token': '<pad>',
@@ -29,7 +30,6 @@ placeholders_beautiful = {
     'ect': '\n\n',
     'non_eng': '<non_eng>',
     'non_eng_contents': '<non_eng_contents>',
-    'log_statement': '<log_statement>',
     'pad_token': '<pad>'
 }
 

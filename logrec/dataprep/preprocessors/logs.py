@@ -2,14 +2,52 @@ import re
 from enum import Enum, auto
 
 from logrec.dataprep.preprocessors.model.chars import NewLine, Tab
-from logrec.dataprep.preprocessors.model.logging import LogStatement
+from logrec.dataprep.preprocessors.model.logging import LogStatement, LogLevel, TRACE, FATAL, ERROR, WARN, INFO, DEBUG, \
+    UNKNOWN
 from logrec.dataprep.preprocessors.model.word import Word
 
 LOGGER_REGEX = re.compile("[Ll]og|LOG|[Ll]ogger|LOGGER")
-METHOD_REGEX = re.compile('[Tt]race|TRACE|[Dd]ebug|DEBUG|[Ii]nfo|INFO|[Ww]arn|WARN|[Ee]rror|ERROR|[Ff]atal'
-                          '|FATAL|[Ff]inest|FINEST|[Ff]iner|FINER|[Ff]ine|FINE|[Cc]onfig|CONFIG'
-                          '|[Ww]arning|WARNING|[Ss]evere|SEVERE|log[DVIWE]]|[tdviwesf]]')
 
+TRACE_OPTIONS = '[Tt]race|TRACE|v|t|logV|[Ff]inest|FINEST'
+DEBUG_OPTIONS = '[Dd]ebug|DEBUG|d|logD|[Ff]iner|FINER|[Cc]onfig|CONFIG'
+INFO_OPTIONS = '[Ii]nfo|INFO|i|logI|[Ff]ine|FINE'
+WARN_OPTIONS = '[Ww]arn|WARN|[Ww]arning|WARNING|w|logW'
+ERROR_OPTIONS = '[Ee]rror|ERROR|e|logE'
+FATAL_OPTIONS = '[Ff]atal|FATAL|[Ss]evere|SEVERE|s|f'
+
+
+class LevelMatcher():
+    def __init__(self, log_level: LogLevel, regex: str):
+        self._log_level = log_level
+        self._regex = re.compile(regex)
+
+    def is_match(self, s: str) -> bool:
+        return bool(self._regex.fullmatch(s))
+
+    @property
+    def log_level(self):
+        return self._log_level
+
+
+level_matchers = [
+    LevelMatcher(TRACE, TRACE_OPTIONS),
+    LevelMatcher(DEBUG, DEBUG_OPTIONS),
+    LevelMatcher(INFO, INFO_OPTIONS),
+    LevelMatcher(WARN, WARN_OPTIONS),
+    LevelMatcher(ERROR, ERROR_OPTIONS),
+    LevelMatcher(FATAL, FATAL_OPTIONS)
+]
+
+
+def get_log_level(token_str: str) -> LogLevel:
+    for level_matcher in level_matchers:
+        if level_matcher.is_match(token_str):
+            return level_matcher.log_level
+    return UNKNOWN
+
+
+METHOD_REGEX = re.compile(
+    f'{TRACE_OPTIONS}|{DEBUG_OPTIONS}|{INFO_OPTIONS}|{WARN_OPTIONS}|{ERROR_OPTIONS}|{FATAL_OPTIONS}')
 
 class SearchResult(Enum):
     NOT_FOUND = auto()
@@ -49,8 +87,10 @@ class DotFound(LogSearchState):
         else:
             return SearchResult.FAILED
 
-    def action(self, log_statement, token):
-        log_statement.method_name = str(token)
+    def action(self, log_statement: LogStatement, token):
+        token_str = str(token)
+        log_statement.method_name = token_str
+        log_statement.level = get_log_level(token_str)
         return MethodFound()
 
 

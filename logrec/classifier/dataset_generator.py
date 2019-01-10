@@ -3,7 +3,7 @@ import logging
 import os
 import random
 import re
-from typing import List, Tuple, Callable
+from typing import List, Tuple, Callable, Optional
 
 from logrec.classifier.utils import get_dir_and_file
 
@@ -39,18 +39,18 @@ def create_side_of_case(
     return context
 
 
-def create_case(list_of_words: list, position: int) -> (list, list):
+def create_case(list_of_words: list, position_range: (int, int)) -> (list, list):
     before = create_side_of_case(list_of_words=list_of_words,
-                                 position=position,
-                                 end=max(-1, position - WORDS_IN_CONTEXT_LIMIT - 1),
+                                 position=position_range[0],
+                                 end=max(-1, position_range[0] - WORDS_IN_CONTEXT_LIMIT - 1),
                                  step=lambda i: i - 1,
                                  can_iterate=lambda iter, border: iter > border,
                                  last_possible_elm=-1)
     before.reverse()
 
     after = create_side_of_case(list_of_words=list_of_words,
-                                position=position,
-                                end=min(position + WORDS_IN_CONTEXT_LIMIT + 1, len(list_of_words)),
+                                position=position_range[1],
+                                end=min(position_range[1] + WORDS_IN_CONTEXT_LIMIT + 1, len(list_of_words)),
                                 step=lambda i: i + 1,
                                 can_iterate=lambda iter, border: iter < border,
                                 last_possible_elm=len(list_of_words))
@@ -58,21 +58,34 @@ def create_case(list_of_words: list, position: int) -> (list, list):
     return before, after
 
 
-def extract_loggable_blocks_positions(list_of_words: List[str]) -> List[Tuple[int, int]]:
-    blocks = []
+def get_position_ranges_between_tokens(list_of_words: List[str], token1: str, token2: str, suppress_error=True) -> List[
+    Tuple[int, int]]:
+    ranges = []
     search_start_position = 0
     while True:
         try:
-            block_start_pos = list_of_words.index(placeholders['loggable_block'], search_start_position)
+            range_start = list_of_words.index(token1, search_start_position)
         except ValueError:
             break
         try:
-            block_end_pos = list_of_words.index(placeholders['loggable_block_end'], block_start_pos + 1)
+            range_end = list_of_words.index(token2, range_start + 1)
         except ValueError:
-            logger.warning("Invalid file. Loggable block end not found: {}")
-            break
-        blocks.append((block_start_pos + 1, block_end_pos - 1))
-        search_start_position = block_end_pos + 1
+            error_text = f'token2 ({token2}) corresponding to token1 ({token1}) not found: {list_of_words[range_start:range_start+25]}'
+            if suppress_error:
+                logger.warning(f"Interrupting processing: {error_text}")
+                break
+            else:
+                raise ValueError(error_text)
+        ranges.append((range_start, range_end))
+        search_start_position = range_end + 1
+    return ranges
+
+
+def extract_loggable_blocks_positions(list_of_words: List[str]) -> List[Tuple[int, int]]:
+    ranges = get_position_ranges_between_tokens(list_of_words,
+                                                placeholders['loggable_block'],
+                                                placeholders['loggable_block_end'])
+    blocks = [(start + 1, end - 1) for start, end in ranges]
     return blocks
 
 
@@ -92,27 +105,29 @@ def get_possible_log_locations(list_of_words: List[str]) -> List[int]:
                 locations.append(i + 1)
     return locations
 
-def create_negative_case(list_of_words):
+
+def create_negative_case(list_of_words: List[str]):
     indices = get_possible_log_locations(list_of_words)
     if indices:
-        position = random.choice(indices)
-        list_of_words.insert(position, 'fake log st')
-        return create_case(list_of_words, position)
+        position_range = random.choice(indices)
+        list_of_words.insert(position_range, 'fake log st')
+        return create_case(list_of_words, (position_range, position_range))
     else:
         logger.warning(f"Loggable blocks not found, but should be: {list_of_words}")
         return None
 
 
-def create_positive_case(list_of_words):
-    indices = [i for i, x in enumerate(list_of_words) if x == placeholders['log_statement']]
-    if indices:
-        position = random.choice(indices)
+def create_positive_case(list_of_words: List[str]) -> (list, list):
+    position_ranges = get_position_ranges_between_tokens(list_of_words, placeholders['log_statement'],
+                                                         placeholders['log_statement_end'], suppress_error=False)
+    if position_ranges:
+        position_range = random.choice(position_ranges)
     else:
         raise AssertionError("")
-    return create_case(list_of_words, position)
+    return create_case(list_of_words, position_range)
 
 
-def do(filename):
+def do(filename: str) -> Tuple[List[Optional[Tuple[Tuple[List[str], List[str]], bool]]], str]:
     rel_path = get_dir_and_file(filename)
     with open(filename, 'r') as f:
         res = []
@@ -133,7 +148,8 @@ def do(filename):
                 res.append(None)
     return res, rel_path
 
-def run(full_src_dir, dest_dir):
+
+def run(full_src_dir: str, dest_dir: str):
     from logrec.classifier.context_datasets import ContextsDataset
 
     total_files = sum(file_mapper(full_src_dir, lambda f: 1, "parsed.repr"))
