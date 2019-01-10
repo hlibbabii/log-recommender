@@ -36,7 +36,7 @@ install:
   - conda info -a
   - git clone https://github.com/hlibbabii/fastai $HOME/fastai-fork
   - cd $HOME/fastai-fork
-  - conda env create -f environment.yml
+  - conda env update -f environment.yml
   - conda activate fastai
   - export PYTHONPATH="$HOME/fastai-fork:$PYTHONPATH"
   - echo "PYTHONPATH is now $PYTHONPATH"
