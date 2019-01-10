@@ -7,6 +7,7 @@ dependencies:
 - httplib2
 - deepdiff
 - python-levenshtein
+- oauth2client
 - pip:
   - typing_inspect
   - cupy-cuda91
