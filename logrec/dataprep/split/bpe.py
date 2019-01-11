@@ -154,15 +154,17 @@ def run(reset: bool, base_dir: str, n_merges: int) -> None:
     io_utils.dump_dict_into_2_columns(resulting_vocab_sorted, os.path.join(new_bpe_dir, RESULTING_VOCAB_FILE_NAME))
     logger.info(f'Bpe output file are save into {new_bpe_dir} folder')
 
+
 if __name__ == '__main__':
+    from logrec.properties import DEFAULT_BPE_ARGS, base_project_dir
+
     logging.basicConfig(level=logging.DEBUG)
 
     argument_parser = argparse.ArgumentParser()
     argument_parser.add_argument('--n-merges', action='store', type=int, default=1)
-    argument_parser.add_argument('--base-dir', action='store',
-                                 default='/home/hlib/thesis/log-recommender/')
+    argument_parser.add_argument('--base-dir', action='store', default=base_project_dir)
     argument_parser.add_argument('--reset', action='store_true')
-    from logrec.properties import DEFAULT_BPE_ARGS
+
     args = argument_parser.parse_args(*DEFAULT_BPE_ARGS)
 
     run(args.reset, args.base_dir, args.n_merges)

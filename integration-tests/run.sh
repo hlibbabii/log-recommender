@@ -22,3 +22,8 @@ show_test_dir_contents
 
 python logrec/dataprep/vocabsize.py test1 101010
 show_test_dir_contents
+
+cp "$PROJECT_ROOT/nn-data/test/test1/metadata/101010/vocab" "$PROJECT_ROOT/vocab"
+
+logrec/dataprep/split/bpe.py --n-merges 10 --reset
+show_test_dir_contents
