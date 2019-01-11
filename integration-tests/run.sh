@@ -21,6 +21,10 @@ python logrec/dataprep/to_repr.py --preprocessing-params "enonly=1,nocomstr=0,sp
 python logrec/dataprep/to_repr.py --preprocessing-params "enonly=1,nocomstr=0,spl=1,nosep=0,nonewlinestabs=1,nologs=1" test1
 show_test_dir_contents
 
+python logrec/dataprep/vocabsize.py test1 101010
+python logrec/dataprep/vocabsize.py test1 101011
+show_test_dir_contents
+
 python logrec/dataprep/split/bpe.py test1 101010 10 --reset
 python logrec/dataprep/split/bpe.py test1 101011 10 --reset
 show_test_dir_contents
@@ -29,8 +33,6 @@ python logrec/dataprep/to_repr.py --preprocessing-params "enonly=1,nocomstr=0,sp
 python logrec/dataprep/to_repr.py --preprocessing-params "enonly=1,nocomstr=0,spl=4,nosep=0,nonewlinestabs=1,nologs=1" --bpe-base-repr 101011 --bpe-n-merges 10 test1
 show_test_dir_contents
 
-python logrec/dataprep/vocabsize.py test1 101010
-python logrec/dataprep/vocabsize.py test1 101011
 python logrec/dataprep/vocabsize.py test1 104010
 python logrec/dataprep/vocabsize.py test1 104011
 show_test_dir_contents
