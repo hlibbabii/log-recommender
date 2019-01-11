@@ -4,8 +4,9 @@ import os
 import re, collections
 from typing import Optional, Dict
 
-from logrec.dataprep import BPE_DIR
+from logrec.dataprep import BPE_DIR, METADATA_DIR
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
+from logrec.properties import DEFAULT_BPE_ARGS, DEFAULT_PARSED_DATASETS_DIR, base_project_dir
 from logrec.util import io_utils
 from logrec.util.priority_counter import PriorityCounter
 import time
@@ -94,7 +95,9 @@ Dict[str, int], Dict[str, int]):
             non_splitable_vocab[k] = v
     return vocab, non_splitable_vocab
 
-def run(reset: bool, base_dir: str, n_merges: int) -> None:
+
+def run(dataset: str, repr: str, n_merges: int, reset: bool) -> None:
+    base_dir = os.path.join(DEFAULT_PARSED_DATASETS_DIR, dataset, METADATA_DIR, repr)
     if reset:
         starting_from_scratch = True
         archive_existing_common_bpe_folder(base_dir)
@@ -152,19 +155,18 @@ def run(reset: bool, base_dir: str, n_merges: int) -> None:
     io_utils.dump_dict_into_2_columns(vocab, os.path.join(new_bpe_dir, REASSEMBLED_VOCAB_FILE_NAME))
     io_utils.dump_dict_into_2_columns(merges_cache, os.path.join(new_bpe_dir, MERGES_CACHE_FILE_NAME), val_type=list)
     io_utils.dump_dict_into_2_columns(resulting_vocab_sorted, os.path.join(new_bpe_dir, RESULTING_VOCAB_FILE_NAME))
-    logger.info(f'Bpe output file are save into {new_bpe_dir} folder')
+    logger.info(f'Bpe output files are saved into {new_bpe_dir} folder')
 
 
 if __name__ == '__main__':
-    from logrec.properties import DEFAULT_BPE_ARGS, base_project_dir
-
     logging.basicConfig(level=logging.DEBUG)
 
     argument_parser = argparse.ArgumentParser()
-    argument_parser.add_argument('--n-merges', action='store', type=int, default=1)
-    argument_parser.add_argument('--base-dir', action='store', default=base_project_dir)
+    argument_parser.add_argument('dataset', action='store', help=f'dataset name')
+    argument_parser.add_argument('repr', action='store', help=f'repr name')
+    argument_parser.add_argument('n_merges', action='store', type=int)
     argument_parser.add_argument('--reset', action='store_true')
 
     args = argument_parser.parse_args(*DEFAULT_BPE_ARGS)
 
-    run(args.reset, args.base_dir, args.n_merges)
+    run(args.dataset, args.repr, args.n_merges, args.reset)
