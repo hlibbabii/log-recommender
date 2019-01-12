@@ -212,8 +212,6 @@ class FS(object):
         percent_prefix = f"{normalized_percent}_{'' if normalized_start_from == '0' else (normalized_start_from + '_')}"
 
         if pretrained_model:  # it it's a classifier
-            if not pretrained_model.startswith(percent_prefix):
-                raise AssertionError("")
             prefix = f'{pretrained_model}{PRETRAINED_MODELS_SEPARATOR}'
         else:
             prefix = percent_prefix
