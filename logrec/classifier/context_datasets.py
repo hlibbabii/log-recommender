@@ -58,7 +58,7 @@ class ContextsDataset(data.Dataset):
         """
         threshold = kwargs.pop("threshold", 0.0)
         context_len = kwargs.pop("context_len", 0)
-        data = kwargs.pop("data", None)
+        data_params = kwargs.pop("data", None)
 
         path_to_ignored_projects = os.path.join(path, '..', '..', '..', f"{IGNORED_PROJECTS_FILE_NAME}.{threshold}")
         logger.info(f"Loading ignored projects from {path_to_ignored_projects} ...")
@@ -69,7 +69,7 @@ class ContextsDataset(data.Dataset):
 
         for c_filename_before, c_filename_after, l_filename in file_mapper(path, ContextsDataset._get_pair,
                                                                            extension='label'):
-            if not include_to_df(os.path.basename(l_filename), data.percent, data.start_from):
+            if not include_to_df(os.path.basename(l_filename), data_params.percent, data_params.start_from):
                 continue
 
             proj_name = re.sub(f"\.{ContextsDataset.LABEL_FILE_EXT}$", "", get_dir_and_file(l_filename))
@@ -106,7 +106,8 @@ class ContextsDataset(data.Dataset):
                     l_file.close()
 
         if not examples:
-            raise ValueError(f"Examples list is empty")
+            raise ValueError(
+                f"Examples list is empty. (percent={data_params.percent}, start from={data_params.start_from})")
 
         random.shuffle(examples)
         logger.debug(f"Number of examples gathered from {path}: {len(examples)} ")

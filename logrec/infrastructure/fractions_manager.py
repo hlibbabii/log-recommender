@@ -1,5 +1,7 @@
 import logging
 import os
+from typing import Callable
+
 import pandas
 
 from logrec.util.io_utils import file_mapper
@@ -8,12 +10,13 @@ logger = logging.getLogger(__name__)
 
 N_CHUNKS = 1000
 
-def check_max_precision(fl, prec):
+
+def check_max_precision(fl: float, prec: int) -> bool:
     n = int(fl * 10 ** prec) / float(10 ** prec)
     return n == fl
 
 
-def check_value_ranges(percent, start_from):
+def check_value_ranges(percent: float, start_from: float) -> None:
     if percent <= 0.0 or percent > 100.0:
         raise ValueError(f"Wrong value for percent: {percent}")
     if start_from < 0.0:
@@ -23,28 +26,28 @@ def check_value_ranges(percent, start_from):
                          f"and ({start_from})")
 
 
-def normalize_string(val):
+def normalize_string(val: float) -> str:
     if int(val * 10) % 10 == 0:
         return f'{int(val)}'
     else:
         return f'{val:.1f}'
 
 
-def normalize_percent_data(percent, start_from):
+def normalize_percent_data(percent: float, start_from: float) -> (str, str):
     check_max_precision(percent, 1)
     check_max_precision(start_from, 1)
     check_value_ranges(percent, start_from)
     return normalize_string(percent), normalize_string(start_from)
 
 
-def get_chunk_prefix(filename):
+def get_chunk_prefix(filename: str) -> str:
     underscore_index = filename.index("_")
     if underscore_index == -1:
         raise ValueError(f"Filename is not in format <chunk>_<model name>: {filename}")
     return filename[:underscore_index]
 
 
-def include_to_df(filename, percent, start_from):
+def include_to_df(filename: str, percent: float, start_from: float) -> bool:
     basename = os.path.basename(filename)
     if basename.startswith("_"):
         return False
@@ -52,14 +55,14 @@ def include_to_df(filename, percent, start_from):
     return start_from <= chunk < percent * N_CHUNKS * 0.01
 
 
-def include_to_df_tester(percent, start_from):
+def include_to_df_tester(percent: float, start_from: float) -> Callable:
     def tmp(filename):
         return 1 if include_to_df(filename, percent, start_from) else 0
 
     return tmp
 
 
-def create_df(dir, percent, start_from):
+def create_df(dir: str, percent: float, start_from: float) -> pandas.DataFrame:
     lines = []
     files_total = sum(f for f in file_mapper(dir, include_to_df_tester(percent, start_from),
                                              extension=None, ignore_prefix="_"))
