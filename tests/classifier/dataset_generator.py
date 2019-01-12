@@ -71,8 +71,8 @@ class DataGeneratorTest(unittest.TestCase):
 
         actual = create_positive_case(lst)
 
-        expected = [placeholders['pad_token']] * 995 + ["int", "a", "=", "0", ";"], \
-                   ["//", "comment"] + [placeholders['pad_token']] * 998
+        expected = ([placeholders['pad_token']] * 995 + ["int", "a", "=", "0", ";"], \
+                    ["//", "comment"] + [placeholders['pad_token']] * 998), '`info'
 
         self.assertEqual(expected, actual)
 
