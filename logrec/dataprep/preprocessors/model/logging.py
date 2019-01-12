@@ -85,13 +85,10 @@ class LogStatement(object):
         return self.__class__ == other.__class__ and self.__dict__ == other.__dict__
 
     def non_preprocessed_repr(self, repr_config):
-        return [torepr(self._object_name, repr_config), '.',
-                torepr(self._method_name, repr_config), '('] \
-               + torepr(self._log_content.get_subtokens(), repr_config) + [')'] \
-               + torepr(self._tokens_before_final_semicolon, repr_config) + [';']
-
-    def preprocessed_repr(self, repr_config):
-        return [placeholders['log_statement'], str(self.level), placeholders['log_statement_end']]
+        return [placeholders['log_statement'], str(self.level)] + torepr(self._object_name, repr_config) + \
+               ['.'] + torepr(self._method_name, repr_config) + ['('] + \
+               torepr(self._log_content.get_subtokens(), repr_config) + [')'] + \
+               torepr(self._tokens_before_final_semicolon, repr_config) + [placeholders['log_statement_end'], ';']
 
 
 class LogContent(ProcessableTokenContainer):

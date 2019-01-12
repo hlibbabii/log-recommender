@@ -68,7 +68,7 @@ class Searching(LogSearchState):
             return SearchResult.NOT_FOUND
 
     def action(self, log_statement, token):
-        log_statement.object_name = str(token)
+        log_statement.object_name = token
         return LoggerFound()
 
 
@@ -88,9 +88,8 @@ class DotFound(LogSearchState):
             return SearchResult.FAILED
 
     def action(self, log_statement: LogStatement, token):
-        token_str = str(token)
-        log_statement.method_name = token_str
-        log_statement.level = get_log_level(token_str)
+        log_statement.method_name = token
+        log_statement.level = get_log_level(str(token))
         return MethodFound()
 
 

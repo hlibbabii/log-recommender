@@ -36,7 +36,7 @@ class MarkLogTest(unittest.TestCase):
         actual = logs.mark(input, None)
 
         expected = [NewLine(),
-                    LogStatement('log', 'info', INFO, [StringLiteral([FullWord.of("Hi")])]),
+                    LogStatement(FullWord.of('log'), FullWord.of('info'), INFO, [StringLiteral([FullWord.of("Hi")])]),
                     Number([HexStart(), '3', '4', 'a', '3', '5', 'E', L()])]
 
         self.assertEqual(expected, actual)
@@ -53,7 +53,7 @@ class MarkLogTest(unittest.TestCase):
         actual = logs.mark(input, None)
 
         expected = [NewLine(),
-                    LogStatement('log', 'd', DEBUG, [StringLiteral([FullWord.of("Hi")])],
+                    LogStatement(FullWord.of('log'), FullWord.of('d'), DEBUG, [StringLiteral([FullWord.of("Hi")])],
                                  [NewLine(), NewLine(), Tab(), Tab()]),
                     Number([HexStart(), '3', '4', 'a', '3', '5', 'E', L()])]
 
@@ -123,7 +123,8 @@ class MarkLogTest(unittest.TestCase):
         actual = logs.mark(input, None)
 
         expected = [NewLine(),
-                    LogStatement('log', 'logI', INFO, ['(', StringLiteral([FullWord.of("Hi")]),
+                    LogStatement(FullWord.of('log'), FullWord.of('logI'), INFO,
+                                 ['(', StringLiteral([FullWord.of("Hi")]),
                                                  ')', '*', Number(['2'])]),
                     Number([HexStart(), '3', '4', 'a', '3', '5', 'E', L()])]
 
@@ -134,13 +135,15 @@ class MarkLogTest(unittest.TestCase):
                  FullWord.of('log'), '.', FullWord.of('t'),
                  '(', StringLiteral([FullWord.of("Hi")]), ')', ';',
                  NewLine(),
-                 FullWord.of('logger'), '.', FullWord.of('SEVERE'),
+                 FullWord.of('Logger'), '.', FullWord.of('SEVERE'),
                  '(', StringLiteral([FullWord.of("Hi")]), ')', ';', ]
 
         actual = logs.mark(input, None)
 
-        expected = [NewLine(), LogStatement('log', 't', TRACE, [StringLiteral([FullWord.of("Hi")])]),
-                    NewLine(), LogStatement('logger', 'SEVERE', FATAL, [StringLiteral([FullWord.of("Hi")])])]
+        expected = [NewLine(),
+                    LogStatement(FullWord.of('log'), FullWord.of('t'), TRACE, [StringLiteral([FullWord.of("Hi")])]),
+                    NewLine(), LogStatement(FullWord.of('Logger'), FullWord.of('SEVERE'), FATAL,
+                                            [StringLiteral([FullWord.of("Hi")])])]
 
         self.assertEqual(expected, actual)
 

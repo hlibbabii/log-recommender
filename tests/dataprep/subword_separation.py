@@ -117,7 +117,7 @@ test_cases = {
         ['"', placeholders['non_eng'], '"']
     ),
     'logger.info("Установлена licht4bild пользователем" + user.getNick()) ;': (
-        [LogStatement('logger', 'info', INFO,
+        [LogStatement(FullWord.of('logger'), FullWord.of('info'), INFO,
                       [StringLiteral([
                           NonEngFullWord(FullWord.of('Установлена')),
                           SplitContainer([

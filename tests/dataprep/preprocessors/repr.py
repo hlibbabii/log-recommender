@@ -4,6 +4,7 @@ from logrec.dataprep.preprocessors.model.chars import NewLine, Tab
 # TODO write explanations with normal strings
 from logrec.dataprep.preprocessors.model.containers import SplitContainer, OneLineComment, MultilineComment, \
     StringLiteral
+from logrec.dataprep.preprocessors.model.logging import INFO, LogStatement
 from logrec.dataprep.preprocessors.model.noneng import NonEng, NonEngFullWord, NonEngSubWord
 from logrec.dataprep.preprocessors.model.numeric import DecimalPoint, Number
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
@@ -497,6 +498,27 @@ class TeprTest(unittest.TestCase):
             '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8",
             placeholders['olc_end']
         ]
+
+        self.assertEqual(expected, actual)
+
+    def test_log(self):
+        prep_params = {
+            PreprocessingParam.EN_ONLY: 1,
+            PreprocessingParam.NO_COM_STR: 0,
+            PreprocessingParam.SPL: 1,
+            PreprocessingParam.NO_SEP: 0,
+            PreprocessingParam.NO_NEWLINES_TABS: 0,
+            PreprocessingParam.NO_LOGS: 0
+        }
+
+        ngramSplittingConfig = NgramSplitConfig()
+
+        tokens = [LogStatement(FullWord.of('LOGGER'), FullWord.of('Info'), INFO, [StringLiteral([FullWord.of("Hi")])])]
+
+        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+
+        expected = [placeholders['log_statement'], '`info', '`Cs', 'logger', '.', '`C', 'info', '(', '"', '`C', 'hi',
+                    '"', ')', 'L`', ';']
 
         self.assertEqual(expected, actual)
 
