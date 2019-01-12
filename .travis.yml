@@ -9,7 +9,8 @@ cache:
   directories:
     - $HOME/miniconda
 before_cache:
-  - rm -rf $HOME/miniconda/locks $HOME/miniconda/pkgs $HOME/miniconda/var $HOME/miniconda/conda-meta/history $HOME/miniconda/conda-bld
+  - rm -rf $HOME/miniconda/locks $HOME/miniconda/pkgs $HOME/miniconda/var $HOME/miniconda/conda-meta/history $HOME/miniconda/conda-bld $HOME/miniconda/envs/fastai/conda-meta/history
+  - rm -f $HOME/miniconda/envs/fastai/lib/python3.6/site-packages/numpy/__pycache__/__config__.cpython-36.pyc $HOME/miniconda/envs/fastai/lib/python3.6/site-packages/scipy/__pycache__/__config__.cpython-36.pyc
 before_install:
   - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
