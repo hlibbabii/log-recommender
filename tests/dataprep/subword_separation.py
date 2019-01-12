@@ -131,10 +131,10 @@ test_cases = {
                               SubWord.of('get'),
                               SubWord.of('Nick')
                           ]), '(', ')'])],
-        ['logger', '.', 'info', '(', '"', '`C', '`E', '`E', '`c', '4', '`c', '`E', '`E', '"',
-         '+', 'user', '.', 'get', '`c', 'ni', '`s', 'ck', '(', ')', ')', ';'],
-        ['logger', '.', 'info', '(', '"', '`C', '`E', '`c', '`E', '`c', '4', '`c', '`E', 'w`', '`E', '"',
-         '+', 'user', '.', '`c', 'get', '`c', 'ni', 'ck', 'w`', '(', ')', ')', ';']
+        ['`L', '`info', 'logger', '.', 'info', '(', '"', '`C', '`E', '`E', '`c', '4', '`c', '`E', '`E', '"',
+         '+', 'user', '.', 'get', '`c', 'ni', '`s', 'ck', '(', ')', ')', 'L`', ';'],
+        ['`L', '`info', 'logger', '.', 'info', '(', '"', '`C', '`E', '`c', '`E', '`c', '4', '`c', '`E', 'w`', '`E', '"',
+         '+', 'user', '.', '`c', 'get', '`c', 'ni', 'ck', 'w`', '(', ')', ')', 'L`', ';']
     )
 }
 
@@ -150,7 +150,9 @@ bpe_merges_cache = {
     "num": ["num"],
     "user": ["user"],
     "get": ["get"],
-    "nick": ["ni", "ck"]
+    "nick": ["ni", "ck"],
+    "logger": ["logger"],
+    "info": ["info"]
 }
 
 prep_params_separators = {
