@@ -16,7 +16,7 @@ from logrec.infrastructure import config_manager
 from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
 from logrec.langmodel.lang_model import printGPUInfo
 from logrec.langmodel.utils import to_test_mode, output_predictions, attach_dataset_aware_handlers_to_loggers
-from logrec.param.model import Arch, ClassifierTraining
+from logrec.param.model import Arch, ClassifierTraining, Data
 from logrec.param.templates import classifier_training_param
 from logrec.util.io_utils import file_mapper
 
@@ -26,13 +26,11 @@ logger = logging.getLogger(__name__)
 EXAMPLES_TO_SHOW = 200
 
 LEVEL_LABEL = data.LabelField()
-CLASSIFICATION_TYPE = "location"
-CLASSIFIER_NAME_SUFFIX = "_location_classifier"
 
 
-def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, arch: Arch, threshold: float):
+def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, data: Data, arch: Arch, threshold: float):
     splits = ContextsDataset.splits(text_field, level_label, fs.path_to_classification_dataset, context_len=arch.bptt,
-                                    threshold=threshold)
+                                    threshold=threshold, data=data)
 
     text_data = TextData.from_splits(fs.path_to_classification_model, splits, arch.bs)
 
@@ -61,9 +59,10 @@ def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, arch: 
 def get_text_classifier_model(fs: FS,
                               text_field: Field,
                               level_label: Field,
+                              data: Data,
                               arch: Arch,
                               threshold: float) -> (RNN_Learner, bool):
-    rnn_learner = create_nn_architecture(fs, text_field, level_label, arch, threshold)
+    rnn_learner = create_nn_architecture(fs, text_field, level_label, data, arch, threshold)
     logger.info(rnn_learner)
 
     logger.info("Checking if there exists a model with the same architecture")
@@ -165,13 +164,13 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, s
         f.write(text)
 
 
-def run(force_rerun: bool):
+def run(classifier: str, force_rerun: bool) -> None:
     base_model = classifier_training_param.base_model
     pretrained_model = classifier_training_param.pretrained_model
 
     fs = FS.for_classifier(classifier_training_param.data.dataset, classifier_training_param.data.repr,
                            base_model=base_model, pretrained_model=pretrained_model,
-                           classification_type=CLASSIFICATION_TYPE)
+                           classification_type=classifier)
 
     fs.create_path_to_classifier(classifier_training_param.data, classifier_training_param.classifier_training_config)
     attach_dataset_aware_handlers_to_loggers(fs.path_to_classification_model, 'main.log')
@@ -180,6 +179,7 @@ def run(force_rerun: bool):
 
     text_field = fs.load_text_field()
     learner, classifier_model_trained = get_text_classifier_model(fs, text_field, LEVEL_LABEL,
+                                                                  classifier_training_param.data,
                                                                   classifier_training_param.arch,
                                                                   threshold=classifier_training_param.threshold)
 
@@ -211,5 +211,6 @@ def run(force_rerun: bool):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--force-rerun', action='store_const', const=True, default=False)
-    args = parser.parse_args()
-    run(args.force_rerun)
+    parser.add_argument('classifier', action='store')
+    args = parser.parse_args(['location'])
+    run(args.classifier, args.force_rerun)

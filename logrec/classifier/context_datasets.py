@@ -7,6 +7,7 @@ from torchtext import data
 
 from logrec.classifier.utils import get_dir_and_file
 from logrec.dataprep import TRAIN_DIR, TEST_DIR
+from logrec.infrastructure.fractions_manager import include_to_df
 from logrec.util import io_utils
 from logrec.util.io_utils import file_mapper
 
@@ -57,8 +58,9 @@ class ContextsDataset(data.Dataset):
         """
         threshold = kwargs.pop("threshold", 0.0)
         context_len = kwargs.pop("context_len", 0)
+        data = kwargs.pop("data", None)
 
-        path_to_ignored_projects = os.path.join(path, '..', f"{IGNORED_PROJECTS_FILE_NAME}.{threshold}")
+        path_to_ignored_projects = os.path.join(path, '..', '..', '..', f"{IGNORED_PROJECTS_FILE_NAME}.{threshold}")
         logger.info(f"Loading ignored projects from {path_to_ignored_projects} ...")
         ignored_projects_set = set(io_utils.read_list(path_to_ignored_projects))
 
@@ -67,6 +69,9 @@ class ContextsDataset(data.Dataset):
 
         for c_filename_before, c_filename_after, l_filename in file_mapper(path, ContextsDataset._get_pair,
                                                                            extension='label'):
+            if not include_to_df(os.path.basename(l_filename), data.percent, data.start_from):
+                continue
+
             proj_name = re.sub(f"\.{ContextsDataset.LABEL_FILE_EXT}$", "", get_dir_and_file(l_filename))
             if proj_name in ignored_projects_set:
                 continue
@@ -87,7 +92,7 @@ class ContextsDataset(data.Dataset):
                         example = data.Example.fromlist(
                             [" ".join([prepared_context_before, prepared_context_after]), level], fields)
                         examples.append(example)
-                        random.shuffle(examples)
+
             except FileNotFoundError:
                 project_name = c_filename_before[:-len(ContextsDataset.FW_CONTEXTS_FILE_EXT)]
                 logger.error(f"Project context not loaded: {project_name}")
@@ -103,6 +108,7 @@ class ContextsDataset(data.Dataset):
         if not examples:
             raise ValueError(f"Examples list is empty")
 
+        random.shuffle(examples)
         logger.debug(f"Number of examples gathered from {path}: {len(examples)} ")
         super(ContextsDataset, self).__init__(examples, fields, **kwargs)
 

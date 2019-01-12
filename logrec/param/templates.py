@@ -4,7 +4,7 @@ from logrec.param.model import Droupouts, RegFn, Cycle, LangmodelTraining, Valid
 
 data = Data(
     dataset=DEFAULT_DATASET,
-    repr='104111',
+    repr='101011',
     percent=1,
     start_from=0,
 )
@@ -13,8 +13,8 @@ arch = Arch(
     bidir=False,
     qrnn=False,
     bs=16,
-    bptt=10,
-    em_sz=300,  # size of each embedding vector
+    bptt=1000,
+    em_sz=150,  # size of each embedding vector
     nh=300,  # number of hidden activations per layer
     nl=3,  # number of layers
     min_freq=0,
@@ -71,8 +71,8 @@ classifier_training_param = ClassifierTrainingParams(
              ],
         wds=1.1e-6,
         stages=[
-            Stage(-1, Cycle(len=0, n=1, mult=1)),
-            Stage(-1, Cycle(len=0, n=1, mult=1))
+            # Stage(-1, Cycle(len=0, n=1, mult=1)),
+            Stage(0, Cycle(len=2, n=1, mult=2))
         ]
 
     ),
