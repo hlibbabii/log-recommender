@@ -12,7 +12,6 @@ from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.util.io_utils import file_mapper
 
-CLASSIFICATION_TYPE = 'location'
 WORDS_IN_CONTEXT_LIMIT = 1000
 
 logger = logging.getLogger(__name__)
@@ -106,7 +105,7 @@ def get_possible_log_locations(list_of_words: List[str]) -> List[int]:
     return locations
 
 
-def create_negative_case(list_of_words: List[str]):
+def create_negative_case(list_of_words: List[str]) -> Optional[Tuple[List[str], List[str]]]:
     indices = get_possible_log_locations(list_of_words)
     if indices:
         position_range = random.choice(indices)
@@ -117,6 +116,10 @@ def create_negative_case(list_of_words: List[str]):
         return None
 
 
+def extract_level_label(list_of_words: List[str], position_range: Tuple[int, int]) -> str:
+    return list_of_words[position_range[0] + 1]
+
+
 def create_positive_case(list_of_words: List[str]) -> (list, list):
     position_ranges = get_position_ranges_between_tokens(list_of_words, placeholders['log_statement'],
                                                          placeholders['log_statement_end'], suppress_error=False)
@@ -124,24 +127,27 @@ def create_positive_case(list_of_words: List[str]) -> (list, list):
         position_range = random.choice(position_ranges)
     else:
         raise AssertionError("")
-    return create_case(list_of_words, position_range)
+
+    contexts = create_case(list_of_words, position_range)
+    level = extract_level_label(list_of_words, position_range)
+    return contexts, level
 
 
-def do(filename: str) -> Tuple[List[Optional[Tuple[Tuple[List[str], List[str]], bool]]], str]:
+def create_log_position_cases(filename: str) -> Tuple[List[Optional[Tuple[List[str], List[str], bool]]], str]:
     rel_path = get_dir_and_file(filename)
     with open(filename, 'r') as f:
         res = []
         os.path.join(filename)
         for line in f:
-            line = line if line[-1] != '\n' else line[:-1]
-            list_of_words = line.split(" ")
+            list_of_words = line.rstrip('\n').split(" ")
             if placeholders['log_statement'] in list_of_words:
                 if random.choice([True, False]):
-                    res.append((create_positive_case(list_of_words), True))
+                    contexts, _ = create_positive_case(list_of_words)
+                    res.append((*contexts, 1))
                 else:
                     case = create_negative_case(list_of_words)
                     if case:
-                        res.append((case, False))
+                        res.append((*case, 0))
                     else:
                         res.append(None)
             else:
@@ -149,12 +155,48 @@ def do(filename: str) -> Tuple[List[Optional[Tuple[Tuple[List[str], List[str]], 
     return res, rel_path
 
 
-def run(full_src_dir: str, dest_dir: str):
+def create_level_cases(filename: str) -> Tuple[List[Optional[Tuple[List[str], List[str], bool]]], str]:
+    rel_path = get_dir_and_file(filename)
+    with open(filename, 'r') as f:
+        res = []
+        os.path.join(filename)
+        for line in f:
+            list_of_words = line.rstrip('\n').split(" ")
+            if placeholders['log_statement'] in list_of_words:
+                contexts, level = create_positive_case(list_of_words)
+                res.append((*contexts, level))
+            else:
+                res.append(None)
+    return res, rel_path
+
+
+def get_cases_creator(classifier):
+    if classifier == 'location':
+        return create_log_position_cases
+    elif classifier == 'level':
+        return create_level_cases
+    else:
+        raise ValueError(f'Unknown classifier: {classifier}')
+
+
+def run(dataset: str, repr: str, classifier: str):
     from logrec.classifier.context_datasets import ContextsDataset
+
+    path_to_dataset = os.path.join(DEFAULT_PARSED_DATASETS_DIR, dataset)
+    full_src_dir = os.path.join(path_to_dataset, REPR_DIR, repr)
+    clas9n_dataset_name = PrepParamsParser.to_classification_prep_params(args.repr)
+    dest_dir = os.path.join(path_to_dataset, CLASSIFICATION_DIR, classifier, clas9n_dataset_name)
+    logger.info(f"Writing to {dest_dir}")
+
+    os.makedirs(os.path.join(dest_dir, TRAIN_DIR), exist_ok=True)
+    os.makedirs(os.path.join(dest_dir, TEST_DIR), exist_ok=True)
+    os.makedirs(os.path.join(dest_dir, VALID_DIR), exist_ok=True)
 
     total_files = sum(file_mapper(full_src_dir, lambda f: 1, "parsed.repr"))
     count = 0
-    for lines, rel_path in file_mapper(full_src_dir, do, "parsed.repr"):
+
+    cases_creator = get_cases_creator(classifier)
+    for lines, rel_path in file_mapper(full_src_dir, cases_creator, "parsed.repr"):
         count += 1
         logger.info(f"Processing {count} out of {total_files}")
         forward_path = os.path.join(dest_dir, re.sub("parsed\\.repr", ContextsDataset.FW_CONTEXTS_FILE_EXT, rel_path))
@@ -163,9 +205,9 @@ def run(full_src_dir: str, dest_dir: str):
         with open(forward_path, 'w') as f, open(backward_path, 'w') as b, open(label_path, 'w') as l:
             for line in lines:
                 if line:
-                    l.write(f'{1 if line[1] else 0}\n')
-                    f.write(f'{" ".join(line[0][0])}\n')
-                    b.write(f'{" ".join(line[0][1])}\n')
+                    l.write(f'{line[2]}\n')
+                    f.write(f'{" ".join(line[0])}\n')
+                    b.write(f'{" ".join(line[1])}\n')
                 else:
                     l.write('\n')
                     f.write('\n')
@@ -178,21 +220,11 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--base', action='store', default=DEFAULT_PARSED_DATASETS_DIR)
     parser.add_argument('dataset', action='store', help=f'path to the repr dataset')
     parser.add_argument('repr', action='store', help=f'path to the repr dataset')
+    parser.add_argument('classifier', action='store', help=f'classifier type: location|level')
 
     args = parser.parse_known_args(*DEFAULT_DATASET_GENERATOR_ARGS)
     args = args[0]
 
-    path_to_dataset = os.path.join(args.base, args.dataset)
-    full_src_dir = os.path.join(path_to_dataset, REPR_DIR, args.repr)
-    clas9n_dataset_name = PrepParamsParser.to_classification_prep_params(args.repr)
-    dest_dir = os.path.join(path_to_dataset, CLASSIFICATION_DIR, CLASSIFICATION_TYPE, clas9n_dataset_name)
-    logger.info(f"Writing to {dest_dir}")
-
-    os.makedirs(os.path.join(dest_dir, TRAIN_DIR), exist_ok=True)
-    os.makedirs(os.path.join(dest_dir, TEST_DIR), exist_ok=True)
-    os.makedirs(os.path.join(dest_dir, VALID_DIR), exist_ok=True)
-
-    run(full_src_dir, dest_dir)
+    run(args.dataset, args.repr, args.classifier)
