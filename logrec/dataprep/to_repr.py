@@ -82,7 +82,6 @@ def to_repr(preprocessing_params, token_list, ngramSplittingConfig):
         PreprocessingType.SPL: 4,
         PreprocessingType.NO_SEP: 0
         PreprocessingType.NO_NEWLINES_TABS: 0,
-        PreprocessingType.NO_LOGS: 0
     }
     :param token_list: list of tokens to be preprocessed
     :return:
@@ -177,19 +176,14 @@ def run(base_dir, dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, sp
         logger.warning("No new preprocessors to be applied found")
         exit(0)
 
-    if got_pure_repr:
-        logger.info("Representation resolved")
-    else:
-        logger.info(f"Representation not resolved: {new_preprocessing_types_dict}")
+    if not got_pure_repr:
         logger.error(f"Partial representation is no longer supported")
         exit(388)
 
-    gen_dir_name_from_verb_param = PrepParamsParser.encode_dict(new_preprocessing_types_dict)
-    while os.path.exists(gen_dir_name_from_verb_param):
-        gen_dir_name_from_verb_param += '_'
+    repr = PrepParamsParser.encode_dict(new_preprocessing_types_dict)
 
-    full_dest_dir = os.path.join(dest_dir, REPR_EXTENSION, gen_dir_name_from_verb_param)
-    full_metadata_dir = os.path.join(dest_dir, METADATA_DIR, gen_dir_name_from_verb_param)
+    full_dest_dir = os.path.join(dest_dir, REPR_EXTENSION, repr)
+    full_metadata_dir = os.path.join(dest_dir, METADATA_DIR, repr)
     logger.info(f"Writing preprocessed files to {os.path.abspath(full_dest_dir)}")
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir)
@@ -233,7 +227,7 @@ if __name__ == '__main__':
     parser.add_argument('dataset', action='store', help=f'path to the parsed dataset')
     parser.add_argument('-p', '--preprocessing-params', required=True, action='store',
                         help='preprocessing params line, \n Example: '
-                             'enonly=1,nocomstr=0,spl=1,nosep=1,nonewlinestabs=0,nologs=0,')
+                             'enonly=1,nocomstr=0,spl=1,nosep=1,nonewlinestabs=0')
 
     parser.add_argument('--bpe-base-repr', action='store', help='TODO')
     parser.add_argument('--bpe-n-merges', action='store', help='TODO')

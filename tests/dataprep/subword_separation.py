@@ -159,7 +159,6 @@ prep_params_separators = {
     PreprocessingParam.SPL: 4,
     PreprocessingParam.NO_SEP: 0,
     PreprocessingParam.NO_NEWLINES_TABS: 1,
-    PreprocessingParam.NO_LOGS: 0
 }
 
 prep_params_boundaries = {
@@ -168,7 +167,6 @@ prep_params_boundaries = {
     PreprocessingParam.SPL: 4,
     PreprocessingParam.NO_SEP: 1,
     PreprocessingParam.NO_NEWLINES_TABS: 1,
-    PreprocessingParam.NO_LOGS: 0
 }
 
 ngram_split_config = NgramSplitConfig(NgramSplittingType.BPE, merges_cache=bpe_merges_cache, merges={})

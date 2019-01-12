@@ -51,7 +51,6 @@ class TeprTest(unittest.TestCase):
                 PreprocessingParam.SPL: 0,
                 PreprocessingParam.NO_SEP: 0,
                 PreprocessingParam.NO_NEWLINES_TABS: 1,
-                PreprocessingParam.NO_LOGS: 0
             }
             to_repr(prep_params, [], {})
 
@@ -62,7 +61,6 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.SPL: 0,
             PreprocessingParam.NO_SEP: 0,
             PreprocessingParam.NO_NEWLINES_TABS: 1,
-            PreprocessingParam.NO_LOGS: 0
         }
 
         actual = to_repr(prep_params, tokens, NgramSplitConfig())
@@ -88,7 +86,6 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.SPL: 1,
             PreprocessingParam.NO_SEP: 0,
             PreprocessingParam.NO_NEWLINES_TABS: 1,
-            PreprocessingParam.NO_LOGS: 0
         }
 
         actual = to_repr(prep_params, tokens, NgramSplitConfig())
@@ -117,7 +114,6 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.SPL: 1,
             PreprocessingParam.NO_SEP: 1,
             PreprocessingParam.NO_NEWLINES_TABS: 1,
-            PreprocessingParam.NO_LOGS: 0
         }
 
         actual = to_repr(prep_params, tokens, NgramSplitConfig())
@@ -146,7 +142,6 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.SPL: 2,
             PreprocessingParam.NO_SEP: 0,
             PreprocessingParam.NO_NEWLINES_TABS: 1,
-            PreprocessingParam.NO_LOGS: 0
         }
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS,
@@ -181,7 +176,6 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.SPL: 2,
             PreprocessingParam.NO_SEP: 1,
             PreprocessingParam.NO_NEWLINES_TABS: 1,
-            PreprocessingParam.NO_LOGS: 0
         }
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS)
@@ -216,7 +210,6 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.SPL: 3,
             PreprocessingParam.NO_SEP: 0,
             PreprocessingParam.NO_NEWLINES_TABS: 1,
-            PreprocessingParam.NO_LOGS: 0
         }
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -286,7 +279,6 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.NO_COM_STR: 0,
             PreprocessingParam.NO_SEP: 0,
             PreprocessingParam.NO_NEWLINES_TABS: 1,
-            PreprocessingParam.NO_LOGS: 0
         }
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -323,7 +315,6 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.SPL: 3,
             PreprocessingParam.NO_SEP: 0,
             PreprocessingParam.NO_NEWLINES_TABS: 1,
-            PreprocessingParam.NO_LOGS: 0
         }
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -362,7 +353,6 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.SPL: 2,
             PreprocessingParam.NO_SEP: 1,
             PreprocessingParam.NO_NEWLINES_TABS: 0,
-            PreprocessingParam.NO_LOGS: 0
         }
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS,
@@ -401,7 +391,6 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.SPL: 3,
             PreprocessingParam.NO_SEP: 0,
             PreprocessingParam.NO_NEWLINES_TABS: 1,
-            PreprocessingParam.NO_LOGS: 0
         }
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -437,7 +426,6 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.SPL: 3,
             PreprocessingParam.NO_SEP: 0,
             PreprocessingParam.NO_NEWLINES_TABS: True,
-            PreprocessingParam.NO_LOGS: 0
         }
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -475,7 +463,6 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.SPL: 4,
             PreprocessingParam.NO_SEP: 0,
             PreprocessingParam.NO_NEWLINES_TABS: 1,
-            PreprocessingParam.NO_LOGS: 0
         }
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.BPE,
@@ -508,7 +495,6 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.SPL: 1,
             PreprocessingParam.NO_SEP: 0,
             PreprocessingParam.NO_NEWLINES_TABS: 0,
-            PreprocessingParam.NO_LOGS: 0
         }
 
         ngramSplittingConfig = NgramSplitConfig()
@@ -535,7 +521,6 @@ class TeprTest(unittest.TestCase):
             PreprocessingParam.SPL: 4,
             PreprocessingParam.NO_SEP: 0,
             PreprocessingParam.NO_NEWLINES_TABS: 0,
-            PreprocessingParam.NO_LOGS: 0
         }
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.BPE,

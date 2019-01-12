@@ -96,7 +96,7 @@ def get_possible_log_locations(list_of_words: List[str]) -> List[int]:
     - after {
     '''
     locations = []
-    symbol_to_insert_after = ['{', '}', ';', '`L']
+    symbol_to_insert_after = ['{', '}', ';']
     blocks_positions = extract_loggable_blocks_positions(list_of_words)
     for start, end in blocks_positions:
         for i in range(start, end):
@@ -184,8 +184,7 @@ def run(dataset: str, repr: str, classifier: str):
 
     path_to_dataset = os.path.join(DEFAULT_PARSED_DATASETS_DIR, dataset)
     full_src_dir = os.path.join(path_to_dataset, REPR_DIR, repr)
-    clas9n_dataset_name = PrepParamsParser.to_classification_prep_params(args.repr)
-    dest_dir = os.path.join(path_to_dataset, CLASSIFICATION_DIR, classifier, clas9n_dataset_name)
+    dest_dir = os.path.join(path_to_dataset, CLASSIFICATION_DIR, classifier, args.repr)
     logger.info(f"Writing to {dest_dir}")
 
     os.makedirs(os.path.join(dest_dir, TRAIN_DIR), exist_ok=True)

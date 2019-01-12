@@ -17,38 +17,31 @@ function show_test_dir_contents() {
 python logrec/dataprep/parse_projects.py test1
 show_test_dir_contents
 
-python logrec/dataprep/to_repr.py --preprocessing-params "enonly=1,nocomstr=0,spl=1,nosep=0,nonewlinestabs=1,nologs=0" test1
-python logrec/dataprep/to_repr.py --preprocessing-params "enonly=1,nocomstr=0,spl=1,nosep=0,nonewlinestabs=1,nologs=1" test1
+python logrec/dataprep/to_repr.py --preprocessing-params "enonly=1,nocomstr=0,spl=1,nosep=0,nonewlinestabs=1" test1
 show_test_dir_contents
 
-python logrec/dataprep/vocabsize.py test1 101010
-python logrec/dataprep/vocabsize.py test1 101011
+python logrec/dataprep/vocabsize.py test1 10101
 show_test_dir_contents
 
-python logrec/dataprep/split/bpe.py test1 101010 10 --reset
-python logrec/dataprep/split/bpe.py test1 101011 10 --reset
+python logrec/dataprep/split/bpe.py test1 10101 10 --reset
 show_test_dir_contents
 
-python logrec/dataprep/to_repr.py --preprocessing-params "enonly=1,nocomstr=0,spl=4,nosep=0,nonewlinestabs=1,nologs=0" --bpe-base-repr 101010 --bpe-n-merges 10 test1
-python logrec/dataprep/to_repr.py --preprocessing-params "enonly=1,nocomstr=0,spl=4,nosep=0,nonewlinestabs=1,nologs=1" --bpe-base-repr 101011 --bpe-n-merges 10 test1
+python logrec/dataprep/to_repr.py --preprocessing-params "enonly=1,nocomstr=0,spl=4,nosep=0,nonewlinestabs=1" --bpe-base-repr 10101 --bpe-n-merges 10 test1
 show_test_dir_contents
 
-python logrec/dataprep/vocabsize.py test1 104010
-python logrec/dataprep/vocabsize.py test1 104011
+python logrec/dataprep/vocabsize.py test1 10401
 show_test_dir_contents
 
 echo "Displaying vocab sizes"
-wc -l "$PROJECT_ROOT/nn-data/test/test1/metadata/101010/vocab"
-wc -l "$PROJECT_ROOT/nn-data/test/test1/metadata/101011/vocab"
-wc -l "$PROJECT_ROOT/nn-data/test/test1/metadata/104010/vocab"
-wc -l "$PROJECT_ROOT/nn-data/test/test1/metadata/104011/vocab"
+wc -l "$PROJECT_ROOT/nn-data/test/test1/metadata/10101/vocab"
+wc -l "$PROJECT_ROOT/nn-data/test/test1/metadata/10401/vocab"
 
-python logrec/classifier/dataset_generator.py test1 104011 location
+python logrec/classifier/dataset_generator.py test1 10401 location
 show_test_dir_contents
 
-python logrec/classifier/dataset_generator.py test1 104011 level
+python logrec/classifier/dataset_generator.py test1 10401 level
 show_test_dir_contents
 
-python logrec/classifier/dataset_stats.py test1 104011 1.0
+python logrec/classifier/dataset_stats.py test1 10401 1.0
 show_test_dir_contents
 

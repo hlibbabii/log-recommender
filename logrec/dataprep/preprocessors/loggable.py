@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def to_repr_l(lst):
-    return to_repr(PrepParamsParser.from_arg_str('enonly=0,nocomstr=0,spl=0,nosep=1,nonewlinestabs=0,nologs=0'), lst,
+    return to_repr(PrepParamsParser.from_arg_str('enonly=0,nocomstr=0,spl=0,nosep=1,nonewlinestabs=0'), lst,
                    NgramSplitConfig())
 
 class State(object):

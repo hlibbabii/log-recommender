@@ -51,9 +51,8 @@ def calc_stats(dest_dir, threshold):
 
 
 def run(dataset, repr, threshold):
-    clas9n_dataset_name = PrepParamsParser.to_classification_prep_params(repr)
     path_to_classification = os.path.join(DEFAULT_PARSED_DATASETS_DIR, dataset, CLASSIFICATION_DIR)
-    dest_dir = os.path.join(path_to_classification, CLASSIFICATION_TYPE, clas9n_dataset_name)
+    dest_dir = os.path.join(path_to_classification, CLASSIFICATION_TYPE, repr)
 
     logger.info(f"Getting stats for {dest_dir}")
     logger.info(

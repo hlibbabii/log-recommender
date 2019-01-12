@@ -4,7 +4,6 @@ from enum import Enum
 from logrec.dataprep.preprocessors.model.chars import NewLine, Tab
 from logrec.dataprep.preprocessors.model.containers import SplitContainer, StringLiteral, OneLineComment, \
     MultilineComment
-from logrec.dataprep.preprocessors.model.logging import LogStatement, LogContent, LoggableBlock
 from logrec.dataprep.preprocessors.model.noneng import NonEngSubWord, NonEngFullWord
 from logrec.dataprep.preprocessors.model.numeric import Number
 from logrec.dataprep.preprocessors.model.word import SubWord, FullWord
@@ -23,7 +22,6 @@ class PreprocessingParam(str, Enum):
     # 4 - camel-case, underscore; byte-pair encoding (bpe)
     NO_SEP: str = 'nosep'
     NO_NEWLINES_TABS: str = 'nonewlinestabs'
-    NO_LOGS: str = 'nologs'
 
 
 class PrepParamsParser(object):
@@ -52,11 +50,6 @@ class PrepParamsParser(object):
                 res += str(int(prep_params_dict[k]))
         return res
 
-    @staticmethod
-    def to_classification_prep_params(st):
-        nologs_pos_index = list(PreprocessingParam).index(PreprocessingParam.NO_LOGS)
-        return st[:nologs_pos_index] + st[nologs_pos_index + 1:]
-
 
 
 com_str_to_types_to_be_repr = {
@@ -77,6 +70,4 @@ def get_types_to_be_repr(preprocessing_params):
         res.extend([NewLine, Tab])
     if preprocessing_params[PreprocessingParam.EN_ONLY]:
         res.extend([NonEngSubWord, NonEngFullWord])
-    if preprocessing_params[PreprocessingParam.NO_LOGS]:
-        res.extend([LogStatement, LogContent, LoggableBlock])
     return res

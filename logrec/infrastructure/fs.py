@@ -151,9 +151,8 @@ class FS(object):
 
     @property
     def path_to_classification_dataset(self) -> str:
-        clas9n_repr = PrepParamsParser.to_classification_prep_params(self.repr)
         return os.path.join(self.path_to_dataset, CLASSIFICATION_DIR,
-                            self.classification_type, clas9n_repr)
+                            self.classification_type, repr)
 
     @property
     def path_to_classification_model(self) -> str:

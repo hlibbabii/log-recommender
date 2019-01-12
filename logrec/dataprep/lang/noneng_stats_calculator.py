@@ -20,7 +20,6 @@ DEFAULT_NO_COM_NO_STR = {
     PreprocessingParam.SPL: 2,
     PreprocessingParam.NO_SEP: 0,
     PreprocessingParam.NO_NEWLINES_TABS: 1,
-    PreprocessingParam.NO_LOGS: 0,
 }
 
 DEFAULT_NO_COM = {
@@ -28,7 +27,6 @@ DEFAULT_NO_COM = {
     PreprocessingParam.SPL: 2,
     PreprocessingParam.NO_SEP: 0,
     PreprocessingParam.NO_NEWLINES_TABS: 1,
-    PreprocessingParam.NO_LOGS: 0,
 }
 
 DEFAULT = {
@@ -36,7 +34,6 @@ DEFAULT = {
     PreprocessingParam.SPL: 2,
     PreprocessingParam.NO_SEP: 0,
     PreprocessingParam.NO_NEWLINES_TABS: 1,
-    PreprocessingParam.NO_LOGS: 0
 }
 
 
