@@ -62,7 +62,13 @@ def include_to_df_tester(percent: float, start_from: float) -> Callable:
     return tmp
 
 
-def create_df(dir: str, percent: float, start_from: float) -> pandas.DataFrame:
+def reverse_line(line):
+    lst = line.split(" ")
+    lst.reverse()
+    return " ".join(lst)
+
+
+def create_df(dir: str, percent: float, start_from: float, backwards: bool) -> pandas.DataFrame:
     lines = []
     files_total = sum(f for f in file_mapper(dir, include_to_df_tester(percent, start_from),
                                              extension=None, ignore_prefix="_"))
@@ -74,7 +80,10 @@ def create_df(dir: str, percent: float, start_from: float) -> pandas.DataFrame:
                 if include_to_df(file, percent, start_from):
                     cur_file += 1
                     logger.info(f'Adding {os.path.join(root, file)} to dataframe [{cur_file} out of {files_total}]')
-                    lines.extend([line for line in f])
+                    for line in f:
+                        if backwards:
+                            line = reverse_line(line)
+                        lines.append(line)
     if not lines:
         raise ValueError(f"No data available: {os.path.abspath(dir)}")
     return pandas.DataFrame(lines)

@@ -24,11 +24,12 @@ class Cycle(object):
 
 
 class LangmodelTraining(object):
-    def __init__(self, metrics: List[str], lr: float, wds: float, cycle: Cycle):
+    def __init__(self, metrics: List[str], lr: float, wds: float, cycle: Cycle, backwards: bool):
         self.metrics = metrics
         self.lr = lr
         self.wds = wds
         self.cycle = cycle
+        self.backwards = backwards
 
 
 class Stage(object):

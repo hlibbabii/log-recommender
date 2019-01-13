@@ -36,17 +36,18 @@ from torchtext import data
 LEVEL_LABEL = data.Field(sequential=False)
 logger = logging.getLogger(__name__)
 
-def create_nn_architecture(fs: FS, data: Data, arch: Arch, validation_bs: int) -> RNN_Learner:
+
+def create_nn_architecture(fs: FS, data: Data, arch: Arch, validation_bs: int, backwards: bool) -> RNN_Learner:
     train_df_path = fs.train_path
-    train_df = create_df(train_df_path, data.percent, data.start_from)
+    train_df = create_df(train_df_path, data.percent, data.start_from, backwards)
 
     test_df_path = fs.test_path
-    test_df = create_df(test_df_path, data.percent, data.start_from)
+    test_df = create_df(test_df_path, data.percent, data.start_from, backwards)
 
     valid_df_path = fs.valid_path
     if not os.path.exists(valid_df_path):
         valid_df_path = test_df_path
-    valid_df = create_df(valid_df_path, data.percent, data.start_from)
+    valid_df = create_df(valid_df_path, data.percent, data.start_from, backwards)
 
     text_field = Field(tokenize=lambda s: s.split(" "), pad_token=placeholders['pad_token'])
     languageModelData = LanguageModelData.from_dataframes(fs.path_to_langmodel,
@@ -73,8 +74,8 @@ def create_nn_architecture(fs: FS, data: Data, arch: Arch, validation_bs: int) -
     return rnn_learner
 
 
-def get_best_available_model(fs: FS, data: Data, arch: Arch, validation_bs: int):
-    rnn_learner = create_nn_architecture(fs, data, arch, validation_bs)
+def get_best_available_model(fs: FS, data: Data, arch: Arch, validation_bs: int, backwards: bool):
+    rnn_learner = create_nn_architecture(fs, data, arch, validation_bs, backwards)
     logger.info(rnn_learner)
 
     logger.info("Checking if there exists a model with the same architecture")
@@ -156,7 +157,8 @@ def run(find_lr: bool, force_rerun: bool):
 
     printGPUInfo()
 
-    learner, model_trained = get_best_available_model(fs, params.data, params.arch, params.validation_bs)
+    learner, model_trained = get_best_available_model(fs, params.data, params.arch, params.validation_bs,
+                                                      params.langmodel_training.backwards)
 
     fs.save_vocab_data(learner.text_field)
 

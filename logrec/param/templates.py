@@ -35,6 +35,7 @@ langmodel_training = LangmodelTraining(
     lr=1.1e-3,
     wds=1e-6,
     cycle=Cycle(n=0, len=1, mult=2),
+    backwards=False
 )
 
 langmodel_training_params = LangModelTrainingParams(
