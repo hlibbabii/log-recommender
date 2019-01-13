@@ -152,7 +152,7 @@ class FS(object):
     @property
     def path_to_classification_dataset(self) -> str:
         return os.path.join(self.path_to_dataset, CLASSIFICATION_DIR,
-                            self.classification_type, repr)
+                            self.classification_type, self.repr)
 
     @property
     def path_to_classification_model(self) -> str:
