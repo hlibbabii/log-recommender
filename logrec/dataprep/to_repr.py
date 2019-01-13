@@ -13,6 +13,7 @@ from logrec.dataprep.preprocessors.general import to_token_list
 from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam, get_types_to_be_repr, PrepParamsParser
 from logrec.dataprep.preprocessors.repr import to_repr_list, ReprConfig
 from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplitConfig, SplitRepr
+from logrec.properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
 from logrec.util import io_utils
 
 logger = logging.getLogger(__name__)
@@ -20,23 +21,6 @@ logger = logging.getLogger(__name__)
 PARSED_FILE_EXTENSION = "parsed"
 REPR_EXTENSION = "repr"
 NOT_FINISHED_EXTENSION = "part"
-
-
-def calc_new_preprocessing_types_dict(preprocessing_types_dict, preprocessing_types):
-    if not isinstance(preprocessing_types_dict, dict):
-        raise AssertionError("Should be preprocessing param dict!")
-    new_preprocessing_types_dict = {}
-    for (k, v) in preprocessing_types_dict.items():
-        if v is None:
-            new_preprocessing_types_dict[k] = preprocessing_types[k] if k in preprocessing_types else None
-        elif k in preprocessing_types and preprocessing_types[k] != v:
-            raise ValueError(f'Preprocessing {k} has already been applied with value {v}. '
-                             f'Cannot be applied again with value {preprocessing_types[k]}')
-        else:
-            new_preprocessing_types_dict[k] = v
-
-    got_pure_repr = None not in new_preprocessing_types_dict.values()
-    return new_preprocessing_types_dict, got_pure_repr
 
 
 class ReprWriter(metaclass=ABCMeta):
@@ -73,7 +57,7 @@ def check_preprocessing_params_are_valid(preprocessing_params):
         raise ValueError("both NO_SPL=0 and EN_ONLY=1 is not supported")
 
 
-def to_repr(preprocessing_params, token_list, ngramSplittingConfig):
+def to_repr(preprocessing_params, token_list):
     """
     Preprocesses token list according to given preprocessing params
     :param preprocessing_params: e.g. {
@@ -94,7 +78,7 @@ def to_repr(preprocessing_params, token_list, ngramSplittingConfig):
 
 
 def preprocess_and_write(params):
-    src_file, dest_file, preprocessing_params, old_preprocessing_params = params
+    src_file, dest_file, preprocessing_params = params
     if not os.path.exists(src_file):
         logger.error(f"File {src_file} does not exist")
         exit(2)
@@ -102,23 +86,16 @@ def preprocess_and_write(params):
     logger.info(f"Preprocessing parsed file {src_file}")
     with gzip.GzipFile(src_file, 'rb') as i:
         preprocessing_param_dict = pickle.load(i)
-        if old_preprocessing_params != preprocessing_param_dict:
-            logger.error(f"File {src_file} was expected to have preprocessing params "
-                          f"{old_preprocessing_params}, but has {preprocessing_param_dict}")
-            exit(221)
-        new_preprocessing_param_dict, got_pure_repr = calc_new_preprocessing_types_dict(preprocessing_param_dict, preprocessing_params)
         writer = FinalReprWriter(dest_file)
 
         if os.path.exists(writer.get_full_dest_name()):
             logger.warning(f"File {writer.get_full_dest_name()} already exists! Doing nothing.")
             return
         with writer as w:
-            if not got_pure_repr:
-                w.write(new_preprocessing_param_dict)
             while True:
                 try:
                     token_list = pickle.load(i)
-                    repr = to_repr(preprocessing_params, token_list, ngramSplittingConfig)
+                    repr = to_repr(preprocessing_params, token_list)
                     w.write(repr)
                 except EOFError:
                     break
@@ -126,20 +103,7 @@ def preprocess_and_write(params):
     os.rename(f'{writer.get_full_dest_name()}.{NOT_FINISHED_EXTENSION}', f'{writer.get_full_dest_name()}')
 
 
-def run(base_dir, dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, splitting_file):
-    full_src_dir = os.path.join(base_dir, args.dataset, PARSED_DIR)
-    dest_dir = os.path.join(base_dir, args.dataset)
-
-    if not os.path.exists(full_src_dir):
-        logger.error(f"Dir does not exist: {full_src_dir}")
-        exit(3)
-    logger.info(f"Reading parsed files from: {os.path.abspath(full_src_dir)}")
-    with open(os.path.join(full_src_dir, 'preprocessing_types.json'), 'r') as f:
-        old_preprocessing_params_json = json.load(f)
-    old_preprocessing_params = {PreprocessingParam(k): v for (k, v) in old_preprocessing_params_json.items()}
-    logger.info(f"Old preprocessing params : {old_preprocessing_params}")
-
-    preprocessing_params = PrepParamsParser.from_arg_str(preprocessing_params)
+def init_splitting_config(dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, splitting_file):
     global ngramSplittingConfig
     ngramSplittingConfig = NgramSplitConfig()
     if preprocessing_params[PreprocessingParam.SPL] == 4:
@@ -160,8 +124,7 @@ def run(base_dir, dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, sp
         merges = []
         with open(bpe_merges_file, 'r') as f:
             for line in f:
-                line = line[:-1] if line[-1] == '\n' else line
-                merges.append(line.split(' '))
+                merges.append(line.rstrip('\n').split(' '))
         ngramSplittingConfig.merges_cache = merges_cache
         ngramSplittingConfig.merges = merges
         ngramSplittingConfig.set_splitting_type(NgramSplittingType.BPE)
@@ -175,20 +138,23 @@ def run(base_dir, dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, sp
     elif preprocessing_params[PreprocessingParam.SPL] == 2:
         ngramSplittingConfig.set_splitting_type(NgramSplittingType.ONLY_NUMBERS)
 
-    new_preprocessing_types_dict, got_pure_repr = calc_new_preprocessing_types_dict(old_preprocessing_params,
-                                                                                    preprocessing_params)
-    if old_preprocessing_params == new_preprocessing_types_dict:
-        logger.warning("No new preprocessors to be applied found")
-        exit(0)
 
-    if not got_pure_repr:
-        logger.error(f"Partial representation is no longer supported")
-        exit(388)
+def run(dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, splitting_file):
+    path_to_dataset = os.path.join(DEFAULT_PARSED_DATASETS_DIR, args.dataset)
+    full_src_dir = os.path.join(path_to_dataset, PARSED_DIR)
 
-    repr = PrepParamsParser.encode_dict(new_preprocessing_types_dict)
+    if not os.path.exists(full_src_dir):
+        logger.error(f"Dir does not exist: {full_src_dir}")
+        exit(3)
+    logger.info(f"Reading parsed files from: {os.path.abspath(full_src_dir)}")
 
-    full_dest_dir = os.path.join(dest_dir, REPR_EXTENSION, repr)
-    full_metadata_dir = os.path.join(dest_dir, METADATA_DIR, repr)
+    preprocessing_params = PrepParamsParser.from_encoded_string(preprocessing_params)
+    init_splitting_config(dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, splitting_file)
+
+    repr = PrepParamsParser.encode_dict(preprocessing_params)
+
+    full_dest_dir = os.path.join(path_to_dataset, REPR_EXTENSION, repr)
+    full_metadata_dir = os.path.join(path_to_dataset, METADATA_DIR, repr)
     logger.info(f"Writing preprocessed files to {os.path.abspath(full_dest_dir)}")
     if not os.path.exists(full_dest_dir):
         os.makedirs(full_dest_dir)
@@ -196,7 +162,7 @@ def run(base_dir, dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, sp
         os.makedirs(full_metadata_dir)
 
     with open(os.path.join(full_dest_dir, 'preprocessing_types.json'), "w") as f:
-        json.dump(new_preprocessing_types_dict, f)
+        json.dump(preprocessing_params, f)
 
     params = []
     for root, dirs, files in os.walk(full_src_dir):
@@ -208,7 +174,7 @@ def run(base_dir, dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, sp
                     os.makedirs(full_dest_dir_with_sub_dir)
                 params.append((os.path.join(root, file),
                                os.path.join(full_dest_dir_with_sub_dir, file),
-                               preprocessing_params, old_preprocessing_params))
+                               preprocessing_params))
     files_total = len(params)
     current_file = 0
     start_time = time.time()
@@ -223,16 +189,12 @@ def run(base_dir, dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, sp
 
 
 if __name__ == '__main__':
-    from logrec.properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
 
     logging.basicConfig(level=logging.DEBUG)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--base-dir', action='store', default=DEFAULT_PARSED_DATASETS_DIR)
     parser.add_argument('dataset', action='store', help=f'path to the parsed dataset')
-    parser.add_argument('-p', '--preprocessing-params', required=True, action='store',
-                        help='preprocessing params line, \n Example: '
-                             'enonly=1,nocomstr=0,spl=1,nosep=1,nonewlinestabs=0')
+    parser.add_argument('repr', action='store', help='preprocessing params line, \n Example: 10101')
 
     parser.add_argument('--bpe-base-repr', action='store', help='TODO')
     parser.add_argument('--bpe-n-merges', action='store', help='TODO')
@@ -242,5 +204,4 @@ if __name__ == '__main__':
     args = parser.parse_known_args(*DEFAULT_TO_REPR_ARGS)
     args = args[0]
 
-    run(args.base_dir, args.dataset, args.preprocessing_params, args.bpe_base_repr, args.bpe_n_merges,
-        args.splitting_file)
+    run(args.dataset, args.repr, args.bpe_base_repr, args.bpe_n_merges, args.splitting_file)
