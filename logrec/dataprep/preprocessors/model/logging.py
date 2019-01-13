@@ -101,8 +101,5 @@ class LoggableBlock(ProcessableTokenContainer):
         super().__init__(content)
 
     def non_preprocessed_repr(self, repr_config):
-        return torepr(self.subtokens, repr_config)
-
-    def preprocessed_repr(self, repr_config):
         return [placeholders['loggable_block']] + torepr(self.subtokens, repr_config) + [
             placeholders['loggable_block_end']]
