@@ -9,7 +9,6 @@ from logrec.classifier.utils import get_dir_and_file
 
 from logrec.dataprep import REPR_DIR, TRAIN_DIR, TEST_DIR, VALID_DIR, CLASSIFICATION_DIR
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
-from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.util.io_utils import file_mapper
 
 WORDS_IN_CONTEXT_LIMIT = 1000

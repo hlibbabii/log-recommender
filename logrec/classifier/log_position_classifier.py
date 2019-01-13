@@ -88,22 +88,26 @@ def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining):
     logger.info(f"Starting training, check {training_log_file} for training progress")
     for stage in training.stages:
         cycle = stage.cycle
-        if cycle.n > 0 and cycle.len > 0:
-            rnn_learner.freeze_to(stage.freeze_to)
-            vals, ep_vals = rnn_learner.fit(lrs=training.lrs,
-                                            metrics=list(map(lambda x: getattr(metrics, x), training.metrics)),
-                                            wds=training.wds,
-                                            cycle_len=cycle.len, n_cycle=cycle.n, cycle_mult=cycle.mult,
-                                            best_save_name=BEST_MODEL_NAME, cycle_save_name='', get_ep_vals=True,
-                                            file=open(training_log_file, 'w+')
-                                            )
-            training_time_mins = int(time() - training_start_time) // 60
-            with open(os.path.join(fs.path_to_classification_model, 'results.out'), 'w') as f:
-                f.write(str(training_time_mins) + "\n")
-                for _, vals in ep_vals.items():
-                    f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
-        else:
+        only_validation = False
+        n = cycle.n
+        if cycle.n == 0 or cycle.len == 0:
             logger.warning("Number of epochs specified at this stage is 0. Not training...")
+            only_validation = True
+            n = 1
+
+        rnn_learner.freeze_to(stage.freeze_to)
+        vals, ep_vals = rnn_learner.fit(lrs=training.lrs,
+                                        metrics=list(map(lambda x: getattr(metrics, x), training.metrics)),
+                                        wds=training.wds,
+                                        cycle_len=cycle.len, n_cycle=n, cycle_mult=cycle.mult,
+                                        best_save_name=BEST_MODEL_NAME, cycle_save_name='', get_ep_vals=True,
+                                        file=open(training_log_file, 'w+'), only_validation=only_validation
+                                        )
+        training_time_mins = int(time() - training_start_time) // 60
+        with open(os.path.join(fs.path_to_classification_model, 'results.out'), 'w') as f:
+            f.write(str(training_time_mins) + "\n")
+            for _, vals in ep_vals.items():
+                f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
 
     # logger.info(f'Current accuracy is ...')
     # logger.info(f'                    ... {accuracy_gen(*rnn_learner.predict_with_targs())}')
