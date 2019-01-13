@@ -146,7 +146,12 @@ def run(base_dir, dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, sp
         if not bpe_base_repr or not bpe_n_merges:
             raise ValueError("--bpe-base-repr and --bpe-n-merges must be specified")
 
-        path_to_merges_dir = os.path.join(DEFAULT_PARSED_DATASETS_DIR, dataset, METADATA_DIR, bpe_base_repr, BPE_DIR,
+        if bpe_base_repr.find("/") == -1:
+            bpe_base_dataset = dataset
+        else:
+            bpe_base_dataset, bpe_base_repr = bpe_base_repr.split("/")
+        path_to_merges_dir = os.path.join(DEFAULT_PARSED_DATASETS_DIR, bpe_base_dataset, METADATA_DIR, bpe_base_repr,
+                                          BPE_DIR,
                                           bpe_n_merges)
         bpe_merges_file = os.path.join(path_to_merges_dir, 'merges.txt')
         bpe_merges_cache = os.path.join(path_to_merges_dir, 'merges_cache.txt')
