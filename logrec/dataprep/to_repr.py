@@ -57,7 +57,7 @@ def check_preprocessing_params_are_valid(preprocessing_params):
         raise ValueError("both NO_SPL=0 and EN_ONLY=1 is not supported")
 
 
-def to_repr(preprocessing_params, token_list):
+def to_repr(preprocessing_params, token_list, ngramSplittingConfig):
     """
     Preprocesses token list according to given preprocessing params
     :param preprocessing_params: e.g. {
@@ -95,7 +95,7 @@ def preprocess_and_write(params):
             while True:
                 try:
                     token_list = pickle.load(i)
-                    repr = to_repr(preprocessing_params, token_list)
+                    repr = to_repr(preprocessing_params, token_list, ngramSplittingConfig)
                     w.write(repr)
                 except EOFError:
                     break
