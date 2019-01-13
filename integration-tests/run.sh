@@ -17,31 +17,31 @@ function show_test_dir_contents() {
 python logrec/dataprep/parse_projects.py test1
 show_test_dir_contents
 
-python logrec/dataprep/to_repr.py --preprocessing-params "enonly=1,nocomstr=0,spl=1,nosep=0,nonewlinestabs=1" test1
+python logrec/dataprep/to_repr.py --preprocessing-params 10111 test1
 show_test_dir_contents
 
-python logrec/dataprep/vocabsize.py test1 10101
+python logrec/dataprep/vocabsize.py test1 10111
 show_test_dir_contents
 
-python logrec/dataprep/split/bpe.py test1 10101 10 --reset
+python logrec/dataprep/split/bpe.py test1 10111 10 --reset
 show_test_dir_contents
 
-python logrec/dataprep/to_repr.py --preprocessing-params "enonly=1,nocomstr=0,spl=4,nosep=0,nonewlinestabs=1" --bpe-base-repr 10101 --bpe-n-merges 10 test1
+python logrec/dataprep/to_repr.py --preprocessing-params 10411 --bpe-base-repr 10111 --bpe-n-merges 10 test1
 show_test_dir_contents
 
-python logrec/dataprep/vocabsize.py test1 10401
+python logrec/dataprep/vocabsize.py test1 10411
 show_test_dir_contents
 
 echo "Displaying vocab sizes"
-wc -l "$PROJECT_ROOT/nn-data/test/test1/metadata/10101/vocab"
-wc -l "$PROJECT_ROOT/nn-data/test/test1/metadata/10401/vocab"
+wc -l "$PROJECT_ROOT/nn-data/test/test1/metadata/10111/vocab"
+wc -l "$PROJECT_ROOT/nn-data/test/test1/metadata/10411/vocab"
 
-python logrec/classifier/dataset_generator.py test1 10401 location
+python logrec/classifier/dataset_generator.py test1 10411 location
 show_test_dir_contents
 
-python logrec/classifier/dataset_generator.py test1 10401 level
+python logrec/classifier/dataset_generator.py test1 10411 level
 show_test_dir_contents
 
-python logrec/classifier/dataset_stats.py test1 10401 1.0
+python logrec/classifier/dataset_stats.py test1 10411 1.0
 show_test_dir_contents
 
