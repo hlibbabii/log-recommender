@@ -9,6 +9,8 @@ DEFAULT_RAW_DATASETS_DIR = os.path.join(base_project_dir, 'nn-data', 'test', 'ra
 DEFAULT_PARSED_DATASETS_DIR = os.path.join(base_project_dir, 'nn-data', 'test')
 
 DEFAULT_DATASET = 'test1'
+DEFAULT_BPE_N_MERGES = '50'
+DEFAULT_BPE_BASE_REPR = '10111'
 
 DEFAULT_PARSE_PROJECTS_ARGS = []
 DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS = []
