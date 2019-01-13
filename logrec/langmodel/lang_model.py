@@ -117,27 +117,31 @@ def find_and_plot_lr(rnn_learner: RNN_Learner, fs: FS):
 
 def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LangmodelTraining):
     split_repr = PrepParamsParser.from_encoded_string(fs.repr)[PreprocessingParam.NO_SEP]
-    if training.cycle.n > 0:
-        get_full_word_func = get_curr_seq if split_repr == 0 else get_curr_seq_new
-        training_start_time = time()
-        training_log_file = os.path.join(fs.path_to_langmodel, 'training.log')
-        logger.info(f"Starting training, check {training_log_file} for training progress")
-        vals, ep_vals = rnn_learner.fit(lrs=training.lr, n_cycle=training.cycle.n, wds=training.wds,
-                                        cycle_len=training.cycle.len, cycle_mult=training.cycle.mult,
-                                        metrics=list(map(lambda x: getattr(metrics, x), training.metrics)),
-                                        cycle_save_name='', get_ep_vals=True,
-                                        file=open(training_log_file, 'w'),
-                                        best_save_name=BEST_MODEL_NAME,
-                                        valid_func=validate
-                                        )
-        training_time_mins = int(time() - training_start_time) // 60
-        with open(os.path.join(fs.path_to_langmodel, 'results.out'), 'w') as f:
-            f.write(str(training_time_mins) + "\n")
-            for _, vals in ep_vals.items():
-                f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
-    else:
+    only_validation = False
+    n = training.cycle.n
+    if training.cycle.n == 0:
         logger.info("Number of epochs specified is 0. Not training...")
         fs.save_best(rnn_learner)
+        only_validation = True
+        n = 1
+
+    get_full_word_func = get_curr_seq if split_repr == 0 else get_curr_seq_new
+    training_start_time = time()
+    training_log_file = os.path.join(fs.path_to_langmodel, 'training.log')
+    logger.info(f"Starting training, check {training_log_file} for training progress")
+    vals, ep_vals = rnn_learner.fit(lrs=training.lr, n_cycle=n, wds=training.wds,
+                                    cycle_len=training.cycle.len, cycle_mult=training.cycle.mult,
+                                    metrics=list(map(lambda x: getattr(metrics, x), training.metrics)),
+                                    cycle_save_name='', get_ep_vals=True,
+                                    file=open(training_log_file, 'w'),
+                                    best_save_name=BEST_MODEL_NAME,
+                                    valid_func=validate, only_validation=only_validation
+                                    )
+    training_time_mins = int(time() - training_start_time) // 60
+    with open(os.path.join(fs.path_to_langmodel, 'results.out'), 'w') as f:
+        f.write(str(training_time_mins) + "\n")
+        for _, vals in ep_vals.items():
+            f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
 
     fs.save(rnn_learner)
     fs.save_encoder(rnn_learner)
