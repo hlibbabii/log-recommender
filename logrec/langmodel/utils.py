@@ -2,6 +2,7 @@ import logging
 import os
 from typing import List
 
+from torch.cuda import current_device
 from torchtext.data import Field
 
 from fastai.core import to_np, to_gpu, F, USE_GPU
@@ -123,3 +124,4 @@ def printGPUInfo():
     logger.info("Using GPU: " + str(USE_GPU))
     if USE_GPU:
         logger.info("Number of GPUs available: " + str(torch.cuda.device_count()))
+        logger.info(f"Using device: {current_device()}")

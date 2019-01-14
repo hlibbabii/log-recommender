@@ -39,6 +39,7 @@ langmodel_training = LangmodelTraining(
 )
 
 langmodel_training_params = LangModelTrainingParams(
+    device=0,
     data=data,
     base_model=None,
     arch=arch,

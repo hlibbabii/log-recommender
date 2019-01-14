@@ -85,9 +85,11 @@ class Arch(object):
 
 
 class LangModelTrainingParams(object):
-    def __init__(self, data: Data, base_model: Optional[str], arch: Arch, langmodel_training: LangmodelTraining,
+    def __init__(self, device: int, data: Data, base_model: Optional[str], arch: Arch,
+                 langmodel_training: LangmodelTraining,
                  validation: Validation,
                  testing: Testing):
+        self.device = device
         self.data = data
         self.base_model = base_model
         self.arch = arch

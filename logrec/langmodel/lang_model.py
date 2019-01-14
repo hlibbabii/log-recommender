@@ -1,10 +1,12 @@
 from argparse import ArgumentParser
 from time import time
+from typing import Union
 
 import matplotlib
+from torch.cuda import device
 from torchtext.data import Field
 
-from fastai.model import validate
+from fastai.model import validate, USE_GPU
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser, PreprocessingParam
 from logrec.infrastructure import config_manager
@@ -12,7 +14,8 @@ from logrec.infrastructure.fractions_manager import create_df
 from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
 from logrec.langmodel.cache import validate_with_cache
 from logrec.langmodel.fullwordfinder import get_subword, get_curr_seq_new, get_curr_seq
-from logrec.param.model import Data, Arch, LangmodelTraining, Testing
+from logrec.param.model import Data, Arch, LangmodelTraining, Testing, LangModelLrLearningParams, \
+    LangModelTrainingParams
 from logrec.param.templates import langmodel_training_params, langmodel_lr_learning_params
 
 matplotlib.use('Agg')
@@ -150,8 +153,8 @@ def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LangmodelTr
     fs.save_encoder(rnn_learner)
 
 
-def run(find_lr: bool, force_rerun: bool):
-    params = langmodel_lr_learning_params if find_lr else langmodel_training_params
+def run_on_device(params: Union[LangModelLrLearningParams, LangModelTrainingParams],
+                  find_lr: bool, force_rerun: bool) -> None:
     fs = FS.for_lang_model(params.data.dataset, params.data.repr, params.base_model)
 
     fs.create_path_to_langmodel(params.data, params.langmodel_training_config)
@@ -181,6 +184,15 @@ def run(find_lr: bool, force_rerun: bool):
             raise AssertionError("The best model should have been trained and saved!")
         gen_text_path = os.path.join(fs.path_to_langmodel, 'gen_text.out')
         run_and_display_tests(learner, params.arch, params.testing, gen_text_path, params.langmodel_training.backwards)
+
+
+def run(find_lr: bool, force_rerun: bool) -> None:
+    params = langmodel_lr_learning_params if find_lr else langmodel_training_params
+    if USE_GPU:
+        with device(params.device):
+            run_on_device(params, find_lr, force_rerun)
+    else:
+        run_on_device(params, find_lr, force_rerun)
 
 
 if __name__ == '__main__':
