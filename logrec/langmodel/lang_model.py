@@ -89,12 +89,14 @@ def get_best_available_model(fs: FS, data: Data, arch: Arch, validation_bs: int,
     return rnn_learner, model_loaded
 
 
-def run_and_display_tests(learner: RNN_Learner, arch: Arch, testing: Testing, path_to_save=None):
+def run_and_display_tests(learner: RNN_Learner, arch: Arch, testing: Testing, path_to_save=None,
+                          backwards: bool = False):
     to_test_mode(learner.model)
 
     text = gen_text(learner, testing.starting_words, testing.how_many_words)
-
-    beautified_text = beautify_text(text)
+    if backwards:
+        text.reverse()
+    beautified_text = beautify_text(" ".join(text))
     if path_to_save:
         logger.info(f"Generating sample text to {path_to_save}")
         with open(path_to_save, 'w') as f:
@@ -178,7 +180,7 @@ def run(find_lr: bool, force_rerun: bool):
         if not model_loaded:
             raise AssertionError("The best model should have been trained and saved!")
         gen_text_path = os.path.join(fs.path_to_langmodel, 'gen_text.out')
-        run_and_display_tests(learner, params.arch, params.testing, gen_text_path)
+        run_and_display_tests(learner, params.arch, params.testing, gen_text_path, params.langmodel_training.backwards)
 
 
 if __name__ == '__main__':

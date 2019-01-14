@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import List
 
 from torchtext.data import Field
 
@@ -42,16 +43,15 @@ def output_predictions(model: SequentialRNN, input_field: Field, output_field: F
     return text
 
 
-def gen_text(learner: RNN_Learner, starting_words: str, how_many_to_gen: int):
-    text = ''
+def gen_text(learner: RNN_Learner, starting_words: str, how_many_to_gen: int) -> List[str]:
+    text = []
     t = to_gpu(learner.text_field.numericalize([starting_words.split()], -1))
     res, *_ = learner.model(t)
     for i in range(how_many_to_gen):
         n = torch.multinomial(res[-1].exp(), 1)
         # n = n[1] if n.data[0] == 0 else n[0]
-        text += learner.text_field.vocab.itos[n.data[0]] + ' '
+        text.append(learner.text_field.vocab.itos[n.data[0]])
         res, *_ = learner.model(n[0].unsqueeze(0))
-    text += '...'
     return text
 
 
