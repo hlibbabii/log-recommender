@@ -34,9 +34,19 @@ if __name__ == '__main__':
     parser.add_argument('dataset', action='store', help=f'TODO')
     parser.add_argument('repr', action='store', help='TODO')
     parser.add_argument('model', action='store', help='TODO')
-    parser.add_argument('input', action='store', help='TODO')
+    parser.add_argument('--string', '-s', action='store', required=False, help='TODO')
+    parser.add_argument('--file', '-f', action='store', required=False, help='TODO')
 
     args = parser.parse_known_args(*DEFAULT_PREDICT_ARGS)
     args = args[0]
 
-    predict(args.dataset, args.repr, args.model, args.input)
+    if args.string:
+        input = args.string
+    elif args.file:
+        with open(args.file, 'r') as f:
+            input = f.read()
+    else:
+        print("Specify eather input string or input file!")
+        exit(899)
+
+    predict(args.dataset, args.repr, args.model, input)
