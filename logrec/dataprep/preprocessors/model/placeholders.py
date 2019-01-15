@@ -18,7 +18,14 @@ placeholders= {
     'loggable_block': '`l',
     'loggable_block_end': 'l`',
     'pad_token': '<pad>',
-    'olc_end': 'm`'
+    'olc_end': 'm`',
+    'trace': '`trace',
+    'debug': '`debug',
+    'info': '`info',
+    'warn': '`warn',
+    'error': '`error',
+    'fatal': '`fatal',
+    'unknown': '`unknown'
 }
 
 placeholders_beautiful = {

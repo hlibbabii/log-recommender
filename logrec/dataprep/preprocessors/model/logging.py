@@ -23,13 +23,20 @@ class LogLevel(object):
         return self._repr
 
 
-TRACE = LogLevel(0, '`trace')
-DEBUG = LogLevel(1, '`debug')
-INFO = LogLevel(2, '`info')
-WARN = LogLevel(3, '`warn')
-ERROR = LogLevel(4, '`error')
-FATAL = LogLevel(5, '`fatal')
-UNKNOWN = LogLevel(100, '`unknown')
+TRACE = LogLevel(0, placeholders['trace'])
+DEBUG = LogLevel(1, placeholders['debug'])
+INFO = LogLevel(2, placeholders['info'])
+WARN = LogLevel(3, placeholders['warn'])
+ERROR = LogLevel(4, placeholders['error'])
+FATAL = LogLevel(5, placeholders['fatal'])
+UNKNOWN = LogLevel(100, placeholders['unknown'])
+
+
+def is_positive_level(level: str) -> bool:
+    if level == placeholders['unknown']:
+        raise ValueError('Unknown level not supported here')
+
+    return level in [placeholders['trace'], placeholders['debug'], placeholders['info']]
 
 
 class LogStatement(object):

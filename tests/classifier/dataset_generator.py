@@ -1,9 +1,20 @@
+import random
 import unittest
 
-from logrec.classifier.dataset_generator import create_case, create_negative_case, create_positive_case, \
-    get_possible_log_locations
+from logrec.classifier.dataset_generator import create_case, \
+    get_possible_log_locations, get_existing_log_locations, CaseCreator
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 
+position_positive = CaseCreator(range_selector=random.choice,
+                                label_creator=lambda l: '1',
+                                possible_positions_finder=get_existing_log_locations,
+                                log_content_extractor=lambda *_: None
+                                )
+
+position_negative = CaseCreator(range_selector=random.choice,
+                                label_creator=lambda l: '0',
+                                possible_positions_finder=get_possible_log_locations,
+                                log_content_extractor=lambda *_: None)
 
 class DataGeneratorTest(unittest.TestCase):
     def test_create_case_no_padding(self):
@@ -50,17 +61,17 @@ class DataGeneratorTest(unittest.TestCase):
         lst = [placeholders["loggable_block"], "int", "a", "=", "0", ";", "//", "comment",
                placeholders["loggable_block_end"]]
 
-        actual = create_negative_case(lst)
+        actual = position_negative.create_from(lst)
 
         expected = [placeholders['pad_token']] * 995 + ["int", "a", "=", "0", ";"], \
-                   ["//", "comment"] + [placeholders['pad_token']] * 998
+                   ["//", "comment"] + [placeholders['pad_token']] * 998, '0'
 
         self.assertEqual(expected, actual)
 
     def test_create_negative_case_no_loggable_blocks(self):
         lst = ["int", "a", "=", "0", ";", "//", "comment"]
 
-        actual = create_negative_case(lst)
+        actual = position_negative.create_from(lst)
 
         self.assertIsNone(actual)
 
@@ -69,10 +80,10 @@ class DataGeneratorTest(unittest.TestCase):
                "`info", placeholders['log_statement_end'], "//",
                "comment", placeholders["loggable_block_end"]]
 
-        actual = create_positive_case(lst)
+        actual = position_positive.create_from(lst)
 
-        expected = ([placeholders['pad_token']] * 995 + ["int", "a", "=", "0", ";"], \
-                    ["//", "comment"] + [placeholders['pad_token']] * 998), '`info'
+        expected = [placeholders['pad_token']] * 995 + ["int", "a", "=", "0", ";"], \
+                   ["//", "comment"] + [placeholders['pad_token']] * 998, '1'
 
         self.assertEqual(expected, actual)
 
@@ -90,7 +101,7 @@ class DataGeneratorTest(unittest.TestCase):
 
         actual = get_possible_log_locations(lst)
 
-        expected = [2, 3, 8, 11, 19, 24]
+        expected = [(2, 1), (3, 2), (8, 7), (11, 10), (19, 18), (24, 23)]
 
         self.assertEqual(expected, actual)
 

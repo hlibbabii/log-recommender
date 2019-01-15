@@ -3,11 +3,13 @@ import logging
 import os
 import random
 import re
-from typing import List, Tuple, Callable, Optional
+from functools import partial
+from typing import List, Tuple, Callable, Optional, Union
 
 from logrec.classifier.utils import get_dir_and_file
 
 from logrec.dataprep import REPR_DIR, TRAIN_DIR, TEST_DIR, VALID_DIR, CLASSIFICATION_DIR
+from logrec.dataprep.preprocessors.model.logging import LogStatement, is_positive_level
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.util.io_utils import file_mapper
 
@@ -16,28 +18,28 @@ WORDS_IN_CONTEXT_LIMIT = 1000
 logger = logging.getLogger(__name__)
 
 
-def create_side_of_case(
-        list_of_words: list,
-        position: int,
-        end: int,
-        step: Callable[[int], int],
-        can_iterate: Callable[[int, int], bool],
-        last_possible_elm: int) -> list:
-    current_position = step(position)
-    context = []
-    while can_iterate(current_position, end):
-        if list_of_words[current_position] in [placeholders['loggable_block'], placeholders['loggable_block_end']] \
-                or (list_of_words[current_position] == placeholders["log_statement"] and random.choice([True, False])):
-            if can_iterate(end, last_possible_elm):
-                end = step(end)
-        else:
-            context.append(list_of_words[current_position])
-        current_position = step(current_position)
-    context += ([placeholders['pad_token']] * (WORDS_IN_CONTEXT_LIMIT - len(context)))
-    return context
-
-
 def create_case(list_of_words: list, position_range: (int, int)) -> (list, list):
+    def create_side_of_case(
+            list_of_words: list,
+            position: int,
+            end: int,
+            step: Callable[[int], int],
+            can_iterate: Callable[[int, int], bool],
+            last_possible_elm: int) -> list:
+        current_position = step(position)
+        context = []
+        while can_iterate(current_position, end):
+            if list_of_words[current_position] in [placeholders['loggable_block'], placeholders['loggable_block_end']] \
+                    or (
+                    list_of_words[current_position] == placeholders["log_statement"] and random.choice([True, False])):
+                if can_iterate(end, last_possible_elm):
+                    end = step(end)
+            else:
+                context.append(list_of_words[current_position])
+            current_position = step(current_position)
+        context += ([placeholders['pad_token']] * (WORDS_IN_CONTEXT_LIMIT - len(context)))
+        return context
+
     before = create_side_of_case(list_of_words=list_of_words,
                                  position=position_range[0],
                                  end=max(-1, position_range[0] - WORDS_IN_CONTEXT_LIMIT - 1),
@@ -56,8 +58,9 @@ def create_case(list_of_words: list, position_range: (int, int)) -> (list, list)
     return before, after
 
 
-def get_position_ranges_between_tokens(list_of_words: List[str], token1: str, token2: str, suppress_error=True) -> List[
-    Tuple[int, int]]:
+def get_position_ranges_between_tokens(list_of_words: List[str],
+                                       token1: str,
+                                       token2: str, suppress_error=True) -> List[Tuple[int, int]]:
     ranges = []
     search_start_position = 0
     while True:
@@ -87,7 +90,52 @@ def extract_loggable_blocks_positions(list_of_words: List[str]) -> List[Tuple[in
     return blocks
 
 
-def get_possible_log_locations(list_of_words: List[str]) -> List[int]:
+class CaseCreator(object):
+    def __init__(self,
+                 range_selector: Callable[
+                     [List[
+                          Tuple[int, int]]],
+                     Union[
+                         List[
+                             Tuple[int, int]],
+                         Tuple[int, int]
+                     ]],
+                 label_creator: Callable[[Optional[str]], str],
+                 possible_positions_finder: Callable[
+                     [List[str]],
+                     List[
+                         Tuple[int, int]
+                     ]],
+                 log_content_extractor: Callable[
+                     [List[str], Tuple[int, int]],
+                     Optional[str]
+                 ]):
+
+        self.range_selector = range_selector
+        self.label_creator = label_creator
+        self.possible_positions_finder = possible_positions_finder
+        self.log_content_extractor = log_content_extractor
+
+    def create_from(self, list_of_words: List[str]) -> (List[str], List[str], str):
+        possible_ranges = self.possible_positions_finder(list_of_words)
+        if possible_ranges:
+            position_range = self.range_selector(possible_ranges)
+        else:
+            return None
+
+        contexts = create_case(list_of_words, position_range)
+        log_statement = self.log_content_extractor(list_of_words, position_range)
+        return contexts[0], contexts[1], self.label_creator(log_statement)
+
+
+######################   Possible position finders    ####################################33
+
+def get_existing_log_locations(list_of_words: List[str]) -> List[Tuple[int, int]]:
+    return get_position_ranges_between_tokens(list_of_words, placeholders['log_statement'],
+                                              placeholders['log_statement_end'], suppress_error=False)
+
+
+def get_possible_log_locations(list_of_words: List[str]) -> List[Tuple[int, int]]:
     '''
     possible places where we insert:
     - after semicolon
@@ -101,80 +149,61 @@ def get_possible_log_locations(list_of_words: List[str]) -> List[int]:
     for start, end in blocks_positions:
         for i in range(start, end):
             if list_of_words[i] in symbol_to_insert_after:
-                locations.append(i + 1)
+                locations.append((i + 1, i))
     return locations
 
 
-def create_negative_case(list_of_words: List[str]) -> Optional[Tuple[List[str], List[str]]]:
-    indices = get_possible_log_locations(list_of_words)
-    if indices:
-        position_range = random.choice(indices)
-        list_of_words.insert(position_range, 'fake log st')
-        return create_case(list_of_words, (position_range, position_range))
-    else:
-        logger.warning(f"Loggable blocks not found, but should be: {list_of_words}")
-        return None
-
+###################### Log content extractors   #####################
 
 def extract_level_label(list_of_words: List[str], position_range: Tuple[int, int]) -> str:
     return list_of_words[position_range[0] + 1]
 
 
-def create_positive_case(list_of_words: List[str]) -> (list, list):
-    position_ranges = get_position_ranges_between_tokens(list_of_words, placeholders['log_statement'],
-                                                         placeholders['log_statement_end'], suppress_error=False)
-    if position_ranges:
-        position_range = random.choice(position_ranges)
-    else:
-        raise AssertionError("")
+#####################
 
-    contexts = create_case(list_of_words, position_range)
-    level = extract_level_label(list_of_words, position_range)
-    return contexts, level
-
-
-def create_log_position_cases(filename: str) -> Tuple[List[Optional[Tuple[List[str], List[str], bool]]], str]:
+def create_cases(case_creators, case_creators_picker, filename: str) -> Tuple[
+    List[Optional[Tuple[List[str], List[str], bool]]], str]:
     rel_path = get_dir_and_file(filename)
     with open(filename, 'r') as f:
         res = []
-        os.path.join(filename)
         for line in f:
             list_of_words = line.rstrip('\n').split(" ")
             if placeholders['log_statement'] in list_of_words:
-                if random.choice([True, False]):
-                    contexts, _ = create_positive_case(list_of_words)
-                    res.append((*contexts, 1))
-                else:
-                    case = create_negative_case(list_of_words)
-                    if case:
-                        res.append((*case, 0))
-                    else:
-                        res.append(None)
-            else:
-                res.append(None)
-    return res, rel_path
-
-
-def create_level_cases(filename: str) -> Tuple[List[Optional[Tuple[List[str], List[str], bool]]], str]:
-    rel_path = get_dir_and_file(filename)
-    with open(filename, 'r') as f:
-        res = []
-        os.path.join(filename)
-        for line in f:
-            list_of_words = line.rstrip('\n').split(" ")
-            if placeholders['log_statement'] in list_of_words:
-                contexts, level = create_positive_case(list_of_words)
-                res.append((*contexts, level))
+                case_creator = case_creators_picker(case_creators)
+                res.append(case_creator.create_from(list_of_words))
             else:
                 res.append(None)
     return res, rel_path
 
 
 def get_cases_creator(classifier):
+    position_positive = CaseCreator(range_selector=random.choice,
+                                    label_creator=lambda l: '1',
+                                    possible_positions_finder=get_existing_log_locations,
+                                    log_content_extractor=lambda *_: None
+                                    )
+
+    position_negative = CaseCreator(range_selector=random.choice,
+                                    label_creator=lambda l: '0',
+                                    possible_positions_finder=get_possible_log_locations,
+                                    log_content_extractor=lambda *_: None)
+
+    level = CaseCreator(range_selector=random.choice,
+                        label_creator=lambda l: l,
+                        possible_positions_finder=get_existing_log_locations,
+                        log_content_extractor=extract_level_label)
+
+    level_binary = CaseCreator(range_selector=random.choice,
+                               label_creator=lambda l: '1' if is_positive_level(l) else '0',
+                               possible_positions_finder=get_existing_log_locations,
+                               log_content_extractor=extract_level_label)
+
     if classifier == 'location':
-        return create_log_position_cases
+        return partial(create_cases, [position_positive, position_negative], random.choice)
     elif classifier == 'level':
-        return create_level_cases
+        return partial(create_cases, [level], lambda lst: lst[0])
+    elif classifier == 'level_binary':
+        return partial(create_cases, [level_binary], lambda lst: lst[0])
     else:
         raise ValueError(f'Unknown classifier: {classifier}')
 
