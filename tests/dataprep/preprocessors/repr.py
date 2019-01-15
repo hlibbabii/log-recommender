@@ -504,7 +504,7 @@ class TeprTest(unittest.TestCase):
         actual = to_repr(prep_params, tokens, ngramSplittingConfig)
 
         expected = [placeholders['log_statement'], '`info', '`Cs', 'logger', '.', '`C', 'info', '(', '"', '`C', 'hi',
-                    '"', ')', 'L`', ';']
+                    '"', ')', ';', 'L`']
 
         self.assertEqual(expected, actual)
 

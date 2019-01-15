@@ -93,9 +93,10 @@ def get_possible_log_locations(list_of_words: List[str]) -> List[int]:
     - after semicolon
     - after {
     - after {
+    - after a Log statement
     '''
     locations = []
-    symbol_to_insert_after = ['{', '}', ';']
+    symbol_to_insert_after = ['{', '}', ';', placeholders['log_statement_end']]
     blocks_positions = extract_loggable_blocks_positions(list_of_words)
     for start, end in blocks_positions:
         for i in range(start, end):

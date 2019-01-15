@@ -88,7 +88,7 @@ class LogStatement(object):
         return [placeholders['log_statement'], str(self.level)] + torepr(self._object_name, repr_config) + \
                ['.'] + torepr(self._method_name, repr_config) + ['('] + \
                torepr(self._log_content.get_subtokens(), repr_config) + [')'] + \
-               torepr(self._tokens_before_final_semicolon, repr_config) + [placeholders['log_statement_end'], ';']
+               torepr(self._tokens_before_final_semicolon, repr_config) + [';', placeholders['log_statement_end']]
 
 
 class LogContent(ProcessableTokenContainer):
