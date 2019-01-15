@@ -4,6 +4,7 @@ from logrec.infrastructure import config_manager
 from logrec.infrastructure.fs import FS
 from logrec.langmodel.lang_model import create_nn_architecture
 from logrec.langmodel.utils import to_test_mode, get_predictions, format_predictions
+from logrec.properties import DEFAULT_PREDICT_ARGS
 from logrec.param.model import LangmodelTrainingConfig, Data
 
 logger = logging.getLogger(__name__)
@@ -34,5 +35,8 @@ if __name__ == '__main__':
     parser.add_argument('repr', action='store', help='TODO')
     parser.add_argument('model', action='store', help='TODO')
     parser.add_argument('input', action='store', help='TODO')
-    args = parser.parse_args(['test1', '10411', '1_baseline', 'class'])
+
+    args = parser.parse_known_args(*DEFAULT_PREDICT_ARGS)
+    args = args[0]
+
     predict(args.dataset, args.repr, args.model, args.input)
