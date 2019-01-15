@@ -158,6 +158,10 @@ class FS(object):
     def path_to_classification_model(self) -> str:
         return os.path.join(self.path_to_classification_dataset, self.classification_model_name)
 
+    @property
+    def path_to_base_model(self):
+        return os.path.join(self.path_to_lang_model_dataset, self.base_model)
+
     def get_path_to_best_base_model(self, path_to_dataset) -> str:
         path_to_base_model = os.path.join(path_to_dataset, self.base_model)
         if not os.path.exists(path_to_base_model):

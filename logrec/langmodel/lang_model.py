@@ -40,7 +40,8 @@ LEVEL_LABEL = data.Field(sequential=False)
 logger = logging.getLogger(__name__)
 
 
-def create_nn_architecture(fs: FS, data: Data, arch: Arch, validation_bs: int, backwards: bool) -> RNN_Learner:
+def create_nn_architecture(fs: FS, data: Data, arch: Arch, validation_bs: int, backwards: bool,
+                           path=None) -> RNN_Learner:
     train_df_path = fs.train_path
     train_df = create_df(train_df_path, data.percent, data.start_from, backwards)
 
@@ -53,7 +54,7 @@ def create_nn_architecture(fs: FS, data: Data, arch: Arch, validation_bs: int, b
     valid_df = create_df(valid_df_path, data.percent, data.start_from, backwards)
 
     text_field = Field(tokenize=lambda s: s.split(" "), pad_token=placeholders['pad_token'])
-    languageModelData = LanguageModelData.from_dataframes(fs.path_to_langmodel,
+    languageModelData = LanguageModelData.from_dataframes(fs.path_to_langmodel if not path else path,
                                                           text_field, 0,
                                                           train_df, valid_df, test_df,
                                                           bs=arch.bs, validation_bs=validation_bs,
@@ -61,16 +62,19 @@ def create_nn_architecture(fs: FS, data: Data, arch: Arch, validation_bs: int, b
                                                           min_freq=arch.min_freq
                                                           # not important since we remove rare tokens during preprocessing
                                                           )
+    return create_learner(languageModelData, arch, text_field)
 
+
+def create_learner(lang_model_data: LanguageModelData, arch: Arch, text_field: Field) -> RNN_Learner:
     opt_fn = partial(torch.optim.Adam, betas=arch.betas)
 
-    rnn_learner = languageModelData.get_model(opt_fn, arch.em_sz, arch.nh, arch.nl,
-                                              dropouti=arch.drop.outi,
-                                              dropout=arch.drop.out,
-                                              wdrop=arch.drop.w,
-                                              dropoute=arch.drop.oute,
-                                              dropouth=arch.drop.outh,
-                                              text_field=text_field, bidir=arch.bidir)
+    rnn_learner = lang_model_data.get_model(opt_fn, arch.em_sz, arch.nh, arch.nl,
+                                            dropouti=arch.drop.outi,
+                                            dropout=arch.drop.out,
+                                            wdrop=arch.drop.w,
+                                            dropoute=arch.drop.oute,
+                                            dropouth=arch.drop.outh,
+                                            text_field=text_field, bidir=arch.bidir)
     rnn_learner.reg_fn = partial(seq2seq_reg, alpha=arch.reg_fn.alpha, beta=arch.reg_fn.beta)
     rnn_learner.clip = arch.clip
 
@@ -95,8 +99,8 @@ def get_best_available_model(fs: FS, data: Data, arch: Arch, validation_bs: int,
 def run_and_display_tests(learner: RNN_Learner, arch: Arch, testing: Testing, path_to_save=None,
                           backwards: bool = False):
     to_test_mode(learner.model)
-
-    text = gen_text(learner, testing.starting_words, testing.how_many_words)
+    prepared_input = testing.starting_words.rstrip("\n").split(" ")
+    text = gen_text(learner, prepared_input, testing.how_many_words)
     if backwards:
         text.reverse()
     beautified_text = beautify_text(" ".join(text))

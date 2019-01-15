@@ -1,11 +1,11 @@
 import logging
 import os
-from typing import List
+from typing import List, Union
 
 from torch.cuda import current_device
 from torchtext.data import Field
 
-from fastai.core import to_np, to_gpu, F, USE_GPU
+from fastai.core import to_np, to_gpu, F, USE_GPU, Variable
 from fastai.lm_rnn import SequentialRNN
 from fastai.metrics import top_k, MRR
 
@@ -17,26 +17,25 @@ from logrec.dataprep.text_beautifier import beautify_text
 logger = logging.getLogger(__name__)
 
 
-def output_predictions(model: SequentialRNN, input_field: Field, output_field: Field, context: str, context_after: str,
-                       how_many: int,
-                       actual_label: str) -> str:
-    context_after_reversed = context_after.split(" ")
-    context_after_reversed.reverse()
-
-    words = [context.split(" ")] + [context_after_reversed]
-    t=to_gpu(input_field.numericalize(words, -1))
-
+def get_predictions(model: SequentialRNN, input_field: Field, prepared_input: Union[List[str], List[List[str]]],
+                    n_predictions: int) -> (Variable, Variable):
+    t = to_gpu(input_field.numericalize(prepared_input, -1))
     res, *_ = model(t)
-
-    #==========================output predictions
-
-    outputs, labels = torch.topk(res[-1], how_many)
+    outputs, labels = torch.topk(res[-1], n_predictions)
     probs = F.softmax(outputs)
-    text = ""
-    text += ("===================" + "\n")
+    return probs, labels
+
+
+def format_input(context: str, context_after: str) -> str:
+    text = ("===================" + "\n")
     text += (beautify_text(context) + "\n")
     text += "\n"
     text += (beautify_text(context_after) + "\n")
+    return text
+
+
+def format_predictions(probs: Variable, labels: Variable, output_field: Field, actual_label: str) -> str:
+    text = ""
     for probability, label in map(to_np, zip(probs, labels)):
         uu = f'{output_field.vocab.itos[label[0]]}: {probability}'
         text += (uu + "\n")
@@ -44,9 +43,9 @@ def output_predictions(model: SequentialRNN, input_field: Field, output_field: F
     return text
 
 
-def gen_text(learner: RNN_Learner, starting_words: str, how_many_to_gen: int) -> List[str]:
+def gen_text(learner: RNN_Learner, starting_words_list: List[str], how_many_to_gen: int) -> List[str]:
     text = []
-    t = to_gpu(learner.text_field.numericalize([starting_words.split()], -1))
+    t = to_gpu(learner.text_field.numericalize([starting_words_list], -1))
     res, *_ = learner.model(t)
     for i in range(how_many_to_gen):
         n = torch.multinomial(res[-1].exp(), 1)

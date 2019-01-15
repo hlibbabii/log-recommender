@@ -19,6 +19,12 @@ def save_config(config: Union[LangmodelTrainingConfig or ClassifierTrainingConfi
         f.write(json_str)
 
 
+def load_config(path_to_model: str) -> Union[LangmodelTrainingConfig or ClassifierTrainingConfig]:
+    with open(os.path.join(path_to_model, PARAM_FILE_NAME), 'r') as f:
+        json_str = f.read()
+        return jsons.loads(json_str, Union[LangmodelTrainingConfig or ClassifierTrainingConfig])
+
+
 def find_most_similar_config(percent_prefix: str, path_to_dataset: str,
                              current_config: Union[LangmodelTrainingConfig or ClassifierTrainingConfig]):
     config_diff_dict = defaultdict(list)

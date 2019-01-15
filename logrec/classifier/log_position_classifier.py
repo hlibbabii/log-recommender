@@ -3,6 +3,7 @@ import os
 from argparse import ArgumentParser
 from functools import partial
 from time import time
+from typing import List
 
 import torch
 from torchtext import data
@@ -15,7 +16,8 @@ from logrec.classifier.context_datasets import ContextsDataset
 from logrec.infrastructure import config_manager
 from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
 from logrec.langmodel.lang_model import printGPUInfo
-from logrec.langmodel.utils import to_test_mode, output_predictions, attach_dataset_aware_handlers_to_loggers
+from logrec.langmodel.utils import to_test_mode, get_predictions, attach_dataset_aware_handlers_to_loggers, \
+    format_input, format_predictions
 from logrec.param.model import Arch, ClassifierTraining, Data
 from logrec.param.templates import classifier_training_param
 from logrec.util.io_utils import file_mapper
@@ -123,6 +125,14 @@ def read_lines(filename):
         return f.readlines()
 
 
+def prepare_input(context_before: str, context_after: str) -> List[str]:
+    context_after_reversed = context_after.split(" ")
+    context_after_reversed.reverse()
+
+    words = [context_before.split(" ")] + [context_after_reversed]
+    return words
+
+
 def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, sample_test_runs_file: str) -> None:
     logger.info("================    Running tests ============")
     counter = 0
@@ -147,9 +157,14 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, s
                     stop_showing_examples = True
                     break
 
-
-                text += output_predictions(model, text_field, LEVEL_LABEL, context_before.rstrip("\n"),
-                                           context_after.rstrip("\n"), 2, label.rstrip("\n"))
+                context_before = context_before.rstrip("\n")
+                context_after = context_after.rstrip("\n")
+                prepared_input = prepare_input(context_before, context_after)
+                formatted_input = format_input(context_before, context_after)
+                probs, labels = get_predictions(model, text_field, prepared_input, 2)
+                formatted_predictions = format_predictions(probs, labels, LEVEL_LABEL, label.rstrip("\n"))
+                logger.info(formatted_input + formatted_predictions)
+                text += (formatted_input + formatted_predictions)
                 counter += 1
         except FileNotFoundError:
             project_name = c_filename_before[:-len(ContextsDataset.FW_CONTEXTS_FILE_EXT)]
@@ -162,7 +177,6 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, s
                 c_file_after.close()
             if l_file is not None:
                 l_file.close()
-    logger.info(text)
     logger.info(f"Saving test output to {sample_test_runs_file}")
     with open(sample_test_runs_file, 'w') as f:
         f.write(text)

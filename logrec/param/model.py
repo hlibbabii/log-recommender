@@ -103,7 +103,8 @@ class LangModelTrainingParams(object):
 
     @property
     def langmodel_training_config(self):
-        return LangmodelTrainingConfig(arch=self.arch,
+        return LangmodelTrainingConfig(data=self.data,
+                                       arch=self.arch,
                                        training=self.langmodel_training,
                                        base_model=self.base_model)
 
@@ -120,7 +121,8 @@ class LangModelLrLearningParams(object):
 
     @property
     def langmodel_training_config(self):
-        return LangmodelTrainingConfig(arch=self.arch,
+        return LangmodelTrainingConfig(data=self.data,
+                                       arch=self.arch,
                                        training=None,
                                        base_model=self.base_model)
 
@@ -144,20 +146,23 @@ class ClassifierTrainingParams(object):
 
     @property
     def classifier_training_config(self):
-        return ClassifierTrainingConfig(arch=self.arch,
+        return ClassifierTrainingConfig(data=self.data,
+                                        arch=self.arch,
                                         training=self.classifier_training,
                                         base_model=self.base_model)
 
 
 class LangmodelTrainingConfig(object):
-    def __init__(self, arch: Arch, training: Optional[LangmodelTraining], base_model: Optional[str]):
+    def __init__(self, data: Data, arch: Arch, training: Optional[LangmodelTraining], base_model: Optional[str]):
+        self.data = data
         self.arch = arch
         self.training = training
         self.base_model = base_model
 
 
 class ClassifierTrainingConfig(object):
-    def __init__(self, arch: Arch, training: ClassifierTraining, base_model: Optional[str]):
+    def __init__(self, data: Data, arch: Arch, training: ClassifierTraining, base_model: Optional[str]):
+        self.data = data
         self.arch = arch
         self.training = training
         self.base_model = base_model
