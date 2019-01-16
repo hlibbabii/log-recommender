@@ -8,6 +8,7 @@ from torchtext import data
 from logrec.classifier.utils import get_dir_and_file
 from logrec.dataprep import TRAIN_DIR, TEST_DIR
 from logrec.infrastructure.fractions_manager import include_to_df
+from logrec.param.model import CONTEXT_SIDE_BOTH, CONTEXT_SIDE_BEFORE, CONTEXT_SIDE_AFTER
 from logrec.util import io_utils
 from logrec.util.io_utils import file_mapper
 
@@ -16,6 +17,7 @@ __author__ = 'hlib'
 logger = logging.getLogger(__name__)
 
 IGNORED_PROJECTS_FILE_NAME = "ignored_projects"
+
 
 class ContextsDataset(data.Dataset):
     FW_CONTEXTS_FILE_EXT = "context.forward"
@@ -45,6 +47,19 @@ class ContextsDataset(data.Dataset):
         merged_tokens = " ".join(tokens)
         return merged_tokens
 
+    @staticmethod
+    def _get_context_for_prediction(context_before, context_after, context_len, side):
+        if side == CONTEXT_SIDE_BOTH:
+            prepared_context_before = ContextsDataset._prepare_context(context_before, context_len)
+            prepared_context_after = ContextsDataset._prepare_context(context_after, context_len, reverse=True)
+            context = " ".join([prepared_context_before, prepared_context_after])
+        elif side == CONTEXT_SIDE_BEFORE:
+            context = ContextsDataset._prepare_context(context_before, context_len)
+        elif side == CONTEXT_SIDE_AFTER:
+            context = ContextsDataset._prepare_context(context_after, context_len, reverse=True)
+        else:
+            raise AssertionError(f"Unknown side: {side}")
+        return context
 
     def __init__(self, path, text_field, label_field, **kwargs):
         """Create an IMDB dataset instance given a path and fields.
@@ -59,6 +74,7 @@ class ContextsDataset(data.Dataset):
         threshold = kwargs.pop("threshold", 0.0)
         context_len = kwargs.pop("context_len", 0)
         data_params = kwargs.pop("data", None)
+        side = kwargs.pop("side", None)
 
         path_to_ignored_projects = os.path.join(path, '..', '..', '..', f"{IGNORED_PROJECTS_FILE_NAME}.{threshold}")
         logger.info(f"Loading ignored projects from {path_to_ignored_projects} ...")
@@ -86,11 +102,10 @@ class ContextsDataset(data.Dataset):
                 for context_before, context_after, level in zip(c_file_before, c_file_after, l_file):
                     level = level.rstrip('\n')
                     if level:
-                        prepared_context_before = ContextsDataset._prepare_context(context_before, context_len)
-                        prepared_context_after = ContextsDataset._prepare_context(context_after, context_len,
-                                                                                  reverse=True)
-                        example = data.Example.fromlist(
-                            [" ".join([prepared_context_before, prepared_context_after]), level], fields)
+                        context_for_prediction = ContextsDataset._get_context_for_prediction(context_before,
+                                                                                             context_after,
+                                                                                             context_len, side)
+                        example = data.Example.fromlist([context_for_prediction, level], fields)
                         examples.append(example)
 
             except FileNotFoundError:

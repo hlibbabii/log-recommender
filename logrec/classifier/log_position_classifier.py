@@ -19,7 +19,8 @@ from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
 from logrec.langmodel.lang_model import printGPUInfo
 from logrec.langmodel.utils import to_test_mode, get_predictions, attach_dataset_aware_handlers_to_loggers, \
     format_input, format_predictions
-from logrec.param.model import Arch, ClassifierTraining, Data
+from logrec.param.model import Arch, ClassifierTraining, Data, CONTEXT_SIDE_BEFORE, CONTEXT_SIDE_AFTER, \
+    CONTEXT_SIDE_BOTH
 from logrec.param.templates import classifier_training_param
 from logrec.util.io_utils import file_mapper
 
@@ -31,9 +32,10 @@ EXAMPLES_TO_SHOW = 200
 LEVEL_LABEL = data.LabelField()
 
 
-def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, data: Data, arch: Arch, threshold: float):
+def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, data: Data, arch: Arch, threshold: float,
+                           context_side: str):
     splits = ContextsDataset.splits(text_field, level_label, fs.path_to_classification_dataset, context_len=arch.bptt,
-                                    threshold=threshold, data=data)
+                                    threshold=threshold, data=data, side=context_side)
 
     text_data = TextData.from_splits(fs.path_to_classification_model, splits, arch.bs)
 
@@ -104,15 +106,24 @@ def read_lines(filename):
         return f.readlines()
 
 
-def prepare_input(context_before: str, context_after: str) -> List[str]:
-    context_after_reversed = context_after.split(" ")
-    context_after_reversed.reverse()
+def prepare_input(context_before: str, context_after: str, side: str) -> List[str]:
+    context_before_list = context_before.split(" ")
+    context_after_list = context_after.split(" ")
+    context_after_list.reverse()
 
-    words = [context_before.split(" ")] + [context_after_reversed]
+    if side == CONTEXT_SIDE_BEFORE:
+        words = [context_before_list]
+    elif side == CONTEXT_SIDE_AFTER:
+        words = [context_after_list]
+    elif side == CONTEXT_SIDE_BOTH:
+        words = [context_before_list] + [context_after_list]
+    else:
+        raise AssertionError(f'Unknown side: {side}')
     return words
 
 
-def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, sample_test_runs_file: str) -> None:
+def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field,
+               sample_test_runs_file: str, context_side: str) -> None:
     logger.info("================    Running tests ============")
     counter = 0
     text = ""
@@ -138,8 +149,8 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, s
 
                 context_before = context_before.rstrip("\n")
                 context_after = context_after.rstrip("\n")
-                prepared_input = prepare_input(context_before, context_after)
-                formatted_input = format_input(context_before, context_after)
+                prepared_input = prepare_input(context_before, context_after, context_side)
+                formatted_input = format_input(context_before, context_after, context_side)
                 probs, labels = get_predictions(model, text_field, prepared_input, 2)
                 formatted_predictions = format_predictions(probs, labels, LEVEL_LABEL, label.rstrip("\n"))
                 logger.info(formatted_input + formatted_predictions)
@@ -179,7 +190,8 @@ def run_on_device(force_rerun: bool) -> None:
     rnn_learner = create_nn_architecture(fs, text_field, LEVEL_LABEL,
                                          classifier_training_param.data,
                                          classifier_training_param.arch,
-                                         classifier_training_param.log_coverage_threshold)
+                                         classifier_training_param.log_coverage_threshold,
+                                         classifier_training_param.context_side)
     logger.info(rnn_learner)
 
     same_model_exists = fs.best_model_exists(rnn_learner)
@@ -212,7 +224,8 @@ def run_on_device(force_rerun: bool) -> None:
 
     to_test_mode(model)
     sample_test_runs_file = os.path.join(fs.path_to_classification_model, 'test_runs.out')
-    show_tests(fs.classification_test_path, model, text_field, sample_test_runs_file)
+    show_tests(fs.classification_test_path, model, text_field, sample_test_runs_file,
+               classifier_training_param.context_side)
     logger.info("Classifier training finished successfully.")
 
     # plotting confusion matrix

@@ -13,6 +13,7 @@ import torch
 
 from fastai.nlp import RNN_Learner
 from logrec.dataprep.text_beautifier import beautify_text
+from logrec.param.model import CONTEXT_SIDE_BEFORE, CONTEXT_SIDE_BOTH, CONTEXT_SIDE_AFTER
 
 logger = logging.getLogger(__name__)
 
@@ -26,11 +27,13 @@ def get_predictions(model: SequentialRNN, input_field: Field, prepared_input: Un
     return probs, labels
 
 
-def format_input(context: str, context_after: str) -> str:
+def format_input(context_before: str, context_after: str, side: str) -> str:
     text = ("===================" + "\n")
-    text += (beautify_text(context) + "\n")
-    text += "\n"
-    text += (beautify_text(context_after) + "\n")
+    if side in [CONTEXT_SIDE_BEFORE, CONTEXT_SIDE_BOTH]:
+        text += (beautify_text(context_before) + "\n")
+        text += "\n"
+    if side in [CONTEXT_SIDE_AFTER, CONTEXT_SIDE_BOTH]:
+        text += (beautify_text(context_after) + "\n")
     return text
 
 
