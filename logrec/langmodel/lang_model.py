@@ -87,7 +87,7 @@ def get_best_available_model(fs: FS, data: Data, arch: Arch, validation_bs: int,
 
     logger.info("Checking if there exists a model with the same architecture")
     model_loaded = fs.load_best(rnn_learner)
-    if not model_loaded and fs.base_model_present:
+    if not model_loaded and fs.base_model_specified:
         # checking if there is a base model and trying to load it
         loaded_base_model = fs.load_best_base_langmodel(rnn_learner)
         if not loaded_base_model:

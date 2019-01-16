@@ -94,7 +94,7 @@ class FS(object):
         return self._base_model
 
     @property
-    def base_model_present(self) -> bool:
+    def base_model_specified(self) -> bool:
         return self._base_model is not None
 
     @property
@@ -309,6 +309,9 @@ class FS(object):
             return True
         except FileNotFoundError:
             return False
+
+    def best_model_exists(self, learner: RNN_Learner) -> bool:
+        return os.path.exists(os.path.join(learner.models_path, f'{BEST_MODEL_NAME}.h5'))
 
     def load_best_base_langmodel(self, rnn_learner: RNN_Learner) -> bool:
         self._copy_best_base_model(self.path_to_lang_model_dataset, self.langmodel_name)

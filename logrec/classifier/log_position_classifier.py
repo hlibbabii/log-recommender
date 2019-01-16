@@ -54,32 +54,10 @@ def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, data: 
 
     # reguarizing LSTM paper -- penalizing large activations -- reduce overfitting
     rnn_learner.reg_fn = partial(seq2seq_reg, alpha=arch.reg_fn.alpha, beta=arch.reg_fn.beta)
+    rnn_learner.clip = 25.
 
     logger.info(f'Dictionary size is: {len(text_field.vocab.itos)}')
     return rnn_learner
-
-
-def get_text_classifier_model(fs: FS,
-                              text_field: Field,
-                              level_label: Field,
-                              data: Data,
-                              arch: Arch,
-                              log_coverage_threshold: float) -> (RNN_Learner, bool):
-    rnn_learner = create_nn_architecture(fs, text_field, level_label, data, arch, log_coverage_threshold)
-    logger.info(rnn_learner)
-
-    logger.info("Checking if there exists a model with the same architecture")
-    model_loaded = fs.load_best(rnn_learner)
-    if not model_loaded and fs.base_model_present:
-        # checking if there is a base model and trying to load it
-        base_model_loaded = fs.load_best_base_classifier(rnn_learner)
-        if not base_model_loaded:
-            logger.info("Not using base model. Loading pretrained lang model...")
-            fs.load_pretrained_langmodel(rnn_learner)
-
-    rnn_learner.clip = 25.
-
-    return rnn_learner, model_loaded
 
 
 def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining):
@@ -197,22 +175,40 @@ def run_on_device(force_rerun: bool) -> None:
     printGPUInfo()
 
     text_field = fs.load_text_field()
-    learner, classifier_model_trained = get_text_classifier_model(fs, text_field, LEVEL_LABEL,
-                                                                  classifier_training_param.data,
-                                                                  classifier_training_param.arch,
-                                                                  log_coverage_threshold=classifier_training_param.log_coverage_threshold)
 
-    if classifier_model_trained and not force_rerun:
-        logger.info(f'Model {fs.path_to_classification_model} already trained. Not rerunning training.')
+    rnn_learner = create_nn_architecture(fs, text_field, LEVEL_LABEL,
+                                         classifier_training_param.data,
+                                         classifier_training_param.arch,
+                                         classifier_training_param.log_coverage_threshold)
+    logger.info(rnn_learner)
+
+    same_model_exists = fs.best_model_exists(rnn_learner)
+    if same_model_exists and not force_rerun:
+        logger.info(f'Model {fs.path_to_classification_model} already trained. Not rerunning training.'
+                    f'To retrain the model with this parameters, specify --force-rerun flag')
         return
-    elif classifier_model_trained:
-        logger.info(f"Forcing rerun")
+    elif same_model_exists:
+        logger.info(f"Model {fs.path_to_classification_model} already trained. Forcing rerun.")
+
+    base_model_loaded = False
+    if fs.base_model_specified:
+        base_model_loaded = fs.load_best_base_classifier(rnn_learner)
+        logger.info("Base classifier model is loaded.")
+
+    if not base_model_loaded:
+        logger.info("Base classifier model not loaded. Trying to load pretrained lang model...")
+        try:
+            fs.load_pretrained_langmodel(rnn_learner)
+            logger.info("Using pretrained LM")
+        except ValueError as e:
+            logger.warning(e)
+            logger.warning("Neither base classifier, nor pretrained LM not loaded. Training classifier from scratch.")
 
     config_manager.save_config(classifier_training_param.classifier_training_config, fs.path_to_classification_model)
 
-    train(fs, learner, classifier_training_param.classifier_training)
+    train(fs, rnn_learner, classifier_training_param.classifier_training)
 
-    model = learner.model
+    model = rnn_learner.model
 
     to_test_mode(model)
     sample_test_runs_file = os.path.join(fs.path_to_classification_model, 'test_runs.out')
