@@ -238,5 +238,5 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--force-rerun', action='store_const', const=True, default=False)
     parser.add_argument('classifier', action='store')
-    args = parser.parse_args(['location'])
+    args = parser.parse_args()
     run(args.classifier, args.force_rerun)
