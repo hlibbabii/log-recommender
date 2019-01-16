@@ -6,6 +6,7 @@ from time import time
 from typing import List
 
 import torch
+from torch.cuda import device
 from torchtext import data
 from torchtext.data import Field
 
@@ -228,7 +229,7 @@ def run_on_device(classifier: str, force_rerun: bool) -> None:
 
 def run(classifier: str, force_rerun: bool) -> None:
     if USE_GPU:
-        with(classifier_training_param.device):
+        with device(classifier_training_param.device):
             run_on_device(classifier, force_rerun)
     else:
         run_on_device(classifier, force_rerun)
