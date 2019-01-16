@@ -1,0 +1,1 @@
+{"arch": {"betas": [0.7, 0.99], "bidir": false, "bptt": 900, "bs": 32, "clip": 0.3, "drop": {"out": 0.2, "oute": 0.2, "outh": 0.2, "outi": 0.2, "w": 0.25}, "em_sz": 300, "min_freq": 0, "nh": 2000, "nl": 3, "qrnn": false, "reg_fn": {"alpha": 2, "beta": 1}}, "base_model": null, "data": {"dataset": "en_100_percent", "percent": 5, "repr": "10411", "start_from": 0}, "training": null}
