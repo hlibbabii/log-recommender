@@ -64,8 +64,8 @@ def get_text_classifier_model(fs: FS,
                               level_label: Field,
                               data: Data,
                               arch: Arch,
-                              threshold: float) -> (RNN_Learner, bool):
-    rnn_learner = create_nn_architecture(fs, text_field, level_label, data, arch, threshold)
+                              log_coverage_threshold: float) -> (RNN_Learner, bool):
+    rnn_learner = create_nn_architecture(fs, text_field, level_label, data, arch, log_coverage_threshold)
     logger.info(rnn_learner)
 
     logger.info("Checking if there exists a model with the same architecture")
@@ -183,13 +183,13 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, s
         f.write(text)
 
 
-def run_on_device(classifier: str, force_rerun: bool) -> None:
+def run_on_device(force_rerun: bool) -> None:
     base_model = classifier_training_param.base_model
     pretrained_model = classifier_training_param.pretrained_model
 
     fs = FS.for_classifier(classifier_training_param.data.dataset, classifier_training_param.data.repr,
                            base_model=base_model, pretrained_model=pretrained_model,
-                           classification_type=classifier)
+                           classification_type=classifier_training_param.classification_type)
 
     fs.create_path_to_classifier(classifier_training_param.data, classifier_training_param.classifier_training_config)
     attach_dataset_aware_handlers_to_loggers(fs.path_to_classification_model, 'main.log')
@@ -200,7 +200,7 @@ def run_on_device(classifier: str, force_rerun: bool) -> None:
     learner, classifier_model_trained = get_text_classifier_model(fs, text_field, LEVEL_LABEL,
                                                                   classifier_training_param.data,
                                                                   classifier_training_param.arch,
-                                                                  threshold=classifier_training_param.threshold)
+                                                                  log_coverage_threshold=classifier_training_param.log_coverage_threshold)
 
     if classifier_model_trained and not force_rerun:
         logger.info(f'Model {fs.path_to_classification_model} already trained. Not rerunning training.')
@@ -227,17 +227,16 @@ def run_on_device(classifier: str, force_rerun: bool) -> None:
     # plot_confusion_matrix(cm, data.classes)
 
 
-def run(classifier: str, force_rerun: bool) -> None:
+def run(force_rerun: bool) -> None:
     if USE_GPU:
         with device(classifier_training_param.device):
-            run_on_device(classifier, force_rerun)
+            run_on_device(force_rerun)
     else:
-        run_on_device(classifier, force_rerun)
+        run_on_device(force_rerun)
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--force-rerun', action='store_const', const=True, default=False)
-    parser.add_argument('classifier', action='store')
     args = parser.parse_args()
-    run(args.classifier, args.force_rerun)
+    run(args.force_rerun)

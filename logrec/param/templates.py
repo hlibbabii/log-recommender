@@ -62,7 +62,9 @@ factor = 2.6
 
 classifier_training_param = ClassifierTrainingParams(
     device=0,
+    classification_type='location',
     data=data,
+    log_coverage_threshold=1.0,
     pretrained_model='1_baseline',
     base_model=None,
     arch=arch,
@@ -90,6 +92,4 @@ classifier_training_param = ClassifierTrainingParams(
         how_many_words=2000,
         starting_words='<comment> public static class'
     ),
-    threshold=5.0,
-    classification_type="location"
 )

@@ -129,13 +129,16 @@ class LangModelLrLearningParams(object):
 
 
 class ClassifierTrainingParams(object):
-    def __init__(self, device: int, data: Data, base_model: Optional[str],
+    def __init__(self, device: int, classification_type: str, data: Data,
+                 log_coverage_threshold: float, base_model: Optional[str],
                  pretrained_model: Optional[str], arch: Arch,
                  langmodel_training: LangmodelTraining,
                  classifier_training: ClassifierTraining, validation: Validation,
-                 testing: Testing, threshold: float, classification_type: str):
+                 testing: Testing):
         self.device = device
+        self.classification_type = classification_type
         self.data = data
+        self.log_coverage_threshold = log_coverage_threshold
         self.base_model = base_model
         self.pretrained_model = pretrained_model
         self.arch = arch
@@ -143,12 +146,12 @@ class ClassifierTrainingParams(object):
         self.classifier_training = classifier_training
         self.validation = validation
         self.testing = testing
-        self.threshold = threshold
-        self.classification_type = classification_type
 
     @property
     def classifier_training_config(self):
-        return ClassifierTrainingConfig(data=self.data,
+        return ClassifierTrainingConfig(classification_type=self.classification_type,
+                                        data=self.data,
+                                        log_coverage_threshold=self.log_coverage_threshold,
                                         arch=self.arch,
                                         training=self.classifier_training,
                                         base_model=self.base_model)
@@ -163,8 +166,11 @@ class LangmodelTrainingConfig(object):
 
 
 class ClassifierTrainingConfig(object):
-    def __init__(self, data: Data, arch: Arch, training: ClassifierTraining, base_model: Optional[str]):
+    def __init__(self, classification_type: str, data: Data, log_coverage_threshold: float,
+                 arch: Arch, training: ClassifierTraining, base_model: Optional[str]):
+        self.classification_type = classification_type
         self.data = data
+        self.log_coverage_threshold = log_coverage_threshold
         self.arch = arch
         self.training = training
         self.base_model = base_model
