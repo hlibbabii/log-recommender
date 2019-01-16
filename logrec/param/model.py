@@ -129,11 +129,12 @@ class LangModelLrLearningParams(object):
 
 
 class ClassifierTrainingParams(object):
-    def __init__(self, data: Data, base_model: Optional[str],
+    def __init__(self, device: int, data: Data, base_model: Optional[str],
                  pretrained_model: Optional[str], arch: Arch,
                  langmodel_training: LangmodelTraining,
                  classifier_training: ClassifierTraining, validation: Validation,
                  testing: Testing, threshold: float, classification_type: str):
+        self.device = device
         self.data = data
         self.base_model = base_model
         self.pretrained_model = pretrained_model

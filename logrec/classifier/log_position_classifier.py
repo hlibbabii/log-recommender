@@ -182,7 +182,7 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field, s
         f.write(text)
 
 
-def run(classifier: str, force_rerun: bool) -> None:
+def run_on_device(classifier: str, force_rerun: bool) -> None:
     base_model = classifier_training_param.base_model
     pretrained_model = classifier_training_param.pretrained_model
 
@@ -224,6 +224,14 @@ def run(classifier: str, force_rerun: bool) -> None:
     # from sklearn.metrics import confusion_matrix
     # cm = confusion_matrix(y, preds)
     # plot_confusion_matrix(cm, data.classes)
+
+
+def run(classifier: str, force_rerun: bool) -> None:
+    if USE_GPU:
+        with(classifier_training_param.device):
+            run_on_device(classifier, force_rerun)
+    else:
+        run_on_device(classifier, force_rerun)
 
 
 if __name__ == '__main__':

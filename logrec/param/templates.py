@@ -61,6 +61,7 @@ base_lr = 1e-3
 factor = 2.6
 
 classifier_training_param = ClassifierTrainingParams(
+    device=0,
     data=data,
     pretrained_model='1_baseline',
     base_model=None,
