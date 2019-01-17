@@ -12,16 +12,17 @@ from torchtext.data import Field
 
 from fastai.lm_rnn import seq2seq_reg, SequentialRNN
 from fastai import metrics
-from fastai.nlp import TextData, RNN_Learner, USE_GPU
+from fastai.nlp import TextData, RNN_Learner
 from logrec.classifier.context_datasets import ContextsDataset
 from logrec.infrastructure import config_manager
 from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
-from logrec.langmodel.lang_model import printGPUInfo
 from logrec.langmodel.utils import to_test_mode, get_predictions, attach_dataset_aware_handlers_to_loggers, \
     format_input, format_predictions
 from logrec.param.model import Arch, ClassifierTraining, Data, CONTEXT_SIDE_BEFORE, CONTEXT_SIDE_AFTER, \
     CONTEXT_SIDE_BOTH
 from logrec.param.templates import classifier_training_param
+from logrec.util import gpu
+from logrec.util.gpu import print_gpu_info
 from logrec.util.io_utils import file_mapper
 
 logging.basicConfig(level=logging.DEBUG)
@@ -41,7 +42,7 @@ def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, data: 
 
     opt_fn = partial(torch.optim.Adam, betas=(0.7, 0.99))
 
-    if arch.qrnn and not USE_GPU:
+    if arch.qrnn and not gpu.gpu_available():
         logger.warning("Cuda not available, not using qrnn. Using lstm instead")
         arch.qrnn = False
     rnn_learner = text_data.get_model(opt_fn, arch.bptt + 1, arch.bptt, arch.em_sz, arch.nh,
@@ -183,7 +184,7 @@ def run_on_device(force_rerun: bool) -> None:
     fs.create_path_to_classifier(classifier_training_param.data, classifier_training_param.classifier_training_config)
     attach_dataset_aware_handlers_to_loggers(fs.path_to_classification_model, 'main.log')
 
-    printGPUInfo()
+    print_gpu_info()
 
     text_field = fs.load_text_field()
 
@@ -237,7 +238,7 @@ def run_on_device(force_rerun: bool) -> None:
 
 
 def run(force_rerun: bool) -> None:
-    if USE_GPU:
+    if gpu.gpu_available():
         with device(classifier_training_param.device):
             run_on_device(force_rerun)
     else:

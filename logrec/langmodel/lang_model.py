@@ -6,7 +6,7 @@ import matplotlib
 from torch.cuda import device
 from torchtext.data import Field
 
-from fastai.model import validate, USE_GPU
+from fastai.model import validate
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser, PreprocessingParam
 from logrec.infrastructure import config_manager
@@ -17,11 +17,13 @@ from logrec.langmodel.fullwordfinder import get_subword, get_curr_seq_new, get_c
 from logrec.param.model import Data, Arch, LangmodelTraining, Testing, LangModelLrLearningParams, \
     LangModelTrainingParams
 from logrec.param.templates import langmodel_training_params, langmodel_lr_learning_params
+from logrec.util import gpu
+from logrec.util.gpu import print_gpu_info
 
 matplotlib.use('Agg')
 
 from logrec.langmodel.utils import to_test_mode, gen_text, beautify_text, back_to_train_mode, \
-    attach_dataset_aware_handlers_to_loggers, printGPUInfo
+    attach_dataset_aware_handlers_to_loggers
 
 import logging
 import os
@@ -164,7 +166,7 @@ def run_on_device(params: Union[LangModelLrLearningParams, LangModelTrainingPara
     fs.create_path_to_langmodel(params.data, params.langmodel_training_config)
     attach_dataset_aware_handlers_to_loggers(fs.path_to_langmodel, 'main.log')
 
-    printGPUInfo()
+    print_gpu_info()
 
     learner, model_trained = get_best_available_model(fs, params.data, params.arch, params.validation_bs,
                                                       params.langmodel_training.backwards)
@@ -192,7 +194,7 @@ def run_on_device(params: Union[LangModelLrLearningParams, LangModelTrainingPara
 
 def run(find_lr: bool, force_rerun: bool) -> None:
     params = langmodel_lr_learning_params if find_lr else langmodel_training_params
-    if USE_GPU:
+    if gpu.gpu_available():
         with device(params.device):
             run_on_device(params, find_lr, force_rerun)
     else:
