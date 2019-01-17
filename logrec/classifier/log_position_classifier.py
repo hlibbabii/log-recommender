@@ -3,7 +3,7 @@ import os
 from argparse import ArgumentParser
 from functools import partial
 from time import time
-from typing import List
+from typing import List, Optional
 
 import torch
 from torch.cuda import device
@@ -19,11 +19,11 @@ from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
 from logrec.langmodel.utils import to_test_mode, get_predictions, attach_dataset_aware_handlers_to_loggers, \
     format_input, format_predictions
 from logrec.param.model import Arch, ClassifierTraining, Data, CONTEXT_SIDE_BEFORE, CONTEXT_SIDE_AFTER, \
-    CONTEXT_SIDE_BOTH
-from logrec.param.templates import classifier_training_param
+    CONTEXT_SIDE_BOTH, ClassifierTrainingParams
 from logrec.util import gpu
-from logrec.util.gpu import print_gpu_info
+from logrec.util.gpu import print_gpu_info, get_current_device
 from logrec.util.io_utils import file_mapper
+from logrec.util.util import get_params_module
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -173,7 +173,7 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field,
         f.write(text)
 
 
-def run_on_device(force_rerun: bool) -> None:
+def run_on_device(classifier_training_param: ClassifierTrainingParams, force_rerun: bool) -> None:
     base_model = classifier_training_param.base_model
     pretrained_model = classifier_training_param.pretrained_model
 
@@ -237,16 +237,20 @@ def run_on_device(force_rerun: bool) -> None:
     # plot_confusion_matrix(cm, data.classes)
 
 
-def run(force_rerun: bool) -> None:
+def run(force_rerun: bool, params_path: Optional[str], device_id: Optional[int]) -> None:
+    module = get_params_module(params_path)
     if gpu.gpu_available():
-        with device(classifier_training_param.device):
-            run_on_device(force_rerun)
+        gpu_id_to_use = device_id if device_id is not None else get_current_device()
+        with device(gpu_id_to_use):
+            run_on_device(module.classifier_training_param, force_rerun)
     else:
-        run_on_device(force_rerun)
+        run_on_device(module.classifier_training_param, force_rerun)
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--force-rerun', action='store_const', const=True, default=False)
+    parser.add_argument('--params-path', action='store', help='TODO')
+    parser.add_argument('--device', action='store', help='TODO')
     args = parser.parse_args()
-    run(args.force_rerun)
+    run(args.force_rerun, args.params_path, args.device)

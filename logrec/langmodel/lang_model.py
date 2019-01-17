@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 from time import time
-from typing import Union
+from typing import Union, Optional
 
 import matplotlib
 from torch.cuda import device
@@ -16,9 +16,9 @@ from logrec.langmodel.cache import validate_with_cache
 from logrec.langmodel.fullwordfinder import get_subword, get_curr_seq_new, get_curr_seq
 from logrec.param.model import Data, Arch, LangmodelTraining, Testing, LangModelLrLearningParams, \
     LangModelTrainingParams
-from logrec.param.templates import langmodel_training_params, langmodel_lr_learning_params
 from logrec.util import gpu
-from logrec.util.gpu import print_gpu_info
+from logrec.util.gpu import print_gpu_info, get_current_device
+from logrec.util.util import get_params_module
 
 matplotlib.use('Agg')
 
@@ -192,10 +192,12 @@ def run_on_device(params: Union[LangModelLrLearningParams, LangModelTrainingPara
         run_and_display_tests(learner, params.arch, params.testing, gen_text_path, params.langmodel_training.backwards)
 
 
-def run(find_lr: bool, force_rerun: bool) -> None:
-    params = langmodel_lr_learning_params if find_lr else langmodel_training_params
+def run(find_lr: bool, force_rerun: bool, params_path: Optional[str], device_id: Optional[int]) -> None:
+    module = get_params_module(params_path)
+    params = module.langmodel_lr_learning_params if find_lr else module.langmodel_training_params
     if gpu.gpu_available():
-        with device(params.device):
+        gpu_id_to_use = device_id if device_id is not None else get_current_device()
+        with device(gpu_id_to_use):
             run_on_device(params, find_lr, force_rerun)
     else:
         run_on_device(params, find_lr, force_rerun)
@@ -205,5 +207,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--find-lr', action='store_const', const=True, default=False)
     parser.add_argument('--force-rerun', action='store_const', const=True, default=False)
+    parser.add_argument('--params-path', action='store', help='TODO')
+    parser.add_argument('--device', action='store', help='TODO')
     args = parser.parse_args()
-    run(args.find_lr, args.force_rerun)
+    run(args.find_lr, args.force_rerun, args.params_path, args.device)

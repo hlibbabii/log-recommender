@@ -25,7 +25,6 @@ arch = Arch(
 )
 
 langmodel_lr_learning_params = LangModelLrLearningParams(
-    device=0,
     data=data,
     base_model=None,
     arch=arch
@@ -40,7 +39,6 @@ langmodel_training = LangmodelTraining(
 )
 
 langmodel_training_params = LangModelTrainingParams(
-    device=0,
     data=data,
     base_model=None,
     arch=arch,
@@ -61,7 +59,6 @@ base_lr = 1e-3
 factor = 2.6
 
 classifier_training_param = ClassifierTrainingParams(
-    device=0,
     classification_type='location',
     data=data,
     log_coverage_threshold=5.0,

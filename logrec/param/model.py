@@ -88,11 +88,10 @@ class Arch(object):
 
 
 class LangModelTrainingParams(object):
-    def __init__(self, device: int, data: Data, base_model: Optional[str], arch: Arch,
+    def __init__(self, data: Data, base_model: Optional[str], arch: Arch,
                  langmodel_training: LangmodelTraining,
                  validation: Validation,
                  testing: Testing):
-        self.device = device
         self.data = data
         self.base_model = base_model
         self.arch = arch
@@ -113,8 +112,7 @@ class LangModelTrainingParams(object):
 
 
 class LangModelLrLearningParams(object):
-    def __init__(self, device: int, data: Data, base_model: Optional[str], arch: Arch):
-        self.device = device
+    def __init__(self, data: Data, base_model: Optional[str], arch: Arch):
         self.data = data
         self.base_model = base_model
         self.arch = arch
@@ -132,13 +130,12 @@ class LangModelLrLearningParams(object):
 
 
 class ClassifierTrainingParams(object):
-    def __init__(self, device: int, classification_type: str, data: Data,
+    def __init__(self, classification_type: str, data: Data,
                  log_coverage_threshold: float, context_side: str, base_model: Optional[str],
                  pretrained_model: Optional[str], arch: Arch,
                  langmodel_training: LangmodelTraining,
                  classifier_training: ClassifierTraining, validation: Validation,
                  testing: Testing):
-        self.device = device
         self.classification_type = classification_type
         self.data = data
         self.log_coverage_threshold = log_coverage_threshold
