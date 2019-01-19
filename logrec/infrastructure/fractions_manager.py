@@ -40,6 +40,11 @@ def normalize_percent_data(percent: float, start_from: float) -> (str, str):
     return normalize_string(percent), normalize_string(start_from)
 
 
+def get_percent_prefix(percent: float, start_from: float):
+    normalized_percent, normalized_start_from = normalize_percent_data(percent, start_from)
+    return f"{normalized_percent}_{'' if normalized_start_from == '0' else (normalized_start_from + '_')}"
+
+
 def get_chunk_prefix(filename: str) -> str:
     underscore_index = filename.index("_")
     if underscore_index == -1:
