@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from logrec.util import gpu
 
 if __name__ == '__main__':
