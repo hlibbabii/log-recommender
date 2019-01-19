@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 
 def create_nn_architecture(fs: FS, data: Data, arch: Arch, validation_bs: int, backwards: bool,
-                           path=None) -> RNN_Learner:
+                           path=None, preloaded_text_filed: Field = None) -> RNN_Learner:
     train_df_path = fs.train_path
     train_df = create_df(train_df_path, data.percent, data.start_from, backwards)
 
@@ -54,8 +54,10 @@ def create_nn_architecture(fs: FS, data: Data, arch: Arch, validation_bs: int, b
     if not os.path.exists(valid_df_path):
         valid_df_path = test_df_path
     valid_df = create_df(valid_df_path, data.percent, data.start_from, backwards)
-
-    text_field = Field(tokenize=lambda s: s.split(" "), pad_token=placeholders['pad_token'])
+    if not preloaded_text_filed:
+        text_field = Field(tokenize=lambda s: s.split(" "), pad_token=placeholders['pad_token'])
+    else:
+        text_field = preloaded_text_filed
     languageModelData = LanguageModelData.from_dataframes(fs.path_to_langmodel if not path else path,
                                                           text_field, 0,
                                                           train_df, valid_df, test_df,
@@ -84,7 +86,10 @@ def create_learner(lang_model_data: LanguageModelData, arch: Arch, text_field: F
 
 
 def get_best_available_model(fs: FS, data: Data, arch: Arch, validation_bs: int, backwards: bool):
-    rnn_learner = create_nn_architecture(fs, data, arch, validation_bs, backwards)
+    preloaded_text_filed = fs.load_text_field()
+    rnn_learner = create_nn_architecture(fs, data, arch, validation_bs, backwards,
+                                         path=None,
+                                         preloaded_text_filed=preloaded_text_filed)
     logger.info(rnn_learner)
 
     logger.info("Checking if there exists a model with the same architecture")
@@ -171,7 +176,7 @@ def run_on_device(params: Union[LangModelLrLearningParams, LangModelTrainingPara
     learner, model_trained = get_best_available_model(fs, params.data, params.arch, params.validation_bs,
                                                       params.langmodel_training.backwards)
 
-    fs.save_vocab_data(learner.text_field)
+    fs.save_vocab_data(learner.text_field, params.data.percent, params.data.start_from)
 
     if model_trained and not force_rerun:
         logger.info(f'Model {fs.path_to_langmodel} already trained. Not rerunning training.')

@@ -11,10 +11,9 @@ from torchtext.data import Field
 
 from fastai.nlp import RNN_Learner
 from logrec.dataprep import MODELS_DIR, TEXT_FIELD_FILE, REPR_DIR, TRAIN_DIR, VALID_DIR, TEST_DIR, \
-    CLASSIFICATION_DIR, PARSED_DIR
-from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
+    CLASSIFICATION_DIR, PARSED_DIR, METADATA_DIR
+from logrec.infrastructure import fractions_manager
 from logrec.infrastructure.config_manager import find_most_similar_config, find_name_for_new_config
-from logrec.infrastructure.fractions_manager import normalize_percent_data
 from logrec.properties import DEFAULT_PARSED_DATASETS_DIR
 from logrec.param.model import Data, LangmodelTrainingConfig, ClassifierTrainingConfig
 from logrec.util import io_utils
@@ -146,6 +145,10 @@ class FS(object):
         return os.path.join(self.path_to_dataset, PARSED_DIR)
 
     @property
+    def path_to_metadata(self) -> str:
+        return os.path.join(self.path_to_dataset, METADATA_DIR, self.repr)
+
+    @property
     def path_to_lang_model_dataset(self) -> str:
         return os.path.join(self.path_to_dataset, REPR_DIR, self.repr)
 
@@ -211,8 +214,7 @@ class FS(object):
                                   data: Data,
                                   training_config: Union[LangmodelTrainingConfig or ClassifierTrainingConfig],
                                   pretrained_model: Optional[str]) -> str:
-        normalized_percent, normalized_start_from = normalize_percent_data(data.percent, data.start_from)
-        percent_prefix = f"{normalized_percent}_{'' if normalized_start_from == '0' else (normalized_start_from + '_')}"
+        percent_prefix = fractions_manager.get_percent_prefix(data.percent, data.start_from)
 
         if pretrained_model:  # it it's a classifier
             prefix = f'{pretrained_model}{PRETRAINED_MODELS_SEPARATOR}'
@@ -254,21 +256,11 @@ class FS(object):
                                                                             classifier_training_config,
                                                                             self._base_model)
 
-    def save_vocab_data(self, text_field: Field) -> None:
-        ####  TODO no need to save vocab data if it's already there in metadata
-        # if its not there save t metadata
-
+    def save_vocab_data(self, text_field: Field, percent: float, start_from: float) -> None:
+        prefix = fractions_manager.get_percent_prefix(percent, start_from)
         io_utils.dump_dict_into_2_columns(text_field.vocab.freqs,
-                                          os.path.join(self.path_to_lang_model_dataset, 'vocab_all.txt'))
-        pickle.dump(text_field, open(os.path.join(self.path_to_lang_model_dataset, TEXT_FIELD_FILE), 'wb'))
+                                          os.path.join(self.path_to_metadata, f'{prefix}vocab_all.txt'))
 
-        vocab_size = len(text_field.vocab.itos)
-        logger.info(f'Vocabulary size is: {vocab_size}')
-        with open(os.path.join(self.path_to_lang_model_dataset, 'vocab_size'), 'w') as f:
-            f.write("# This is automatically generated file! Do not edit!\n")
-            f.write(str(vocab_size))
-
-        ####
 
     def model_id(self) -> str:
         return f'{self.dataset}.{self.repr}.{self.langmodel_name}'
@@ -332,7 +324,7 @@ class FS(object):
             return False
 
     def load_text_field(self):
-        return pickle.load(open(os.path.join(self.path_to_lang_model_dataset, TEXT_FIELD_FILE), 'rb'))
+        return pickle.load(open(os.path.join(self.path_to_metadata, TEXT_FIELD_FILE), 'rb'))
 
     def load_pretrained_langmodel(self, rnn_learner: RNN_Learner) -> None:
         logger.info(f"Copying {self.path_to_langmodel_encoder} to {self.path_to_classifier_encoder}")

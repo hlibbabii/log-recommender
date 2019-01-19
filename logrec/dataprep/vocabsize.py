@@ -2,7 +2,7 @@ import argparse
 import logging.config
 import multiprocessing
 import os
-import pickle
+import dill as pickle
 import queue
 import random
 import shutil
@@ -11,8 +11,9 @@ from collections import Counter, defaultdict
 from multiprocessing.pool import Pool
 
 import yaml
+from torchtext.data import Field
 
-from logrec.dataprep import base_project_dir, TRAIN_DIR, METADATA_DIR, REPR_DIR
+from logrec.dataprep import base_project_dir, TRAIN_DIR, METADATA_DIR, REPR_DIR, TEXT_FIELD_FILE
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.to_repr import REPR_EXTENSION
 from logrec.dataprep.util import AtomicInteger, merge_dicts_
@@ -78,6 +79,11 @@ class PartialVocab(object):
     def write_vocab(self, path_to_vocab_file):
         sorted_vocab = sorted(self.merged_word_counts.items(), key=lambda x: x[1], reverse=True)
         io_utils.dump_dict_into_2_columns(sorted_vocab, path_to_vocab_file)
+
+    def write_field(self, path_to_field_file):
+        text_field = Field(tokenize=lambda s: s.split(" "), pad_token=placeholders['pad_token'])
+        text_field.build_vocab(self.merged_word_counts.keys())
+        pickle.dump(text_field, open(path_to_field_file, 'wb'))
 
     def __generate_stats(self):
         d = defaultdict(list)
@@ -269,6 +275,7 @@ def run(full_src_dir, full_metadata_dir):
 
     final_vocab.write_stats(os.path.join(full_metadata_dir, 'vocabsize'))
     final_vocab.write_vocab(os.path.join(full_metadata_dir, 'vocab'))
+    final_vocab.write_field(os.path.join(full_metadata_dir, TEXT_FIELD_FILE))
     shutil.rmtree(path_to_dump)
 
 
