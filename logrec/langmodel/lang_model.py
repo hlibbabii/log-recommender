@@ -208,6 +208,6 @@ if __name__ == '__main__':
     parser.add_argument('--find-lr', action='store_const', const=True, default=False)
     parser.add_argument('--force-rerun', action='store_const', const=True, default=False)
     parser.add_argument('--params-path', action='store', help='TODO')
-    parser.add_argument('--device', action='store', help='TODO')
+    parser.add_argument('--device', action='store', type=int, help='TODO')
     args = parser.parse_args()
     run(args.find_lr, args.force_rerun, args.params_path, args.device)

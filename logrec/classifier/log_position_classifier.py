@@ -241,6 +241,7 @@ def run(force_rerun: bool, params_path: Optional[str], device_id: Optional[int])
     module = get_params_module(params_path)
     if gpu.gpu_available():
         gpu_id_to_use = device_id if device_id is not None else get_current_device()
+        logger.debug(f'Using gpu with id: {gpu_id_to_use}')
         with device(gpu_id_to_use):
             run_on_device(module.classifier_training_param, force_rerun)
     else:
@@ -251,6 +252,6 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--force-rerun', action='store_const', const=True, default=False)
     parser.add_argument('--params-path', action='store', help='TODO')
-    parser.add_argument('--device', action='store', help='TODO')
+    parser.add_argument('--device', action='store', type=int, help='TODO')
     args = parser.parse_args()
     run(args.force_rerun, args.params_path, args.device)
