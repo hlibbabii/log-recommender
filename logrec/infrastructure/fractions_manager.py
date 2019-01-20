@@ -11,6 +11,10 @@ logger = logging.getLogger(__name__)
 N_CHUNKS = 1000
 
 
+def percent_to_chunk(percent: float) -> int:
+    return int(percent * N_CHUNKS * 0.01)
+
+
 def check_max_precision(fl: float, prec: int) -> bool:
     n = int(fl * 10 ** prec) / float(10 ** prec)
     return n == fl
@@ -57,7 +61,7 @@ def include_to_df(filename: str, percent: float, start_from: float) -> bool:
     if basename.startswith("_"):
         return False
     chunk = float(get_chunk_prefix(basename))
-    return start_from <= chunk < percent * N_CHUNKS * 0.01
+    return percent_to_chunk(start_from) <= chunk < percent_to_chunk(percent)
 
 
 def include_to_df_tester(percent: float, start_from: float) -> Callable:
