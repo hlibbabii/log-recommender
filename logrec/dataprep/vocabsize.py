@@ -82,7 +82,7 @@ class PartialVocab(object):
 
     def write_field(self, path_to_field_file):
         text_field = Field(tokenize=lambda s: s.split(" "), pad_token=placeholders['pad_token'])
-        text_field.build_vocab(self.merged_word_counts.keys())
+        text_field.build_vocab([[i] for i in self.merged_word_counts.keys()])
         pickle.dump(text_field, open(path_to_field_file, 'wb'))
 
     def __generate_stats(self):
