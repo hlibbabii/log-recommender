@@ -166,6 +166,10 @@ class FS(object):
         return os.path.join(self.path_to_dataset, METADATA_DIR, self.repr)
 
     @property
+    def path_to_base_metadata(self) -> str:
+        return os.path.join(self.path_to_base_dataset, METADATA_DIR, self.repr)
+
+    @property
     def path_to_model_dataset(self) -> str:
         return os.path.join(self.path_to_dataset,
                             REPR_DIR if self.is_lang_model else os.path.join(CLASSIFICATION_DIR,
@@ -327,4 +331,6 @@ class FS(object):
             yield (train_test_valid, project)
 
     def load_text_field(self):
-        return pickle.load(open(os.path.join(self.path_to_metadata, TEXT_FIELD_FILE), 'rb'))
+        path_to_metadata = self.path_to_base_metadata if self.base_model_specified else self.path_to_metadata
+        logger.debug(f'Loading field from {path_to_metadata}')
+        return pickle.load(open(os.path.join(path_to_metadata, TEXT_FIELD_FILE), 'rb'))
