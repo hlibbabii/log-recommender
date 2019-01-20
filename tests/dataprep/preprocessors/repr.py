@@ -52,7 +52,7 @@ class TeprTest(unittest.TestCase):
                 PreprocessingParam.NO_SEP: 0,
                 PreprocessingParam.NO_NEWLINES_TABS: 1,
             }
-            to_repr(prep_params, [], {})
+            to_repr(prep_params, [], NgramSplitConfig())
 
     def test_to_repr_0(self):
         prep_params = {

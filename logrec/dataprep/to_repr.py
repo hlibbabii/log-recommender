@@ -7,6 +7,7 @@ import pickle
 import time
 from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import Pool
+from typing import Optional
 
 from logrec.dataprep import base_project_dir, METADATA_DIR, BPE_DIR, PARSED_DIR
 from logrec.dataprep.preprocessors.general import to_token_list
@@ -57,7 +58,7 @@ def check_preprocessing_params_are_valid(preprocessing_params):
         raise ValueError("both NO_SPL=0 and EN_ONLY=1 is not supported")
 
 
-def to_repr(preprocessing_params, token_list, ngramSplittingConfig):
+def to_repr(preprocessing_params, token_list, n_gramm_splitting_config: Optional[NgramSplitConfig] = None):
     """
     Preprocesses token list according to given preprocessing params
     :param preprocessing_params: e.g. {
@@ -73,7 +74,8 @@ def to_repr(preprocessing_params, token_list, ngramSplittingConfig):
     check_preprocessing_params_are_valid(preprocessing_params)
     types_to_be_repr = get_types_to_be_repr(preprocessing_params)
     splitRepr = SplitRepr.BONDERIES if preprocessing_params[PreprocessingParam.NO_SEP] else SplitRepr.BETWEEN_WORDS
-    repr_list = to_repr_list(token_list, ReprConfig(types_to_be_repr, ngramSplittingConfig, splitRepr))
+    splitting_config = n_gramm_splitting_config or global_n_gramm_splitting_config
+    repr_list = to_repr_list(token_list, ReprConfig(types_to_be_repr, splitting_config, splitRepr))
     return repr_list
 
 
@@ -95,7 +97,7 @@ def preprocess_and_write(params):
             while True:
                 try:
                     token_list = pickle.load(i)
-                    repr = to_repr(preprocessing_params, token_list, ngramSplittingConfig)
+                    repr = to_repr(preprocessing_params, token_list, global_n_gramm_splitting_config)
                     w.write(repr)
                 except EOFError:
                     break
@@ -104,8 +106,8 @@ def preprocess_and_write(params):
 
 
 def init_splitting_config(dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, splitting_file):
-    global ngramSplittingConfig
-    ngramSplittingConfig = NgramSplitConfig()
+    global global_n_gramm_splitting_config
+    global_n_gramm_splitting_config = NgramSplitConfig()
     if preprocessing_params[PreprocessingParam.SPL] == 4:
         if not bpe_base_repr or not bpe_n_merges:
             raise ValueError("--bpe-base-repr and --bpe-n-merges must be specified")
@@ -125,18 +127,18 @@ def init_splitting_config(dataset, preprocessing_params, bpe_base_repr, bpe_n_me
         with open(bpe_merges_file, 'r') as f:
             for line in f:
                 merges.append(line.rstrip('\n').split(' '))
-        ngramSplittingConfig.merges_cache = merges_cache
-        ngramSplittingConfig.merges = merges
-        ngramSplittingConfig.set_splitting_type(NgramSplittingType.BPE)
+        global_n_gramm_splitting_config.merges_cache = merges_cache
+        global_n_gramm_splitting_config.merges = merges
+        global_n_gramm_splitting_config.set_splitting_type(NgramSplittingType.BPE)
     elif preprocessing_params[PreprocessingParam.SPL] == 3:
         if not splitting_file:
             raise ValueError("--splitting-file must be specified")
 
         splittings = io_utils.read_dict_from_2_columns(splitting_file, val_type=list, delim='|')
-        ngramSplittingConfig.sc_splittings = splittings
-        ngramSplittingConfig.set_splitting_type(NgramSplittingType.NUMBERS_AND_CUSTOM)
+        global_n_gramm_splitting_config.sc_splittings = splittings
+        global_n_gramm_splitting_config.set_splitting_type(NgramSplittingType.NUMBERS_AND_CUSTOM)
     elif preprocessing_params[PreprocessingParam.SPL] == 2:
-        ngramSplittingConfig.set_splitting_type(NgramSplittingType.ONLY_NUMBERS)
+        global_n_gramm_splitting_config.set_splitting_type(NgramSplittingType.ONLY_NUMBERS)
 
 
 def run(dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, splitting_file):

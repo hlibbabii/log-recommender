@@ -6,7 +6,7 @@ from logrec.dataprep.to_repr import init_splitting_config, to_repr
 from logrec.properties import DEFAULT_DATASET, DEFAULT_BPE_BASE_REPR, DEFAULT_BPE_N_MERGES
 
 
-def repr(s, r):
+def preprocess(s, r):
     parsed = apply_preprocessors(from_string(s), pp_params["preprocessors"], {
         'interesting_context_words': []
     })
