@@ -1,6 +1,7 @@
 from logrec.properties import DEFAULT_DATASET
 from logrec.param.model import Droupouts, RegFn, Cycle, LangmodelTraining, Validation, Testing, Data, Arch, \
-    LangModelTrainingParams, LangModelLrLearningParams, ClassifierTrainingParams, ClassifierTraining, Stage
+    LangModelTrainingParams, LangModelLrLearningParams, ClassifierTrainingParams, ClassifierTraining, Stage, \
+    Pretraining, ContextSide
 
 data = Data(
     dataset=DEFAULT_DATASET,
@@ -62,9 +63,9 @@ classifier_training_param = ClassifierTrainingParams(
     classification_type='location',
     data=data,
     log_coverage_threshold=5.0,
-    context_side='before',
-    pretrained_model='1_baseline',
-    base_model=None,
+    context_side=ContextSide.BEFORE,
+    base_model='1proj/100_baseline',
+    pretraining=Pretraining.ONLY_ENCODER,
     arch=arch,
     langmodel_training=langmodel_training,
     classifier_training=ClassifierTraining(

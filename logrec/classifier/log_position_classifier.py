@@ -16,10 +16,10 @@ from fastai.nlp import TextData, RNN_Learner
 from logrec.classifier.context_datasets import ContextsDataset
 from logrec.infrastructure import config_manager
 from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
+from logrec.langmodel.lang_model import LAST_MODEL_NAME
 from logrec.langmodel.utils import to_test_mode, get_predictions, attach_dataset_aware_handlers_to_loggers, \
     format_input, format_predictions
-from logrec.param.model import Arch, ClassifierTraining, Data, CONTEXT_SIDE_BEFORE, CONTEXT_SIDE_AFTER, \
-    CONTEXT_SIDE_BOTH, ClassifierTrainingParams
+from logrec.param.model import Arch, ClassifierTraining, Data, ClassifierTrainingParams, Pretraining, ContextSide
 from logrec.util import gpu
 from logrec.util.gpu import print_gpu_info, get_current_device
 from logrec.util.io_utils import file_mapper
@@ -35,10 +35,10 @@ LEVEL_LABEL = data.LabelField()
 
 def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, data: Data, arch: Arch, threshold: float,
                            context_side: str):
-    splits = ContextsDataset.splits(text_field, level_label, fs.path_to_classification_dataset, context_len=arch.bptt,
+    splits = ContextsDataset.splits(text_field, level_label, fs.path_to_model_dataset, context_len=arch.bptt,
                                     threshold=threshold, data=data, side=context_side)
 
-    text_data = TextData.from_splits(fs.path_to_classification_model, splits, arch.bs)
+    text_data = TextData.from_splits(fs.path_to_model, splits, arch.bs)
 
     opt_fn = partial(torch.optim.Adam, betas=(0.7, 0.99))
 
@@ -64,7 +64,7 @@ def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, data: 
 
 
 def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining):
-    training_log_file = os.path.join(fs.path_to_classification_model, 'training.log')
+    training_log_file = os.path.join(fs.path_to_model, 'training.log')
     if not training.stages:
         logger.warning("No stages specified in the config")
         return
@@ -88,7 +88,7 @@ def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining):
                                         file=open(training_log_file, 'w+'), only_validation=only_validation
                                         )
         training_time_mins = int(time() - training_start_time) // 60
-        with open(os.path.join(fs.path_to_classification_model, 'results.out'), 'w') as f:
+        with open(os.path.join(fs.path_to_model, 'results.out'), 'w') as f:
             f.write(str(training_time_mins) + "\n")
             for _, vals in ep_vals.items():
                 f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
@@ -97,7 +97,7 @@ def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining):
     # logger.info(f'                    ... {accuracy_gen(*rnn_learner.predict_with_targs())}')
     # rnn_learner.sched.plot_loss()
 
-    fs.save(rnn_learner)
+    rnn_learner.save(LAST_MODEL_NAME)
 
     return rnn_learner
 
@@ -107,24 +107,24 @@ def read_lines(filename):
         return f.readlines()
 
 
-def prepare_input(context_before: str, context_after: str, side: str) -> List[str]:
+def prepare_input(context_before: str, context_after: str, side: ContextSide) -> List[List[str]]:
     context_before_list = context_before.split(" ")
     context_after_list = context_after.split(" ")
     context_after_list.reverse()
 
-    if side == CONTEXT_SIDE_BEFORE:
-        words = [context_before_list]
-    elif side == CONTEXT_SIDE_AFTER:
-        words = [context_after_list]
-    elif side == CONTEXT_SIDE_BOTH:
-        words = [context_before_list] + [context_after_list]
+    if side == ContextSide.BEFORE:
+        words = context_before_list
+    elif side == ContextSide.AFTER:
+        words = context_after_list
+    elif side == ContextSide.BOTH:
+        words = context_before_list + context_after_list
     else:
         raise AssertionError(f'Unknown side: {side}')
-    return words
+    return [words]
 
 
 def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field,
-               sample_test_runs_file: str, context_side: str) -> None:
+               sample_test_runs_file: str, context_side: ContextSide) -> None:
     logger.info("================    Running tests ============")
     counter = 0
     text = ""
@@ -175,14 +175,17 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field,
 
 def run_on_device(classifier_training_param: ClassifierTrainingParams, force_rerun: bool) -> None:
     base_model = classifier_training_param.base_model
-    pretrained_model = classifier_training_param.pretrained_model
+    pretraining = classifier_training_param.pretraining
+
+    if bool(base_model) != bool(pretraining):
+        raise ValueError('Base model and pretraining params must be both set or both unset!')
 
     fs = FS.for_classifier(classifier_training_param.data.dataset, classifier_training_param.data.repr,
-                           base_model=base_model, pretrained_model=pretrained_model,
+                           base_model=base_model, pretraining=pretraining,
                            classification_type=classifier_training_param.classification_type)
 
-    fs.create_path_to_classifier(classifier_training_param.data, classifier_training_param.classifier_training_config)
-    attach_dataset_aware_handlers_to_loggers(fs.path_to_classification_model, 'main.log')
+    fs.create_path_to_model(classifier_training_param.data, classifier_training_param.classifier_training_config)
+    attach_dataset_aware_handlers_to_loggers(fs.path_to_model, 'main.log')
 
     print_gpu_info()
 
@@ -203,29 +206,35 @@ def run_on_device(classifier_training_param: ClassifierTrainingParams, force_rer
     elif same_model_exists:
         logger.info(f"Model {fs.path_to_classification_model} already trained. Forcing rerun.")
 
-    base_model_loaded = False
-    if fs.base_model_specified:
-        base_model_loaded = fs.load_best_base_classifier(rnn_learner)
-        logger.info("Base classifier model is loaded.")
-
-    if not base_model_loaded:
-        logger.info("Base classifier model not loaded. Trying to load pretrained lang model...")
+    if pretraining == Pretraining.FULL:
         try:
+            logger.info(f'Trying to load base classifier: {base_model}')
+            fs.load_base_model(rnn_learner)
+            logger.info('Base classifier model is loaded.')
+        except Exception as e:
+            logger.warning(e)
+            logger.warning('Base classifier model not loaded. Training from scratch')
+
+    elif pretraining == Pretraining.ONLY_ENCODER:
+        try:
+            logger.info(f'Trying to load pretarined LM: {base_model}')
             fs.load_pretrained_langmodel(rnn_learner)
             logger.info("Using pretrained LM")
-        except ValueError as e:
+        except Exception as e:
             logger.warning(e)
-            logger.warning("Neither base classifier, nor pretrained LM not loaded. Training classifier from scratch.")
+            logger.warning('Pretrained LM not loaded. Training from scratch')
+    else:
+        logger.info("No pretraining. Training classifier from scratch.")
 
-    config_manager.save_config(classifier_training_param.classifier_training_config, fs.path_to_classification_model)
+    config_manager.save_config(classifier_training_param.classifier_training_config, fs.path_to_model)
 
     train(fs, rnn_learner, classifier_training_param.classifier_training)
 
     model = rnn_learner.model
 
     to_test_mode(model)
-    sample_test_runs_file = os.path.join(fs.path_to_classification_model, 'test_runs.out')
-    show_tests(fs.classification_test_path, model, text_field, sample_test_runs_file,
+    sample_test_runs_file = os.path.join(fs.path_to_model, 'test_runs.out')
+    show_tests(fs.test_path, model, text_field, sample_test_runs_file,
                classifier_training_param.context_side)
     logger.info("Classifier training finished successfully.")
 

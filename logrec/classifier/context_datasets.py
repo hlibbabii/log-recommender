@@ -8,7 +8,7 @@ from torchtext import data
 from logrec.classifier.utils import get_dir_and_file
 from logrec.dataprep import TRAIN_DIR, TEST_DIR
 from logrec.infrastructure.fractions_manager import include_to_df
-from logrec.param.model import CONTEXT_SIDE_BOTH, CONTEXT_SIDE_BEFORE, CONTEXT_SIDE_AFTER
+from logrec.param.model import ContextSide
 from logrec.util import io_utils
 from logrec.util.io_utils import file_mapper
 
@@ -49,13 +49,13 @@ class ContextsDataset(data.Dataset):
 
     @staticmethod
     def _get_context_for_prediction(context_before, context_after, context_len, side):
-        if side == CONTEXT_SIDE_BOTH:
+        if side == ContextSide.BOTH:
             prepared_context_before = ContextsDataset._prepare_context(context_before, context_len)
             prepared_context_after = ContextsDataset._prepare_context(context_after, context_len, reverse=True)
             context = " ".join([prepared_context_before, prepared_context_after])
-        elif side == CONTEXT_SIDE_BEFORE:
+        elif side == ContextSide.BEFORE:
             context = ContextsDataset._prepare_context(context_before, context_len)
-        elif side == CONTEXT_SIDE_AFTER:
+        elif side == ContextSide.AFTER:
             context = ContextsDataset._prepare_context(context_after, context_len, reverse=True)
         else:
             raise AssertionError(f"Unknown side: {side}")

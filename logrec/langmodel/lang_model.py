@@ -37,7 +37,8 @@ from fastai.nlp import LanguageModelData, seq2seq_reg, RNN_Learner, SequentialRN
 from torchtext import data
 
 # for some reason this import should go here to avoid error
-
+ENCODER_NAME = 'encoder'
+LAST_MODEL_NAME = 'last'
 LEVEL_LABEL = data.Field(sequential=False)
 logger = logging.getLogger(__name__)
 
@@ -58,7 +59,7 @@ def create_nn_architecture(fs: FS, data: Data, arch: Arch, validation_bs: int, b
         text_field = Field(tokenize=lambda s: s.split(" "), pad_token=placeholders['pad_token'])
     else:
         text_field = preloaded_text_filed
-    languageModelData = LanguageModelData.from_dataframes(fs.path_to_langmodel if not path else path,
+    languageModelData = LanguageModelData.from_dataframes(fs.path_to_model if not path else path,
                                                           text_field, 0,
                                                           train_df, valid_df, test_df,
                                                           bs=arch.bs, validation_bs=validation_bs,
@@ -95,9 +96,10 @@ def get_best_available_model(fs: FS, data: Data, arch: Arch, validation_bs: int,
     logger.info("Checking if there exists a model with the same architecture")
     model_loaded = fs.load_best(rnn_learner)
     if not model_loaded and fs.base_model_specified:
-        # checking if there is a base model and trying to load it
-        loaded_base_model = fs.load_best_base_langmodel(rnn_learner)
-        if not loaded_base_model:
+        logger.info(f'Trying to load base model: {fs.base_model}')
+        try:
+            fs.load_base_model(rnn_learner)
+        except FileNotFoundError:
             logger.info("Not using base model. Training model from scratch")
 
     return rnn_learner, model_loaded
@@ -126,7 +128,7 @@ def find_and_plot_lr(rnn_learner: RNN_Learner, fs: FS):
     logger.info("Looking for the best learning rate...")
     # TODO we shouldnt pass file argument, when looking
     # for learning rate we should log to console
-    rnn_learner.lr_find(file=open(os.path.join(fs.path_to_langmodel, 'training.log'), 'w'))
+    rnn_learner.lr_find(file=open(os.path.join(fs.path_to_model, 'training.log'), 'w'))
 
     rnn_learner.sched.plot(fs.path_to_lr_plot)
     logger.info(f"Plot is saved to {fs.path_to_lr_plot}")
@@ -144,7 +146,7 @@ def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LangmodelTr
 
     get_full_word_func = get_curr_seq if split_repr == 0 else get_curr_seq_new
     training_start_time = time()
-    training_log_file = os.path.join(fs.path_to_langmodel, 'training.log')
+    training_log_file = os.path.join(fs.path_to_model, 'training.log')
     logger.info(f"Starting training, check {training_log_file} for training progress")
     vals, ep_vals = rnn_learner.fit(lrs=training.lr, n_cycle=n, wds=training.wds,
                                     cycle_len=training.cycle.len, cycle_mult=training.cycle.mult,
@@ -155,21 +157,21 @@ def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LangmodelTr
                                     valid_func=validate, only_validation=only_validation
                                     )
     training_time_mins = int(time() - training_start_time) // 60
-    with open(os.path.join(fs.path_to_langmodel, 'results.out'), 'w') as f:
+    with open(os.path.join(fs.path_to_model, 'results.out'), 'w') as f:
         f.write(str(training_time_mins) + "\n")
         for _, vals in ep_vals.items():
             f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
 
-    fs.save(rnn_learner)
-    fs.save_encoder(rnn_learner)
+    rnn_learner.save(LAST_MODEL_NAME)
+    rnn_learner.save_encoder(ENCODER_NAME)
 
 
 def run_on_device(params: Union[LangModelLrLearningParams, LangModelTrainingParams],
                   find_lr: bool, force_rerun: bool) -> None:
     fs = FS.for_lang_model(params.data.dataset, params.data.repr, params.base_model)
 
-    fs.create_path_to_langmodel(params.data, params.langmodel_training_config)
-    attach_dataset_aware_handlers_to_loggers(fs.path_to_langmodel, 'main.log')
+    fs.create_path_to_model(params.data, params.langmodel_training_config)
+    attach_dataset_aware_handlers_to_loggers(fs.path_to_model, 'main.log')
 
     print_gpu_info()
 
@@ -184,7 +186,7 @@ def run_on_device(params: Union[LangModelLrLearningParams, LangModelTrainingPara
     elif model_trained:
         logger.info(f"Forcing rerun")
 
-    config_manager.save_config(params.langmodel_training_config, fs.path_to_langmodel)
+    config_manager.save_config(params.langmodel_training_config, fs.path_to_model)
 
     if find_lr:
         find_and_plot_lr(learner, fs)
@@ -193,7 +195,7 @@ def run_on_device(params: Union[LangModelLrLearningParams, LangModelTrainingPara
         model_loaded = fs.load_best(learner)
         if not model_loaded:
             raise AssertionError("The best model should have been trained and saved!")
-        gen_text_path = os.path.join(fs.path_to_langmodel, 'gen_text.out')
+        gen_text_path = os.path.join(fs.path_to_model, 'gen_text.out')
         run_and_display_tests(learner, params.arch, params.testing, gen_text_path, params.langmodel_training.backwards)
 
 

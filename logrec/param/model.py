@@ -1,8 +1,16 @@
+from enum import Enum
 from typing import Optional, List
 
-CONTEXT_SIDE_BEFORE = 'before'
-CONTEXT_SIDE_AFTER = 'after'
-CONTEXT_SIDE_BOTH = 'both'
+
+class ContextSide(str, Enum):
+    BEFORE: str = 'before'
+    AFTER: str = 'after'
+    BOTH: str = 'both'
+
+
+class Pretraining(str, Enum):
+    FULL: str = 'full'
+    ONLY_ENCODER: str = 'only_encoder'
 
 class Droupouts(object):
     def __init__(self, outi: float, out: float, w: float, oute: float, outh: float):
@@ -131,8 +139,8 @@ class LangModelLrLearningParams(object):
 
 class ClassifierTrainingParams(object):
     def __init__(self, classification_type: str, data: Data,
-                 log_coverage_threshold: float, context_side: str, base_model: Optional[str],
-                 pretrained_model: Optional[str], arch: Arch,
+                 log_coverage_threshold: float, context_side: ContextSide, base_model: Optional[str],
+                 pretraining: Optional[Pretraining], arch: Arch,
                  langmodel_training: LangmodelTraining,
                  classifier_training: ClassifierTraining, validation: Validation,
                  testing: Testing):
@@ -141,7 +149,7 @@ class ClassifierTrainingParams(object):
         self.log_coverage_threshold = log_coverage_threshold
         self.context_side = context_side
         self.base_model = base_model
-        self.pretrained_model = pretrained_model
+        self.pretraining = pretraining
         self.arch = arch
         self.langmodel_training = langmodel_training
         self.classifier_training = classifier_training
@@ -156,7 +164,8 @@ class ClassifierTrainingParams(object):
                                         context_side=self.context_side,
                                         arch=self.arch,
                                         training=self.classifier_training,
-                                        base_model=self.base_model)
+                                        base_model=self.base_model,
+                                        pretraining=self.pretraining)
 
 
 class LangmodelTrainingConfig(object):
@@ -168,8 +177,9 @@ class LangmodelTrainingConfig(object):
 
 
 class ClassifierTrainingConfig(object):
-    def __init__(self, classification_type: str, data: Data, log_coverage_threshold: float, context_side: str,
-                 arch: Arch, training: ClassifierTraining, base_model: Optional[str]):
+    def __init__(self, classification_type: str, data: Data, log_coverage_threshold: float, context_side: ContextSide,
+                 arch: Arch, training: ClassifierTraining, base_model: Optional[str],
+                 pretraining: Optional[Pretraining]):
         self.classification_type = classification_type
         self.data = data
         self.log_coverage_threshold = log_coverage_threshold
@@ -177,3 +187,4 @@ class ClassifierTrainingConfig(object):
         self.arch = arch
         self.training = training
         self.base_model = base_model
+        self.pretraining = pretraining
