@@ -182,7 +182,7 @@ def run_on_device(params: Union[LangModelLrLearningParams, LangModelTrainingPara
     fs.save_vocab_data(learner.text_field, params.data.percent, params.data.start_from)
 
     if model_trained and not force_rerun:
-        logger.info(f'Model {fs.path_to_langmodel} already trained. Not rerunning training.')
+        logger.info(f'Model {fs.path_to_model} already trained. Not rerunning training.')
         return
     elif model_trained:
         logger.info(f"Forcing rerun")
