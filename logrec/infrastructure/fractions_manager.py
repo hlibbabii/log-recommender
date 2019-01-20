@@ -27,7 +27,7 @@ def check_value_ranges(percent: float, start_from: float) -> None:
         raise ValueError(f"Start from cannot be negative: {start_from}")
     if percent + start_from > 100.0:
         raise ValueError(f"Wrong values for percent ({percent}) "
-                         f"and ({start_from})")
+                         f"and start_from ({start_from})")
 
 
 def normalize_string(val: float) -> str:
@@ -49,19 +49,22 @@ def get_percent_prefix(percent: float, start_from: float):
     return f"{normalized_percent}_{'' if normalized_start_from == '0' else (normalized_start_from + '_')}"
 
 
-def get_chunk_prefix(filename: str) -> str:
-    underscore_index = filename.index("_")
-    if underscore_index == -1:
-        raise ValueError(f"Filename is not in format <chunk>_<model name>: {filename}")
-    return filename[:underscore_index]
+def get_chunk_from_filename(filename: str) -> int:
+    try:
+        underscore_index = filename.index("_")
+    except ValueError as e:
+        raise ValueError(f"Filename is not in format <chunk>_<model name>: {filename}") from e
+    return int(filename[:underscore_index])
 
 
 def include_to_df(filename: str, percent: float, start_from: float) -> bool:
+    check_value_ranges(percent, start_from)
+
     basename = os.path.basename(filename)
     if basename.startswith("_"):
         return False
-    chunk = float(get_chunk_prefix(basename))
-    return percent_to_chunk(start_from) <= chunk < percent_to_chunk(percent)
+    chunk = get_chunk_from_filename(basename)
+    return percent_to_chunk(start_from) <= chunk < percent_to_chunk(start_from + percent)
 
 
 def include_to_df_tester(percent: float, start_from: float) -> Callable:
