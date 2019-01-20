@@ -124,7 +124,7 @@ def prepare_input(context_before: str, context_after: str, side: ContextSide) ->
 
 
 def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field,
-               sample_test_runs_file: str, context_side: ContextSide) -> None:
+               sample_test_runs_file: str, context_side: ContextSide, n_predictions: int) -> None:
     logger.info("================    Running tests ============")
     counter = 0
     text = ""
@@ -152,7 +152,7 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field,
                 context_after = context_after.rstrip("\n")
                 prepared_input = prepare_input(context_before, context_after, context_side)
                 formatted_input = format_input(context_before, context_after, context_side)
-                probs, labels = get_predictions(model, text_field, prepared_input, 2)
+                probs, labels = get_predictions(model, text_field, prepared_input, n_predictions)
                 formatted_predictions = format_predictions(probs, labels, LEVEL_LABEL, label.rstrip("\n"))
                 logger.info(formatted_input + formatted_predictions)
                 text += (formatted_input + formatted_predictions)
@@ -234,8 +234,9 @@ def run_on_device(classifier_training_param: ClassifierTrainingParams, force_rer
 
     to_test_mode(model)
     sample_test_runs_file = os.path.join(fs.path_to_model, 'test_runs.out')
+    n_predicitions = 6 if classifier_training_param.classification_type == 'level' else 2
     show_tests(fs.test_path, model, text_field, sample_test_runs_file,
-               classifier_training_param.context_side)
+               classifier_training_param.context_side, n_predicitions)
     logger.info("Classifier training finished successfully.")
 
     # plotting confusion matrix
