@@ -34,11 +34,11 @@ LEVEL_LABEL = data.LabelField()
 
 
 def create_nn_architecture(fs: FS, text_field: Field, level_label: Field, data: Data, arch: Arch, threshold: float,
-                           context_side: str):
+                           context_side: str, path: str = None):
     splits = ContextsDataset.splits(text_field, level_label, fs.path_to_model_dataset, context_len=arch.bptt,
                                     threshold=threshold, data=data, side=context_side)
 
-    text_data = TextData.from_splits(fs.path_to_model, splits, arch.bs)
+    text_data = TextData.from_splits(fs.path_to_model if not path else path, splits, arch.bs)
 
     opt_fn = partial(torch.optim.Adam, betas=(0.7, 0.99))
 
