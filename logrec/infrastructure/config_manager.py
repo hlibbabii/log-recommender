@@ -1,3 +1,4 @@
+import logging
 import os
 from collections import defaultdict
 from typing import Union
@@ -12,6 +13,7 @@ DEEPDIFF_ADDED = 'dictionary_item_added'
 DEEPDIFF_REMOVED = 'dictionary_item_removed'
 DEEPDIFF_CHANGED = 'values_changed'
 
+logger = logging.getLogger(__name__)
 
 def save_config(config: Union[LangmodelTrainingConfig or ClassifierTrainingConfig], path_to_model: str):
     with open(os.path.join(path_to_model, PARAM_FILE_NAME), 'w') as f:
@@ -37,6 +39,7 @@ def find_most_similar_config(percent_prefix: str, path_to_dataset: str,
             if os.path.exists(file_path):
                 with open(file_path, 'r') as f:
                     json_str = f.read()
+                    logger.debug(f'Loading config from {file_path}')
                     config = jsons.loads(json_str, type(current_config))
                 config_diff = deepdiff.DeepDiff(config, current_config)
                 if config_diff == {}:
