@@ -17,7 +17,9 @@ def predict(dataset: str, repr: str, model: str, input_text: str) -> None:
     if not isinstance(config, LangmodelTrainingConfig):
         AssertionError("LangModelTrainingConfig should have been loaded!")
 
-    learner = create_nn_architecture(fs, config.data, config.arch, 1, config.training.backwards, fs.path_to_base_model)
+    preloaded_text_filed = fs.load_text_field()
+    learner = create_nn_architecture(fs, config.data, config.arch, 1, config.training.backwards,
+                                     fs.path_to_base_model, preloaded_text_filed)
     fs.load_best(learner)
 
     to_test_mode(learner.model)
