@@ -97,11 +97,11 @@ def get_best_available_model(fs: FS, data: Data, arch: Arch, validation_bs: int,
     logger.info("Checking if there exists a model with the same architecture")
     model_loaded = fs.load_best(rnn_learner)
     if not model_loaded and fs.base_model_specified:
-        logger.info(f'Trying to load base model: {fs.base_model}')
+        logger.info(f'Trying to load base model: {fs.base_model_id}')
         try:
             fs.load_base_model(rnn_learner)
         except FileNotFoundError:
-            logger.info("Not using base model. Training model from scratch")
+            logger.warning("Base model was not found. Training model from scratch")
 
     return rnn_learner, model_loaded
 
@@ -186,6 +186,8 @@ def run_on_device(params: Union[LangModelLrLearningParams, LangModelTrainingPara
         return
     elif model_trained:
         logger.info(f"Forcing rerun")
+    else:
+        logger.info(f'Model with the same training config was not found.')
 
     config_manager.save_config(params.langmodel_training_config, fs.path_to_model)
 

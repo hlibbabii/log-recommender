@@ -146,6 +146,14 @@ class FS(object):
     #################################################333
 
     @property
+    def model_id(self) -> str:
+        return f'{self.dataset}.{self.repr}.{self.model_name}'
+
+    @property
+    def base_model_id(self) -> str:
+        return f'{self.base_dataset}.{self.repr}.{self.base_model}'
+
+    @property
     def path_to_raw_dataset(self) -> str:
         return os.path.join(DEFAULT_RAW_DATASETS_DIR, self.dataset)
 
@@ -237,16 +245,15 @@ class FS(object):
 
     def _get_model_name_by_params(self,
                                   data: Data,
-                                  training_config: Union[LangmodelTrainingConfig or ClassifierTrainingConfig]) -> str:
-        percent_prefix = fractions_manager.get_percent_prefix(data.percent, data.start_from)
+                                  training_config: Union[LangmodelTrainingConfig, ClassifierTrainingConfig]) -> str:
 
-        if self.is_lang_model:
-            prefix = percent_prefix
-        elif self.base_model_specified:
+        prefix = ''
+        if self.base_model_specified:
             dataset_prefix = f'{self.base_dataset}__' if self.base_dataset != self.dataset else ''
-            prefix = f'{dataset_prefix}{self.base_model}{PRETRAINED_MODELS_SEPARATOR}'
-        else:
-            prefix = ''
+            prefix += f'{dataset_prefix}{self.base_model}{PRETRAINED_MODELS_SEPARATOR}'
+
+        percent_prefix = fractions_manager.get_percent_prefix(data.percent, data.start_from)
+        prefix += percent_prefix
 
         most_similar_model_name, config_diff = find_most_similar_config(prefix, self.path_to_model_dataset,
                                                                         training_config)
@@ -261,7 +268,7 @@ class FS(object):
 
     def _create_and_get_path_to_model(self,
                                       data: Data,
-                                      training_config: Union[LangmodelTrainingConfig or ClassifierTrainingConfig],
+                                      training_config: Union[LangmodelTrainingConfig, ClassifierTrainingConfig],
                                       ) -> str:
         if training_config.training is None:
             # lr-finding case, hopefully, temporary hack
@@ -283,12 +290,6 @@ class FS(object):
         prefix = fractions_manager.get_percent_prefix(percent, start_from)
         io_utils.dump_dict_into_2_columns(text_field.vocab.freqs,
                                           os.path.join(self.path_to_metadata, f'{prefix}vocab_all.txt'))
-
-    def model_id(self) -> str:
-        return f'{self.dataset}.{self.repr}.{self.model_name}'
-
-    def base_model_id(self) -> str:
-        return f'{self.base_dataset}.{self.repr}.{self.base_model}'
 
     def save_pp_params(self, pp_params):
         with open(os.path.join(self.path_to_parsed_dataset, PP_PARAMS_FILENAME), 'w') as f:
