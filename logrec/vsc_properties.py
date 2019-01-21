@@ -9,6 +9,8 @@ DEFAULT_RAW_DATASETS_DIR = os.path.join(base_dir, 'raw_datasets', 'devanbu', 'da
 DEFAULT_PARSED_DATASETS_DIR = os.path.join(base_project_dir, 'nn-data', 'new_framework')
 
 DEFAULT_DATASET = 'en_100_percent'
+DEFAULT_BPE_N_MERGES = '5000'
+DEFAULT_BPE_BASE_REPR = '10111'
 
 DEFAULT_PARSE_PROJECTS_ARGS = []
 DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS = []
