@@ -31,24 +31,24 @@ def load_config(path_to_model: str) -> object:
 def find_most_similar_config(percent_prefix: str, path_to_dataset: str,
                              current_config: Union[LangmodelTrainingConfig, ClassifierTrainingConfig]):
     config_diff_dict = defaultdict(list)
-    for (dirpath, dirnames, filenames) in os.walk(path_to_dataset):
-        for dirname in dirnames:
-            if not dirname.startswith(percent_prefix):
-                continue
-            file_path = os.path.join(dirpath, dirname, PARAM_FILE_NAME)
-            if os.path.exists(file_path):
-                with open(file_path, 'r') as f:
-                    json_str = f.read()
-                    logger.debug(f'Loading config from {file_path}')
-                    config = jsons.loads(json_str, type(current_config))
-                config_diff = deepdiff.DeepDiff(config, current_config)
-                if config_diff == {}:
-                    return dirname, {}
-                else:
-                    n_changed_params = (len(config_diff[DEEPDIFF_ADDED]) if DEEPDIFF_ADDED in config_diff else 0) \
-                                       + (len(config_diff[DEEPDIFF_CHANGED]) if DEEPDIFF_CHANGED in config_diff else 0) \
-                                       + (len(config_diff[DEEPDIFF_REMOVED]) if DEEPDIFF_REMOVED in config_diff else 0)
-                    config_diff_dict[n_changed_params].append((dirname, config_diff))
+    dirpath, dirnames, _ = next(os.walk(path_to_dataset))
+    for dirname in dirnames:
+        if not dirname.startswith(percent_prefix):
+            continue
+        file_path = os.path.join(dirpath, dirname, PARAM_FILE_NAME)
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as f:
+                json_str = f.read()
+                logger.debug(f'Loading config from {file_path}')
+                config = jsons.loads(json_str, type(current_config))
+            config_diff = deepdiff.DeepDiff(config, current_config)
+            if config_diff == {}:
+                return dirname, {}
+            else:
+                n_changed_params = (len(config_diff[DEEPDIFF_ADDED]) if DEEPDIFF_ADDED in config_diff else 0) \
+                                   + (len(config_diff[DEEPDIFF_CHANGED]) if DEEPDIFF_CHANGED in config_diff else 0) \
+                                   + (len(config_diff[DEEPDIFF_REMOVED]) if DEEPDIFF_REMOVED in config_diff else 0)
+                config_diff_dict[n_changed_params].append((dirname, config_diff))
     if not config_diff_dict:
         return None, deepdiff.DeepDiff({}, current_config)
     else:
