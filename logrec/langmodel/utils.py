@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import List, Union
+from typing import List, Union, Optional
 
 from torchtext.data import Field
 
@@ -36,7 +36,7 @@ def format_input(context_before: str, context_after: str, side: str) -> str:
     return text
 
 
-def format_predictions(probs: Variable, labels: Variable, output_field: Field, actual_label: str) -> str:
+def format_predictions(probs: Variable, labels: Variable, output_field: Field, actual_label: Optional[str]) -> str:
     text = ""
     for probability, label in map(to_np, zip(probs, labels)):
         uu = f'{output_field.vocab.itos[label[0]]}: {probability}'
