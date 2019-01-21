@@ -33,13 +33,13 @@ class TrainedModel(object):
     def for_langmodel(dataset: str, repr: str, model: str):
         return TrainedLangModel(dataset, repr, model)
 
-    def feed_string(self, input: str) -> None:
-        self.__predict(input)
+    def feed_string(self, input: str, do_preprocessing: bool = True) -> None:
+        self.__predict(input, do_preprocessing)
 
-    def feed_file(self, file: str) -> None:
+    def feed_file(self, file: str, do_preprocessing: bool = True) -> None:
         with open(file, 'r') as f:
             input = f.read()
-        self.__predict(input)
+        self.__predict(input, do_preprocessing)
 
     def __load_learner(self) -> RNN_Learner:
         config = config_manager.load_config(self._fs.path_to_base_model)
@@ -51,13 +51,14 @@ class TrainedModel(object):
         to_test_mode(learner.model)
         return learner
 
-    def __predict(self, input: str) -> None:
-        prep_input = preprocess(input, self._repr)
-        str_to_feed_to_model = " ".join(prep_input)
+    def __predict(self, input: str, do_preprocessing: bool) -> None:
+        if do_preprocessing:
+            prep_input = preprocess(input, self._repr)
+            input = " ".join(prep_input)
         print("====================================")
-        print(str_to_feed_to_model)
+        print(input)
         print("====================================")
-        probs, labels = get_predictions(self._learner.model, self._text_field, [str_to_feed_to_model],
+        probs, labels = get_predictions(self._learner.model, self._text_field, [input],
                                         self._n_predictions)
         formatted_predictions = format_predictions(probs, labels, self._output_field, None)
         print(formatted_predictions)
