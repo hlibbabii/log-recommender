@@ -177,9 +177,15 @@ def format_input(context_before: str, context_after: str, side: str) -> str:
     text = ("===================" + "\n")
     if side in [ContextSide.BEFORE, ContextSide.BOTH]:
         text += (beautify_text(context_before) + "\n")
+    if side in [ContextSide.AFTER, ContextSide.BOTH]:
+        text += "\n"
+        text += (beautify_text(context_after) + "\n")
+    text += ("===================" + "\n")
+    if side in [ContextSide.BEFORE, ContextSide.BOTH]:
+        text += (context_before + "\n")
         text += "\n"
     if side in [ContextSide.AFTER, ContextSide.BOTH]:
-        text += (beautify_text(context_after) + "\n")
+        text += (context_after + "\n")
     return text
 
 def run_on_device(classifier_training_param: ClassifierTrainingParams, force_rerun: bool) -> None:
