@@ -141,7 +141,6 @@ class ClassifierTrainingParams(object):
     def __init__(self, classification_type: str, data: Data,
                  log_coverage_threshold: float, context_side: ContextSide, base_model: Optional[str],
                  pretraining: Optional[Pretraining], arch: Arch,
-                 langmodel_training: LangmodelTraining,
                  classifier_training: ClassifierTraining, validation: Validation,
                  testing: Testing):
         self.classification_type = classification_type
@@ -151,7 +150,6 @@ class ClassifierTrainingParams(object):
         self.base_model = base_model
         self.pretraining = pretraining
         self.arch = arch
-        self.langmodel_training = langmodel_training
         self.classifier_training = classifier_training
         self.validation = validation
         self.testing = testing
