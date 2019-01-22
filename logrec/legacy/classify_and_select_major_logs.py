@@ -5,7 +5,7 @@ import logging
 from operator import attrgetter
 from random import shuffle
 
-from logrec.util import io_utils
+from logrec.util import io
 
 __author__ = 'hlib'
 
@@ -49,12 +49,12 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG)
 
-    preprocessed_logs = io_utils.load_preprocessed_logs()
-    classes = io_utils.load_classes()
+    preprocessed_logs = io.load_preprocessed_logs()
+    classes = io.load_classes()
 
     classified_logs = classify_logs_by_first_word(preprocessed_logs, classes)
     logs_from_major_classes, other_logs = select_logs_from_major_classes(classified_logs, attrgetter('first_word_cathegory'),
                                                                          classes, args.min_word_occurencies)
 
-    io_utils.dump_classified_logs(classified_logs)
-    io_utils.dump_major_classes_logs(logs_from_major_classes)
+    io.dump_classified_logs(classified_logs)
+    io.dump_major_classes_logs(logs_from_major_classes)

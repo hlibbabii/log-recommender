@@ -1,7 +1,7 @@
 import argparse
 import logging
 
-from logrec.util import io_utils
+from logrec.util import io
 
 
 def get_significant_words(word_list, func):
@@ -26,19 +26,19 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    first_word_freq_stats = io_utils.load_first_word_frequencies_stats_binary()
+    first_word_freq_stats = io.load_first_word_frequencies_stats_binary()
 
     logging.info("Getting log classes...")
     classes = get_significant_words(first_word_freq_stats.keys(),
                                                     is_not_other_by_word_occurrences(args.min_word_occurencies))
 
-    io_utils.dump_classes(classes)
+    io.dump_classes(classes)
 
     logging.info("Getting interesting words from the contexts")
-    context_word_freq_stats = io_utils.load_context_frequencies_stats_binary()
+    context_word_freq_stats = io.load_context_frequencies_stats_binary()
     interesting_words_from_context = get_significant_words(context_word_freq_stats.keys(),
         lambda w, stats=context_word_freq_stats: stats[w]['__all__'] > args.min_word_frequency)
-    io_utils.dump_interesting_words(interesting_words_from_context)
+    io.dump_interesting_words(interesting_words_from_context)
 
     print("Classes: " + str(len(classes)))
     print(classes)

@@ -1,6 +1,6 @@
 import os
 
-from logrec.util import io_utils
+from logrec.util import io
 
 PATH_TO_CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 MARKED_UP_CONTEXTS_FILE = os.path.join(PATH_TO_CURRENT_DIR, '..', 'marked_up_contexts.txt')
@@ -15,8 +15,8 @@ def markup_contexts(logs, important_context_words):
 
 if __name__ == '__main__':
 
-    context_vectors = io_utils.load_context_vectors()
-    logs_from_major_classes = io_utils.load_major_classes_logs()
+    context_vectors = io.load_context_vectors()
+    logs_from_major_classes = io.load_major_classes_logs()
     how_many = 5000
     marked_contexts = markup_contexts(logs_from_major_classes[:how_many],
                                       [log['values'] for log in context_vectors[:how_many]])

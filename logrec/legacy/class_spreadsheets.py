@@ -2,7 +2,7 @@ import csv
 import logging
 import os
 
-from logrec.util import io_utils
+from logrec.util import io
 
 
 def write_to_classification_spreadsheet(dir_name, logs):
@@ -20,5 +20,5 @@ def write_to_classification_spreadsheet(dir_name, logs):
                                  len(log.text), log.link])
 
 if __name__ == '__main__':
-    classified_logs = io_utils.load_classified_logs()
+    classified_logs = io.load_classified_logs()
     write_to_classification_spreadsheet('../logs', classified_logs)

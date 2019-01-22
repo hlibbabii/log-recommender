@@ -7,7 +7,7 @@ from fastai.imports import tqdm
 from logrec.dataprep import base_project_dir
 from logrec.dataprep.split.samecase import manually_tagged_splittings_file_reader
 from logrec.dataprep.split.samecase.splitter import load_english_dict, get_splittings
-from logrec.util import io_utils
+from logrec.util import io
 from logrec.util.param_mutator import ParamMutator
 
 logger = logging.getLogger(__name__)
@@ -121,7 +121,7 @@ if __name__ == '__main__':
          {'name': 'd', 'start': 1.0, 'end': 100.0, 'plus_or_mult': 'mult', 'koef': 1.5}]) \
         .mutate(5000, 1000)
 
-    freqs = io_utils.read_dict_from_2_columns(os.path.join(path_to_dataset, 'vocab.txt'))
+    freqs = io.read_dict_from_2_columns(os.path.join(path_to_dataset, 'vocab.txt'))
 
     print(possibel_var_values)
     print("======================")

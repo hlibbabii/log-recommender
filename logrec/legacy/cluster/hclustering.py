@@ -3,7 +3,7 @@ import logging
 
 from numpy import genfromtxt
 
-from logrec.util import io_utils
+from logrec.util import io
 
 
 def run_hierarchical_clustering(log_vectors, first_words_vector, contexts, metric_function):
@@ -129,11 +129,11 @@ if __name__ == "__main__":
         vector = [[i] for i in range(dist_matrix.shape[0])]
     elif args.distance_metric == 'jaccard':
         metric_function = jaccard
-        vector = io_utils.load_binary_context_vectors()[:1000]
+        vector = io.load_binary_context_vectors()[:1000]
     else:
         raise ValueError("Invalid metric name: " + args.distance_metric)
 
-    major_classes_logs = io_utils.load_major_classes_logs()
+    major_classes_logs = io.load_major_classes_logs()
     logging.basicConfig(level=logging.DEBUG)
     logging.debug("Number of pplogs: " + str(len(major_classes_logs)))
 

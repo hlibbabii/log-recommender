@@ -1,6 +1,6 @@
 import logging
 
-from logrec.util import io_utils
+from logrec.util import io
 
 
 def calculate_log_level_freqs_by_first_word_cathegory(classified_logs, keys):
@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     logging.info("Calculating and saving stats")
 
-    classified_logs = io_utils.load_classified_logs()
+    classified_logs = io.load_classified_logs()
 
     keys = {"trace": 0.0,
             "debug": 0.1,
@@ -62,8 +62,8 @@ if __name__ == '__main__':
             "error": 0.9,
             "fatal": 1.0}
     levels_distribution, levels = calculate_log_level_freqs_by_first_word_cathegory(classified_logs, keys)
-    io_utils.dump_level_distributions(levels_distribution, levels)
+    io.dump_level_distributions(levels_distribution, levels)
 
     keys = [0, 1, 2, 3, 4]
     n_vars_distribution, n_vars = calculate_variable_freqs_by_first_word(classified_logs, keys)
-    io_utils.dump_n_vars_distribution(n_vars_distribution, n_vars)
+    io.dump_n_vars_distribution(n_vars_distribution, n_vars)

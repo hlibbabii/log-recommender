@@ -8,8 +8,8 @@ import numpy
 from numpy.core.multiarray import ndarray
 
 from logrec.legacy.cluster.hclustering import get_first_words, jaccard
-from logrec.util import io_utils
-from logrec.util.io_utils import load_classes
+from logrec.util import io
+from logrec.util.io import load_classes
 
 __author__ = 'hlib'
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     parser.add_argument('--word-to-vec-out-file', action='store', default='../../AutoenCODE/out/word2vec/word2vec.out')
     args = parser.parse_args()
 
-    major_classes_logs = io_utils.load_major_classes_logs()
+    major_classes_logs = io.load_major_classes_logs()
 
     matrix = []
     with open(args.autoencode_dist_file, 'r') as f:
@@ -193,8 +193,8 @@ if __name__ == "__main__":
     ]
     filters_split = process_filter_input(filters)
 
-    interesting_words_from_context = io_utils.load_interesting_words()
-    binary_context_vectors = io_utils.load_binary_context_vectors()
+    interesting_words_from_context = io.load_interesting_words()
+    binary_context_vectors = io.load_binary_context_vectors()
 
     for i, line in enumerate(binary_context_vectors):
         for flt in filters_split:

@@ -3,8 +3,8 @@ from math import sqrt
 from sklearn import cluster
 from sklearn.cluster import KMeans
 
-from logrec.util import io_utils
-from logrec.util.io_utils import load_classes
+from logrec.util import io
+from logrec.util.io import load_classes
 
 
 def gini_impurity(clazz, clustering_stats, word_count):
@@ -53,18 +53,18 @@ def run_k_means(logs_for_training, log_vectors, classes, n_clusters):
             pearsons[i][j] = pearson(list(map(lambda x: x[clazz] if clazz in x else 0, clustering_stats)),
                                      list(map(lambda x: x[clazz1] if clazz1 in x else 0, clustering_stats)))
 
-    io_utils.dump_pearsons(pearsons, classes)
-    io_utils.dump_k_means_clustering_stats(clustering_stats, classes, word_count, gini)
+    io.dump_pearsons(pearsons, classes)
+    io.dump_k_means_clustering_stats(clustering_stats, classes, word_count, gini)
 
     # Ignoring total gini for now
 
 
 if __name__ == "__main__":
     classes = load_classes()
-    major_classes_logs = io_utils.load_major_classes_logs()
+    major_classes_logs = io.load_major_classes_logs()
 
     print("Loading binary vectors")
-    binary_context_vectors = io_utils.load_binary_context_vectors()
+    binary_context_vectors = io.load_binary_context_vectors()
     print("Done loading binary vectors")
 
     run_k_means(major_classes_logs, binary_context_vectors, classes, 10)

@@ -5,7 +5,7 @@ import operator
 from collections import Counter
 
 from logrec.legacy.classify_and_select_major_logs import get_top_projects_by_log_number
-from logrec.util import io_utils
+from logrec.util import io
 
 __author__ = 'hlib'
 
@@ -72,25 +72,25 @@ if __name__ == '__main__':
     parser.add_argument('--context-lines-to-consider', action='store', type=int, default=4)
     args = parser.parse_args()
 
-    preprocessed_logs_gen = io_utils.load_preprocessed_logs()
+    preprocessed_logs_gen = io.load_preprocessed_logs()
 
     logging.info("Loading project stats...")
-    project_stats = io_utils.load_project_stats()
+    project_stats = io.load_project_stats()
     top_projects = get_top_projects_by_log_number(project_stats, args.min_log_number_per_project)
 
     logging.info("Calculating word frequencies...")
     frequencies = get_word_frequences(preprocessed_logs_gen, lambda x: x.text_words)
     freq_stats = calc_frequency_stats(frequencies)
 
-    io_utils.dump_frequencies_stats(freq_stats, top_projects)
-    io_utils.dump_frequencies_stats_binary(freq_stats)
+    io.dump_frequencies_stats(freq_stats, top_projects)
+    io.dump_frequencies_stats_binary(freq_stats)
 
     first_word_frequencies = get_word_frequences(preprocessed_logs_gen, lambda x: [x.get_first_word()])
     first_word_freq_stats = calc_frequency_stats(first_word_frequencies)
-    io_utils.dump_first_word_frequencies_stats(first_word_freq_stats, top_projects)
-    io_utils.dump_first_word_frequencies_stats_binary(first_word_freq_stats)
+    io.dump_first_word_frequencies_stats(first_word_freq_stats, top_projects)
+    io.dump_first_word_frequencies_stats_binary(first_word_freq_stats)
 
     context_word_frequencies = get_word_frequences(preprocessed_logs_gen,
                                                    lambda x, n=args.context_lines_to_consider: x.get_context_words(n))
     context_word_freq_stats = calc_frequency_stats(context_word_frequencies)
-    io_utils.dump_context_frequencies_stats_binary(context_word_freq_stats)
+    io.dump_context_frequencies_stats_binary(context_word_freq_stats)
