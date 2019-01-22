@@ -11,16 +11,17 @@ import torch
 
 from fastai.nlp import RNN_Learner
 from logrec.dataprep.text_beautifier import beautify_text
-from logrec.param.model import ContextSide
 
 logger = logging.getLogger(__name__)
 
 
 def get_predictions(model: SequentialRNN, input_field: Field, prepared_input: Union[List[str], List[List[str]]],
-                    n_predictions: int) -> (Variable, Variable):
+                    max_n_predictions: int) -> (Variable, Variable):
     t = to_gpu(input_field.numericalize(prepared_input, -1))
     res, *_ = model(t)
-    outputs, labels = torch.topk(res[-1], n_predictions)
+    last_res = res[-1]
+    n_predictions = min(max_n_predictions, last_res.size()[0])
+    outputs, labels = torch.topk(last_res[-1], n_predictions)
     probs = F.softmax(outputs)
     return probs, labels
 
