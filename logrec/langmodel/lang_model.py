@@ -14,6 +14,7 @@ from logrec.infrastructure.fractions_manager import create_df
 from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
 from logrec.langmodel.cache import validate_with_cache
 from logrec.langmodel.fullwordfinder import get_subword, get_curr_seq_new, get_curr_seq
+from logrec.misc import attach_dataset_aware_handlers_to_loggers
 from logrec.param.model import Data, Arch, LangmodelTraining, Testing, LangModelLrLearningParams, \
     LangModelTrainingParams
 from logrec.util import gpu
@@ -22,8 +23,7 @@ from logrec.util.util import get_params_module
 
 matplotlib.use('Agg')
 
-from logrec.langmodel.utils import to_test_mode, gen_text, beautify_text, back_to_train_mode, \
-    attach_dataset_aware_handlers_to_loggers
+from logrec.modeltest import to_test_mode, gen_text, beautify_text, back_to_train_mode
 
 import logging
 import os

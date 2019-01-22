@@ -13,7 +13,7 @@ from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
 from logrec.dataprep.preprocess_params import pp_params
 from logrec.infrastructure.fs import FS
 from logrec.properties import DEFAULT_PARSE_PROJECTS_ARGS
-from logrec.util.io_utils import file_mapper
+from logrec.util.files import file_mapper
 
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger('matplotlib').setLevel(logging.INFO)

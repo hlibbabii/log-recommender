@@ -4,7 +4,7 @@ import logging
 import os
 
 from logrec.dataprep import TRAIN_DIR, TEST_DIR
-from logrec.util import io_utils
+from logrec.util import io
 
 logger = logging.getLogger(__name__)
 
@@ -50,5 +50,5 @@ if __name__ == '__main__':
     parser.add_argument('--log-text-corpus-dir', action='store', default='')
     args = parser.parse_args()
 
-    preprocessed_logs = io_utils.load_preprocessed_logs()
+    preprocessed_logs = io.load_preprocessed_logs()
     write_log_text_to_corpus_files(preprocessed_logs, args.log_text_corpus_dir)

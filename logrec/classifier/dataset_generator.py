@@ -6,12 +6,11 @@ import re
 from functools import partial
 from typing import List, Tuple, Callable, Optional, Union
 
-from logrec.classifier.utils import get_dir_and_file
 
 from logrec.dataprep import REPR_DIR, TRAIN_DIR, TEST_DIR, VALID_DIR, CLASSIFICATION_DIR
-from logrec.dataprep.preprocessors.model.logging import LogStatement, is_positive_level
+from logrec.dataprep.preprocessors.model.logging import is_positive_level
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
-from logrec.util.io_utils import file_mapper
+from logrec.util.files import get_dir_and_file, file_mapper
 
 WORDS_IN_CONTEXT_LIMIT = 1000
 

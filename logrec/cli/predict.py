@@ -3,13 +3,13 @@ from typing import Union
 from torchtext.data import Field
 
 from fastai.nlp import RNN_Learner
+from logrec.classifier import classifier
+from logrec.classifier.classifier import LEVEL_LABEL
 from logrec.langmodel import lang_model
-from logrec.classifier import log_position_classifier
-from logrec.classifier.log_position_classifier import LEVEL_LABEL
 from logrec.cli import preprocess
 from logrec.infrastructure import config_manager
 from logrec.infrastructure.fs import FS
-from logrec.langmodel.utils import to_test_mode, get_predictions, format_predictions
+from logrec.modeltest import to_test_mode, get_predictions, format_predictions
 from logrec.param.model import LangmodelTrainingConfig, Pretraining, ClassifierTrainingConfig
 
 
@@ -94,9 +94,9 @@ class TrainedClassifier(TrainedModel):
                          n_predictions=6 if classifier_type == 'level' else 2)
 
     def create_architecture(self, fs: FS, config: Union[ClassifierTrainingConfig, LangmodelTrainingConfig]):
-        return log_position_classifier.create_nn_architecture(fs, self._text_field, LEVEL_LABEL,
-                                                              config.data,
-                                                              config.arch,
-                                                              config.log_coverage_threshold,
-                                                              config.context_side,
-                                                              fs.path_to_base_model)
+        return classifier.create_nn_architecture(fs, self._text_field, LEVEL_LABEL,
+                                                 config.data,
+                                                 config.arch,
+                                                 config.log_coverage_threshold,
+                                                 config.context_side,
+                                                 fs.path_to_base_model)

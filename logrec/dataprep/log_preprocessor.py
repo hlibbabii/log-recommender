@@ -11,7 +11,7 @@ from logrec.dataprep.preprocessors.legacy import replace_string_resources_names,
     replace_variable_place_holders, \
     split_log_text_to_keywords_and_identifiers, to_lower, add_ect
 from logrec.legacy.log_statement import LogStatement
-from logrec.util import io_utils
+from logrec.util import io
 
 logger = logging.getLogger(__name__)
 
@@ -156,6 +156,5 @@ if __name__ == "__main__":
     logs_total = len(grepped_logs)
     pp_logs_gen = preprocess_logs(grepped_logs)
 
-    io_utils.dump_preprocessed_logs(pp_logs_gen)
-    io_utils.dump_project_stats(project_stats)
-
+    io.dump_preprocessed_logs(pp_logs_gen)
+    io.dump_project_stats(project_stats)

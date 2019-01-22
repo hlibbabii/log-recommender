@@ -17,8 +17,8 @@ from logrec.dataprep import base_project_dir, TRAIN_DIR, METADATA_DIR, REPR_DIR,
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.to_repr import REPR_EXTENSION
 from logrec.dataprep.util import AtomicInteger, merge_dicts_
-from logrec.util import io_utils
-from logrec.util.io_utils import file_mapper
+from logrec.util import io
+from logrec.util.files import file_mapper
 
 logger = logging.getLogger(__name__)
 config = yaml.load(open(os.path.join(base_project_dir, 'logging.yaml')).read())
@@ -78,7 +78,7 @@ class PartialVocab(object):
 
     def write_vocab(self, path_to_vocab_file):
         sorted_vocab = sorted(self.merged_word_counts.items(), key=lambda x: x[1], reverse=True)
-        io_utils.dump_dict_into_2_columns(sorted_vocab, path_to_vocab_file)
+        io.dump_dict_into_2_columns(sorted_vocab, path_to_vocab_file)
 
     def write_field(self, path_to_field_file):
         text_field = Field(tokenize=lambda s: s.split(" "), pad_token=placeholders['pad_token'])

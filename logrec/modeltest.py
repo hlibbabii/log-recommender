@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import List, Union, Optional
 
 from torchtext.data import Field
@@ -24,16 +23,6 @@ def get_predictions(model: SequentialRNN, input_field: Field, prepared_input: Un
     outputs, labels = torch.topk(res[-1], n_predictions)
     probs = F.softmax(outputs)
     return probs, labels
-
-
-def format_input(context_before: str, context_after: str, side: str) -> str:
-    text = ("===================" + "\n")
-    if side in [ContextSide.BEFORE, ContextSide.BOTH]:
-        text += (beautify_text(context_before) + "\n")
-        text += "\n"
-    if side in [ContextSide.AFTER, ContextSide.BOTH]:
-        text += (beautify_text(context_after) + "\n")
-    return text
 
 
 def format_predictions(probs: Variable, labels: Variable, output_field: Field, actual_label: Optional[str]) -> str:
@@ -112,10 +101,3 @@ def calculate_and_display_metrics(rnn_learner, metrics, vocab):
             logger.info(f"mrr: {mrr}")
 
 
-def attach_dataset_aware_handlers_to_loggers(name, main_log_name):
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
-    handler = logging.FileHandler(os.path.join(name, main_log_name), 'w')
-    formatter = logging.Formatter("%(levelname)s - %(asctime)s :%(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)

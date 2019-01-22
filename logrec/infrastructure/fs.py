@@ -9,15 +9,15 @@ import dill as pickle
 from torchtext.data import Field
 
 from fastai.nlp import RNN_Learner
-from logrec.classifier.utils import get_two_levels_subdirs
 from logrec.dataprep import MODELS_DIR, TEXT_FIELD_FILE, REPR_DIR, TRAIN_DIR, VALID_DIR, TEST_DIR, \
     CLASSIFICATION_DIR, PARSED_DIR, METADATA_DIR
 from logrec.infrastructure import fractions_manager
 from logrec.infrastructure.config_manager import find_most_similar_config, find_name_for_new_config
 from logrec.properties import DEFAULT_PARSED_DATASETS_DIR
 from logrec.param.model import Data, LangmodelTrainingConfig, ClassifierTrainingConfig, Pretraining
-from logrec.util import io_utils
 from logrec.properties import DEFAULT_RAW_DATASETS_DIR
+from logrec.util.files import get_two_levels_subdirs
+from logrec.util import io
 
 logger = logging.getLogger(__name__)
 
@@ -288,8 +288,8 @@ class FS(object):
 
     def save_vocab_data(self, text_field: Field, percent: float, start_from: float) -> None:
         prefix = fractions_manager.get_percent_prefix(percent, start_from)
-        io_utils.dump_dict_into_2_columns(text_field.vocab.freqs,
-                                          os.path.join(self.path_to_metadata, f'{prefix}vocab_all.txt'))
+        io.dump_dict_into_2_columns(text_field.vocab.freqs,
+                                    os.path.join(self.path_to_metadata, f'{prefix}vocab_all.txt'))
 
     def save_pp_params(self, pp_params):
         with open(os.path.join(self.path_to_parsed_dataset, PP_PARAMS_FILENAME), 'w') as f:

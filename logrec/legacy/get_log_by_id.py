@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-from logrec.util import io_utils
+from logrec.util import io
 
 __author__ = 'hlib'
 
 if __name__ == '__main__':
     # id = sys.argv[1]
     id = "mapbox_161506"
-    pp_logs_gen = io_utils.load_preprocessed_logs()
+    pp_logs_gen = io.load_preprocessed_logs()
     for log in pp_logs_gen:
         if log.id == id:
             print(log.text)

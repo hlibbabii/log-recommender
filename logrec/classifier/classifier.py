@@ -14,15 +14,16 @@ from fastai.lm_rnn import seq2seq_reg, SequentialRNN
 from fastai import metrics
 from fastai.nlp import TextData, RNN_Learner
 from logrec.classifier.context_datasets import ContextsDataset
+from logrec.dataprep.text_beautifier import beautify_text
 from logrec.infrastructure import config_manager
 from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
 from logrec.langmodel.lang_model import LAST_MODEL_NAME
-from logrec.langmodel.utils import to_test_mode, get_predictions, attach_dataset_aware_handlers_to_loggers, \
-    format_input, format_predictions
+from logrec.modeltest import to_test_mode, get_predictions, format_predictions
+from logrec.misc import attach_dataset_aware_handlers_to_loggers
 from logrec.param.model import Arch, ClassifierTraining, Data, ClassifierTrainingParams, Pretraining, ContextSide
 from logrec.util import gpu
+from logrec.util.files import file_mapper
 from logrec.util.gpu import print_gpu_info, get_current_device
-from logrec.util.io_utils import file_mapper
 from logrec.util.util import get_params_module
 
 logging.basicConfig(level=logging.DEBUG)
@@ -172,6 +173,15 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field,
     with open(sample_test_runs_file, 'w') as f:
         f.write(text)
 
+
+def format_input(context_before: str, context_after: str, side: str) -> str:
+    text = ("===================" + "\n")
+    if side in [ContextSide.BEFORE, ContextSide.BOTH]:
+        text += (beautify_text(context_before) + "\n")
+        text += "\n"
+    if side in [ContextSide.AFTER, ContextSide.BOTH]:
+        text += (beautify_text(context_after) + "\n")
+    return text
 
 def run_on_device(classifier_training_param: ClassifierTrainingParams, force_rerun: bool) -> None:
     base_model = classifier_training_param.base_model

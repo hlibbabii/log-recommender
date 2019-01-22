@@ -5,12 +5,10 @@ import re
 from collections import defaultdict
 
 from logrec.classifier.context_datasets import ContextsDataset, IGNORED_PROJECTS_FILE_NAME
-from logrec.classifier.utils import get_dir_and_file
-from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
 from logrec.dataprep.util import merge_dicts_
 from logrec.infrastructure.fs import CLASSIFICATION_DIR
-from logrec.util import io_utils
-from logrec.util.io_utils import file_mapper
+from logrec.util import io
+from logrec.util.files import file_mapper, get_dir_and_file
 
 WITH_LOGGING = "with_logging"
 NO_LOGGING = "no logging"
@@ -63,7 +61,7 @@ def run(dataset, repr, threshold):
     logger.info("")
     logger.info(logged_stats)
     output_file_path = os.path.join(path_to_classification, f"{IGNORED_PROJECTS_FILE_NAME}.{threshold}")
-    io_utils.dump_list(projects_to_ignore, output_file_path)
+    io.dump_list(projects_to_ignore, output_file_path)
     logger.info(f"Ignored files with threshold {threshold} % were written to {output_file_path}")
     logger.info(f"Total ignored projects: {len(projects_to_ignore)}")
 

@@ -4,7 +4,7 @@ from typing import Callable
 
 import pandas
 
-from logrec.util.io_utils import file_mapper
+from logrec.util.files import file_mapper
 
 logger = logging.getLogger(__name__)
 

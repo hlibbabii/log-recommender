@@ -2,7 +2,7 @@ import argparse
 import logging
 import sys
 
-from logrec.util import io_utils
+from logrec.util import io
 
 logger = logging.getLogger(__name__)
 
@@ -63,9 +63,9 @@ if __name__ == '__main__':
 
     if args.input and args.output:
         # working with files
-        words = io_utils.read_dict_from_2_columns(args.input)
+        words = io.read_dict_from_2_columns(args.input)
         new_words = encode(words, merges)
-        io_utils.dump_dict_into_2_columns(new_words, args.output)
+        io.dump_dict_into_2_columns(new_words, args.output)
     else:
         subwords = encode_word(args.word, merges)
         print(subwords)

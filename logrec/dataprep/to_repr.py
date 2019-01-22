@@ -15,7 +15,7 @@ from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
 from logrec.dataprep.preprocessors.repr import to_repr_list, ReprConfig
 from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplitConfig, SplitRepr
 from logrec.properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
-from logrec.util import io_utils
+from logrec.util import io
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +122,7 @@ def init_splitting_config(dataset, preprocessing_params, bpe_base_repr, bpe_n_me
         bpe_merges_file = os.path.join(path_to_merges_dir, 'merges.txt')
         bpe_merges_cache = os.path.join(path_to_merges_dir, 'merges_cache.txt')
 
-        merges_cache = io_utils.read_dict_from_2_columns(bpe_merges_cache, val_type=list)
+        merges_cache = io.read_dict_from_2_columns(bpe_merges_cache, val_type=list)
         merges = []
         with open(bpe_merges_file, 'r') as f:
             for line in f:
@@ -134,7 +134,7 @@ def init_splitting_config(dataset, preprocessing_params, bpe_base_repr, bpe_n_me
         if not splitting_file:
             raise ValueError("--splitting-file must be specified")
 
-        splittings = io_utils.read_dict_from_2_columns(splitting_file, val_type=list, delim='|')
+        splittings = io.read_dict_from_2_columns(splitting_file, val_type=list, delim='|')
         global_n_gramm_splitting_config.sc_splittings = splittings
         global_n_gramm_splitting_config.set_splitting_type(NgramSplittingType.NUMBERS_AND_CUSTOM)
     elif preprocessing_params[PreprocessingParam.SPL] == 2:
