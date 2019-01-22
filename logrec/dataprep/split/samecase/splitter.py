@@ -8,7 +8,7 @@ from random import shuffle
 
 from tqdm import tqdm
 
-from logrec.util import io_utils
+from logrec.util import io
 from logrec.dataprep import base_project_dir
 
 logger = logging.getLogger(__name__)
@@ -282,7 +282,7 @@ def run():
     vocab_file = os.path.join(base_project_dir, 'vocab')
 
     logging.info(f"Loading vocabulary into memory from {vocab_file} ...")
-    freqs = io_utils.read_dict_from_2_columns(vocab_file)
+    freqs = io.read_dict_from_2_columns(vocab_file)
 
     logging.info("Loading dictionaries")
     general_dict = load_english_dict(os.path.join(base_project_dir, 'dicts', 'eng'))
