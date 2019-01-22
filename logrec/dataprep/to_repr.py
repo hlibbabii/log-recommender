@@ -191,9 +191,6 @@ def run(dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, splitting_fi
 
 
 if __name__ == '__main__':
-
-    logging.basicConfig(level=logging.DEBUG)
-
     parser = argparse.ArgumentParser()
     parser.add_argument('dataset', action='store', help=f'path to the parsed dataset')
     parser.add_argument('repr', action='store', help='preprocessing params line, \n Example: 10101')

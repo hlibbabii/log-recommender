@@ -47,8 +47,6 @@ if __name__ == '__main__':
     parser.add_argument('--min-word-occurencies', action='store', type=int, default=700)
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.DEBUG)
-
     preprocessed_logs = io.load_preprocessed_logs()
     classes = io.load_classes()
 

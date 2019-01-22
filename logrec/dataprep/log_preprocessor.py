@@ -142,8 +142,6 @@ def preprocess_logs(grepped_logs):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--min-log-number-per-project', action='store', type=int, default=100)
     args = parser.parse_args()

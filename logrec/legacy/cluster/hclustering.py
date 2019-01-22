@@ -134,7 +134,6 @@ if __name__ == "__main__":
         raise ValueError("Invalid metric name: " + args.distance_metric)
 
     major_classes_logs = io.load_major_classes_logs()
-    logging.basicConfig(level=logging.DEBUG)
     logging.debug("Number of pplogs: " + str(len(major_classes_logs)))
 
     first_words = get_first_words(major_classes_logs, 2)

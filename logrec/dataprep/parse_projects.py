@@ -15,8 +15,6 @@ from logrec.infrastructure.fs import FS
 from logrec.properties import DEFAULT_PARSE_PROJECTS_ARGS
 from logrec.util.files import file_mapper
 
-logging.basicConfig(level=logging.DEBUG)
-logging.getLogger('matplotlib').setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
 
 EXTENSION = "parsed"

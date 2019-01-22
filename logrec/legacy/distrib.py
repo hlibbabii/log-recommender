@@ -49,8 +49,6 @@ def calculate_variable_freqs_by_first_word(classified_logs, keys):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
     logging.info("Calculating and saving stats")
 
     classified_logs = io.load_classified_logs()

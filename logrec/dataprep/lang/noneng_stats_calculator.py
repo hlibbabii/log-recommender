@@ -90,7 +90,6 @@ def run():
 
     path_to_dir_with_preprocessed_projects = os.path.join(args.base_dataset_dir, args.preprocessed_dataset)
 
-    logging.basicConfig(level=logging.DEBUG)
     if not os.path.exists(path_to_dir_with_preprocessed_projects):
         logger.error(f"Path: {path_to_dir_with_preprocessed_projects} does not exist")
         exit(1)

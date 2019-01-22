@@ -26,7 +26,6 @@ from logrec.util.files import file_mapper
 from logrec.util.gpu import print_gpu_info, get_current_device
 from logrec.util.util import get_params_module
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 EXAMPLES_TO_SHOW = 200

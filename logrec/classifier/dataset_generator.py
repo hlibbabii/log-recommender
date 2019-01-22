@@ -244,8 +244,6 @@ def run(dataset: str, repr: str, classifier: str):
 if __name__ == '__main__':
     from logrec.properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_DATASET_GENERATOR_ARGS
 
-    logging.basicConfig(level=logging.DEBUG)
-
     parser = argparse.ArgumentParser()
     parser.add_argument('dataset', action='store', help=f'path to the repr dataset')
     parser.add_argument('repr', action='store', help=f'path to the repr dataset')

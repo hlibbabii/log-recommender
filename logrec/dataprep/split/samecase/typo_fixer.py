@@ -59,8 +59,6 @@ def run(path_to_typo_candidates, file_with_fixes):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--path-to-typo-candidates', action='store', default="100_percent/splits/typo-candidates.txt")
     args = parser.parse_args()

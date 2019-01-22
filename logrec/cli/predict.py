@@ -12,7 +12,6 @@ from logrec.infrastructure.fs import FS
 from logrec.modeltest import to_test_mode, get_predictions, format_predictions
 from logrec.param.model import LangmodelTrainingConfig, Pretraining, ClassifierTrainingConfig, ContextSide
 
-
 class TrainedModel(object):
     def __init__(self, repr: str, fs: FS, text_field: Field, config_class: type,
                  output_field: Field, n_predictions: int, backwards: bool):

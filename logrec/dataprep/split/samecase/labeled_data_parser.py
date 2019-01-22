@@ -97,8 +97,6 @@ def convert_to_params(keys, mutations):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-
     stats, words_to_split = manually_tagged_splittings_file_reader.read(path_manually_tagged_splittings)
 
     print_different_token_types_stats(stats)

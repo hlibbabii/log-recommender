@@ -159,8 +159,6 @@ def run(dataset: str, repr: str, n_merges: int, reset: bool) -> None:
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-
     argument_parser = argparse.ArgumentParser()
     argument_parser.add_argument('dataset', action='store', help=f'dataset name')
     argument_parser.add_argument('repr', action='store', help=f'repr name')

@@ -69,8 +69,6 @@ def run(dataset, repr, threshold):
 if __name__ == '__main__':
     from logrec.properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_DATASET_STATS_ARGS
 
-    logging.basicConfig(level=logging.DEBUG)
-
     parser = argparse.ArgumentParser()
     parser.add_argument('dataset', action='store', help=f'dataset name')
     parser.add_argument('repr', action='store', help=f'repr name')

@@ -64,9 +64,8 @@ def median(sorted_list, full_list_length):
     func = avg if full_list_length % 2 == 0 else central
     return func(sorted_list, full_list_length)
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
 
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--min-log-number-per-project', action='store', type=int, default=100)
     parser.add_argument('--context-lines-to-consider', action='store', type=int, default=4)
