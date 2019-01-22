@@ -21,7 +21,7 @@ def get_predictions(model: SequentialRNN, input_field: Field, prepared_input: Un
     res, *_ = model(t)
     last_res = res[-1]
     n_predictions = min(max_n_predictions, last_res.size()[0])
-    outputs, labels = torch.topk(last_res[-1], n_predictions)
+    outputs, labels = torch.topk(last_res, n_predictions)
     probs = F.softmax(outputs)
     return probs, labels
 
