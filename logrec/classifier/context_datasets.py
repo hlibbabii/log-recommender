@@ -9,7 +9,7 @@ from logrec.dataprep import TRAIN_DIR, TEST_DIR
 from logrec.infrastructure.fractions_manager import include_to_df
 from logrec.param.model import ContextSide
 from logrec.util.files import file_mapper, get_dir_and_file
-from tests.util import io
+from logrec.util import io
 
 __author__ = 'hlib'
 
