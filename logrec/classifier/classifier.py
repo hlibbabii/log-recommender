@@ -68,9 +68,9 @@ def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining):
     if not training.stages:
         logger.warning("No stages specified in the config")
         return
-    training_start_time = time()
     logger.info(f"Starting training, check {training_log_file} for training progress")
     for stage in training.stages:
+        training_start_time = time()
         cycle = stage.cycle
         only_validation = False
         n = cycle.n
@@ -88,7 +88,7 @@ def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining):
                                         file=open(training_log_file, 'w+'), only_validation=only_validation
                                         )
         training_time_mins = int(time() - training_start_time) // 60
-        with open(os.path.join(fs.path_to_model, 'results.out'), 'w') as f:
+        with open(os.path.join(fs.path_to_model, 'results.out'), 'w+') as f:
             f.write(str(training_time_mins) + "\n")
             for _, vals in ep_vals.items():
                 f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
