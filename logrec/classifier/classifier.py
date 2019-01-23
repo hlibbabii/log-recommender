@@ -233,6 +233,8 @@ def run_on_device(classifier_training_param: ClassifierTrainingParams, force_rer
     elif pretraining == Pretraining.ONLY_ENCODER:
         try:
             logger.info(f'Trying to load pretarined LM: {base_model}')
+            # TODO its a dirty hack. fix it
+            fs.lm_cl_pretraining = True
             fs.load_pretrained_langmodel(rnn_learner)
             logger.info("Using pretrained LM")
         except Exception as e:

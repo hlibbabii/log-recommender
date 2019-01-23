@@ -54,6 +54,9 @@ class FS(object):
 
         self._model_name = None
 
+        # TODO its a dirty hack. fix it
+        self.lm_cl_pretraining = None
+
     #####################################################
 
     @classmethod
@@ -188,8 +191,9 @@ class FS(object):
     @property
     def path_to_base_model_dataset(self) -> str:
         return os.path.join(self.path_to_base_dataset,
-                            REPR_DIR if self.is_lang_model else os.path.join(CLASSIFICATION_DIR,
-                                                                             self.classification_type),
+                            REPR_DIR if (self.is_lang_model or self.lm_cl_pretraining) else os.path.join(
+                                CLASSIFICATION_DIR,
+                                self.classification_type),
                             self.repr
                             )
 
