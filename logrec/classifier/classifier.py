@@ -88,7 +88,7 @@ def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining):
                                         file=open(training_log_file, 'w+'), only_validation=only_validation
                                         )
         training_time_mins = int(time() - training_start_time) // 60
-        with open(os.path.join(fs.path_to_model, 'results.out'), 'w+') as f:
+        with open(os.path.join(fs.path_to_model, 'results.out'), 'a+') as f:
             f.write(str(training_time_mins) + "\n")
             for _, vals in ep_vals.items():
                 f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
