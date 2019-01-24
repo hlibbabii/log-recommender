@@ -2,7 +2,7 @@ import random
 import unittest
 
 from logrec.classifier.dataset_generator import create_case, \
-    get_possible_log_locations, get_existing_log_locations, CaseCreator
+    get_possible_log_locations, get_existing_log_locations, CaseCreator, remove_some_log_statements
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 
 position_positive = CaseCreator(range_selector=random.choice,
@@ -105,6 +105,30 @@ class DataGeneratorTest(unittest.TestCase):
 
         self.assertEqual(expected, actual)
 
+    def test_get_existing_log_locations(self):
+        lst = ["{", placeholders['log_statement'], "a", placeholders["log_statement_end"]]
+
+        actual = get_existing_log_locations(lst)
+
+        self.assertEqual([(1, 3)], actual)
+
+    def test_remove_some_log_statements_no_logs(self):
+        lst = ["{", "}"]
+
+        self.assertEqual(lst, remove_some_log_statements(lst))
+
+    def test_remove_some_log_statements(self):
+        lst = ["{", placeholders['log_statement'], "a", placeholders["log_statement_end"],
+               placeholders['log_statement'], "a", placeholders["log_statement_end"]]
+
+        expected_options = [
+            lst,
+            ["{", placeholders['log_statement'], "a", placeholders["log_statement_end"]],
+            ["{"]
+        ]
+        for i in range(10):
+            actual = remove_some_log_statements(lst)
+            self.assertTrue(actual in expected_options)
 
 if __name__ == '__main__':
     unittest.main()

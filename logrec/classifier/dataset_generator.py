@@ -28,9 +28,7 @@ def create_case(list_of_words: list, position_range: (int, int)) -> (list, list)
         current_position = step(position)
         context = []
         while can_iterate(current_position, end):
-            if list_of_words[current_position] in [placeholders['loggable_block'], placeholders['loggable_block_end']] \
-                    or (
-                    list_of_words[current_position] == placeholders["log_statement"] and random.choice([True, False])):
+            if list_of_words[current_position] in [placeholders['loggable_block'], placeholders['loggable_block_end']]:
                 if can_iterate(end, last_possible_elm):
                     end = step(end)
             else:
@@ -55,6 +53,17 @@ def create_case(list_of_words: list, position_range: (int, int)) -> (list, list)
                                 last_possible_elm=len(list_of_words))
 
     return before, after
+
+
+def remove_ranges_from_list(lst: list, ranges: List[Tuple[int, int]]) -> list:
+    res = []
+    start = 0
+    for index_from, index_to in ranges:
+        end = index_from
+        res.extend(lst[start:end])
+        start = index_to
+    res.extend(lst[start:])
+    return res
 
 
 def get_position_ranges_between_tokens(list_of_words: List[str],
@@ -130,6 +139,11 @@ class CaseCreator(object):
 ######################   Possible position finders    ####################################33
 
 def get_existing_log_locations(list_of_words: List[str]) -> List[Tuple[int, int]]:
+    """
+
+    :param list_of_words:
+    :return: list of ranges [(i1, j1)...] where i1 is the index of teh first `L, j1 - index of the xorresponding L`
+    """
     return get_position_ranges_between_tokens(list_of_words, placeholders['log_statement'],
                                               placeholders['log_statement_end'], suppress_error=False)
 
@@ -160,6 +174,13 @@ def extract_level_label(list_of_words: List[str], position_range: Tuple[int, int
 
 #####################
 
+def remove_some_log_statements(list_of_words):
+    ranges = get_existing_log_locations(list_of_words)
+    n_logs_to_remove = random.randint(0, len(ranges))
+    ranges_of_logs_to_remove = random.sample(ranges, n_logs_to_remove)
+    return remove_ranges_from_list(list_of_words, list(map(lambda a: (a[0], a[1] + 1), ranges_of_logs_to_remove)))
+
+
 def create_cases(case_creators, case_creators_picker, filename: str) -> Tuple[
     List[Optional[Tuple[List[str], List[str], bool]]], str]:
     rel_path = get_dir_and_file(filename)
@@ -167,6 +188,7 @@ def create_cases(case_creators, case_creators_picker, filename: str) -> Tuple[
         res = []
         for line in f:
             list_of_words = line.rstrip('\n').split(" ")
+            list_of_words = remove_some_log_statements(list_of_words)
             if placeholders['log_statement'] in list_of_words:
                 case_creator = case_creators_picker(case_creators)
                 res.append(case_creator.create_from(list_of_words))
