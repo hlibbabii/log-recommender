@@ -11,10 +11,12 @@ from fastai.model import validate
 from logrec.config.patch import patch_config
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser, PreprocessingParam
+from logrec.features.early_stop import EarlyStopping
 from logrec.infrastructure import config_manager
 from logrec.infrastructure.fractions_manager import create_df
-from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
-from logrec.langmodel.cache import validate_with_cache
+from logrec.infrastructure.fs import FS, BEST_MODEL_NAME, BEST_LOSS_FILENAME, BEST_ACC_FILENAME, BEST_EPOCH_FILENAME, \
+    ENCODER_NAME
+from logrec.features.cache import validate_with_cache
 from logrec.langmodel.fullwordfinder import get_subword, get_curr_seq_new, get_curr_seq
 from logrec.misc import attach_dataset_aware_handlers_to_loggers
 from logrec.config.model import Data, Arch, LMTraining, LMTesting, LMLRConfig, LMConfig
@@ -38,8 +40,6 @@ from fastai.nlp import LanguageModelData, seq2seq_reg, RNN_Learner, SequentialRN
 from torchtext import data
 
 # for some reason this import should go here to avoid error
-ENCODER_NAME = 'encoder'
-LAST_MODEL_NAME = 'last'
 LEVEL_LABEL = data.Field(sequential=False)
 logger = logging.getLogger(__name__)
 
@@ -150,12 +150,22 @@ def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LMTraining,
     training_start_time = time()
     training_log_file = os.path.join(fs.path_to_model, 'training.log')
     logger.info(f"Starting training, check {training_log_file} for training progress")
+    callbacks = []
+
+    if training.early_stop:
+        callbacks.append(EarlyStopping(rnn_learner,
+                                       save_path=BEST_MODEL_NAME,
+                                       best_loss_path=BEST_LOSS_FILENAME,
+                                       best_acc_path=BEST_ACC_FILENAME,
+                                       best_epoch_path=BEST_EPOCH_FILENAME,
+                                       enc_path=ENCODER_NAME))
+
     vals, ep_vals = rnn_learner.fit(lrs=training.lr, n_cycle=n, wds=training.wds,
                                     cycle_len=training.cycle.len, cycle_mult=training.cycle.mult,
                                     metrics=list(map(lambda x: getattr(metrics, x), metric_list)),
-                                    cycle_save_name='', get_ep_vals=True,
+                                    get_ep_vals=True,
                                     file=open(training_log_file, 'w'),
-                                    best_save_name=BEST_MODEL_NAME,
+                                    callbacks=callbacks,
                                     valid_func=validate, only_validation=only_validation
                                     )
     training_time_mins = int(time() - training_start_time) // 60
@@ -163,9 +173,6 @@ def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LMTraining,
         f.write(str(training_time_mins) + "\n")
         for _, vals in ep_vals.items():
             f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
-
-    rnn_learner.save(LAST_MODEL_NAME)
-    rnn_learner.save_encoder(ENCODER_NAME)
 
 
 def run_on_device(config: Union[LMLRConfig, LMConfig],

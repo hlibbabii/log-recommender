@@ -17,9 +17,9 @@ from fastai.nlp import TextData, RNN_Learner
 from logrec.classifier.context_datasets import ContextsDataset
 from logrec.config.patch import patch_config
 from logrec.dataprep.text_beautifier import beautify_text
+from logrec.features.early_stop import EarlyStopping
 from logrec.infrastructure import config_manager
-from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
-from logrec.langmodel.lang_model import LAST_MODEL_NAME
+from logrec.infrastructure.fs import FS, BEST_MODEL_NAME, BEST_LOSS_FILENAME, BEST_ACC_FILENAME, BEST_EPOCH_FILENAME
 from logrec.modeltest import to_test_mode, get_predictions, format_predictions
 from logrec.misc import attach_dataset_aware_handlers_to_loggers
 from logrec.config.model import Arch, ClassifierTraining, Data, ClassifierConfig, PretrainingType
@@ -70,7 +70,7 @@ def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining, metric
         logger.warning("No stages specified in the config")
         return
     logger.info(f"Starting training, check {training_log_file} for training progress")
-    for stage in training.stages:
+    for idx, stage in enumerate(training.stages):
         training_start_time = time()
         cycle = stage.cycle
         only_validation = False
@@ -80,6 +80,17 @@ def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining, metric
             only_validation = True
             n = 1
 
+        callbacks = []
+
+        if training.early_stop:
+            name_suffix = f'.{idx}' if idx < len(training.stages) - 1 else ''
+            callbacks.append(EarlyStopping(rnn_learner,
+                                           save_path=BEST_MODEL_NAME + name_suffix,
+                                           best_loss_path=BEST_LOSS_FILENAME + name_suffix,
+                                           best_acc_path=BEST_ACC_FILENAME + name_suffix,
+                                           best_epoch_path=BEST_EPOCH_FILENAME + name_suffix,
+                                           ))
+
         rnn_learner.freeze_to(stage.freeze_to)
         lrs = training.lrs
         lr_list = [lrs.base_lr / lrs.factor ** m for m in lrs.multipliers]
@@ -88,7 +99,8 @@ def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining, metric
                                         metrics=list(map(lambda x: getattr(metrics, x), metric_list)),
                                         wds=training.wds,
                                         cycle_len=cycle.len, n_cycle=n, cycle_mult=cycle.mult,
-                                        best_save_name=BEST_MODEL_NAME, cycle_save_name='', get_ep_vals=True,
+                                        callbacks=callbacks,
+                                        get_ep_vals=True,
                                         file=open(training_log_file, 'w+'), only_validation=only_validation
                                         )
         training_time_mins = int(time() - training_start_time) // 60
@@ -100,8 +112,6 @@ def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining, metric
     # logger.info(f'Current accuracy is ...')
     # logger.info(f'                    ... {accuracy_gen(*rnn_learner.predict_with_targs())}')
     # rnn_learner.sched.plot_loss()
-
-    rnn_learner.save(LAST_MODEL_NAME)
 
     return rnn_learner
 
