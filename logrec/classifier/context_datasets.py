@@ -7,7 +7,6 @@ from torchtext import data
 
 from logrec.dataprep import TRAIN_DIR, TEST_DIR
 from logrec.infrastructure.fractions_manager import include_to_df
-from logrec.param.model import ContextSide
 from logrec.util.files import file_mapper, get_dir_and_file
 from logrec.util import io
 
@@ -47,18 +46,9 @@ class ContextsDataset(data.Dataset):
         return merged_tokens
 
     @staticmethod
-    def _get_context_for_prediction(context_before, context_after, context_len, side):
-        if side == ContextSide.BOTH:
-            prepared_context_before = ContextsDataset._prepare_context(context_before, context_len)
-            prepared_context_after = ContextsDataset._prepare_context(context_after, context_len, reverse=True)
-            context = " ".join([prepared_context_before, prepared_context_after])
-        elif side == ContextSide.BEFORE:
-            context = ContextsDataset._prepare_context(context_before, context_len)
-        elif side == ContextSide.AFTER:
-            context = ContextsDataset._prepare_context(context_after, context_len, reverse=True)
-        else:
-            raise AssertionError(f"Unknown side: {side}")
-        return context
+    def _get_context_for_prediction(context_before: str, context_after: str, context_len: int, backwards: bool):
+        context = context_before if not backwards else context_after
+        return ContextsDataset._prepare_context(context, context_len, reverse=backwards)
 
     def __init__(self, path, text_field, label_field, **kwargs):
         """Create an IMDB dataset instance given a path and fields.
@@ -73,7 +63,6 @@ class ContextsDataset(data.Dataset):
         threshold = kwargs.pop("threshold", 0.0)
         context_len = kwargs.pop("context_len", 0)
         data_params = kwargs.pop("data", None)
-        side = kwargs.pop("side", None)
 
         path_to_ignored_projects = os.path.join(path, '..', '..', '..', f"{IGNORED_PROJECTS_FILE_NAME}.{threshold}")
         logger.info(f"Loading ignored projects from {path_to_ignored_projects} ...")
@@ -103,7 +92,8 @@ class ContextsDataset(data.Dataset):
                     if level:
                         context_for_prediction = ContextsDataset._get_context_for_prediction(context_before,
                                                                                              context_after,
-                                                                                             context_len, side)
+                                                                                             context_len,
+                                                                                             data_params.backwards)
                         example = data.Example.fromlist([context_for_prediction, level], fields)
                         examples.append(example)
 

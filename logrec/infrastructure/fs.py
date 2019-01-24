@@ -14,7 +14,7 @@ from logrec.dataprep import MODELS_DIR, TEXT_FIELD_FILE, REPR_DIR, TRAIN_DIR, VA
 from logrec.infrastructure import fractions_manager
 from logrec.infrastructure.config_manager import find_most_similar_config, find_name_for_new_config
 from logrec.properties import DEFAULT_PARSED_DATASETS_DIR
-from logrec.param.model import Data, LangmodelTrainingConfig, ClassifierTrainingConfig, Pretraining
+from logrec.config.model import Data, LMTrainingConfig, ClassifierTrainingConfig, PretrainingType
 from logrec.properties import DEFAULT_RAW_DATASETS_DIR
 from logrec.util.files import get_two_levels_subdirs
 from logrec.util import io
@@ -38,10 +38,10 @@ T = TypeVar('T', bound='FS')
 class FS(object):
     def __init__(self, dataset: str, repr: Optional[str],
                  base_dataset: Optional[str] = None, base_model: Optional[str] = None,
-                 pretraining: Pretraining = None,
+                 pretraining: PretrainingType = None,
                  classification_type: Optional[str] = None):
         if bool(base_model) != bool(pretraining):
-            raise ValueError('Base model and pretraining params must be both set or both unset!')
+            raise ValueError('Base model and pretraining_type params must be both set or both unset!')
 
         self._dataset = dataset
         self._repr = repr
@@ -62,12 +62,12 @@ class FS(object):
     @classmethod
     def for_lang_model(cls: Type[T], dataset: str, repr: str, base_model: str) -> T:
         return cls(dataset, repr, *FS._split_full_model_name(dataset, base_model),
-                   Pretraining.FULL if base_model else None)
+                   PretrainingType.FULL if base_model else None)
 
     @classmethod
     def for_classifier(cls: Type[T],
                        dataset: str, repr: str, base_model: str,
-                       pretraining: Pretraining, classification_type: str) -> T:
+                       pretraining: PretrainingType, classification_type: str) -> T:
         return cls(dataset, repr, *FS._split_full_model_name(dataset, base_model), pretraining, classification_type)
 
     @classmethod
@@ -249,7 +249,7 @@ class FS(object):
 
     def _get_model_name_by_params(self,
                                   data: Data,
-                                  training_config: Union[LangmodelTrainingConfig, ClassifierTrainingConfig]) -> str:
+                                  training_config: Union[LMTrainingConfig, ClassifierTrainingConfig]) -> str:
 
         prefix = ''
         if self.base_model_specified:
@@ -272,12 +272,12 @@ class FS(object):
 
     def _create_and_get_path_to_model(self,
                                       data: Data,
-                                      training_config: Union[LangmodelTrainingConfig, ClassifierTrainingConfig],
+                                      training_config: Union[LMTrainingConfig, ClassifierTrainingConfig],
                                       ) -> str:
         if training_config.training is None:
             # lr-finding case, hopefully, temporary hack
             model_name = self._get_non_existent_file_name(LR_FINDING_MODEL_NAME)
-        elif self.pretraining == Pretraining.FULL:
+        elif self.pretraining == PretrainingType.FULL:
             model_name = self._get_non_existent_file_name(self.base_model + EXTRATRAINED_SUFFIX)
         else:
             model_name = self._get_model_name_by_params(data, training_config)
@@ -287,7 +287,7 @@ class FS(object):
         return model_name
 
     def create_path_to_model(self, data: Data,
-                             training_config: Union[LangmodelTrainingConfig, ClassifierTrainingConfig]) -> None:
+                             training_config: Union[LMTrainingConfig, ClassifierTrainingConfig]) -> None:
         self._model_name = self._create_and_get_path_to_model(data, training_config)
 
     def save_vocab_data(self, text_field: Field, percent: float, start_from: float) -> None:

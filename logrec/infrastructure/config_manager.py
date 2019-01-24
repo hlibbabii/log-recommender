@@ -6,7 +6,7 @@ from typing import Union
 import deepdiff
 import jsons
 
-from logrec.param.model import LangmodelTrainingConfig, ClassifierTrainingConfig
+from logrec.config.model import LMTrainingConfig, ClassifierTrainingConfig
 
 PARAM_FILE_NAME = 'params.json'
 DEEPDIFF_ADDED = 'dictionary_item_added'
@@ -15,7 +15,8 @@ DEEPDIFF_CHANGED = 'values_changed'
 
 logger = logging.getLogger(__name__)
 
-def save_config(config: Union[LangmodelTrainingConfig or ClassifierTrainingConfig], path_to_model: str):
+
+def save_config(config: Union[LMTrainingConfig or ClassifierTrainingConfig], path_to_model: str):
     with open(os.path.join(path_to_model, PARAM_FILE_NAME), 'w') as f:
         json_str = jsons.dumps(config, indent=4)
         f.write(json_str)
@@ -25,11 +26,11 @@ def load_config(path_to_model: str) -> object:
     with open(os.path.join(path_to_model, PARAM_FILE_NAME), 'r') as f:
         json_str = f.read()
         # the order of types in Union is important!
-        return jsons.loads(json_str, Union[ClassifierTrainingConfig, LangmodelTrainingConfig])
+        return jsons.loads(json_str, Union[ClassifierTrainingConfig, LMTrainingConfig])
 
 
 def find_most_similar_config(percent_prefix: str, path_to_dataset: str,
-                             current_config: Union[LangmodelTrainingConfig, ClassifierTrainingConfig]):
+                             current_config: Union[LMTrainingConfig, ClassifierTrainingConfig]):
     config_diff_dict = defaultdict(list)
     dirpath, dirnames, _ = next(os.walk(path_to_dataset))
     for dirname in dirnames:

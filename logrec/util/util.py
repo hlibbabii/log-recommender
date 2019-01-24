@@ -21,13 +21,13 @@ def sum_vectors(vectors):
     return [s / len(vectors) for s in sum_vector]
 
 
-def get_params_module(params_path: Optional[str]) -> ModuleType:
+def get_params_module(params_path: Optional[str], module_name) -> ModuleType:
     if params_path:
         logging.info(f'Loading params from {params_path}')
-        spec = importlib.util.spec_from_file_location('logrec.param.templates', params_path)
+        spec = importlib.util.spec_from_file_location(f'logrec.config.{module_name}', params_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
     else:
         logger.info('Loading default params')
-        module = importlib.import_module('logrec.param.templates')
+        module = importlib.import_module(f'logrec.config.{module_name}')
     return module

@@ -1,12 +1,14 @@
 from argparse import ArgumentParser
 from time import time
-from typing import Union, Optional
+from typing import Union, Optional, List
 
+import jsons
 import matplotlib
 from torch.cuda import device
 from torchtext.data import Field
 
 from fastai.model import validate
+from logrec.config.patch import patch_config
 from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser, PreprocessingParam
 from logrec.infrastructure import config_manager
@@ -15,8 +17,7 @@ from logrec.infrastructure.fs import FS, BEST_MODEL_NAME
 from logrec.langmodel.cache import validate_with_cache
 from logrec.langmodel.fullwordfinder import get_subword, get_curr_seq_new, get_curr_seq
 from logrec.misc import attach_dataset_aware_handlers_to_loggers
-from logrec.param.model import Data, Arch, LangmodelTraining, Testing, LangModelLrLearningParams, \
-    LangModelTrainingParams
+from logrec.config.model import Data, Arch, LMTraining, LMTesting, LMLRConfig, LMConfig
 from logrec.util import gpu
 from logrec.util.gpu import print_gpu_info, get_current_device
 from logrec.util.util import get_params_module
@@ -43,18 +44,18 @@ LEVEL_LABEL = data.Field(sequential=False)
 logger = logging.getLogger(__name__)
 
 
-def create_nn_architecture(fs: FS, data: Data, arch: Arch, validation_bs: int, backwards: bool,
+def create_nn_architecture(fs: FS, data: Data, arch: Arch,
                            path=None, preloaded_text_field: Field = None) -> RNN_Learner:
     train_df_path = fs.train_path
-    train_df = create_df(train_df_path, data.percent, data.start_from, backwards)
+    train_df = create_df(train_df_path, data.percent, data.start_from, data.backwards)
 
     test_df_path = fs.test_path
-    test_df = create_df(test_df_path, data.percent, data.start_from, backwards)
+    test_df = create_df(test_df_path, data.percent, data.start_from, data.backwards)
 
     valid_df_path = fs.valid_path
     if not os.path.exists(valid_df_path):
         valid_df_path = test_df_path
-    valid_df = create_df(valid_df_path, data.percent, data.start_from, backwards)
+    valid_df = create_df(valid_df_path, data.percent, data.start_from, data.backwards)
     if not preloaded_text_field:
         text_field = Field(tokenize=lambda s: s.split(" "), pad_token=placeholders['pad_token'])
     else:
@@ -63,23 +64,24 @@ def create_nn_architecture(fs: FS, data: Data, arch: Arch, validation_bs: int, b
     languageModelData = LanguageModelData.from_dataframes(fs.path_to_model if not path else path,
                                                           text_field, 0,
                                                           train_df, valid_df, test_df,
-                                                          bs=arch.bs, validation_bs=validation_bs,
+                                                          bs=arch.bs, validation_bs=arch.validation_bs,
                                                           bptt=arch.bptt,
-                                                          min_freq=arch.min_freq
+                                                          min_freq=0
                                                           # not important since we remove rare tokens during preprocessing
                                                           )
     return create_learner(languageModelData, arch, text_field)
 
 
 def create_learner(lang_model_data: LanguageModelData, arch: Arch, text_field: Field) -> RNN_Learner:
-    opt_fn = partial(torch.optim.Adam, betas=arch.betas)
+    opt_fn = partial(torch.optim.Adam, betas=arch.adam_betas)
 
+    dropout_multiplier = arch.drop.multiplier
     rnn_learner = lang_model_data.get_model(opt_fn, arch.em_sz, arch.nh, arch.nl,
-                                            dropouti=arch.drop.outi,
-                                            dropout=arch.drop.out,
-                                            wdrop=arch.drop.w,
-                                            dropoute=arch.drop.oute,
-                                            dropouth=arch.drop.outh,
+                                            dropout=arch.drop.out * dropout_multiplier,
+                                            dropouti=arch.drop.outi * dropout_multiplier,
+                                            wdrop=arch.drop.w * dropout_multiplier,
+                                            dropoute=arch.drop.oute * dropout_multiplier,
+                                            dropouth=arch.drop.outh * dropout_multiplier,
                                             text_field=text_field, bidir=arch.bidir)
     rnn_learner.reg_fn = partial(seq2seq_reg, alpha=arch.reg_fn.alpha, beta=arch.reg_fn.beta)
     rnn_learner.clip = arch.clip
@@ -87,9 +89,9 @@ def create_learner(lang_model_data: LanguageModelData, arch: Arch, text_field: F
     return rnn_learner
 
 
-def get_best_available_model(fs: FS, data: Data, arch: Arch, validation_bs: int, backwards: bool):
+def get_best_available_model(fs: FS, data: Data, arch: Arch):
     preloaded_text_filed = fs.load_text_field()
-    rnn_learner = create_nn_architecture(fs, data, arch, validation_bs, backwards,
+    rnn_learner = create_nn_architecture(fs, data, arch,
                                          path=None,
                                          preloaded_text_field=preloaded_text_filed)
     logger.info(rnn_learner)
@@ -106,11 +108,10 @@ def get_best_available_model(fs: FS, data: Data, arch: Arch, validation_bs: int,
     return rnn_learner, model_loaded
 
 
-def run_and_display_tests(learner: RNN_Learner, arch: Arch, testing: Testing, path_to_save=None,
-                          backwards: bool = False):
+def run_and_display_tests(learner: RNN_Learner, arch: Arch, testing: LMTesting, backwards: bool, path_to_save=None):
     to_test_mode(learner.model)
     prepared_input = testing.starting_words.rstrip("\n").split(" ")
-    text = gen_text(learner, prepared_input, testing.how_many_words)
+    text = gen_text(learner, prepared_input, testing.n_words_to_generate)
     if backwards:
         text.reverse()
     beautified_text = beautify_text(" ".join(text))
@@ -135,7 +136,7 @@ def find_and_plot_lr(rnn_learner: RNN_Learner, fs: FS):
     logger.info(f"Plot is saved to {fs.path_to_lr_plot}")
 
 
-def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LangmodelTraining):
+def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LMTraining, metric_list: List[str]):
     split_repr = PrepParamsParser.from_encoded_string(fs.repr)[PreprocessingParam.NO_SEP]
     only_validation = False
     n = training.cycle.n
@@ -151,7 +152,7 @@ def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LangmodelTr
     logger.info(f"Starting training, check {training_log_file} for training progress")
     vals, ep_vals = rnn_learner.fit(lrs=training.lr, n_cycle=n, wds=training.wds,
                                     cycle_len=training.cycle.len, cycle_mult=training.cycle.mult,
-                                    metrics=list(map(lambda x: getattr(metrics, x), training.metrics)),
+                                    metrics=list(map(lambda x: getattr(metrics, x), metric_list)),
                                     cycle_save_name='', get_ep_vals=True,
                                     file=open(training_log_file, 'w'),
                                     best_save_name=BEST_MODEL_NAME,
@@ -167,19 +168,18 @@ def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LangmodelTr
     rnn_learner.save_encoder(ENCODER_NAME)
 
 
-def run_on_device(params: Union[LangModelLrLearningParams, LangModelTrainingParams],
+def run_on_device(config: Union[LMLRConfig, LMConfig],
                   find_lr: bool, force_rerun: bool) -> None:
-    fs = FS.for_lang_model(params.data.dataset, params.data.repr, params.base_model)
+    fs = FS.for_lang_model(config.data.dataset, config.data.repr, config.base_model)
 
-    fs.create_path_to_model(params.data, params.langmodel_training_config)
+    fs.create_path_to_model(config.data, config.training_config)
     attach_dataset_aware_handlers_to_loggers(fs.path_to_model, 'main.log')
 
     print_gpu_info()
 
-    learner, model_trained = get_best_available_model(fs, params.data, params.arch, params.validation_bs,
-                                                      params.langmodel_training.backwards)
+    learner, model_trained = get_best_available_model(fs, config.data, config.arch)
 
-    fs.save_vocab_data(learner.text_field, params.data.percent, params.data.start_from)
+    fs.save_vocab_data(learner.text_field, config.data.percent, config.data.start_from)
 
     if model_trained and not force_rerun:
         logger.info(f'Model {fs.path_to_model} already trained. Not rerunning training.')
@@ -189,28 +189,38 @@ def run_on_device(params: Union[LangModelLrLearningParams, LangModelTrainingPara
     else:
         logger.info(f'Model with the same training config was not found.')
 
-    config_manager.save_config(params.langmodel_training_config, fs.path_to_model)
+    config_manager.save_config(config.training_config, fs.path_to_model)
 
     if find_lr:
         find_and_plot_lr(learner, fs)
     else:
-        train_and_save_model(learner, fs, params.langmodel_training)
+        train_and_save_model(learner, fs, config.training, config.metrics)
         model_loaded = fs.load_best(learner)
         if not model_loaded:
             raise AssertionError("The best model should have been trained and saved!")
         gen_text_path = os.path.join(fs.path_to_model, 'gen_text.out')
-        run_and_display_tests(learner, params.arch, params.testing, gen_text_path, params.langmodel_training.backwards)
+        run_and_display_tests(learner, config.arch, config.testing, config.data.backwards, gen_text_path)
 
 
-def run(find_lr: bool, force_rerun: bool, params_path: Optional[str], device_id: Optional[int]) -> None:
-    module = get_params_module(params_path)
-    params = module.langmodel_lr_learning_params if find_lr else module.langmodel_training_params
+def run(find_lr: bool, force_rerun: bool, params_path: Optional[str], changed_params_path: Optional[str],
+        device_id: Optional[int]) -> None:
+    if find_lr:
+        module = get_params_module(params_path, 'lm_lr_default_config')
+        config = module.lm_lr_config
+    else:
+        module = get_params_module(params_path, 'lm_default_config')
+        config = module.lm_config
+    if changed_params_path:
+        with open(changed_params_path, 'r') as f:
+            patch = dict(jsons.loads(f.read()))
+            config = patch_config(config, patch)
+    logger.info(f'Using config: {jsons.dumps(config)}')
     if gpu.gpu_available():
         gpu_id_to_use = device_id if device_id is not None else get_current_device()
         with device(gpu_id_to_use):
-            run_on_device(params, find_lr, force_rerun)
+            run_on_device(config, find_lr, force_rerun)
     else:
-        run_on_device(params, find_lr, force_rerun)
+        run_on_device(config, find_lr, force_rerun)
 
 
 if __name__ == '__main__':
@@ -218,6 +228,8 @@ if __name__ == '__main__':
     parser.add_argument('--find-lr', action='store_const', const=True, default=False)
     parser.add_argument('--force-rerun', action='store_const', const=True, default=False)
     parser.add_argument('--params-path', action='store', help='TODO')
+    parser.add_argument('--changed-params-path', action='store', help='TODO')
     parser.add_argument('--device', action='store', type=int, help='TODO')
     args = parser.parse_args()
-    run(args.find_lr, args.force_rerun, args.params_path, args.device)
+    run(args.find_lr, args.force_rerun, args.params_path, args.changed_params_path,
+        args.device)

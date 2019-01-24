@@ -10,7 +10,7 @@ from logrec.cli import preprocess
 from logrec.infrastructure import config_manager
 from logrec.infrastructure.fs import FS
 from logrec.modeltest import to_test_mode, get_predictions, format_predictions
-from logrec.param.model import LangmodelTrainingConfig, Pretraining, ClassifierTrainingConfig, ContextSide
+from logrec.config.model import LMTrainingConfig, PretrainingType, ClassifierTrainingConfig
 
 class TrainedModel(object):
     def __init__(self, repr: str, fs: FS, text_field: Field, config_class: type,
@@ -44,8 +44,8 @@ class TrainedModel(object):
     def __load_learner(self) -> RNN_Learner:
         config = config_manager.load_config(self._fs.path_to_base_model)
         if not isinstance(config, self._config_class):
-            AssertionError(f'Config loaded should be {self._config_class}!')
-        self.check_arch_backwards(config)
+            raise AssertionError(f'Config loaded should be {self._config_class}!')
+        self.__check_arch_backwards(config)
 
         learner = self.create_architecture(self._fs, config)
         self._fs.load_best(learner)
@@ -68,6 +68,11 @@ class TrainedModel(object):
         formatted_predictions = format_predictions(probs, labels, self._output_field, None)
         print(formatted_predictions)
 
+    def __check_arch_backwards(self, config: Union[ClassifierTrainingConfig, LMTrainingConfig]):
+        if self._backwards != config.data.backwards:
+            raise ValueError(
+                f'The model {self._fs.base_model_id} {"IS" if not self._backwards else "IS NOT"} backwards')
+
 
 class TrainedLangModel(TrainedModel):
     def __init__(self, dataset: str, repr: str, model: str, backwards: bool):
@@ -77,24 +82,19 @@ class TrainedLangModel(TrainedModel):
         super().__init__(repr=repr,
                          fs=fs,
                          text_field=text_field,
-                         config_class=LangmodelTrainingConfig,
+                         config_class=LMTrainingConfig,
                          output_field=text_field,
                          n_predictions=10,
                          backwards=backwards)
 
-    def create_architecture(self, fs: FS, config: LangmodelTrainingConfig):
-        return lang_model.create_nn_architecture(fs, config.data, config.arch, 1, config.training.backwards,
+    def create_architecture(self, fs: FS, config: LMTrainingConfig):
+        return lang_model.create_nn_architecture(fs, config.data, config.arch,
                                                  fs.path_to_base_model, self._text_field)
-
-    def check_arch_backwards(self, config: LangmodelTrainingConfig):
-        if self._backwards != config.training.backwards:
-            raise ValueError(
-                f'The model {self._fs.base_model_id} {"IS" if not self._backwards else "IS NOT"} backwards')
 
 
 class TrainedClassifier(TrainedModel):
     def __init__(self, dataset: str, repr: str, model: str, backwards: bool, classifier_type: str):
-        fs = FS.for_classifier(dataset, repr, model, Pretraining.FULL, classifier_type)
+        fs = FS.for_classifier(dataset, repr, model, PretrainingType.FULL, classifier_type)
         text_field = fs.load_text_field()
 
         super().__init__(repr=repr,
@@ -109,12 +109,5 @@ class TrainedClassifier(TrainedModel):
         return classifier.create_nn_architecture(fs, self._text_field, LEVEL_LABEL,
                                                  config.data,
                                                  config.arch,
-                                                 config.log_coverage_threshold,
-                                                 config.context_side,
+                                                 config.min_log_coverage_percent,
                                                  fs.path_to_base_model)
-
-    def check_arch_backwards(self, config: ClassifierTrainingConfig):
-        if (self._backwards and config.context_side != ContextSide.AFTER) or \
-                (not self._backwards and config.context_side != ContextSide.BEFORE):
-            raise ValueError(
-                f'The model {self._fs.base_model_id} {"IS" if not self._backwards else "IS NOT"} backwards')
