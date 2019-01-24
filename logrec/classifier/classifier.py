@@ -72,6 +72,7 @@ def train(fs: FS, rnn_learner: RNN_Learner, training: ClassifierTraining, metric
     logger.info(f"Starting training, check {training_log_file} for training progress")
     for idx, stage in enumerate(training.stages):
         training_start_time = time()
+        logger.info(f'----- Running stage {idx}')
         cycle = stage.cycle
         only_validation = False
         n = cycle.n
