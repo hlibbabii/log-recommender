@@ -108,17 +108,25 @@ def preprocess_and_write(params):
 def init_splitting_config(dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, splitting_file):
     global global_n_gramm_splitting_config
     global_n_gramm_splitting_config = NgramSplitConfig()
-    if preprocessing_params[PreprocessingParam.SPL] == 4:
-        if not bpe_base_repr or not bpe_n_merges:
-            raise ValueError("--bpe-base-repr and --bpe-n-merges must be specified")
+    if preprocessing_params[PreprocessingParam.SPL] in [4, 5, 6, 9]:
+        if not bpe_base_repr:
+            raise ValueError("--bpe-base-repr")
+
+        if preprocessing_params[PreprocessingParam.SPL] == 9:
+            if not bpe_n_merges:
+                raise ValueError("--bpe-n-merges must be specified for repr **9**")
+        else:
+            bpe_n_merges_dict = {4: 5000, 5: 1000, 6: 10000}
+            bpe_n_merges = bpe_n_merges_dict[preprocessing_params[PreprocessingParam.SPL]]
 
         if bpe_base_repr.find("/") == -1:
             bpe_base_dataset = dataset
         else:
             bpe_base_dataset, bpe_base_repr = bpe_base_repr.split("/")
+        logger.info(f'Using bpe_n_merges: {bpe_n_merges}')
         path_to_merges_dir = os.path.join(DEFAULT_PARSED_DATASETS_DIR, bpe_base_dataset, METADATA_DIR, bpe_base_repr,
                                           BPE_DIR,
-                                          bpe_n_merges)
+                                          str(bpe_n_merges))
         bpe_merges_file = os.path.join(path_to_merges_dir, 'merges.txt')
         bpe_merges_cache = os.path.join(path_to_merges_dir, 'merges_cache.txt')
 
