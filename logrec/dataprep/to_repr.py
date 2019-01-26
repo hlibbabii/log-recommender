@@ -7,7 +7,7 @@ import pickle
 import time
 from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import Pool
-from typing import Optional
+from typing import Optional, Dict
 
 from logrec.dataprep import base_project_dir, METADATA_DIR, BPE_DIR, PARSED_DIR
 from logrec.dataprep.preprocessors.general import to_token_list
@@ -105,7 +105,8 @@ def preprocess_and_write(params):
     os.rename(f'{writer.get_full_dest_name()}.{NOT_FINISHED_EXTENSION}', f'{writer.get_full_dest_name()}')
 
 
-def init_splitting_config(dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, splitting_file):
+def init_splitting_config(dataset: str, preprocessing_params: Dict[str, int],
+                          bpe_base_repr: Optional[str], bpe_n_merges: Optional[int], splitting_file: Optional[str]):
     global global_n_gramm_splitting_config
     global_n_gramm_splitting_config = NgramSplitConfig()
     if preprocessing_params[PreprocessingParam.SPL] in [4, 5, 6, 9]:
@@ -149,7 +150,8 @@ def init_splitting_config(dataset, preprocessing_params, bpe_base_repr, bpe_n_me
         global_n_gramm_splitting_config.set_splitting_type(NgramSplittingType.ONLY_NUMBERS)
 
 
-def run(dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, splitting_file):
+def run(dataset: str, preprocessing_params: str, bpe_base_repr: Optional[str],
+        bpe_n_merges: Optional[int], splitting_file: Optional[str]):
     path_to_dataset = os.path.join(DEFAULT_PARSED_DATASETS_DIR, args.dataset)
     full_src_dir = os.path.join(path_to_dataset, PARSED_DIR)
 
@@ -204,7 +206,7 @@ if __name__ == '__main__':
     parser.add_argument('repr', action='store', help='preprocessing params line, \n Example: 10101')
 
     parser.add_argument('--bpe-base-repr', action='store', help='TODO')
-    parser.add_argument('--bpe-n-merges', action='store', help='TODO')
+    parser.add_argument('--bpe-n-merges', action='store', type=int, help='TODO')
     parser.add_argument('--splitting-file', action='store', help='Full path to the file with sc split words',
                         default=os.path.join(base_project_dir, 'splittings.txt'))
 
