@@ -13,7 +13,7 @@ from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser, PreprocessingParam
 from logrec.features.early_stop import EarlyStopping
 from logrec.infrastructure import config_manager
-from logrec.infrastructure.fractions_manager import create_df
+from logrec.infrastructure.fractions_manager import create_df_gen
 from logrec.infrastructure.fs import FS, BEST_MODEL_NAME, BEST_LOSS_FILENAME, BEST_ACC_FILENAME, BEST_EPOCH_FILENAME, \
     ENCODER_NAME
 from logrec.features.cache import validate_with_cache
@@ -47,15 +47,15 @@ logger = logging.getLogger(__name__)
 def create_nn_architecture(fs: FS, data: Data, arch: Arch,
                            path=None, preloaded_text_field: Field = None) -> RNN_Learner:
     train_df_path = fs.train_path
-    train_df = create_df(train_df_path, data.percent, data.start_from, data.backwards)
+    train_df_gen = create_df_gen(train_df_path, data.percent, data.start_from, data.backwards)
 
     test_df_path = fs.test_path
-    test_df = create_df(test_df_path, data.percent, data.start_from, data.backwards)
+    test_df_gen = create_df_gen(test_df_path, data.percent, data.start_from, data.backwards)
 
     valid_df_path = fs.valid_path
     if not os.path.exists(valid_df_path):
         valid_df_path = test_df_path
-    valid_df = create_df(valid_df_path, data.percent, data.start_from, data.backwards)
+    valid_df_gen = create_df_gen(valid_df_path, data.percent, data.start_from, data.backwards)
     if not preloaded_text_field:
         text_field = Field(tokenize=lambda s: s.split(" "), pad_token=placeholders['pad_token'])
     else:
@@ -63,7 +63,7 @@ def create_nn_architecture(fs: FS, data: Data, arch: Arch,
         logger.info(f'Using preloaded text field. Vocab size is {len(text_field.vocab)}')
     languageModelData = LanguageModelData.from_dataframes(fs.path_to_model if not path else path,
                                                           text_field, 0,
-                                                          train_df, valid_df, test_df,
+                                                          train_df_gen, valid_df_gen, test_df_gen,
                                                           bs=arch.bs, validation_bs=arch.validation_bs,
                                                           bptt=arch.bptt,
                                                           min_freq=0

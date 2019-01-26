@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Callable
+from typing import Callable, Generator
 
 import pandas
 
@@ -80,12 +80,15 @@ def reverse_line(line):
     return " ".join(lst)
 
 
-def create_df(dir: str, percent: float, start_from: float, backwards: bool) -> pandas.DataFrame:
+def create_df_gen(dir: str, percent: float, start_from: float, backwards: bool) \
+        -> Generator[pandas.DataFrame, None, None]:
     lines = []
     files_total = sum(f for f in file_mapper(dir, include_to_df_tester(percent, start_from),
                                              extension=None, ignore_prefix="_"))
 
+    DATAFRAME_LINES_THRESHOLD = 10 * 3
     cur_file = 0
+    at_least_one_frame_created = False
     for root, dirs, files in os.walk(dir):
         for file in files:
             with open(os.path.join(root, file), 'r') as f:
@@ -96,6 +99,12 @@ def create_df(dir: str, percent: float, start_from: float, backwards: bool) -> p
                         if backwards:
                             line = reverse_line(line)
                         lines.append(line)
-    if not lines:
+                    if len(lines) > DATAFRAME_LINES_THRESHOLD:
+                        yield pandas.DataFrame(lines)
+                        lines = []
+                        at_least_one_frame_created = True
+    if lines:
+        yield pandas.DataFrame(lines)
+        at_least_one_frame_created = True
+    if not at_least_one_frame_created:
         raise ValueError(f"No data available: {os.path.abspath(dir)}")
-    return pandas.DataFrame(lines)
