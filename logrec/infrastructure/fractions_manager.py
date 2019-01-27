@@ -86,7 +86,7 @@ def create_df_gen(dir: str, percent: float, start_from: float, backwards: bool) 
     files_total = sum(f for f in file_mapper(dir, include_to_df_tester(percent, start_from),
                                              extension=None, ignore_prefix="_"))
 
-    DATAFRAME_LINES_THRESHOLD = 5000
+    DATAFRAME_LINES_THRESHOLD = 20000
     cur_file = 0
     at_least_one_frame_created = False
     for root, dirs, files in os.walk(dir):
