@@ -86,7 +86,7 @@ def create_df_gen(dir: str, percent: float, start_from: float, backwards: bool) 
     files_total = sum(f for f in file_mapper(dir, include_to_df_tester(percent, start_from),
                                              extension=None, ignore_prefix="_"))
 
-    DATAFRAME_LINES_THRESHOLD = 10 * 3
+    DATAFRAME_LINES_THRESHOLD = 5000
     cur_file = 0
     at_least_one_frame_created = False
     for root, dirs, files in os.walk(dir):
@@ -94,12 +94,13 @@ def create_df_gen(dir: str, percent: float, start_from: float, backwards: bool) 
             with open(os.path.join(root, file), 'r') as f:
                 if include_to_df(file, percent, start_from):
                     cur_file += 1
-                    logger.info(f'Adding {os.path.join(root, file)} to dataframe [{cur_file} out of {files_total}]')
+                    logger.debug(f'Adding {os.path.join(root, file)} to dataframe [{cur_file} out of {files_total}]')
                     for line in f:
                         if backwards:
                             line = reverse_line(line)
                         lines.append(line)
                     if len(lines) > DATAFRAME_LINES_THRESHOLD:
+                        logger.debug("Submitting dataFrame...")
                         yield pandas.DataFrame(lines)
                         lines = []
                         at_least_one_frame_created = True
