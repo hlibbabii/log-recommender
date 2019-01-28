@@ -5,10 +5,9 @@ from pprint import pprint
 
 from fastai.imports import tqdm
 from logrec.dataprep import base_project_dir
+from logrec.dataprep.lang.param_mutator import ParamMutator
 from logrec.dataprep.split.samecase import manually_tagged_splittings_file_reader
 from logrec.dataprep.split.samecase.splitter import load_english_dict, get_splittings
-from logrec.util import io
-from logrec.util.param_mutator import ParamMutator
 
 logger = logging.getLogger(__name__)
 

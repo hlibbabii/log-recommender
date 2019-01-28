@@ -1,7 +1,7 @@
-from logrec.dataprep.preprocess_params import pp_params
+from logrec.dataprep.preprocessors.preprocessor_list import pp_params
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.general import from_string
-from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
+from logrec.dataprep.prepparams import PrepParamsParser
 from logrec.dataprep.to_repr import init_splitting_config, to_repr
 from logrec.properties import DEFAULT_DATASET, DEFAULT_BPE_BASE_REPR, DEFAULT_BPE_N_MERGES
 

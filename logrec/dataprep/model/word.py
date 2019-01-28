@@ -1,8 +1,8 @@
 import re
 from enum import Enum, auto
 
-from logrec.dataprep.preprocessors.model.chars import SpecialChar
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.model.chars import SpecialChar
+from logrec.dataprep.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.repr import ReprConfig
 from logrec.dataprep.split.ngram import do_ngram_splitting, insert_borders, SplitRepr, NgramSplittingType
 

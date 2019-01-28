@@ -1,7 +1,7 @@
 import unittest
 
-from logrec.dataprep.preprocessors.model.containers import StringLiteral, SplitContainer
-from logrec.dataprep.preprocessors.model.word import Word, SubWord, ParseableToken
+from logrec.dataprep.model.containers import StringLiteral, SplitContainer
+from logrec.dataprep.model.word import SubWord, ParseableToken
 from logrec.dataprep.preprocessors.split import simple_split
 
 

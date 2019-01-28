@@ -8,7 +8,6 @@ from random import shuffle
 
 from tqdm import tqdm
 
-from logrec.util import io
 from logrec.dataprep import base_project_dir
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,6 @@
-from logrec.dataprep.preprocessors.model.noneng import NonEng, NonEngFullWord
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
-from logrec.dataprep.preprocessors.model.word import WordStart
+from logrec.dataprep.model.noneng import NonEng, NonEngFullWord
+from logrec.dataprep.model.placeholders import placeholders
+from logrec.dataprep.model.word import WordStart
 from logrec.dataprep.preprocessors.repr import torepr, ReprConfig
 from logrec.dataprep.split.ngram import SplitRepr
 

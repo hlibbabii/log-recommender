@@ -2,8 +2,6 @@ import argparse
 import logging
 import sys
 
-from logrec.util import io
-
 logger = logging.getLogger(__name__)
 
 def encode(words, merges):

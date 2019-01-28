@@ -1,14 +1,12 @@
 import unittest
 
 from logrec.dataprep.preprocessors.java import process_comments_and_str_literals
-from logrec.dataprep.preprocessors.model.chars import OneLineCommentStart, NewLine, Quote, MultilineCommentStart, \
-    MultilineCommentEnd
+from logrec.dataprep.model.chars import OneLineCommentStart, NewLine, Quote, MultilineCommentStart, MultilineCommentEnd
 
 
 # TODO write explanations with normal strings
-from logrec.dataprep.preprocessors.model.containers import SplitContainer, StringLiteral, OneLineComment, \
-    MultilineComment
-from logrec.dataprep.preprocessors.model.word import Word, FullWord, SubWord
+from logrec.dataprep.model.containers import SplitContainer, StringLiteral, OneLineComment, MultilineComment
+from logrec.dataprep.model.word import FullWord, SubWord
 
 
 class JavaTest(unittest.TestCase):

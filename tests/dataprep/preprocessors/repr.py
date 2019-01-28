@@ -1,15 +1,15 @@
 import unittest
 
-from logrec.dataprep.preprocessors.model.chars import NewLine, Tab
+from logrec.dataprep.model.chars import NewLine, Tab
 # TODO write explanations with normal strings
-from logrec.dataprep.preprocessors.model.containers import SplitContainer, OneLineComment, MultilineComment, \
+from logrec.dataprep.model.containers import SplitContainer, OneLineComment, MultilineComment, \
     StringLiteral
-from logrec.dataprep.preprocessors.model.logging import INFO, LogStatement
-from logrec.dataprep.preprocessors.model.noneng import NonEng, NonEngFullWord, NonEngSubWord
-from logrec.dataprep.preprocessors.model.numeric import DecimalPoint, Number
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
-from logrec.dataprep.preprocessors.model.word import FullWord, SubWord
-from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
+from logrec.dataprep.model.logging import INFO, LogStatement
+from logrec.dataprep.model.noneng import NonEng, NonEngFullWord, NonEngSubWord
+from logrec.dataprep.model.numeric import DecimalPoint, Number
+from logrec.dataprep.model.placeholders import placeholders
+from logrec.dataprep.model.word import FullWord, SubWord
+from logrec.dataprep.prepparams import PreprocessingParam
 from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplitConfig
 from logrec.dataprep.to_repr import to_repr
 

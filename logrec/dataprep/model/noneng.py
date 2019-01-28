@@ -1,5 +1,5 @@
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
-from logrec.dataprep.preprocessors.model.word import Capitalization, Word, FullWord, SubWord
+from logrec.dataprep.model.placeholders import placeholders
+from logrec.dataprep.model.word import FullWord, SubWord
 from logrec.dataprep.preprocessors.repr import torepr
 
 

@@ -9,8 +9,8 @@ from torchtext.data import Field
 
 from fastai.model import validate
 from logrec.config.patch import patch_config
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
-from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser, PreprocessingParam
+from logrec.dataprep.model.placeholders import placeholders
+from logrec.dataprep.prepparams import PrepParamsParser, PreprocessingParam
 from logrec.features.early_stop import EarlyStopping
 from logrec.infrastructure import config_manager
 from logrec.infrastructure.fractions_manager import create_df_gen

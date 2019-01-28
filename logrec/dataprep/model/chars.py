@@ -42,6 +42,7 @@ class MultilineCommentStart(SpecialChar):
     def non_preprocessed_repr(self, repr_config):
         return "/*"
 
+
 class MultilineCommentEnd(SpecialChar):
     def non_preprocessed_repr(self, repr_config):
         return "*/"

@@ -1,4 +1,4 @@
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.model.placeholders import placeholders
 
 subword_separators_boundaries = [
     placeholders['camel_case_separator'],

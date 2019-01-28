@@ -1,12 +1,12 @@
 import unittest
 
-from logrec.dataprep.preprocessors.model.chars import OneLineCommentStart, NewLine, MultilineCommentEnd, \
+from logrec.dataprep.model.chars import OneLineCommentStart, NewLine, MultilineCommentEnd, \
     MultilineCommentStart
 # TODO write explanations with normal strings
-from logrec.dataprep.preprocessors.model.containers import SplitContainer, StringLiteral, OneLineComment, \
+from logrec.dataprep.model.containers import SplitContainer, StringLiteral, OneLineComment, \
     MultilineComment
-from logrec.dataprep.preprocessors.model.noneng import NonEng, NonEngSubWord, NonEngFullWord
-from logrec.dataprep.preprocessors.model.word import Word, FullWord, SubWord, Capitalization, WordStart
+from logrec.dataprep.model.noneng import NonEng, NonEngSubWord, NonEngFullWord
+from logrec.dataprep.model.word import Word, FullWord, SubWord, Capitalization, WordStart
 from logrec.dataprep.preprocessors.noneng import mark
 
 

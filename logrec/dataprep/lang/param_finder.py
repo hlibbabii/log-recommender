@@ -1,7 +1,7 @@
 import logging
 
 from logrec.dataprep import base_project_dir
-from logrec.util.param_mutator import ParamMutator
+from logrec.dataprep.lang.param_mutator import ParamMutator
 
 file160 = f'{base_project_dir}/160.json'
 

@@ -4,7 +4,7 @@ import re
 #################   Multitoken list  level    #######
 from logrec.dataprep.preprocessors import java
 from logrec.dataprep.preprocessors.general import spl, spl_verbose
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.model.placeholders import placeholders
 
 logger = logging.getLogger(__name__)
 

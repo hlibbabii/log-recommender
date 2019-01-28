@@ -4,8 +4,8 @@ import re
 import time
 
 from logrec.dataprep import util
-from logrec.dataprep.preprocessors.model.containers import ProcessableTokenContainer, SplitContainer
-from logrec.dataprep.preprocessors.model.word import FullWord, SubWord, ParseableToken
+from logrec.dataprep.model.containers import ProcessableTokenContainer, SplitContainer
+from logrec.dataprep.model.word import FullWord, SubWord, ParseableToken
 
 logger = logging.getLogger(__name__)
 

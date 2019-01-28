@@ -2,12 +2,11 @@ import logging
 from enum import Enum
 from typing import Dict, List, Type
 
-from logrec.dataprep.preprocessors.model.chars import NewLine, Tab
-from logrec.dataprep.preprocessors.model.containers import SplitContainer, StringLiteral, OneLineComment, \
-    MultilineComment
-from logrec.dataprep.preprocessors.model.noneng import NonEngSubWord, NonEngFullWord
-from logrec.dataprep.preprocessors.model.numeric import Number
-from logrec.dataprep.preprocessors.model.word import SubWord, FullWord
+from logrec.dataprep.model.chars import NewLine, Tab
+from logrec.dataprep.model.containers import SplitContainer, StringLiteral, OneLineComment, MultilineComment
+from logrec.dataprep.model.noneng import NonEngSubWord, NonEngFullWord
+from logrec.dataprep.model.numeric import Number
+from logrec.dataprep.model.word import SubWord, FullWord
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +52,6 @@ class PrepParamsParser(object):
             else:
                 res += str(int(prep_params_dict[k]))
         return res
-
 
 
 com_str_to_types_to_be_repr = {

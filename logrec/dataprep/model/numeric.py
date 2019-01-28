@@ -1,4 +1,4 @@
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.repr import ReprConfig
 from logrec.dataprep.split.ngram import SplitRepr, NgramSplittingType, do_ngram_splitting, insert_borders
 

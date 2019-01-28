@@ -1,13 +1,13 @@
 import logging
 import re
 
-from logrec.dataprep.preprocessors.model.chars import MultilineCommentStart, MultilineCommentEnd, OneLineCommentStart, \
+from logrec.dataprep.model.chars import MultilineCommentStart, MultilineCommentEnd, OneLineCommentStart, \
     NewLine, Backslash, Quote
-from logrec.dataprep.preprocessors.model.containers import MultilineComment, OneLineComment, StringLiteral, \
+from logrec.dataprep.model.containers import MultilineComment, OneLineComment, StringLiteral, \
     ProcessableTokenContainer
-from logrec.dataprep.preprocessors.model.numeric import Number, D, F, L, DecimalPoint, HexStart, E
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
-from logrec.dataprep.preprocessors.model.word import ParseableToken
+from logrec.dataprep.model.numeric import Number, D, F, L, DecimalPoint, HexStart, E
+from logrec.dataprep.model.placeholders import placeholders
+from logrec.dataprep.model.word import ParseableToken
 
 logger = logging.getLogger(__name__)
 

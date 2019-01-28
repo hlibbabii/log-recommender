@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.model.placeholders import placeholders
 from logrec.dataprep.split.bpe_encode import encode_word
 from logrec.dataprep.util import insert_separators
 

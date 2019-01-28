@@ -1,11 +1,11 @@
 import unittest
 
 from logrec.dataprep.preprocessors import logs
-from logrec.dataprep.preprocessors.model.chars import NewLine, Tab
-from logrec.dataprep.preprocessors.model.containers import SplitContainer, StringLiteral
-from logrec.dataprep.preprocessors.model.logging import LogStatement, INFO, DEBUG, FATAL, TRACE
-from logrec.dataprep.preprocessors.model.numeric import HexStart, Number, L
-from logrec.dataprep.preprocessors.model.word import Word, FullWord
+from logrec.dataprep.model.chars import NewLine, Tab
+from logrec.dataprep.model.containers import SplitContainer, StringLiteral
+from logrec.dataprep.model.logging import LogStatement, INFO, DEBUG, FATAL, TRACE
+from logrec.dataprep.model.numeric import HexStart, Number, L
+from logrec.dataprep.model.word import Word, FullWord
 
 
 class MarkLogTest(unittest.TestCase):

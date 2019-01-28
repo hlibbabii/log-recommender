@@ -2,13 +2,13 @@ import itertools
 import logging
 import re
 
-from logrec.dataprep.preprocessors.model.containers import ProcessableTokenContainer
-from logrec.dataprep.preprocessors.model.word import ParseableToken
+from logrec.dataprep.model.containers import ProcessableTokenContainer
+from logrec.dataprep.model.word import ParseableToken
 
 from logrec.dataprep.preprocessors import java
-from logrec.dataprep.preprocessors.model.chars import NewLine, MultilineCommentEnd, MultilineCommentStart, \
+from logrec.dataprep.model.chars import NewLine, MultilineCommentEnd, MultilineCommentStart, \
     OneLineCommentStart, Quote, Backslash, Tab
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.model.placeholders import placeholders
 from logrec.dataprep.util import create_regex_from_token_list
 
 logger = logging.getLogger(__name__)

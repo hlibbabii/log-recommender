@@ -9,8 +9,8 @@ from pathlib import Path
 
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.general import from_file
-from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
-from logrec.dataprep.preprocess_params import pp_params
+from logrec.dataprep.prepparams import PreprocessingParam
+from logrec.dataprep.preprocessors.preprocessor_list import pp_params
 from logrec.infrastructure.fs import FS
 from logrec.properties import DEFAULT_PARSE_PROJECTS_ARGS
 from logrec.util.files import file_mapper

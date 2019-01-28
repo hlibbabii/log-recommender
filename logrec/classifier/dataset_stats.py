@@ -7,7 +7,6 @@ from collections import defaultdict
 from logrec.classifier.context_datasets import ContextsDataset, IGNORED_PROJECTS_FILE_NAME
 from logrec.dataprep.util import merge_dicts_
 from logrec.infrastructure.fs import CLASSIFICATION_DIR
-from logrec.util import io
 from logrec.util.files import file_mapper, get_dir_and_file
 
 WITH_LOGGING = "with_logging"

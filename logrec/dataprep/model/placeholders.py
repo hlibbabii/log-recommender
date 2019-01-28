@@ -1,4 +1,4 @@
-placeholders= {
+placeholders = {
     'comment': '<comment>',
     'string_literal': '<str_literal>',
     'identifier': '<identifier>',

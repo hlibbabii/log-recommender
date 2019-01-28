@@ -1,14 +1,14 @@
 import unittest
 
-from logrec.dataprep.preprocess_params import pp_params
+from logrec.dataprep.preprocessors.preprocessor_list import pp_params
 from logrec.dataprep.preprocessors.core import apply_preprocessors
 from logrec.dataprep.preprocessors.general import from_file
-from logrec.dataprep.preprocessors.model.chars import NewLine, Tab, Backslash, Quote
-from logrec.dataprep.preprocessors.model.containers import OneLineComment, SplitContainer, StringLiteral, \
+from logrec.dataprep.model.chars import NewLine, Tab, Backslash, Quote
+from logrec.dataprep.model.containers import OneLineComment, SplitContainer, StringLiteral, \
     MultilineComment
-from logrec.dataprep.preprocessors.model.noneng import NonEngSubWord
-from logrec.dataprep.preprocessors.model.numeric import HexStart, Number, DecimalPoint, L, F, E, D
-from logrec.dataprep.preprocessors.model.word import FullWord, SubWord
+from logrec.dataprep.model.noneng import NonEngSubWord
+from logrec.dataprep.model.numeric import HexStart, Number, DecimalPoint, L, F, E, D
+from logrec.dataprep.model.word import FullWord, SubWord
 
 text2 = '''
 _my_favoRite_ints_

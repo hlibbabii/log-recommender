@@ -1,9 +1,9 @@
 import logging
 from typing import List
 
-from logrec.dataprep.preprocessors.model.logging import LoggableBlock
-from logrec.dataprep.preprocessors.model.word import FullWord
-from logrec.dataprep.preprocessors.preprocessing_types import PrepParamsParser
+from logrec.dataprep.model.logging import LoggableBlock
+from logrec.dataprep.model.word import FullWord
+from logrec.dataprep.prepparams import PrepParamsParser
 from logrec.dataprep.split.ngram import NgramSplitConfig
 from logrec.dataprep.to_repr import to_repr
 

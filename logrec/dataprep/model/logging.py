@@ -1,5 +1,5 @@
-from logrec.dataprep.preprocessors.model.containers import ProcessableTokenContainer
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.model.containers import ProcessableTokenContainer
+from logrec.dataprep.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.repr import torepr
 
 

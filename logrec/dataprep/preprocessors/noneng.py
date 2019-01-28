@@ -2,10 +2,10 @@ import logging
 
 from logrec.dataprep import path_to_eng_dicts, path_to_non_eng_dicts
 from logrec.dataprep.lang.langchecker import LanguageChecker
-from logrec.dataprep.preprocessors.model.containers import ProcessableTokenContainer
-from logrec.dataprep.preprocessors.model.logging import LogStatement
-from logrec.dataprep.preprocessors.model.noneng import NonEngFullWord, NonEngSubWord
-from logrec.dataprep.preprocessors.model.word import FullWord, SubWord
+from logrec.dataprep.model.containers import ProcessableTokenContainer
+from logrec.dataprep.model.logging import LogStatement
+from logrec.dataprep.model.noneng import NonEngFullWord, NonEngSubWord
+from logrec.dataprep.model.word import FullWord, SubWord
 
 logger = logging.getLogger(__name__)
 

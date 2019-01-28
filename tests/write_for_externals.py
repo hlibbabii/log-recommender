@@ -1,5 +1,5 @@
 from logrec.dataprep.preprocessors import apply_preprocessors
-from logrec.dataprep.preprocess_params import pp_params
+from logrec.dataprep.preprocessors.preprocessor_list import pp_params
 from logrec.dataprep.preprocessors.general import from_file
 
 __author__ = 'hlib'

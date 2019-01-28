@@ -10,7 +10,7 @@ from logrec.dataprep import parse_projects, path_to_non_eng_dicts, path_to_eng_d
 from logrec.dataprep.lang.dao import DAO
 from logrec.dataprep.lang.langchecker import LanguageChecker
 from logrec.dataprep.preprocessors.general import to_token_list
-from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
+from logrec.dataprep.prepparams import PreprocessingParam
 from logrec.dataprep.to_repr import to_repr
 
 logger = logging.getLogger(__name__)

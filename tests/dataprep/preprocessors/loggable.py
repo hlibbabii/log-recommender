@@ -1,10 +1,10 @@
 import unittest
 
 from logrec.dataprep.preprocessors import loggable
-from logrec.dataprep.preprocessors.model.chars import NewLine
-from logrec.dataprep.preprocessors.model.containers import MultilineComment, StringLiteral
-from logrec.dataprep.preprocessors.model.logging import LoggableBlock
-from logrec.dataprep.preprocessors.model.word import FullWord
+from logrec.dataprep.model.chars import NewLine
+from logrec.dataprep.model.containers import MultilineComment, StringLiteral
+from logrec.dataprep.model.logging import LoggableBlock
+from logrec.dataprep.model.word import FullWord
 
 
 class MarkLogTest(unittest.TestCase):

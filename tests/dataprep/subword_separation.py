@@ -1,15 +1,15 @@
 import unittest
 
-from logrec.dataprep.preprocess_params import pp_params
+from logrec.dataprep.preprocessors.preprocessor_list import pp_params
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.general import from_string
-from logrec.dataprep.preprocessors.model.containers import SplitContainer, StringLiteral
-from logrec.dataprep.preprocessors.model.logging import LogStatement, INFO
-from logrec.dataprep.preprocessors.model.noneng import NonEngSubWord, NonEngFullWord
-from logrec.dataprep.preprocessors.model.numeric import Number, DecimalPoint, E
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
-from logrec.dataprep.preprocessors.model.word import FullWord, SubWord, Capitalization, WordStart
-from logrec.dataprep.preprocessors.preprocessing_types import PreprocessingParam
+from logrec.dataprep.model.containers import SplitContainer, StringLiteral
+from logrec.dataprep.model.logging import LogStatement, INFO
+from logrec.dataprep.model.noneng import NonEngSubWord, NonEngFullWord
+from logrec.dataprep.model.numeric import Number, DecimalPoint, E
+from logrec.dataprep.model.placeholders import placeholders
+from logrec.dataprep.model.word import FullWord, SubWord, Capitalization, WordStart
+from logrec.dataprep.prepparams import PreprocessingParam
 from logrec.dataprep.split.ngram import NgramSplitConfig, NgramSplittingType
 from logrec.dataprep.to_repr import to_repr
 

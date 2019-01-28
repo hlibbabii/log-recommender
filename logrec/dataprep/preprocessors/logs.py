@@ -1,10 +1,9 @@
 import re
 from enum import Enum, auto
 
-from logrec.dataprep.preprocessors.model.chars import NewLine, Tab
-from logrec.dataprep.preprocessors.model.logging import LogStatement, LogLevel, TRACE, FATAL, ERROR, WARN, INFO, DEBUG, \
-    UNKNOWN
-from logrec.dataprep.preprocessors.model.word import Word
+from logrec.dataprep.model.chars import NewLine, Tab
+from logrec.dataprep.model.logging import LogStatement, LogLevel, TRACE, FATAL, ERROR, WARN, INFO, DEBUG, UNKNOWN
+from logrec.dataprep.model.word import Word
 
 LOGGER_REGEX = re.compile("[Ll]og|LOG|[Ll]ogger|LOGGER")
 

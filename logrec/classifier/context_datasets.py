@@ -8,7 +8,6 @@ from torchtext import data
 from logrec.dataprep import TRAIN_DIR, TEST_DIR
 from logrec.infrastructure.fractions_manager import include_to_df
 from logrec.util.files import file_mapper, get_dir_and_file
-from logrec.util import io
 
 __author__ = 'hlib'
 

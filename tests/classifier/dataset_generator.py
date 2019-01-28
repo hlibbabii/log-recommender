@@ -3,7 +3,7 @@ import unittest
 
 from logrec.classifier.dataset_generator import create_case, \
     get_possible_log_locations, get_existing_log_locations, CaseCreator, remove_some_log_statements
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.model.placeholders import placeholders
 
 position_positive = CaseCreator(range_selector=random.choice,
                                 label_creator=lambda l: '1',

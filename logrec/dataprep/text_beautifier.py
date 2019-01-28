@@ -1,6 +1,6 @@
 import re
 
-from logrec.dataprep.preprocessors.model.placeholders import placeholders, placeholders_beautiful, separators_beautiful
+from logrec.dataprep.model.placeholders import placeholders, placeholders_beautiful, separators_beautiful
 from logrec.dataprep.split.ngram import SplitRepr
 
 cc = placeholders['camel_case_separator']

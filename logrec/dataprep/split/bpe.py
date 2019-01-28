@@ -5,9 +5,8 @@ import re, collections
 from typing import Optional, Dict
 
 from logrec.dataprep import BPE_DIR, METADATA_DIR
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
-from logrec.properties import DEFAULT_BPE_ARGS, DEFAULT_PARSED_DATASETS_DIR, base_project_dir
-from logrec.util import io
+from logrec.dataprep.model.placeholders import placeholders
+from logrec.properties import DEFAULT_BPE_ARGS, DEFAULT_PARSED_DATASETS_DIR
 from logrec.util.priority_counter import PriorityCounter
 import time
 
