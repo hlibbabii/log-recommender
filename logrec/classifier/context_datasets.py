@@ -6,6 +6,7 @@ import re
 from torchtext import data
 
 from logrec.dataprep import TRAIN_DIR, TEST_DIR
+from logrec.dataprep.util import read_list
 from logrec.infrastructure.fractions_manager import include_to_df
 from logrec.util.files import file_mapper, get_dir_and_file
 
@@ -65,7 +66,7 @@ class ContextsDataset(data.Dataset):
 
         path_to_ignored_projects = os.path.join(path, '..', '..', '..', f"{IGNORED_PROJECTS_FILE_NAME}.{threshold}")
         logger.info(f"Loading ignored projects from {path_to_ignored_projects} ...")
-        ignored_projects_set = set(io.read_list(path_to_ignored_projects))
+        ignored_projects_set = set(read_list(path_to_ignored_projects))
 
         fields = [('text', text_field), ('label', label_field)]
         examples = []
