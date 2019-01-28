@@ -4,29 +4,16 @@ python:
 env:
   global:
     - CC_TEST_REPORTER_ID=7b2a8d89ec2d09fea972c4475e21285a4e7d055c72db35d026f263f9a8027395
-cache:
-  timeout: 600
-  directories:
-    - $HOME/miniconda
-before_cache:
-  - rm -rf $HOME/miniconda/locks $HOME/miniconda/pkgs $HOME/miniconda/var $HOME/miniconda/conda-meta/history $HOME/miniconda/conda-bld $HOME/miniconda/envs/fastai/conda-meta/history
-  - rm -f $HOME/miniconda/envs/fastai/lib/python3.6/site-packages/numpy/__pycache__/__config__.cpython-36.pyc $HOME/miniconda/envs/fastai/lib/python3.6/site-packages/scipy/__pycache__/__config__.cpython-36.pyc
 before_install:
   - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
-  - if [[ -d $HOME/miniconda/bin ]]; then
-      echo "Miniconda already installed!";
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
     else
-      echo "Installing miniconda.";
-      rm -rf $HOME/miniconda;
-      if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-        wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-      else
-        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-      fi;
-      bash miniconda.sh -b -p $HOME/miniconda;
-    fi
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    fi;
+    bash miniconda.sh -b -p $HOME/miniconda;
   - . /home/travis/miniconda/etc/profile.d/conda.sh
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
@@ -37,7 +24,7 @@ install:
   - conda info -a
   - git clone https://github.com/hlibbabii/fastai $HOME/fastai-fork
   - cd $HOME/fastai-fork
-  - conda env update -f environment.yml
+  - conda env create -f environment.yml
   - conda activate fastai
   - export PYTHONPATH="$HOME/fastai-fork:$PYTHONPATH"
   - echo "PYTHONPATH is now $PYTHONPATH"
