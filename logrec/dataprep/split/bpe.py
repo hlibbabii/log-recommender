@@ -6,6 +6,7 @@ from typing import Optional, Dict
 
 from logrec.dataprep import BPE_DIR, METADATA_DIR
 from logrec.dataprep.model.placeholders import placeholders
+from logrec.dataprep.util import read_dict_from_2_columns, read_list, dump_dict_into_2_columns, dump_list
 from logrec.properties import DEFAULT_BPE_ARGS, DEFAULT_PARSED_DATASETS_DIR
 from logrec.util.priority_counter import PriorityCounter
 import time
@@ -107,15 +108,15 @@ def run(dataset: str, repr: str, n_merges: int, reset: bool) -> None:
             logger.warning("Existing merges not found ")
             starting_from_scratch = True
         else:
-            all_vocab = io.read_dict_from_2_columns(
+            all_vocab = read_dict_from_2_columns(
                 os.path.join(most_recent_bpe_dir, REASSEMBLED_VOCAB_FILE_NAME))
             vocab, non_splitable_vocab = separate_non_splittable_vocab(all_vocab, from_reassambled=True)
-            merges = io.read_list(os.path.join(most_recent_bpe_dir, MERGES_FILE_NAME))
+            merges = read_list(os.path.join(most_recent_bpe_dir, MERGES_FILE_NAME))
             starting_from_scratch = False
 
     if starting_from_scratch:
         logger.info("Starting the encoding from scratch...")
-        all_vocab = io.read_dict_from_2_columns(os.path.join(base_dir, VOCAB_FILE_NAME))
+        all_vocab = read_dict_from_2_columns(os.path.join(base_dir, VOCAB_FILE_NAME))
         vocab, non_splitable_vocab = separate_non_splittable_vocab(all_vocab, from_reassambled=False)
         merges = []
 
@@ -150,10 +151,10 @@ def run(dataset: str, repr: str, n_merges: int, reset: bool) -> None:
                              f'Check the contents of {os.path.join(base_dir, BPE_DIR)} folder')
     os.makedirs(new_bpe_dir)
 
-    io.dump_list(merges, os.path.join(new_bpe_dir, MERGES_FILE_NAME))
-    io.dump_dict_into_2_columns(vocab, os.path.join(new_bpe_dir, REASSEMBLED_VOCAB_FILE_NAME))
-    io.dump_dict_into_2_columns(merges_cache, os.path.join(new_bpe_dir, MERGES_CACHE_FILE_NAME), val_type=list)
-    io.dump_dict_into_2_columns(resulting_vocab_sorted, os.path.join(new_bpe_dir, RESULTING_VOCAB_FILE_NAME))
+    dump_list(merges, os.path.join(new_bpe_dir, MERGES_FILE_NAME))
+    dump_dict_into_2_columns(vocab, os.path.join(new_bpe_dir, REASSEMBLED_VOCAB_FILE_NAME))
+    dump_dict_into_2_columns(merges_cache, os.path.join(new_bpe_dir, MERGES_CACHE_FILE_NAME), val_type=list)
+    dump_dict_into_2_columns(resulting_vocab_sorted, os.path.join(new_bpe_dir, RESULTING_VOCAB_FILE_NAME))
     logger.info(f'Bpe output files are saved into {new_bpe_dir} folder')
 
 
