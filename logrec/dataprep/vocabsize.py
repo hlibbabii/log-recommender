@@ -251,9 +251,9 @@ def create_initial_partial_vocabs(all_files):
     return partial_vocabs_queue
 
 
-def create_chunk_queue(chunk_sizes: Dict[int, int]) -> Tuple[Queue, int]:
+def create_chunk_queue(chunk_sizes: Dict[int, int], num_mergers: int) -> Tuple[Queue, int]:
     chunk_queue_list = [chunk for chunk, chunk_size in chunk_sizes.items() for _ in range(chunk_size - 1)]
-    return list_to_queue(chunk_queue_list + [-1]), len(chunk_queue_list)
+    return list_to_queue(chunk_queue_list + [-1 for _ in range(num_mergers)]), len(chunk_queue_list)
 
 
 def mapify_tasks(tasks: List[PartialVocab]) -> Tuple[Dict[int, Queue], Dict[int, int]]:
@@ -314,7 +314,8 @@ def run(full_src_dir, full_metadata_dir):
     queue_size.value = len(task_list)
     merger_counter = AtomicInteger(num_mergers)
     tasks_queues, chunk_sizes = mapify_tasks(task_list)
-    chunk_queue, chunk_queue_size = create_chunk_queue(chunk_sizes)
+    chunk_queue, chunk_queue_size = create_chunk_queue(chunk_sizes, num_mergers)
+    logger.info(f'==================    Starting merging    =================')
     logger.info(f'Merges need to be done: {chunk_queue_size}')
     chunk_queue_elm_counter = AtomicInteger(chunk_queue_size)
     mergers = [VocabMerger(i + 1, tasks_queues, path_to_dump, merger_counter, chunk_queue, chunk_queue_elm_counter) for
