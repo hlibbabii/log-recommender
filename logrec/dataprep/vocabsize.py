@@ -105,9 +105,8 @@ class VocabMerger(multiprocessing.Process):
 
     def run(self):
         while True:
-            try:
-                chunk_assigned = self.chunk_queue.get(block=False)
-            except queue.Empty:
+            chunk_assigned = self.chunk_queue.get(block=True)
+            if chunk_assigned == -1:
                 if not self.process_counter.compare_and_dec(1):
                     logger.debug(
                         f"[{self.id}] No vocabs available for merge. "
@@ -254,7 +253,7 @@ def create_initial_partial_vocabs(all_files):
 
 def create_chunk_queue(chunk_sizes: Dict[int, int]) -> Tuple[Queue, int]:
     chunk_queue_list = [chunk for chunk, chunk_size in chunk_sizes.items() for _ in range(chunk_size - 1)]
-    return list_to_queue(chunk_queue_list), len(chunk_queue_list)
+    return list_to_queue(chunk_queue_list + [-1]), len(chunk_queue_list)
 
 
 def mapify_tasks(tasks: List[PartialVocab]) -> Tuple[Dict[int, Queue], Dict[int, int]]:
