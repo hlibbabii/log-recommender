@@ -110,7 +110,7 @@ class VocabMerger(multiprocessing.Process):
                 if not self.process_counter.compare_and_dec(1):
                     logger.debug(
                         f"[{self.id}] No vocabs available for merge. "
-                        f"[{self.id}] Terminating process..., mergers left: {self.process_counter.value}")
+                        f"Terminating process..., mergers left: {self.process_counter.value}")
                     break
                 else:
                     logger.info("Leaving 1 process to finish the merges")
@@ -234,7 +234,7 @@ def chunk_generator(total: int, n_chunks: int):
         yield i
 
 
-def create_initial_partial_vocabs(all_files):
+def create_initial_partial_vocabs(all_files, path_to_dump: str):
     partial_vocabs_queue = []
     files_total = len(all_files)
     current_file = 0
@@ -250,6 +250,7 @@ def create_initial_partial_vocabs(all_files):
             time_elapsed = time.time() - start_time
             logger.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
                         f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
+            pickle.dump(partial_vocab, open(os.path.join(path_to_dump, f'{partial_vocab.id}.{PARTVOCAB_EXT}'), 'wb'))
     return partial_vocabs_queue
 
 
@@ -302,13 +303,11 @@ def run(full_src_dir, full_metadata_dir):
 
         logger.info(f"Loaded partially calculated vocabs from {path_to_dump}")
     else:
-        logger.info(f"Starting merging from scratch")
+        logger.info(f"Calculating vocabulary from scratch")
         if os.path.exists(path_to_dump):
             shutil.rmtree(path_to_dump)
         os.makedirs(path_to_dump)
-        task_list = create_initial_partial_vocabs(all_files)
-        for partial_vocab in task_list:
-            pickle.dump(partial_vocab, open(os.path.join(path_to_dump, f'{partial_vocab.id}.{PARTVOCAB_EXT}'), 'wb'))
+        task_list = create_initial_partial_vocabs(all_files, path_to_dump)
         open(dumps_valid_file, 'a').close()
 
     num_mergers = multiprocessing.cpu_count()
@@ -342,3 +341,4 @@ if __name__ == '__main__':
     full_metadata_dir = os.path.join(path_to_dataset, METADATA_DIR, args.repr)
 
     run(full_src_dir, full_metadata_dir)
+    logger.info("Terminating parent process ... ")
