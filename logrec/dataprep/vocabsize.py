@@ -26,6 +26,8 @@ logger = logging.getLogger(__name__)
 queue_size = AtomicInteger()
 
 PARTVOCAB_EXT = 'partvocab'
+VOCABSIZE_FILENAME = 'vocabsize'
+VOCAB_FILENAME = 'vocab'
 
 N_CHUNKS = 20
 
@@ -61,9 +63,9 @@ class PartialVocab(object):
         self.merged_word_counts, new_words = merge_dicts_(self.merged_word_counts, partial_vocab.merged_word_counts)
         cur_vocab_size = len(self.merged_word_counts)
 
-        if partial_vocab.n_files & partial_vocab.n_files == 0:
+        if partial_vocab.n_files & (partial_vocab.n_files - 1) == 0:
             logger.debug(f"New words: {new_words[:10]} ..., total: {len(new_words)}")
-            logger.info(f"Merging took {time.time() - start} s, current vocab size: {cur_vocab_size}")
+            logger.info(f"Merging took {time.time() - start:.3f} s, current vocab size: {cur_vocab_size}")
 
         self.n_files += partial_vocab.n_files
         new_stats_entry = (self.n_files, cur_vocab_size, self.merged_word_counts[placeholders['non_eng']])
@@ -73,7 +75,7 @@ class PartialVocab(object):
         stats = self.__generate_stats()
         with open(path_to_stats_file, 'w') as f:
             vocabsize = int(stats[-1][1][0])
-            f.write(f"{str(vocabsize)}\n")
+            f.write(f'{vocabsize}\n')
             for percent, (v, n) in stats:
                 f.write(f"{percent} {v} {n}\n")
 
@@ -128,14 +130,16 @@ class VocabMerger(multiprocessing.Process):
         logger.info("===============     Finishing merges    ===============")
         list_from_chunks = [queue.get_nowait() for queue in self.tasks.values()]
 
+        percents_in_one_chunk = 100 // len(list_from_chunks)
+
         first = list_from_chunks.pop()
         for i, vocab in enumerate(list_from_chunks):
             logger.info(
-                f'{i+1}/{len(list_from_chunks)}: {first.n_files} + {vocab.n_files}  ---> {first.n_files + vocab.n_files} (projects)')
+                f'{(i+1)* percents_in_one_chunk}% + {percents_in_one_chunk}%  ---> {(i+2) * percents_in_one_chunk}%')
             first = self.__merge_(first, vocab)
 
-        first.write_stats(os.path.join(full_metadata_dir, 'vocabsize'))
-        first.write_vocab(os.path.join(full_metadata_dir, 'vocab'))
+        first.write_stats(os.path.join(full_metadata_dir, VOCABSIZE_FILENAME))
+        first.write_vocab(os.path.join(full_metadata_dir, VOCAB_FILENAME))
         first.write_field(os.path.join(full_metadata_dir, TEXT_FIELD_FILE))
         shutil.rmtree(self.path_to_dump)
 
