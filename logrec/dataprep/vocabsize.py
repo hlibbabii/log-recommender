@@ -110,11 +110,12 @@ class VocabMerger(multiprocessing.Process):
                 if not self.process_counter.compare_and_dec(1):
                     logger.debug(
                         f"[{self.id}] No vocabs available for merge. "
-                        f"Terminating process..., mergers left: {self.process_counter.value}")
+                        f"[{self.id}] Terminating process..., mergers left: {self.process_counter.value}")
                     break
                 else:
                     logger.info("Leaving 1 process to finish the merges")
                     self.__finish_merges()
+                    logger.info(f'[{self.id}] Vocab files are saved. Terminating the process...')
                     break
 
             first = self.tasks[chunk_assigned].get(block=True)
@@ -123,7 +124,8 @@ class VocabMerger(multiprocessing.Process):
             start = time.time()
 
             merges_left = self.chunk_queue_elm_counter.get_and_dec()
-            log_this_merge = (merges_left & (merges_left - 1) == 0)
+            merges_done = self.total_merges - merges_left
+            log_this_merge = (merges_left & (merges_left - 1) == 0 or merges_done & (merges_done - 1) == 0)
             if log_this_merge:
                 logger.info(
                     f'[{self.id}] Merging vocabs ({self.total_merges - merges_left} out of {self.total_merges})')
