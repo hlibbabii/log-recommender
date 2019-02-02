@@ -29,6 +29,7 @@ VOCABSIZE_FILENAME = 'vocabsize'
 VOCAB_FILENAME = 'vocab'
 
 N_CHUNKS = 1
+BLOCKING_TIMEOUT_SECONDS = 5
 
 
 class PartialVocab(object):
@@ -104,7 +105,7 @@ class VocabMerger(multiprocessing.Process):
 
     def run(self):
         while True:
-            chunk_assigned = self.chunk_queue.get(block=True)
+            chunk_assigned = self.chunk_queue.get(block=True, timeout=BLOCKING_TIMEOUT_SECONDS)
             if chunk_assigned == -1:
                 if not self.process_counter.compare_and_dec(1):
                     logger.debug(
@@ -117,8 +118,8 @@ class VocabMerger(multiprocessing.Process):
                     logger.info(f'[{self.id}] Vocab files are saved. Terminating the process...')
                     break
 
-            first = self.tasks[chunk_assigned].get(block=True)
-            second = self.tasks[chunk_assigned].get(block=True)
+            first = self.tasks[chunk_assigned].get(block=True, timeout=BLOCKING_TIMEOUT_SECONDS)
+            second = self.tasks[chunk_assigned].get(block=True, timeout=BLOCKING_TIMEOUT_SECONDS)
 
             start = time.time()
 
@@ -247,12 +248,13 @@ def create_initial_partial_vocabs(all_files, path_to_dump: str):
     current_file = 0
     chunk_generator = create_chunk_generator(len(all_files), N_CHUNKS)
     params = [(file, path_to_dump, chunk) for file, chunk in zip(all_files, chunk_generator)]
-    with Pool() as pool:
-        partial_vocab_it = pool.imap_unordered(create_and_dump_partial_vocab, params)
-        for partial_vocab in partial_vocab_it:
-            partial_vocabs_queue.append(partial_vocab)
-            current_file += 1
-            logger.info(f"To partial vocabs added  {current_file} out of {files_total}")
+    pool = Pool()
+    partial_vocab_it = pool.imap_unordered(create_and_dump_partial_vocab, params)
+    for partial_vocab in partial_vocab_it:
+        partial_vocabs_queue.append(partial_vocab)
+        current_file += 1
+        logger.info(f"To partial vocabs added  {current_file} out of {files_total}")
+    pool.terminate()
     return partial_vocabs_queue
 
 
