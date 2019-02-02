@@ -29,7 +29,7 @@ PARTVOCAB_EXT = 'partvocab'
 VOCABSIZE_FILENAME = 'vocabsize'
 VOCAB_FILENAME = 'vocab'
 
-N_CHUNKS = 20
+N_CHUNKS = 2
 
 
 class PartialVocab(object):
@@ -54,22 +54,17 @@ class PartialVocab(object):
     def set_path_to_dump(self, path) -> None:
         self.path_to_dump = path
 
-    def add_vocab(self, partial_vocab) -> None:
+    def add_vocab(self, partial_vocab) -> List[str]:
         if not isinstance(partial_vocab, PartialVocab):
             raise TypeError(f'Vocab must be a PartialVocab, but is {type(partial_vocab)}')
-
-        start = time.time()
 
         self.merged_word_counts, new_words = merge_dicts_(self.merged_word_counts, partial_vocab.merged_word_counts)
         cur_vocab_size = len(self.merged_word_counts)
 
-        if partial_vocab.n_files & (partial_vocab.n_files - 1) == 0:
-            logger.debug(f"New words: {new_words[:10]} ..., total: {len(new_words)}")
-            logger.info(f"Merging took {time.time() - start:.3f} s, current vocab size: {cur_vocab_size}")
-
         self.n_files += partial_vocab.n_files
         new_stats_entry = (self.n_files, cur_vocab_size, self.merged_word_counts[placeholders['non_eng']])
         self.stats.extend(partial_vocab.stats + [new_stats_entry])
+        return new_words
 
     def write_stats(self, path_to_stats_file: str) -> None:
         stats = self.__generate_stats()
@@ -98,13 +93,15 @@ class PartialVocab(object):
 
 class VocabMerger(multiprocessing.Process):
     def __init__(self, id: int, tasks: Dict[int, Queue], path_to_dump: str, process_counter: AtomicInteger,
-                 chunk_queue: Queue):
+                 chunk_queue: Queue, chunk_queue_elm_counter: AtomicInteger):
         multiprocessing.Process.__init__(self)
         self.id = id
         self.tasks = tasks
         self.path_to_dump = path_to_dump
         self.process_counter = process_counter
         self.chunk_queue = chunk_queue
+        self.chunk_queue_elm_counter = chunk_queue_elm_counter
+        self.total_merges = chunk_queue_elm_counter.value
 
     def run(self):
         while True:
@@ -113,7 +110,8 @@ class VocabMerger(multiprocessing.Process):
             except queue.Empty:
                 if not self.process_counter.compare_and_dec(1):
                     logger.debug(
-                        f"[{self.id}] No vocabs available for merge. Terminating process..., mergers left: {self.process_counter.value}")
+                        f"[{self.id}] No vocabs available for merge. "
+                        f"Terminating process..., mergers left: {self.process_counter.value}")
                     break
                 else:
                     logger.info("Leaving 1 process to finish the merges")
@@ -123,7 +121,19 @@ class VocabMerger(multiprocessing.Process):
             first = self.tasks[chunk_assigned].get(block=True)
             second = self.tasks[chunk_assigned].get(block=True)
 
-            first = self.__merge_(first, second)
+            start = time.time()
+
+            merges_left = self.chunk_queue_elm_counter.get_and_dec()
+            log_this_merge = (merges_left & (merges_left - 1) == 0)
+            if log_this_merge:
+                logger.info(
+                    f'[{self.id}] Merging vocabs ({self.total_merges - merges_left} out of {self.total_merges})')
+
+            first, new_words = self.__merge_(first, second)
+
+            if log_this_merge:
+                self.__log_merge_results(new_words, len(first.merged_word_counts), time.time() - start)
+
             self.tasks[chunk_assigned].put_nowait(first)
 
     def __finish_merges(self):
@@ -136,25 +146,35 @@ class VocabMerger(multiprocessing.Process):
         for i, vocab in enumerate(list_from_chunks):
             logger.info(
                 f'{(i+1)* percents_in_one_chunk}% + {percents_in_one_chunk}%  ---> {(i+2) * percents_in_one_chunk}%')
-            first = self.__merge_(first, vocab)
+
+            start = time.time()
+
+            first, new_words = self.__merge_(first, vocab)
+
+            self.__log_merge_results(new_words, len(first.merged_word_counts), time.time() - start)
 
         first.write_stats(os.path.join(full_metadata_dir, VOCABSIZE_FILENAME))
         first.write_vocab(os.path.join(full_metadata_dir, VOCAB_FILENAME))
         first.write_field(os.path.join(full_metadata_dir, TEXT_FIELD_FILE))
         shutil.rmtree(self.path_to_dump)
 
-    def __merge_(self, first: PartialVocab, second: PartialVocab):
+    def __log_merge_results(self, new_words: List[str], resulting_vocab_size: int, time: float):
+        logger.debug(f"[{self.id}] New words: {new_words[:10]} ..., total: {len(new_words)}")
+        logger.info(
+            f"[{self.id}] Merging took {time:.3f} s, current vocab size: {resulting_vocab_size}")
+
+    def __merge_(self, first: PartialVocab, second: PartialVocab) -> Tuple[PartialVocab, List[str]]:
         first_id = first.id
         second_id = second.id
 
-        first.add_vocab(second)
+        new_words = first.add_vocab(second)
 
         first.renew_id()
         path_to_new_file = os.path.join(self.path_to_dump, f'{first_id}_{second_id}_{first.id}.{PARTVOCAB_EXT}')
         pickle.dump(first, open(path_to_new_file, 'wb'))
         finish_file_dumping(path_to_new_file)
 
-        return first
+        return first, new_words
 
 
 # TODO remove this ugliness!!
@@ -297,7 +317,9 @@ def run(full_src_dir, full_metadata_dir):
     tasks_queues, chunk_sizes = mapify_tasks(task_list)
     chunk_queue, chunk_queue_size = create_chunk_queue(chunk_sizes)
     logger.info(f'Merges need to be done: {chunk_queue_size}')
-    mergers = [VocabMerger(i + 1, tasks_queues, path_to_dump, merger_counter, chunk_queue) for i in range(num_mergers)]
+    chunk_queue_elm_counter = AtomicInteger(chunk_queue_size)
+    mergers = [VocabMerger(i + 1, tasks_queues, path_to_dump, merger_counter, chunk_queue, chunk_queue_elm_counter) for
+               i in range(num_mergers)]
     for merger in mergers:
         merger.start()
 
