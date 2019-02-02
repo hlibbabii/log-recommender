@@ -2,6 +2,8 @@ import argparse
 import logging.config
 import multiprocessing
 import os
+from typing import List, Tuple, Dict
+
 import dill as pickle
 import queue
 import random
@@ -21,38 +23,37 @@ from logrec.util import io
 from logrec.util.files import file_mapper
 
 logger = logging.getLogger(__name__)
-config = yaml.load(open(os.path.join(base_project_dir, 'logging.yaml')).read())
-logging.config.dictConfig(config)
 
-queue_elm_counter = AtomicInteger()
+queue_size = AtomicInteger()
 
 PARTVOCAB_EXT = 'partvocab'
 
-SECONDS_TO_BLOCK_FOR = random.randint(5, 15)
+N_CHUNKS = 20
 
 
 class PartialVocab(object):
-    CLASS_VERSION = 2
+    CLASS_VERSION = '2.0.0'
 
-    def __init__(self, word_counts):
+    def __init__(self, word_counts: Counter, chunk: int):
         if not isinstance(word_counts, Counter):
             raise TypeError(f'Vocab must be a Counter, but is {type(word_counts)}')
 
         self.merged_word_counts = word_counts
         self.stats = [(1, len(self.merged_word_counts), self.merged_word_counts[placeholders['non_eng']])]
         self.n_files = 1
+        self.chunk = chunk
         self.id = self.__generate_id()
 
-    def __generate_id(self):
+    def __generate_id(self) -> str:
         return ''.join(str(time.time()).split('.'))
 
-    def renew_id(self):
+    def renew_id(self) -> None:
         self.id = self.__generate_id()
 
-    def set_path_to_dump(self, path):
+    def set_path_to_dump(self, path) -> None:
         self.path_to_dump = path
 
-    def add_vocab(self, partial_vocab):
+    def add_vocab(self, partial_vocab) -> None:
         if not isinstance(partial_vocab, PartialVocab):
             raise TypeError(f'Vocab must be a PartialVocab, but is {type(partial_vocab)}')
 
@@ -68,7 +69,7 @@ class PartialVocab(object):
         new_stats_entry = (self.n_files, cur_vocab_size, self.merged_word_counts[placeholders['non_eng']])
         self.stats.extend(partial_vocab.stats + [new_stats_entry])
 
-    def write_stats(self, path_to_stats_file):
+    def write_stats(self, path_to_stats_file: str) -> None:
         stats = self.__generate_stats()
         with open(path_to_stats_file, 'w') as f:
             vocabsize = int(stats[-1][1][0])
@@ -76,11 +77,11 @@ class PartialVocab(object):
             for percent, (v, n) in stats:
                 f.write(f"{percent} {v} {n}\n")
 
-    def write_vocab(self, path_to_vocab_file):
+    def write_vocab(self, path_to_vocab_file: str) -> None:
         sorted_vocab = sorted(self.merged_word_counts.items(), key=lambda x: x[1], reverse=True)
         io.dump_dict_into_2_columns(sorted_vocab, path_to_vocab_file)
 
-    def write_field(self, path_to_field_file):
+    def write_field(self, path_to_field_file: str) -> None:
         text_field = Field(tokenize=lambda s: s.split(" "), pad_token=placeholders['pad_token'])
         text_field.build_vocab([[i] for i in self.merged_word_counts.keys()])
         pickle.dump(text_field, open(path_to_field_file, 'wb'))
@@ -94,54 +95,80 @@ class PartialVocab(object):
 
 
 class VocabMerger(multiprocessing.Process):
-    def __init__(self, id, tasks, path_to_dump, process_counter, final_queue):
+    def __init__(self, id: int, tasks: List[PartialVocab], path_to_dump: str, process_counter: AtomicInteger):
         multiprocessing.Process.__init__(self)
         self.id = id
-        self.tasks = tasks
+        self.tasks, chunk_sizes = VocabMerger.__mapify_tasks(tasks)
         self.path_to_dump = path_to_dump
         self.process_counter = process_counter
-        self.final_queue = final_queue
-
-    def __take_from_queue(self):
-        elm = self.tasks.get(True, SECONDS_TO_BLOCK_FOR)
-        size = self.tasks.qsize()
-        if size & (size - 1) == 0:
-            logger.debug(f"[{self.id}] Tasks left in the queue: {size}")
-        return elm
+        self.chunk_queue, size = VocabMerger.__create_chunk_queue(chunk_sizes)
+        self.total_merges_to_be_done = size
+        logger.info(f'Merges need to be done: {self.total_merges_to_be_done}')
 
     def run(self):
         while True:
             try:
-                first = self.__take_from_queue()
+                chunk_assigned = self.chunk_queue.get(block=False)
             except queue.Empty:
-                logger.debug(
-                    f"[{self.id}] No vocabs available for merge. Terminating process..., mergers left: {self.process_counter.dec()}")
-                break
-
-            try:
-                second = self.__take_from_queue()
-            except queue.Empty:
-                if self.process_counter.dec() > 0:
+                if not self.process_counter.compare_and_dec(1):
                     logger.debug(
                         f"[{self.id}] No vocabs available for merge. Terminating process..., mergers left: {self.process_counter.value}")
-                    self.tasks.put(first)
+                    break
                 else:
-                    self.final_queue.put(first)
-                    logger.info(f"[{self.id}] Only 1 (final) vocab left. Merging done")
-                break
+                    logger.info("Leaving 1 process to finish the merges")
+                    self.__finish_merges()
+                    break
 
-            first_id = first.id
-            second_id = second.id
+            logger.debug("Doing merge ...")
+            first = self.tasks[chunk_assigned].get(block=True)
+            second = self.tasks[chunk_assigned].get(block=True)
 
-            first.add_vocab(second)
+            self.__merge(first, second, self.tasks[chunk_assigned])
 
-            first.renew_id()
-            path_to_new_file = os.path.join(self.path_to_dump, f'{first_id}_{second_id}_{first.id}.{PARTVOCAB_EXT}')
-            pickle.dump(first, open(path_to_new_file, 'wb'))
-            finish_file_dumping(path_to_new_file)
+    @staticmethod
+    def __create_chunk_queue(chunk_sizes: Dict[int, int]) -> Tuple[multiprocessing.Queue, int]:
+        chunk_queue_list = [chunk for chunk, chunk_size in chunk_sizes.items() for _ in range(chunk_size - 1)]
+        return list_to_queue(chunk_queue_list), len(chunk_queue_list)
 
-            self.tasks.put(first, True, SECONDS_TO_BLOCK_FOR)
-            logger.debug(f"[{self.id}] Tasks left in the queue: {self.tasks.qsize()}")
+    @staticmethod
+    def __mapify_tasks(tasks: List[PartialVocab]) -> Tuple[Dict[int, multiprocessing.Queue], Dict[int, int]]:
+        task_lists_in_chunks = defaultdict(list)
+        for task in tasks:
+            task_lists_in_chunks[task.chunk].append(task)
+        return {chunk: list_to_queue(task_list_in_chunk) for chunk, task_list_in_chunk in
+                task_lists_in_chunks.items()}, {k: len(v) for k, v in task_lists_in_chunks.items()}
+
+    def __finish_merges(self):
+        logger.info("Finishing merges")
+        list_from_chunks_list = [queue.get_nowait() for queue in self.tasks.values()]
+        print(len(list_from_chunks_list))
+        queue_from_chunks = list_to_queue(list_from_chunks_list)
+        merges_left = len(list_from_chunks_list) - 1
+        for i in range(merges_left):
+            logger.debug(f'{i+1} / {merges_left}')
+            first = queue_from_chunks.get(block=True)
+            second = queue_from_chunks.get(block=True)
+            self.__merge(first, second, queue_from_chunks)
+        final_vocab = queue_from_chunks.get(block=True)
+
+        final_vocab.write_stats(os.path.join(full_metadata_dir, 'vocabsize'))
+        final_vocab.write_vocab(os.path.join(full_metadata_dir, 'vocab'))
+        final_vocab.write_field(os.path.join(full_metadata_dir, TEXT_FIELD_FILE))
+        shutil.rmtree(self.path_to_dump)
+
+    def __merge(self, first: PartialVocab, second: PartialVocab, queue_to_return_to: multiprocessing.Queue):
+        first_id = first.id
+        second_id = second.id
+
+        first.add_vocab(second)
+
+        first.renew_id()
+        path_to_new_file = os.path.join(self.path_to_dump, f'{first_id}_{second_id}_{first.id}.{PARTVOCAB_EXT}')
+        pickle.dump(first, open(path_to_new_file, 'wb'))
+        finish_file_dumping(path_to_new_file)
+
+        queue_to_return_to.put_nowait(first)
+        logger.debug("Put to queue")
 
 
 # TODO remove this ugliness!!
@@ -187,11 +214,20 @@ def finish_file_dumping(path_to_new_file):
     return new_file, (first_file, second_file)
 
 
-def list_to_queue(lst):
+def list_to_queue(lst: List) -> multiprocessing.Queue:
     queue = multiprocessing.Queue()
     for elm in lst:
         queue.put_nowait(elm)
     return queue
+
+
+def chunk_generator(total: int, n_chunks: int):
+    min_elms_in_chunk = total // n_chunks
+    for i in range(min_elms_in_chunk):
+        for j in range(n_chunks):
+            yield j
+    for i in range(total % n_chunks):
+        yield i
 
 
 def create_initial_partial_vocabs(all_files):
@@ -200,9 +236,10 @@ def create_initial_partial_vocabs(all_files):
     current_file = 0
     start_time = time.time()
     with Pool() as pool:
-        it = pool.imap_unordered(get_vocab, all_files)
-        for vocab in it:
-            partial_vocab = PartialVocab(vocab)
+        words_from_one_file_freqs_it = pool.imap_unordered(get_vocab, all_files)
+        for words_from_one_file_freqs, chunk in zip(words_from_one_file_freqs_it,
+                                                    chunk_generator(len(all_files), N_CHUNKS)):
+            partial_vocab = PartialVocab(words_from_one_file_freqs, chunk)
             partial_vocabs_queue.append(partial_vocab)
             current_file += 1
             logger.info(f"To partial vocabs added  {current_file} out of {files_total}")
@@ -257,27 +294,13 @@ def run(full_src_dir, full_metadata_dir):
             pickle.dump(partial_vocab, open(os.path.join(path_to_dump, f'{partial_vocab.id}.{PARTVOCAB_EXT}'), 'wb'))
         open(dumps_valid_file, 'a').close()
 
-    task_queue = list_to_queue(task_list)
-
     num_mergers = multiprocessing.cpu_count()
-    logger.info(f"Using {num_mergers} mergers, size of task queue: {len(task_list)}")
-    queue_elm_counter.value = len(task_list)
-    final_queue = multiprocessing.Queue()
+    logger.info(f"Using {num_mergers} mergers, number of partial vocabs: {len(task_list)}")
+    queue_size.value = len(task_list)
     merger_counter = AtomicInteger(num_mergers)
-    mergers = [VocabMerger(i + 1, task_queue, path_to_dump, merger_counter, final_queue) for i in range(num_mergers)]
+    mergers = [VocabMerger(i + 1, task_list, path_to_dump, merger_counter) for i in range(num_mergers)]
     for merger in mergers:
         merger.start()
-    final_vocab = final_queue.get(block=True)
-    logger.info("Got final vocab")
-    for merger in mergers:
-        logger.debug(f"Waiting for merger [{merger.id}] to join")
-        merger.join()
-
-    final_vocab.write_stats(os.path.join(full_metadata_dir, 'vocabsize'))
-    final_vocab.write_vocab(os.path.join(full_metadata_dir, 'vocab'))
-    final_vocab.write_field(os.path.join(full_metadata_dir, TEXT_FIELD_FILE))
-    shutil.rmtree(path_to_dump)
-
 
 if __name__ == '__main__':
     from logrec.properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_VOCABSIZE_ARGS

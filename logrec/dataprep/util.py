@@ -70,6 +70,13 @@ class AtomicInteger(object):
             self._queue.get()
             return self._queue.qsize()
 
+    def compare_and_dec(self, val):
+        with self._lock:
+            result = self._queue.qsize() == val
+            self._queue.get()
+            return result
+
+
     @property
     def value(self):
         with self._lock:
