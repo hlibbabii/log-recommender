@@ -6,7 +6,6 @@ from multiprocessing import Queue
 from typing import List, Tuple, Dict
 
 import dill as pickle
-import queue
 import shutil
 import time
 from collections import Counter, defaultdict
@@ -29,7 +28,7 @@ PARTVOCAB_EXT = 'partvocab'
 VOCABSIZE_FILENAME = 'vocabsize'
 VOCAB_FILENAME = 'vocab'
 
-N_CHUNKS = 20
+N_CHUNKS = 1
 
 
 class PartialVocab(object):
@@ -186,7 +185,7 @@ def avg_ssum(nested_list):
     return (sm[0] / float(len(nested_list)), sm[1] / float(len(nested_list)))
 
 
-def get_vocab(path_to_file):
+def get_vocab(path_to_file: str) -> Counter:
     vocab = Counter()
     with open(path_to_file, 'r') as f:
         for line in f:
@@ -195,6 +194,14 @@ def get_vocab(path_to_file):
             split = line.split(' ')
             vocab.update(split)
     return vocab
+
+
+def create_and_dump_partial_vocab(param):
+    path_to_file, path_to_dump, chunk = param
+    vocab = get_vocab(path_to_file)
+    partial_vocab = PartialVocab(vocab, chunk)
+    pickle.dump(partial_vocab, open(os.path.join(path_to_dump, f'{partial_vocab.id}.{PARTVOCAB_EXT}'), 'wb'))
+    return partial_vocab
 
 
 def finish_file_dumping(path_to_new_file):
@@ -225,7 +232,7 @@ def list_to_queue(lst: List) -> Queue:
     return queue
 
 
-def chunk_generator(total: int, n_chunks: int):
+def create_chunk_generator(total: int, n_chunks: int):
     min_elms_in_chunk = total // n_chunks
     for i in range(min_elms_in_chunk):
         for j in range(n_chunks):
@@ -238,19 +245,14 @@ def create_initial_partial_vocabs(all_files, path_to_dump: str):
     partial_vocabs_queue = []
     files_total = len(all_files)
     current_file = 0
-    start_time = time.time()
+    chunk_generator = create_chunk_generator(len(all_files), N_CHUNKS)
+    params = [(file, path_to_dump, chunk) for file, chunk in zip(all_files, chunk_generator)]
     with Pool() as pool:
-        words_from_one_file_freqs_it = pool.imap_unordered(get_vocab, all_files)
-        for words_from_one_file_freqs, chunk in zip(words_from_one_file_freqs_it,
-                                                    chunk_generator(len(all_files), N_CHUNKS)):
-            partial_vocab = PartialVocab(words_from_one_file_freqs, chunk)
+        partial_vocab_it = pool.imap_unordered(create_and_dump_partial_vocab, params)
+        for partial_vocab in partial_vocab_it:
             partial_vocabs_queue.append(partial_vocab)
             current_file += 1
             logger.info(f"To partial vocabs added  {current_file} out of {files_total}")
-            time_elapsed = time.time() - start_time
-            logger.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
-                        f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
-            pickle.dump(partial_vocab, open(os.path.join(path_to_dump, f'{partial_vocab.id}.{PARTVOCAB_EXT}'), 'wb'))
     return partial_vocabs_queue
 
 
