@@ -29,7 +29,7 @@ PARTVOCAB_EXT = 'partvocab'
 VOCABSIZE_FILENAME = 'vocabsize'
 VOCAB_FILENAME = 'vocab'
 
-N_CHUNKS = 2
+N_CHUNKS = 20
 
 
 class PartialVocab(object):
