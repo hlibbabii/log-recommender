@@ -5,19 +5,18 @@ from typing import List
 import torch
 from torchtext.data import Field
 
-from fastai.core import to_np, V, Variable, np, no_grad_context, VV
+from fastai.core import to_np, V, Variable, np, no_grad_context, VV, to_gpu
 from logrec.config.model import Cache
 from logrec.dataprep.full_word_iterator import FullWordIterator
 
 logger = logging.getLogger(__name__)
 
 
-def one_hot(idx, size, cuda=False):
+def one_hot(idx, size):
     a = np.zeros((1, size), np.float32)
     a[0][idx] = 1
     v = Variable(torch.from_numpy(a))
-    if cuda: v = v.cuda()
-    return v
+    return to_gpu(v)
 
 
 def cache_calc(softmax_output_flat: Variable, start_idx: int, next_word_history: Variable, pointer_history: Variable,
