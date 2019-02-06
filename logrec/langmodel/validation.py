@@ -81,7 +81,7 @@ def custom_validate(cache: Cache, split_repr: int, text_field: Field, stepper, d
     bptts, res = [], []
     avg_batch_losses = []
     avg_batch_accuracies = []
-    pred_probs, pred_vals = [], []
+    actual_probs, pred_vals = [], []
     ps = []
     seqs_in_batch_list = []
     stepper.reset(False)
@@ -138,26 +138,28 @@ def custom_validate(cache: Cache, split_repr: int, text_field: Field, stepper, d
             predictions = predictions.data
             losses_in_batch = []
             accuracies_in_batch = []
-            this_batch_pred_probs, this_batch_pred_vals = torch.max(predictions, dim=1)
-            pred_probs.extend(this_batch_pred_probs)
+            this_batch_pred_vals = torch.max(predictions, dim=1)[1]
+            this_batch_actual_probs = torch.gather(predictions, 1, targets.view(-1, 1))
+            actual_probs.extend(this_batch_actual_probs)
             pred_vals.extend(this_batch_pred_vals)
             target_tokens = [text_field.vocab.itos[target] for target in targets]
             full_word_iterator.add_data(target_tokens)
             for full_word_targets, full_word_index_range in full_word_iterator:
-                full_word_preds = pred_probs[full_word_index_range[0]: full_word_index_range[1]]
+                full_word_actual_probs = actual_probs[full_word_index_range[0]: full_word_index_range[1]]
                 full_word_pred_values = pred_vals[full_word_index_range[0]: full_word_index_range[1]]
 
-                full_word_loss = calc_full_word_loss(full_word_preds)
+                full_word_loss = calc_full_word_loss(full_word_actual_probs)
                 full_word_targets_ints = [text_field.vocab.stoi[target] for target in full_word_targets]
                 full_word_accuracy = calc_full_word_accuracy(full_word_pred_values, full_word_targets_ints)
                 seqs_in_batch += 1
                 losses_in_batch.append(full_word_loss)
                 accuracies_in_batch.append(full_word_accuracy)
 
-                log(full_word_preds, full_word_pred_values, full_word_targets, full_word_accuracy, full_word_loss,
+                log(full_word_actual_probs, full_word_pred_values, full_word_targets, full_word_accuracy,
+                    full_word_loss,
                     text_field)
             chunks_left = full_word_iterator.get_chunks_left()
-            pred_probs = pred_probs[-chunks_left:] if chunks_left > 0 else []
+            actual_probs = actual_probs[-chunks_left:] if chunks_left > 0 else []
             pred_vals = pred_vals[-chunks_left:] if chunks_left > 0 else []
 
             # hidden = repackage_hidden(hidden)
