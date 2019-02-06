@@ -7,7 +7,7 @@ from torchtext.data import Field
 
 from fastai.core import to_np, V, Variable, np, no_grad_context, VV, to_gpu
 from logrec.config.model import Cache
-from logrec.dataprep.full_word_iterator import FullWordIterator
+from logrec.dataprep.full_word_iterator import SubwordsIterator
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +89,7 @@ def custom_validate(cache: Cache, split_repr: int, text_field: Field, stepper, d
         next_word_history = None
         pointer_history = None
         if split_repr == 1:
-            full_word_iterator = FullWordIterator()
+            full_word_iterator = SubwordsIterator()
         else:
             raise NotImplementedError("Iterator for split repr 0 is not yet implemented!")
         n_iter = len(dl)
@@ -128,6 +128,8 @@ def custom_validate(cache: Cache, split_repr: int, text_field: Field, stepper, d
                                          rnn_out=rnn_out,
                                          targets=targets,
                                          cache=cache)
+                next_word_history = next_word_history[-cache.window:]
+                pointer_history = pointer_history[-cache.window:]
             else:
                 predictions = softmax_output_flat
 
@@ -158,8 +160,6 @@ def custom_validate(cache: Cache, split_repr: int, text_field: Field, stepper, d
             pred_vals = pred_vals[-chunks_left:]
 
             # hidden = repackage_hidden(hidden)
-            next_word_history = next_word_history[-cache.window:]
-            pointer_history = pointer_history[-cache.window:]
 
             if seqs_in_batch > 0:
                 avg_batch_loss = sum(losses_in_batch) / seqs_in_batch
