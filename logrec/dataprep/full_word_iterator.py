@@ -100,3 +100,40 @@ class FullWordIterator(object):
             self.current_index = 0
             self.exhausted = True
             raise StopIteration()
+
+
+class SubwordsIterator(object):
+    def __init__(self, targets: Optional[List[str]] = None):
+        if targets is None:
+            self.exhausted = True
+            self.targets = []
+        else:
+            self.exhausted = False
+            self.targets = targets
+        self.current_index = 0
+
+    def add_data(self, targets: List[str]) -> None:
+        if not self.exhausted:
+            raise ValueError('Adding data is possible only when iterator is exhausted')
+
+        self.targets = targets
+        self.exhausted = False
+
+    def get_chunks_left(self) -> int:
+        if not self.exhausted:
+            raise ValueError('Getting left chunks is possible only when iterator is exhausted')
+
+        return 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> Tuple[List[str], Tuple[int, int]]:
+        if self.current_index >= len(self.targets):
+            self.current_index = 0
+            self.exhausted = True
+            raise StopIteration()
+
+        target = self.targets[self.current_index]
+        self.current_index += 1
+        return [target], (self.current_index, self.current_index + 1)
