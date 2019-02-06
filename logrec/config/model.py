@@ -60,6 +60,12 @@ class Arch(object):
         self.drop = drop
 
 
+class Cache(object):
+    def __init__(self, theta: float, lambdah: float, window: int):
+        self.theta = theta
+        self.lambdah = lambdah
+        self.window = window
+
 ############   LM LR specific    ##########################
 
 
@@ -114,14 +120,16 @@ class LMConfig(object):
     def __init__(self, base_model: Optional[str], data: Data, arch: Arch,
                  training: LMTraining,
                  metrics: List[str],
-                 use_cache: bool,
+                 cache: Optional[Cache],
+                 use_subword_aware_metrics: bool,
                  testing: LMTesting):
         self.base_model = base_model
         self.data = data
         self.arch = arch
         self.training = training
         self.metrics = metrics
-        self.use_cache = use_cache
+        self.cache = cache
+        self.use_subword_aware_metrics = use_subword_aware_metrics
         self.testing = testing
 
     @property

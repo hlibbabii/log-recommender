@@ -16,10 +16,9 @@ from logrec.infrastructure import config_manager
 from logrec.infrastructure.fractions_manager import create_df_gen
 from logrec.infrastructure.fs import FS, BEST_MODEL_NAME, BEST_LOSS_FILENAME, BEST_ACC_FILENAME, BEST_EPOCH_FILENAME, \
     ENCODER_NAME
-from logrec.features.cache import validate_with_cache
-from logrec.langmodel.fullwordfinder import get_subword, get_curr_seq_new, get_curr_seq
+from logrec.langmodel.validation import custom_validate
 from logrec.misc import attach_dataset_aware_handlers_to_loggers
-from logrec.config.model import Data, Arch, LMTraining, LMTesting, LMLRConfig, LMConfig
+from logrec.config.model import Data, Arch, LMTraining, LMTesting, LMLRConfig, LMConfig, Cache
 from logrec.util import gpu
 from logrec.util.gpu import print_gpu_info, get_current_device
 from logrec.util.util import get_params_module
@@ -136,7 +135,15 @@ def find_and_plot_lr(rnn_learner: RNN_Learner, fs: FS):
     logger.info(f"Plot is saved to {fs.path_to_lr_plot}")
 
 
-def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LMTraining, metric_list: List[str]):
+def get_validation_function(cache: Cache, use_subword_aware_metrics, split_repr: int, text_field: Field):
+    if not cache and not use_subword_aware_metrics:
+        return validate
+
+    return partial(custom_validate, cache, split_repr, text_field)
+
+
+def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LMTraining, metric_list: List[str],
+                         cache: Cache, use_subword_aware_metrics: bool):
     split_repr = PrepParamsParser.from_encoded_string(fs.repr)[PreprocessingParam.NO_SEP]
     only_validation = False
     n = training.cycle.n
@@ -146,7 +153,6 @@ def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LMTraining,
         only_validation = True
         n = 1
 
-    get_full_word_func = get_curr_seq if split_repr == 0 else get_curr_seq_new
     training_start_time = time()
     training_log_file = os.path.join(fs.path_to_model, 'training.log')
     logger.info(f"Starting training, check {training_log_file} for training progress")
@@ -160,19 +166,24 @@ def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LMTraining,
                                        best_epoch_path=BEST_EPOCH_FILENAME,
                                        enc_path=ENCODER_NAME))
 
+    validation_function = get_validation_function(cache, use_subword_aware_metrics, split_repr, rnn_learner.text_field)
     vals, ep_vals = rnn_learner.fit(lrs=training.lr, n_cycle=n, wds=training.wds,
                                     cycle_len=training.cycle.len, cycle_mult=training.cycle.mult,
                                     metrics=list(map(lambda x: getattr(metrics, x), metric_list)),
                                     get_ep_vals=True,
                                     file=open(training_log_file, 'w'),
                                     callbacks=callbacks,
-                                    valid_func=validate, only_validation=only_validation
+                                    valid_func=validation_function, only_validation=only_validation
                                     )
     training_time_mins = int(time() - training_start_time) // 60
     with open(os.path.join(fs.path_to_model, 'results.out'), 'w') as f:
         f.write(str(training_time_mins) + "\n")
         for _, vals in ep_vals.items():
             f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
+
+
+def use_minibatches_for_validation(cache: Cache, subword_aware_metrics: bool):
+    return not cache and not subword_aware_metrics
 
 
 def run_on_device(config: Union[LMLRConfig, LMConfig],
@@ -184,6 +195,9 @@ def run_on_device(config: Union[LMLRConfig, LMConfig],
 
     print_gpu_info()
 
+    if not use_minibatches_for_validation(config.cache, config.use_subword_aware_metrics):
+        logger.info("Not using minibatches for validation. Setting arch.validation_bs to 1.")
+        config.arch.validation_bs = 1
     learner, model_trained = get_best_available_model(fs, config.data, config.arch)
 
     fs.save_vocab_data(learner.text_field, config.data.percent, config.data.start_from)
@@ -201,7 +215,8 @@ def run_on_device(config: Union[LMLRConfig, LMConfig],
     if find_lr:
         find_and_plot_lr(learner, fs)
     else:
-        train_and_save_model(learner, fs, config.training, config.metrics)
+        train_and_save_model(learner, fs, config.training, config.metrics, config.cache,
+                             config.use_subword_aware_metrics)
         model_loaded = fs.load_best(learner)
         if not model_loaded:
             raise AssertionError("The best model should have been trained and saved!")
