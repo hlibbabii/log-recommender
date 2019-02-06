@@ -144,7 +144,8 @@ def custom_validate(cache: Cache, split_repr: int, text_field: Field, stepper, d
                 full_word_pred_values = pred_vals[full_word_index_range[0]: full_word_index_range[1]]
 
                 full_word_loss = calc_full_word_loss(full_word_preds)
-                full_word_accuracy = calc_full_word_accuracy(full_word_pred_values, full_word_targets)
+                full_word_targets_ints = [text_field.vocab.stoi[target] for target in full_word_targets]
+                full_word_accuracy = calc_full_word_accuracy(full_word_pred_values, full_word_targets_ints)
                 seqs_in_batch += 1
                 losses_in_batch.append(full_word_loss)
                 accuracies_in_batch.append(full_word_accuracy)
