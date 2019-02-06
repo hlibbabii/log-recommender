@@ -157,8 +157,8 @@ def custom_validate(cache: Cache, split_repr: int, text_field: Field, stepper, d
                 log(full_word_preds, full_word_pred_values, full_word_targets, full_word_accuracy, full_word_loss,
                     text_field)
             chunks_left = full_word_iterator.get_chunks_left()
-            pred_probs = pred_probs[-chunks_left:]
-            pred_vals = pred_vals[-chunks_left:]
+            pred_probs = pred_probs[-chunks_left:] if chunks_left > 0 else []
+            pred_vals = pred_vals[-chunks_left:] if chunks_left > 0 else []
 
             # hidden = repackage_hidden(hidden)
 

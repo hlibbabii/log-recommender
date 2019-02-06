@@ -135,5 +135,6 @@ class SubwordsIterator(object):
             raise StopIteration()
 
         target = self.targets[self.current_index]
+        ind = self.current_index
         self.current_index += 1
-        return [target], (self.current_index, self.current_index + 1)
+        return [target], (ind, ind + 1)
