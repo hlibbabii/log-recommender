@@ -93,7 +93,9 @@ def custom_validate(cache: Cache, split_repr: int, text_field: Field, stepper, d
             full_word_iterator = FullWordIterator()
         else:
             raise NotImplementedError("Iterator for split repr 0 is not yet implemented!")
-        for (*x, targets) in iter(dl):
+        n_iter = len(dl)
+        for i, (*x, targets) in enumerate(iter(dl)):
+            logger.debug(f'Validation: {i}/{n_iter}')
             # x - [Variable(x1,x2, ... xn)]
             # y - Variable(x2...,xn, xn+1)
             batch_size = x[0].size(1)
