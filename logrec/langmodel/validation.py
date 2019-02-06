@@ -108,19 +108,20 @@ def custom_validate(cache: Cache, split_repr: int, text_field: Field, stepper, d
             ntokens = preds.size(1)
             rnn_out = raw_outputs[-1].squeeze(1)  # from last layer
             output_flat = preds.view(-1, ntokens)
-            # Fill pointer history
-            start_idx = len(next_word_history) if next_word_history is not None else 0
-            next_word_history = torch.cat(
-                [one_hot(t.data[0], ntokens) for t in targets]) if next_word_history is None else torch.cat(
-                [next_word_history, torch.cat([one_hot(t.data[0], ntokens) for t in targets])])
-            # print(next_word_history)
-            pointer_history = Variable(rnn_out.data) if pointer_history is None else torch.cat(
-                [pointer_history, Variable(rnn_out.data)], dim=0)
 
             seqs_in_batch = 0
             softmax_output_flat = torch.nn.functional.softmax(output_flat)
             bptts.append(softmax_output_flat.size(0))
             if cache:
+                # Fill pointer history
+                start_idx = len(next_word_history) if next_word_history is not None else 0
+                next_word_history = torch.cat(
+                    [one_hot(t.data[0], ntokens) for t in targets]) if next_word_history is None else torch.cat(
+                    [next_word_history, torch.cat([one_hot(t.data[0], ntokens) for t in targets])])
+                # print(next_word_history)
+                pointer_history = Variable(rnn_out.data) if pointer_history is None else torch.cat(
+                    [pointer_history, Variable(rnn_out.data)], dim=0)
+
                 predictions = cache_calc(softmax_output_flat=softmax_output_flat,
                                          start_idx=start_idx,
                                          next_word_history=next_word_history,
