@@ -7,7 +7,7 @@ from torchtext.data import Field
 
 from fastai.core import to_np, V, Variable, np, no_grad_context, VV, to_gpu
 from logrec.config.model import Cache
-from logrec.dataprep.full_word_iterator import SubwordsIterator
+from logrec.dataprep.full_word_iterator import FullWordIterator
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +89,7 @@ def custom_validate(cache: Cache, split_repr: int, text_field: Field, stepper, d
         next_word_history = None
         pointer_history = None
         if split_repr == 1:
-            full_word_iterator = SubwordsIterator()
+            full_word_iterator = FullWordIterator()
         else:
             raise NotImplementedError("Iterator for split repr 0 is not yet implemented!")
         n_iter = len(dl)
@@ -154,10 +154,9 @@ def custom_validate(cache: Cache, split_repr: int, text_field: Field, stepper, d
                 seqs_in_batch += 1
                 losses_in_batch.append(full_word_loss)
                 accuracies_in_batch.append(full_word_accuracy)
-
-                log(full_word_actual_probs, full_word_pred_values, full_word_targets, full_word_accuracy,
-                    full_word_loss,
-                    text_field)
+                if seqs_in_batch == 1:
+                    log(full_word_actual_probs, full_word_pred_values, full_word_targets, full_word_accuracy,
+                        full_word_loss, text_field)
             chunks_left = full_word_iterator.get_chunks_left()
             actual_probs = actual_probs[-chunks_left:] if chunks_left > 0 else []
             pred_vals = pred_vals[-chunks_left:] if chunks_left > 0 else []
