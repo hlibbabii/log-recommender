@@ -60,4 +60,5 @@ def uploadToGoogle(filename):
     files.create(body=file_metadata, media_body=media).execute()
 
 
-uploadToGoogle("/home/hlib/t.zip")
+if __name__ == '__main__':
+    uploadToGoogle("/home/hlib/t.zip")
