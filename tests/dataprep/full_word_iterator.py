@@ -2,8 +2,8 @@ import unittest
 
 from torchtext.data import Field
 
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
 from logrec.dataprep.full_word_iterator import FullWordIterator
+from logrec.dataprep.model.placeholders import placeholders
 
 text_field = Field()
 text_field.build_vocab([[

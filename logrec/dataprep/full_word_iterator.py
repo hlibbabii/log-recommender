@@ -1,7 +1,7 @@
 import logging
 from typing import List, Optional, Tuple
 
-from logrec.dataprep.preprocessors.model.placeholders import placeholders
+from logrec.dataprep.model.placeholders import placeholders
 
 logger = logging.getLogger(__name__)
 subword_separators_boundaries = [
