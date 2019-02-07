@@ -33,8 +33,8 @@ python logrec/dataprep/vocabsize.py test1 109111
 show_test_dir_contents
 
 echo "Displaying vocab sizes"
-wc -l "$PROJECT_ROOT/nn-data/test/test1/metadata/10111/vocab"
-wc -l "$PROJECT_ROOT/nn-data/test/test1/metadata/10911/vocab"
+wc -l "$PROJECT_ROOT/nn-data/test/test1/metadata/101111/vocab"
+wc -l "$PROJECT_ROOT/nn-data/test/test1/metadata/109111/vocab"
 
 python logrec/classifier/dataset_generator.py test1 109111 location
 show_test_dir_contents
