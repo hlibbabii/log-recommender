@@ -1,6 +1,8 @@
 # log-recommender
 
 [![Build Status](https://travis-ci.org/hlibbabii/log-recommender.svg?branch=master)](https://travis-ci.org/hlibbabii/log-recommender)
+[![Maintainability](https://api.codeclimate.com/v1/badges/09b85278219863d435c7/maintainability)](https://codeclimate.com/github/hlibbabii/log-recommender/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/09b85278219863d435c7/test_coverage)](https://codeclimate.com/github/hlibbabii/log-recommender/test_coverage)
 
 This is a project for a master thesis with a title "Supporting logging activities by mining software repositories"
 
@@ -44,7 +46,7 @@ The pluggin supports developers by helping with log decisions.
 
 [IntelliJ plugin building](https://github.com/hlibbabii/log-recommender-intellij-plugin) in more details.
 
-**Supporting activities:**
+# Supporting activities
 - [log-recommender-cli](https://github.com/hlibbabii/log-recommender-cli): a command line tool for managing datasets 
 and their parsing, preprocessing etc.
 
