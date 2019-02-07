@@ -58,6 +58,16 @@ def calc_full_word_accuracy(subword_predictions: List[int], subword_targets: Lis
     return 1.0
 
 
+def calc_full_word_accuracy2(subword_predictions: List[int], subword_targets: List[int]) -> float:
+    if len(subword_predictions) != len(subword_targets):
+        raise ValueError(f'Lists should be of the same length: {subword_predictions}, {subword_targets}')
+    sum = 0.0
+    for pred, target in zip(subword_predictions, subword_targets):
+        sum += (1.0 if pred == target else 0.0)
+
+    return sum / len(subword_predictions)
+
+
 def calc_full_word_loss(subword_probabilities: List[float]) -> float:
     full_word_loss = 0
     for pp in subword_probabilities:
@@ -150,7 +160,7 @@ def custom_validate(cache: Cache, split_repr: int, text_field: Field, stepper, d
 
                 full_word_loss = calc_full_word_loss(full_word_actual_probs)
                 full_word_targets_ints = [text_field.vocab.stoi[target] for target in full_word_targets]
-                full_word_accuracy = calc_full_word_accuracy(full_word_pred_values, full_word_targets_ints)
+                full_word_accuracy = calc_full_word_accuracy2(full_word_pred_values, full_word_targets_ints)
                 seqs_in_batch += 1
                 losses_in_batch.append(full_word_loss)
                 accuracies_in_batch.append(full_word_accuracy)

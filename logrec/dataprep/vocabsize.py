@@ -104,6 +104,9 @@ class VocabMerger(multiprocessing.Process):
         self.total_merges = chunk_queue_elm_counter.value
 
     def run(self):
+        import time
+        logger.info('Sleeping 5 seconds before all the merges have started...')
+        time.sleep(5)
         while True:
             chunk_assigned = self.chunk_queue.get(block=True, timeout=BLOCKING_TIMEOUT_SECONDS)
             if chunk_assigned == -1:
@@ -327,6 +330,11 @@ def run(full_src_dir, full_metadata_dir):
                i in range(num_mergers)]
     for merger in mergers:
         merger.start()
+    
+
+    for i, merger in enumerate(mergers):
+        merger.join()
+        logger.info(f'Merger {merger.id} has joined ({i+1}/{len(mergers)})')
 
 
 if __name__ == '__main__':
@@ -346,3 +354,4 @@ if __name__ == '__main__':
 
     run(full_src_dir, full_metadata_dir)
     logger.info("Terminating parent process ... ")
+    exit(0)
