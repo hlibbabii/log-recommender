@@ -25,7 +25,7 @@ class PrepConfig(object):
     possible_param_values = {
         PrepParam.EN_ONLY: [0, 1],
         PrepParam.COM_STR: [0, 1, 2],
-        PrepParam.SPLIT: [0, 1, 2, 3, 4, 5, 6],
+        PrepParam.SPLIT: [0, 1, 2, 3, 4, 5, 6, 9],
         PrepParam.SPLIT_REPR: [0, 1],
         PrepParam.TABS_NEWLINES: [0, 1],
         PrepParam.MARK_LOGS: [0, 1]
