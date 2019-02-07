@@ -139,7 +139,7 @@ class VocabMerger(multiprocessing.Process):
 
     def __finish_merges(self):
         logger.info("===============     Finishing merges    ===============")
-        list_from_chunks = [queue.get_nowait() for queue in self.tasks.values()]
+        list_from_chunks = [queue.get(block=True, timeout=BLOCKING_TIMEOUT_SECONDS) for queue in self.tasks.values()]
 
         percents_in_one_chunk = 100 // len(list_from_chunks)
 
