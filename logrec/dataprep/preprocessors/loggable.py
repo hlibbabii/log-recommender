@@ -3,7 +3,7 @@ from typing import List
 
 from logrec.dataprep.model.logging import LoggableBlock
 from logrec.dataprep.model.word import FullWord
-from logrec.dataprep.prepparams import PrepParamsParser
+from logrec.dataprep.prepconfig import PrepConfig
 from logrec.dataprep.split.ngram import NgramSplitConfig
 from logrec.dataprep.to_repr import to_repr
 
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def to_repr_l(lst):
-    return to_repr(PrepParamsParser.from_arg_str('enonly=0,nocomstr=0,spl=0,nosep=1,nonewlinestabs=0'), lst,
+    return to_repr(PrepConfig.from_encoded_string('00010'), lst,
                    NgramSplitConfig())
 
 class State(object):

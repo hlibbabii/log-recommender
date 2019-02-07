@@ -9,7 +9,7 @@ from pathlib import Path
 
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.general import from_file
-from logrec.dataprep.prepparams import PreprocessingParam
+from logrec.dataprep.prepconfig import PrepParam
 from logrec.dataprep.preprocessors.preprocessor_list import pp_params
 from logrec.infrastructure.fs import FS
 from logrec.properties import DEFAULT_PARSE_PROJECTS_ARGS
@@ -79,9 +79,7 @@ def run(dataset):
 
     logger.info(f"Getting files from {fs.path_to_raw_dataset}")
     logger.info(f"Writing preprocessed files to {fs.path_to_parsed_dataset}")
-    preprocessing_types_dict = {k: None for k in PreprocessingParam}
-    logger.info(f"To get preprocessing represantation, "
-                f"resolve the following preprocessing params: {', '.join([pt.value for pt in PreprocessingParam])}")
+    preprocessing_types_dict = {k: None for k in PrepParam}
 
     fs.save_pp_params(pp_params)
     fs.save_preprocessing_types(preprocessing_types_dict)

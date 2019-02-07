@@ -10,7 +10,7 @@ from torchtext.data import Field
 from fastai.model import validate
 from logrec.config.patch import patch_config
 from logrec.dataprep.model.placeholders import placeholders
-from logrec.dataprep.prepparams import PrepParamsParser, PreprocessingParam
+from logrec.dataprep.prepconfig import PrepParam, PrepConfig
 from logrec.features.early_stop import EarlyStopping
 from logrec.infrastructure import config_manager
 from logrec.infrastructure.fractions_manager import create_df_gen
@@ -137,7 +137,7 @@ def find_and_plot_lr(rnn_learner: RNN_Learner, fs: FS):
 
 
 def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LMTraining, metric_list: List[str]):
-    split_repr = PrepParamsParser.from_encoded_string(fs.repr)[PreprocessingParam.NO_SEP]
+    split_repr = PrepConfig.from_encoded_string(fs.repr).get_param_value(PrepParam.NO_SEP)
     only_validation = False
     n = training.cycle.n
     if training.cycle.n == 0:

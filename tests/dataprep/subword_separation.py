@@ -9,7 +9,7 @@ from logrec.dataprep.model.noneng import NonEngSubWord, NonEngFullWord
 from logrec.dataprep.model.numeric import Number, DecimalPoint, E
 from logrec.dataprep.model.placeholders import placeholders
 from logrec.dataprep.model.word import FullWord, SubWord, Capitalization, WordStart
-from logrec.dataprep.prepparams import PreprocessingParam
+from logrec.dataprep.prepconfig import PrepConfig
 from logrec.dataprep.split.ngram import NgramSplitConfig, NgramSplittingType
 from logrec.dataprep.to_repr import to_repr
 
@@ -155,22 +155,6 @@ bpe_merges_cache = {
     "info": ["info"]
 }
 
-prep_params_separators = {
-    PreprocessingParam.EN_ONLY: 1,
-    PreprocessingParam.NO_COM_STR: 0,
-    PreprocessingParam.SPL: 4,
-    PreprocessingParam.NO_SEP: 0,
-    PreprocessingParam.NO_NEWLINES_TABS: 1,
-}
-
-prep_params_boundaries = {
-    PreprocessingParam.EN_ONLY: 1,
-    PreprocessingParam.NO_COM_STR: 0,
-    PreprocessingParam.SPL: 4,
-    PreprocessingParam.NO_SEP: 1,
-    PreprocessingParam.NO_NEWLINES_TABS: 1,
-}
-
 ngram_split_config = NgramSplitConfig(NgramSplittingType.BPE, merges_cache=bpe_merges_cache, merges={})
 
 
@@ -181,11 +165,11 @@ class SubwordSeparation(unittest.TestCase):
 
             self.assertEqual(output_tuple[0], parsed)
 
-            repred = to_repr(prep_params_separators, parsed, ngram_split_config)
+            repred = to_repr(PrepConfig.from_encoded_string('10401'), parsed, ngram_split_config)
 
             self.assertEqual(output_tuple[1], repred)
 
-            repred2 = to_repr(prep_params_boundaries, parsed, ngram_split_config)
+            repred2 = to_repr(PrepConfig.from_encoded_string('10411'), parsed, ngram_split_config)
 
             self.assertEqual(output_tuple[2], repred2)
 

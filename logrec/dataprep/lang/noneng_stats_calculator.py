@@ -10,31 +10,10 @@ from logrec.dataprep import parse_projects, path_to_non_eng_dicts, path_to_eng_d
 from logrec.dataprep.lang.dao import DAO
 from logrec.dataprep.lang.langchecker import LanguageChecker
 from logrec.dataprep.preprocessors.general import to_token_list
-from logrec.dataprep.prepparams import PreprocessingParam
+from logrec.dataprep.prepconfig import PrepConfig
 from logrec.dataprep.to_repr import to_repr
 
 logger = logging.getLogger(__name__)
-
-DEFAULT_NO_COM_NO_STR = {
-    PreprocessingParam.NO_COM_STR: 2,
-    PreprocessingParam.SPL: 2,
-    PreprocessingParam.NO_SEP: 0,
-    PreprocessingParam.NO_NEWLINES_TABS: 1,
-}
-
-DEFAULT_NO_COM = {
-    PreprocessingParam.NO_COM_STR: 1,
-    PreprocessingParam.SPL: 2,
-    PreprocessingParam.NO_SEP: 0,
-    PreprocessingParam.NO_NEWLINES_TABS: 1,
-}
-
-DEFAULT = {
-    PreprocessingParam.NO_COM_STR: 0,
-    PreprocessingParam.SPL: 2,
-    PreprocessingParam.NO_SEP: 0,
-    PreprocessingParam.NO_NEWLINES_TABS: 1,
-}
 
 
 def get_project_name(file):
@@ -57,11 +36,11 @@ def calc_stats(lang_checker, path_to_dir_with_preprocessed_projects, file):
             try:
                 token_list = pickle.load(f)
 
-                repr1 = to_token_list(to_repr(DEFAULT_NO_COM_NO_STR, token_list)).split()
+                repr1 = to_token_list(to_repr(PrepConfig.from_encoded_string('02201'), token_list)).split()
                 only_code_stats = lang_checker.calc_lang_stats(repr1)
-                repr2 = to_token_list(to_repr(DEFAULT_NO_COM, token_list)).split()
+                repr2 = to_token_list(to_repr(PrepConfig.from_encoded_string('01201'), token_list)).split()
                 code_str_stats = lang_checker.calc_lang_stats(repr2)
-                repr3 = to_token_list(to_repr(DEFAULT, token_list)).split()
+                repr3 = to_token_list(to_repr(PrepConfig.from_encoded_string('00201'), token_list)).split()
                 code_str_com_stats = lang_checker.calc_lang_stats(repr3, include_sample=True)
 
                 filename = fn.readline()[:-1]

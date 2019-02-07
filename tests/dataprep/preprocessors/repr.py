@@ -9,7 +9,7 @@ from logrec.dataprep.model.noneng import NonEng, NonEngFullWord, NonEngSubWord
 from logrec.dataprep.model.numeric import DecimalPoint, Number
 from logrec.dataprep.model.placeholders import placeholders
 from logrec.dataprep.model.word import FullWord, SubWord
-from logrec.dataprep.prepparams import PreprocessingParam
+from logrec.dataprep.prepconfig import PrepParam, PrepConfig
 from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplitConfig
 from logrec.dataprep.to_repr import to_repr
 
@@ -45,25 +45,25 @@ class TeprTest(unittest.TestCase):
 
     def test_both_enonly_and_nosplit(self):
         with self.assertRaises(ValueError):
-            prep_params = {
-                PreprocessingParam.EN_ONLY: 1,
-                PreprocessingParam.NO_COM_STR: 0,
-                PreprocessingParam.SPL: 0,
-                PreprocessingParam.NO_SEP: 0,
-                PreprocessingParam.NO_NEWLINES_TABS: 1,
-            }
-            to_repr(prep_params, [], NgramSplitConfig())
+            prep_config = PrepConfig({
+                PrepParam.EN_ONLY: 1,
+                PrepParam.COM_STR: 0,
+                PrepParam.SPLIT: 0,
+                PrepParam.SPLIT_REPR: 0,
+                PrepParam.TABS_NEWLINES: 1,
+            })
+            to_repr(prep_config, [], NgramSplitConfig())
 
     def test_to_repr_0(self):
-        prep_params = {
-            PreprocessingParam.EN_ONLY: 0,
-            PreprocessingParam.NO_COM_STR: 0,
-            PreprocessingParam.SPL: 0,
-            PreprocessingParam.NO_SEP: 0,
-            PreprocessingParam.NO_NEWLINES_TABS: 1,
-        }
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 0,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT: 0,
+            PrepParam.SPLIT_REPR: 0,
+            PrepParam.TABS_NEWLINES: 1,
+        })
 
-        actual = to_repr(prep_params, tokens, NgramSplitConfig())
+        actual = to_repr(prep_config, tokens, NgramSplitConfig())
 
         expected = [
             '1.1',
@@ -80,15 +80,15 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
 
     def test_to_repr_1(self):
-        prep_params = {
-            PreprocessingParam.EN_ONLY: 1,
-            PreprocessingParam.NO_COM_STR: 0,
-            PreprocessingParam.SPL: 1,
-            PreprocessingParam.NO_SEP: 0,
-            PreprocessingParam.NO_NEWLINES_TABS: 1,
-        }
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 1,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT: 1,
+            PrepParam.SPLIT_REPR: 0,
+            PrepParam.TABS_NEWLINES: 1,
+        })
 
-        actual = to_repr(prep_params, tokens, NgramSplitConfig())
+        actual = to_repr(prep_config, tokens, NgramSplitConfig())
 
         expected = [
             '1.1',
@@ -108,15 +108,15 @@ class TeprTest(unittest.TestCase):
     #     ############################################################################################
     #
     def test_to_repr_1_nosep(self):
-        prep_params = {
-            PreprocessingParam.EN_ONLY: 1,
-            PreprocessingParam.NO_COM_STR: 0,
-            PreprocessingParam.SPL: 1,
-            PreprocessingParam.NO_SEP: 1,
-            PreprocessingParam.NO_NEWLINES_TABS: 1,
-        }
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 1,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT: 1,
+            PrepParam.SPLIT_REPR: 1,
+            PrepParam.TABS_NEWLINES: 1,
+        })
 
-        actual = to_repr(prep_params, tokens, NgramSplitConfig())
+        actual = to_repr(prep_config, tokens, NgramSplitConfig())
 
         expected = [
             '1.1',
@@ -136,18 +136,18 @@ class TeprTest(unittest.TestCase):
     ########################k####################################################################
 
     def test_to_repr_2(self):
-        prep_params = {
-            PreprocessingParam.EN_ONLY: 1,
-            PreprocessingParam.NO_COM_STR: 0,
-            PreprocessingParam.SPL: 2,
-            PreprocessingParam.NO_SEP: 0,
-            PreprocessingParam.NO_NEWLINES_TABS: 1,
-        }
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 1,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT: 2,
+            PrepParam.SPLIT_REPR: 0,
+            PrepParam.TABS_NEWLINES: 1,
+        })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS,
                                                 sc_splittings={})
 
-        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+        actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
             '1',
@@ -170,17 +170,17 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
 
     def test_to_repr_2_nosep(self):
-        prep_params = {
-            PreprocessingParam.EN_ONLY: 1,
-            PreprocessingParam.NO_COM_STR: 0,
-            PreprocessingParam.SPL: 2,
-            PreprocessingParam.NO_SEP: 1,
-            PreprocessingParam.NO_NEWLINES_TABS: 1,
-        }
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 1,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT: 2,
+            PrepParam.SPLIT_REPR: 1,
+            PrepParam.TABS_NEWLINES: 1,
+        })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS)
 
-        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+        actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
             placeholders["camel_case_separator"],
@@ -204,13 +204,13 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
 
     def test_to_repr_with_enonlycontents(self):
-        prep_params = {
-            PreprocessingParam.EN_ONLY: 1,
-            PreprocessingParam.NO_COM_STR: 0,
-            PreprocessingParam.SPL: 3,
-            PreprocessingParam.NO_SEP: 0,
-            PreprocessingParam.NO_NEWLINES_TABS: 1,
-        }
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 1,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT: 3,
+            PrepParam.SPLIT_REPR: 0,
+            PrepParam.TABS_NEWLINES: 1,
+        })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
                                                 sc_splittings={})
@@ -250,7 +250,7 @@ class TeprTest(unittest.TestCase):
             ])
         ]
 
-        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+        actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
             '1',
@@ -273,20 +273,20 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
 
     def test_to_repr_3(self):
-        prep_params = {
-            PreprocessingParam.EN_ONLY: 1,
-            PreprocessingParam.SPL: 3,
-            PreprocessingParam.NO_COM_STR: 0,
-            PreprocessingParam.NO_SEP: 0,
-            PreprocessingParam.NO_NEWLINES_TABS: 1,
-        }
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 1,
+            PrepParam.SPLIT: 3,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT_REPR: 0,
+            PrepParam.TABS_NEWLINES: 1,
+        })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
                                                 sc_splittings={
                                                     'english': ['engl', 'ish']
                                                     })
 
-        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+        actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
             '1',
@@ -309,13 +309,13 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
 
     def test_to_repr_with_non_eng(self):
-        prep_params = {
-            PreprocessingParam.EN_ONLY: 0,
-            PreprocessingParam.NO_COM_STR: 0,
-            PreprocessingParam.SPL: 3,
-            PreprocessingParam.NO_SEP: 0,
-            PreprocessingParam.NO_NEWLINES_TABS: 1,
-        }
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 0,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT: 3,
+            PrepParam.SPLIT_REPR: 0,
+            PrepParam.TABS_NEWLINES: 1,
+        })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
                                                 sc_splittings={
@@ -323,7 +323,7 @@ class TeprTest(unittest.TestCase):
                                                     'dieselbe': ['die', 'selbe']
                                                     })
 
-        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+        actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
             '1',
@@ -347,18 +347,18 @@ class TeprTest(unittest.TestCase):
     #     ############################################################################################
     #
     def test_to_repr_with_newlines_and_tabs(self):
-        prep_params = {
-            PreprocessingParam.EN_ONLY: 1,
-            PreprocessingParam.NO_COM_STR: 0,
-            PreprocessingParam.SPL: 2,
-            PreprocessingParam.NO_SEP: 1,
-            PreprocessingParam.NO_NEWLINES_TABS: 0,
-        }
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 1,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT: 2,
+            PrepParam.SPLIT_REPR: 1,
+            PrepParam.TABS_NEWLINES: 0,
+        })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS,
                                                 )
 
-        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+        actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
             placeholders["camel_case_separator"],
@@ -385,20 +385,20 @@ class TeprTest(unittest.TestCase):
     #     ############################################################################################
     #
     def test_to_repr_no_str_no_com(self):
-        prep_params = {
-            PreprocessingParam.EN_ONLY: 1,
-            PreprocessingParam.NO_COM_STR: 2,
-            PreprocessingParam.SPL: 3,
-            PreprocessingParam.NO_SEP: 0,
-            PreprocessingParam.NO_NEWLINES_TABS: 1,
-        }
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 1,
+            PrepParam.COM_STR: 2,
+            PrepParam.SPLIT: 3,
+            PrepParam.SPLIT_REPR: 0,
+            PrepParam.TABS_NEWLINES: 1,
+        })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
                                                 sc_splittings={
                                                     'english': ['engl', 'ish']
                                                     })
 
-        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+        actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
             '1',
@@ -420,20 +420,20 @@ class TeprTest(unittest.TestCase):
     #     ############################################################################################
     #
     def test_to_repr_no_nosep(self):
-        prep_params = {
-            PreprocessingParam.EN_ONLY: 1,
-            PreprocessingParam.NO_COM_STR: 0,
-            PreprocessingParam.SPL: 3,
-            PreprocessingParam.NO_SEP: 0,
-            PreprocessingParam.NO_NEWLINES_TABS: True,
-        }
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 1,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT: 3,
+            PrepParam.SPLIT_REPR: 0,
+            PrepParam.TABS_NEWLINES: True,
+        })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
                                                 sc_splittings={
                                                     'english': ['engl', 'ish']
                                                     })
 
-        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+        actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
             '1',
@@ -457,18 +457,18 @@ class TeprTest(unittest.TestCase):
     #     ############################################################################################
     #
     def test_to_repr_no_no_sep_with_bpe_no_merges(self):
-        prep_params = {
-            PreprocessingParam.EN_ONLY: 1,
-            PreprocessingParam.NO_COM_STR: 0,
-            PreprocessingParam.SPL: 4,
-            PreprocessingParam.NO_SEP: 0,
-            PreprocessingParam.NO_NEWLINES_TABS: 1,
-        }
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 1,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT: 4,
+            PrepParam.SPLIT_REPR: 0,
+            PrepParam.TABS_NEWLINES: 1,
+        })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.BPE,
                                                 merges=[], merges_cache={})
 
-        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+        actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
             '1',
@@ -489,19 +489,19 @@ class TeprTest(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_log(self):
-        prep_params = {
-            PreprocessingParam.EN_ONLY: 1,
-            PreprocessingParam.NO_COM_STR: 0,
-            PreprocessingParam.SPL: 1,
-            PreprocessingParam.NO_SEP: 0,
-            PreprocessingParam.NO_NEWLINES_TABS: 0,
-        }
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 1,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT: 1,
+            PrepParam.SPLIT_REPR: 0,
+            PrepParam.TABS_NEWLINES: 0,
+        })
 
         ngramSplittingConfig = NgramSplitConfig()
 
         tokens = [LogStatement(FullWord.of('LOGGER'), FullWord.of('Info'), INFO, [StringLiteral([FullWord.of("Hi")])])]
 
-        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+        actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [placeholders['log_statement'], '`info', '`Cs', 'logger', '.', '`C', 'info', '(', '"', '`C', 'hi',
                     '"', ')', ';', 'L`']
@@ -515,20 +515,20 @@ class TeprTest(unittest.TestCase):
     # #################################################
     #
     def test_1(self):
-        prep_params = {
-            PreprocessingParam.EN_ONLY: 0,
-            PreprocessingParam.NO_COM_STR: 0,
-            PreprocessingParam.SPL: 4,
-            PreprocessingParam.NO_SEP: 0,
-            PreprocessingParam.NO_NEWLINES_TABS: 0,
-        }
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 0,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT: 4,
+            PrepParam.SPLIT_REPR: 0,
+            PrepParam.TABS_NEWLINES: 0,
+        })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.BPE,
                                                 merges_cache={'while': ['while']})
 
         tokens = [FullWord.of("While")]
 
-        actual = to_repr(prep_params, tokens, ngramSplittingConfig)
+        actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [placeholders['capital'], "while"]
 
