@@ -69,6 +69,8 @@ one_char_verbose = [
 delimiters_to_drop = "[\[\] ,.\-?:\n\t(){};\"&|_#\\\@$]"
 delimiters_to_drop_verbose = " " #TODO according to the new philosophy we shoulnt drop anything
 
+special_tokens = tabs + multiline_comments_tokens + two_character_tokens + one_character_tokens + two_char_verbose + one_char_verbose
+
 key_words = [
 "abstract",
 "continue",

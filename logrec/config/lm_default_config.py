@@ -1,5 +1,5 @@
 from logrec.properties import DEFAULT_DATASET
-from logrec.config.model import Droupouts, RegFn, Cycle, LMTraining, LMTesting, Data, Arch, LMConfig
+from logrec.config.model import Droupouts, RegFn, Cycle, LMTraining, LMTesting, Data, Arch, LMConfig, Cache
 
 data = Data(
     dataset=DEFAULT_DATASET,
@@ -37,7 +37,9 @@ lm_config = LMConfig(
     arch=arch,
     training=lm_training,
     metrics=['accuracy', 'mrr'],
-    use_cache=False,
+    # cache=None,
+    cache=Cache(theta=2, lambdah=0.2, window=1000),
+    use_subword_aware_metrics=True,
     testing=LMTesting(
         n_words_to_generate=2000,
         starting_words='class'

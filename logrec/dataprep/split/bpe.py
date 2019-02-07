@@ -4,12 +4,14 @@ import os
 import re, collections
 from typing import Optional, Dict
 
+import time
+
 from logrec.dataprep import BPE_DIR, METADATA_DIR
 from logrec.dataprep.model.placeholders import placeholders
-from logrec.dataprep.util import read_dict_from_2_columns, read_list, dump_dict_into_2_columns, dump_list
-from logrec.properties import DEFAULT_BPE_ARGS, DEFAULT_PARSED_DATASETS_DIR
+from logrec.dataprep.preprocessors.java import special_tokens
+from logrec.dataprep.util import dump_dict_into_2_columns, dump_list, read_list, read_dict_from_2_columns
+from logrec.properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_BPE_ARGS
 from logrec.util.priority_counter import PriorityCounter
-import time
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +91,7 @@ Dict[str, int], Dict[str, int]):
     non_splitable_vocab = {}
     for k, v in all_vocab.items():
         placeholders_values = placeholders.values()
-        if k not in placeholders_values:
+        if k not in placeholders_values and k not in special_tokens:
             vocab[k if from_reassambled else " ".join(k)] = v
         else:
             non_splitable_vocab[k] = v

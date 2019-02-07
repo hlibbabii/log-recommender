@@ -1,5 +1,6 @@
 import multiprocessing
 import threading
+from typing import Dict, Tuple, List
 
 
 def insert_separators(subwords, separator):
@@ -27,7 +28,7 @@ def create_regex_from_token_list(token_list):
     ) +")"
 
 
-def merge_dicts_(dict1, dict2):
+def merge_dicts_(dict1, dict2) -> Tuple[Dict, List]:
     '''
     this method returns modified dict1! and new words are added to the dictionary
     :param dict1:
@@ -69,6 +70,18 @@ class AtomicInteger(object):
         with self._lock:
             self._queue.get()
             return self._queue.qsize()
+
+    def compare_and_dec(self, val):
+        with self._lock:
+            result = self._queue.qsize() == val
+            self._queue.get()
+            return result
+
+    def get_and_dec(self):
+        with self._lock:
+            result = self._queue.qsize()
+            self._queue.get()
+            return result
 
     @property
     def value(self):
