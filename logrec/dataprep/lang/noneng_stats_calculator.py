@@ -36,11 +36,11 @@ def calc_stats(lang_checker, path_to_dir_with_preprocessed_projects, file):
             try:
                 token_list = pickle.load(f)
 
-                repr1 = to_token_list(to_repr(PrepConfig.from_encoded_string('02201'), token_list)).split()
+                repr1 = to_token_list(to_repr(PrepConfig.from_encoded_string('022011'), token_list)).split()
                 only_code_stats = lang_checker.calc_lang_stats(repr1)
-                repr2 = to_token_list(to_repr(PrepConfig.from_encoded_string('01201'), token_list)).split()
+                repr2 = to_token_list(to_repr(PrepConfig.from_encoded_string('012011'), token_list)).split()
                 code_str_stats = lang_checker.calc_lang_stats(repr2)
-                repr3 = to_token_list(to_repr(PrepConfig.from_encoded_string('00201'), token_list)).split()
+                repr3 = to_token_list(to_repr(PrepConfig.from_encoded_string('002011'), token_list)).split()
                 code_str_com_stats = lang_checker.calc_lang_stats(repr3, include_sample=True)
 
                 filename = fn.readline()[:-1]

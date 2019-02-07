@@ -165,11 +165,11 @@ class SubwordSeparation(unittest.TestCase):
 
             self.assertEqual(output_tuple[0], parsed)
 
-            repred = to_repr(PrepConfig.from_encoded_string('10401'), parsed, ngram_split_config)
+            repred = to_repr(PrepConfig.from_encoded_string('104011'), parsed, ngram_split_config)
 
             self.assertEqual(output_tuple[1], repred)
 
-            repred2 = to_repr(PrepConfig.from_encoded_string('10411'), parsed, ngram_split_config)
+            repred2 = to_repr(PrepConfig.from_encoded_string('104111'), parsed, ngram_split_config)
 
             self.assertEqual(output_tuple[2], repred2)
 

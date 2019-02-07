@@ -5,6 +5,7 @@ import re
 from collections import defaultdict
 
 from logrec.classifier.context_datasets import ContextsDataset, IGNORED_PROJECTS_FILE_NAME
+from logrec.dataprep.prepconfig import PrepConfig
 from logrec.dataprep.util import merge_dicts_, dump_list
 from logrec.infrastructure.fs import CLASSIFICATION_DIR
 from logrec.util.files import file_mapper, get_dir_and_file
@@ -48,6 +49,8 @@ def calc_stats(dest_dir, threshold):
 
 
 def run(dataset, repr, threshold):
+    PrepConfig.assert_classification_config(repr)
+
     path_to_classification = os.path.join(DEFAULT_PARSED_DATASETS_DIR, dataset, CLASSIFICATION_DIR)
     dest_dir = os.path.join(path_to_classification, CLASSIFICATION_TYPE, repr)
 

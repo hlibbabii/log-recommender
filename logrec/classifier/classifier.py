@@ -16,6 +16,7 @@ from fastai import metrics
 from fastai.nlp import TextData, RNN_Learner
 from logrec.classifier.context_datasets import ContextsDataset
 from logrec.config.patch import patch_config
+from logrec.dataprep.prepconfig import PrepConfig
 from logrec.dataprep.text_beautifier import beautify_text
 from logrec.features.early_stop import EarlyStopping
 from logrec.infrastructure import config_manager
@@ -197,6 +198,8 @@ def format_input(context_before: str, context_after: str, backwards: bool) -> st
 def run_on_device(config: ClassifierConfig, force_rerun: bool) -> None:
     base_model = config.base_model
     pretraining = config.pretraining_type
+
+    PrepConfig.assert_classification_config(config.data.repr)
 
     if bool(base_model) != bool(pretraining):
         raise ValueError('Base model and pretraining_type params must be both set or both unset!')

@@ -4,7 +4,7 @@ from logrec.dataprep.model.chars import NewLine, Tab
 # TODO write explanations with normal strings
 from logrec.dataprep.model.containers import SplitContainer, OneLineComment, MultilineComment, \
     StringLiteral
-from logrec.dataprep.model.logging import INFO, LogStatement
+from logrec.dataprep.model.logging import INFO, LogStatement, LoggableBlock
 from logrec.dataprep.model.noneng import NonEng, NonEngFullWord, NonEngSubWord
 from logrec.dataprep.model.numeric import DecimalPoint, Number
 from logrec.dataprep.model.placeholders import placeholders
@@ -51,6 +51,7 @@ class TeprTest(unittest.TestCase):
                 PrepParam.SPLIT: 0,
                 PrepParam.SPLIT_REPR: 0,
                 PrepParam.TABS_NEWLINES: 1,
+                PrepParam.MARK_LOGS: 1
             })
             to_repr(prep_config, [], NgramSplitConfig())
 
@@ -61,6 +62,7 @@ class TeprTest(unittest.TestCase):
             PrepParam.SPLIT: 0,
             PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 1,
+            PrepParam.MARK_LOGS: 1
         })
 
         actual = to_repr(prep_config, tokens, NgramSplitConfig())
@@ -86,6 +88,7 @@ class TeprTest(unittest.TestCase):
             PrepParam.SPLIT: 1,
             PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 1,
+            PrepParam.MARK_LOGS: 1
         })
 
         actual = to_repr(prep_config, tokens, NgramSplitConfig())
@@ -114,6 +117,7 @@ class TeprTest(unittest.TestCase):
             PrepParam.SPLIT: 1,
             PrepParam.SPLIT_REPR: 1,
             PrepParam.TABS_NEWLINES: 1,
+            PrepParam.MARK_LOGS: 1
         })
 
         actual = to_repr(prep_config, tokens, NgramSplitConfig())
@@ -142,6 +146,7 @@ class TeprTest(unittest.TestCase):
             PrepParam.SPLIT: 2,
             PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 1,
+            PrepParam.MARK_LOGS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS,
@@ -176,6 +181,7 @@ class TeprTest(unittest.TestCase):
             PrepParam.SPLIT: 2,
             PrepParam.SPLIT_REPR: 1,
             PrepParam.TABS_NEWLINES: 1,
+            PrepParam.MARK_LOGS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS)
@@ -210,6 +216,7 @@ class TeprTest(unittest.TestCase):
             PrepParam.SPLIT: 3,
             PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 1,
+            PrepParam.MARK_LOGS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -279,6 +286,7 @@ class TeprTest(unittest.TestCase):
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 1,
+            PrepParam.MARK_LOGS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -315,6 +323,7 @@ class TeprTest(unittest.TestCase):
             PrepParam.SPLIT: 3,
             PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 1,
+            PrepParam.MARK_LOGS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -353,6 +362,7 @@ class TeprTest(unittest.TestCase):
             PrepParam.SPLIT: 2,
             PrepParam.SPLIT_REPR: 1,
             PrepParam.TABS_NEWLINES: 0,
+            PrepParam.MARK_LOGS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS,
@@ -391,6 +401,7 @@ class TeprTest(unittest.TestCase):
             PrepParam.SPLIT: 3,
             PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 1,
+            PrepParam.MARK_LOGS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -426,6 +437,7 @@ class TeprTest(unittest.TestCase):
             PrepParam.SPLIT: 3,
             PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: True,
+            PrepParam.MARK_LOGS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -463,6 +475,7 @@ class TeprTest(unittest.TestCase):
             PrepParam.SPLIT: 4,
             PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 1,
+            PrepParam.MARK_LOGS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.BPE,
@@ -495,6 +508,30 @@ class TeprTest(unittest.TestCase):
             PrepParam.SPLIT: 1,
             PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 0,
+            PrepParam.MARK_LOGS: 1
+        })
+
+        ngramSplittingConfig = NgramSplitConfig()
+
+        tokens = [LoggableBlock(
+            [LogStatement(FullWord.of('LOGGER'), FullWord.of('Info'), INFO, [StringLiteral([FullWord.of("Hi")])])])]
+
+        actual = to_repr(prep_config, tokens, ngramSplittingConfig)
+
+        expected = [placeholders['loggable_block'], placeholders['log_statement'], '`info', '`Cs', 'logger', '.', '`C',
+                    'info', '(', '"', '`C', 'hi',
+                    '"', ')', ';', 'L`', placeholders['loggable_block_end']]
+
+        self.assertEqual(expected, actual)
+
+    def test_log_no_mark_logs(self):
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 1,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT: 1,
+            PrepParam.SPLIT_REPR: 0,
+            PrepParam.TABS_NEWLINES: 0,
+            PrepParam.MARK_LOGS: 0
         })
 
         ngramSplittingConfig = NgramSplitConfig()
@@ -503,12 +540,11 @@ class TeprTest(unittest.TestCase):
 
         actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
-        expected = [placeholders['log_statement'], '`info', '`Cs', 'logger', '.', '`C', 'info', '(', '"', '`C', 'hi',
-                    '"', ')', ';', 'L`']
+        expected = ['`Cs', 'logger', '.', '`C', 'info', '(', '"', '`C', 'hi',
+                    '"', ')', ';']
 
         self.assertEqual(expected, actual)
 
-    #
     #
     # #################################################
     # ###   Only tests with single word go below
@@ -521,6 +557,7 @@ class TeprTest(unittest.TestCase):
             PrepParam.SPLIT: 4,
             PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 0,
+            PrepParam.MARK_LOGS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.BPE,

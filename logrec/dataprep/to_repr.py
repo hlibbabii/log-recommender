@@ -1,6 +1,5 @@
 import argparse
 import gzip
-import json
 import logging
 import os
 import pickle
@@ -8,6 +7,8 @@ import time
 from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import Pool
 from typing import Optional, List
+
+import jsons
 
 from logrec.dataprep import base_project_dir, METADATA_DIR, BPE_DIR, PARSED_DIR
 from logrec.dataprep.preprocessors.general import to_token_list
@@ -156,7 +157,8 @@ def run(dataset: str, preprocessing_params: str, bpe_base_repr: Optional[str],
         os.makedirs(full_metadata_dir)
 
     with open(os.path.join(full_dest_dir, 'preprocessing_types.json'), "w") as f:
-        json.dump(preprocessing_params, f)
+        json_str = jsons.dumps(preprocessing_params)
+        f.write(json_str)
 
     params = []
     for root, dirs, files in os.walk(full_src_dir):

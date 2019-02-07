@@ -10,6 +10,7 @@ from typing import List, Tuple, Callable, Optional, Union
 from logrec.dataprep import REPR_DIR, TRAIN_DIR, TEST_DIR, VALID_DIR, CLASSIFICATION_DIR
 from logrec.dataprep.model.logging import is_positive_level
 from logrec.dataprep.model.placeholders import placeholders
+from logrec.dataprep.prepconfig import PrepConfig
 from logrec.util.files import get_dir_and_file, file_mapper
 
 WORDS_IN_CONTEXT_LIMIT = 1000
@@ -231,6 +232,8 @@ def get_cases_creator(classifier):
 
 def run(dataset: str, repr: str, classifier: str):
     from logrec.classifier.context_datasets import ContextsDataset
+
+    PrepConfig.assert_classification_config(repr)
 
     path_to_dataset = os.path.join(DEFAULT_PARSED_DATASETS_DIR, dataset)
     full_src_dir = os.path.join(path_to_dataset, REPR_DIR, repr)

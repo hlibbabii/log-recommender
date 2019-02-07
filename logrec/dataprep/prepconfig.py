@@ -4,6 +4,7 @@ from typing import Dict, List, Type
 
 from logrec.dataprep.model.chars import NewLine, Tab
 from logrec.dataprep.model.containers import SplitContainer, StringLiteral, OneLineComment, MultilineComment
+from logrec.dataprep.model.logging import LogStatement, LogContent, LoggableBlock
 from logrec.dataprep.model.noneng import NonEngSubWord, NonEngFullWord
 from logrec.dataprep.model.numeric import Number
 from logrec.dataprep.model.word import SubWord, FullWord
@@ -17,6 +18,7 @@ class PrepParam(str, Enum):
     SPLIT: str = 'split'
     SPLIT_REPR: str = 'splitrepr'
     TABS_NEWLINES: str = 'tabsnewlines'
+    MARK_LOGS: str = 'marklogs'
 
 
 class PrepConfig(object):
@@ -26,6 +28,7 @@ class PrepConfig(object):
         PrepParam.SPLIT: [0, 1, 2, 3, 4, 5, 6],
         PrepParam.SPLIT_REPR: [0, 1],
         PrepParam.TABS_NEWLINES: [0, 1],
+        PrepParam.MARK_LOGS: [0, 1]
     }
 
     @classmethod
@@ -53,7 +56,7 @@ class PrepConfig(object):
 
         self.params = params
 
-    def str(self) -> str:
+    def __str__(self) -> str:
         res = ""
         for k in PrepParam:
             res += str(self.params[k])
@@ -61,6 +64,11 @@ class PrepConfig(object):
 
     def get_param_value(self, param: PrepParam) -> int:
         return self.params[param]
+
+    @classmethod
+    def assert_classification_config(cls, repr):
+        if cls.from_encoded_string(repr).get_param_value(PrepParam.MARK_LOGS) == 0:
+            raise ValueError(f'PrepConfig {repr} cannot be used for classification')
 
 
 com_str_to_types_to_be_repr = {
@@ -81,4 +89,6 @@ def get_types_to_be_repr(prep_config: PrepConfig) -> List[Type]:
         res.extend([NewLine, Tab])
     if prep_config.get_param_value(PrepParam.EN_ONLY):
         res.extend([NonEngSubWord, NonEngFullWord])
+    if prep_config.get_param_value(PrepParam.MARK_LOGS):
+        res.extend([LogStatement, LogContent, LoggableBlock])
     return res

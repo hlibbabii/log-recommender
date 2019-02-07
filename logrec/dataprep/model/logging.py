@@ -91,11 +91,19 @@ class LogStatement(object):
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.__dict__ == other.__dict__
 
-    def non_preprocessed_repr(self, repr_config):
-        return [placeholders['log_statement'], str(self.level)] + torepr(self._object_name, repr_config) + \
-               ['.'] + torepr(self._method_name, repr_config) + ['('] + \
+    def __to_repr(self, repr_config):
+        return torepr(self._object_name, repr_config) + ['.'] + \
+               torepr(self._method_name, repr_config) + ['('] + \
                torepr(self._log_content.get_subtokens(), repr_config) + [')'] + \
-               torepr(self._tokens_before_final_semicolon, repr_config) + [';', placeholders['log_statement_end']]
+               torepr(self._tokens_before_final_semicolon, repr_config) + [';']
+
+    def non_preprocessed_repr(self, repr_config):
+        return self.__to_repr(repr_config)
+
+    def preprocessed_repr(self, repr_config):
+        return [placeholders['log_statement'], str(self.level)] + \
+               self.__to_repr(repr_config) + \
+               [placeholders['log_statement_end']]
 
 
 class LogContent(ProcessableTokenContainer):
@@ -108,5 +116,8 @@ class LoggableBlock(ProcessableTokenContainer):
         super().__init__(content)
 
     def non_preprocessed_repr(self, repr_config):
+        return torepr(self.subtokens, repr_config)
+
+    def preprocessed_repr(self, repr_config):
         return [placeholders['loggable_block']] + torepr(self.subtokens, repr_config) + [
             placeholders['loggable_block_end']]

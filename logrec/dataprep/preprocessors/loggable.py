@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def to_repr_l(lst):
-    return to_repr(PrepConfig.from_encoded_string('00010'), lst,
+    return to_repr(PrepConfig.from_encoded_string('000101'), lst,
                    NgramSplitConfig())
 
 class State(object):
