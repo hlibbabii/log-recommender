@@ -2,8 +2,8 @@ import re
 from enum import Enum, auto
 
 from logrec.dataprep.model.chars import NewLine, Tab
+from logrec.dataprep.model.containers import SplitContainer
 from logrec.dataprep.model.logging import LogStatement, LogLevel, TRACE, FATAL, ERROR, WARN, INFO, DEBUG, UNKNOWN
-from logrec.dataprep.model.word import Word
 
 LOGGER_REGEX = re.compile("[Ll]og|LOG|[Ll]ogger|LOGGER")
 
@@ -61,7 +61,7 @@ class LogSearchState(object):
 
 class Searching(LogSearchState):
     def check(self, token):
-        if isinstance(token, Word) and LOGGER_REGEX.fullmatch(str(token)):
+        if isinstance(token, SplitContainer) and LOGGER_REGEX.fullmatch(str(token)):
             return SearchResult.IN_PROGRESS
         else:
             return SearchResult.NOT_FOUND
@@ -81,7 +81,7 @@ class LoggerFound(LogSearchState):
 
 class DotFound(LogSearchState):
     def check(self, token):
-        if isinstance(token, Word) and METHOD_REGEX.fullmatch(str(token)):
+        if isinstance(token, SplitContainer) and METHOD_REGEX.fullmatch(str(token)):
             return SearchResult.IN_PROGRESS
         else:
             return SearchResult.FAILED

@@ -6,7 +6,7 @@ from logrec.dataprep.model.chars import OneLineCommentStart, NewLine, Quote, Mul
 
 # TODO write explanations with normal strings
 from logrec.dataprep.model.containers import SplitContainer, StringLiteral, OneLineComment, MultilineComment
-from logrec.dataprep.model.word import FullWord, SubWord
+from logrec.dataprep.model.word import Word, Underscore
 
 
 class JavaTest(unittest.TestCase):
@@ -25,9 +25,10 @@ class JavaTest(unittest.TestCase):
         '''
         tokens = [Quote(),
                   OneLineCommentStart(),
-                  SplitContainer([SubWord.of("test"),
-                                  SubWord.of("_my"),
-                                  SubWord.of("Class")]),
+                  SplitContainer([Word.from_("test"),
+                                  Underscore(),
+                                  Word.from_("my"),
+                                  Word.from_("Class")]),
                   Quote(),
                   NewLine(),
                   OneLineCommentStart(),
@@ -35,7 +36,7 @@ class JavaTest(unittest.TestCase):
                   NewLine(),
                   Quote(),
                   MultilineCommentStart(),
-                  FullWord.of("!"),
+                  SplitContainer.from_single_token("!"),
                   Quote(),
                   NewLine(),
                   MultilineCommentStart(),
@@ -47,14 +48,16 @@ class JavaTest(unittest.TestCase):
         actual = process_comments_and_str_literals(tokens, {})
 
         expected = [StringLiteral([OneLineCommentStart(), SplitContainer([
-            SubWord.of("test"),
-            SubWord.of("_my"),
-            SubWord.of("Class")],
+            Word.from_("test"),
+            Underscore(),
+            Word.from_("my"),
+            Word.from_("Class")],
         )]),
                     NewLine(),
                     OneLineComment([MultilineCommentEnd()]),
                     NewLine(),
-                    StringLiteral([MultilineCommentStart(), FullWord.of("!")]),
+                    StringLiteral([MultilineCommentStart(),
+                                   SplitContainer.from_single_token("!")]),
                     NewLine(),
                     MultilineComment([NewLine()]),
                     NewLine()
@@ -63,11 +66,11 @@ class JavaTest(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_process_comments_and_str_literals_no_multiline_comment_start(self):
-        tokens = [MultilineCommentEnd(), FullWord.of("a")]
+        tokens = [MultilineCommentEnd(), Word.from_("a")]
 
         actual = process_comments_and_str_literals(tokens, {})
 
-        expected = [MultilineCommentEnd(), FullWord.of("a")]
+        expected = [MultilineCommentEnd(), Word.from_("a")]
 
         self.assertEqual(expected, actual)
 

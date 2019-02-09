@@ -1,22 +1,15 @@
 import re
 
 from logrec.dataprep.model.placeholders import placeholders, placeholders_beautiful, separators_beautiful
-from logrec.dataprep.split.ngram import SplitRepr
 
-cc = placeholders['camel_case_separator']
-we = placeholders['split_words_end']
-
-
-def cap_non_init_cc_words(w):
-    sub = re.sub(f'{placeholders["camel_case_separator"]} (.*?) (?={placeholders["camel_case_separator"]}|$)',
-                 lambda n: "".join(n.group(1).capitalize().split(" ")), w)
-    return sub
+ws = placeholders['word_start']
+we = placeholders['word_end']
+cap = placeholders['capital']
+caps = placeholders['capitals']
 
 
 def sep_boundaries(m):
-    return "".join(m.group(1).split(" ")) + (
-        cap_non_init_cc_words(m.group(2)) if m.group(2) != "" else ""
-    )
+    return "".join(m.group(1).split(" "))
 
 
 def restore_tabs(text: str) -> str:
@@ -26,17 +19,7 @@ def restore_tabs(text: str) -> str:
 
 
 def restore_words_from_subwords(text: str) -> str:
-    if text.find(placeholders['split_words_end']) == -1:
-        splitRepr = SplitRepr.BETWEEN_WORDS
-    else:
-        splitRepr = SplitRepr.BONDERIES
-    if splitRepr == SplitRepr.BETWEEN_WORDS:
-        text = re.sub(f"{placeholders['camel_case_separator']} (\S+)",
-                      lambda m: m.group(1).capitalize(), text)
-    else:
-        text = re.sub(f"{cc} ((?:\S+ )*?)((?:{cc} (?:\S+ )*?)*){we}",
-                      sep_boundaries,
-                      text)
+    text = re.sub(f"{ws} ((?:\S+ )*?){we}", sep_boundaries, text)
 
     for k, v in separators_beautiful.items():
         text = text.replace(" " + placeholders[k] + " ", v)
@@ -47,7 +30,9 @@ def restore_words_from_subwords(text: str) -> str:
 def restore_capitalization(text: str) -> str:
     text = re.sub(placeholders["capital"] + " (\S+)",
                   lambda m: m.group(1).capitalize(), text)
-    text = re.sub(f"{cc} {placeholders['capitals']}( .*?)(?={cc}|{we})", lambda m: cc + m.group(1).upper(), text)
+    text = re.sub(f"((?:^| ){ws} (?:(?! we )(?:.* ))?){caps} (.*?)( (?:[0-9]|{we}|{cap}|{caps})(?:$| ))",
+                  lambda m: m.group(1) + m.group(2).upper() + m.group(3),
+                  text)
     text = re.sub(placeholders["capitals"] + " (\S+)",
                   lambda m: m.group(1).upper(), text)
     return text
@@ -74,7 +59,8 @@ def collapse_pads(text):
 
 
 def beautify_text(text: str) -> str:
-    text = restore_capitalization(text).replace('<eos>', '\n')
+    text = restore_capitalization(text)
+    text = text.replace('<eos>', '\n')
     text = collapse_pads(text)
     text = beautify_placeholders(text)
 

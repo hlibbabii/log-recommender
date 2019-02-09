@@ -1,29 +1,26 @@
+from typing import List
+
 from logrec.dataprep.model.placeholders import placeholders
-from logrec.dataprep.model.word import FullWord, SubWord
-from logrec.dataprep.preprocessors.repr import torepr
+from logrec.dataprep.model.word import Word
+from logrec.dataprep.preprocessors.repr import torepr, ReprConfig
 
 
 class NonEng(object):
     def __init__(self, processable_token):
+        if not isinstance(processable_token, Word):
+            raise ValueError(f"NonEngFullWord excepts FullWord but {type(processable_token)} is passed")
+
         self.processable_token = processable_token
 
     def non_preprocessed_repr(self, repr_config):
         return torepr(self.processable_token, repr_config)
 
-    # TODO simplify this method
-    def preprocessed_repr(self, repr_config):
-        res = []
+    def preprocessed_repr(self, repr_config: ReprConfig) -> List[str]:
         repr = torepr(self.processable_token, repr_config)
-        if repr[0] in [placeholders['underscore_separator'], placeholders['camel_case_separator']]:
-            if repr[0] == placeholders['underscore_separator'] or isinstance(self, NonEngSubWord):
-                res.append(repr[0])
-            if len(repr) > 1 and repr[1] in [placeholders['capitals'], placeholders['capital']]:
-                res.append(repr[1])
+        if repr[0] in [placeholders['capitals'], placeholders['capital']]:
+            return [repr[0], placeholders['non_eng']]
         else:
-            if repr[0] in [placeholders['capitals'], placeholders['capital']]:
-                res.append(repr[0])
-        res.append(placeholders['non_eng'])
-        return res
+            return [placeholders['non_eng']]
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.processable_token.__repr__()})'
@@ -35,17 +32,5 @@ class NonEng(object):
         return self.__class__ == other.__class__ and self.processable_token == other.processable_token
 
 
-class NonEngFullWord(NonEng):
-    def __init__(self, p):
-        if not isinstance(p, FullWord):
-            raise ValueError(f"NonEngFullWord excepts FullWord but {type(p)} is passed")
-
-        super().__init__(p)
-
-
-class NonEngSubWord(NonEng):
-    def __init__(self, p):
-        if not isinstance(p, SubWord):
-            raise ValueError(f"NonEngSubWord excepts SubWord but {type(p)} is passed")
-
-        super().__init__(p)
+class NonEngContent(object):
+    pass

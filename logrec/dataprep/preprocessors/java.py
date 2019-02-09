@@ -1,5 +1,5 @@
 import logging
-import re
+import regex
 
 from logrec.dataprep.model.chars import MultilineCommentStart, MultilineCommentEnd, OneLineCommentStart, \
     NewLine, Backslash, Quote
@@ -129,7 +129,7 @@ NUMBER_REGEX = '-?(?:0x[0-9a-fA-F]+[lL]?|[0-9]+[lL]?|(?:[0-9]*\.[0-9]+|[0-9]+(?:
 
 
 def is_number(s):
-    return re.fullmatch(NUMBER_REGEX, s)
+    return regex.fullmatch(NUMBER_REGEX, s)
 
 
 def find_all_comment_string_literal_symbols(token_list):
@@ -249,9 +249,10 @@ def process_numeric_literals(token_list, context):
     res = []
     for token in token_list:
         if isinstance(token, ParseableToken):
-            # TODO what about "фотогра4ия" -- this will be split
             numbers_separated = list(
-                filter(None, re.split(f'(?:^|(?<=[^a-zA-Z0-9]))({NUMBER_REGEX})(?=[^a-zA-Z0-9.]|$)', str(token))))
+                filter(None, regex.split(
+                    f'(?:^|(?<=[^[:lower:][:upper:][:digit:]_]))({NUMBER_REGEX})(?![[:lower:][:upper:][:digit:]_.]|$)',
+                    str(token))))
             for possible_number in numbers_separated:
                res.append(process_number_literal(possible_number))
         elif isinstance(token, ProcessableTokenContainer):

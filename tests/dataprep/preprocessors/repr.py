@@ -2,40 +2,42 @@ import unittest
 
 from logrec.dataprep.model.chars import NewLine, Tab
 # TODO write explanations with normal strings
-from logrec.dataprep.model.containers import SplitContainer, OneLineComment, MultilineComment, \
-    StringLiteral
+from logrec.dataprep.model.containers import SplitContainer, OneLineComment, MultilineComment, StringLiteral
 from logrec.dataprep.model.logging import INFO, LogStatement, LoggableBlock
-from logrec.dataprep.model.noneng import NonEng, NonEngFullWord, NonEngSubWord
+from logrec.dataprep.model.noneng import NonEng
 from logrec.dataprep.model.numeric import DecimalPoint, Number
 from logrec.dataprep.model.placeholders import placeholders
-from logrec.dataprep.model.word import FullWord, SubWord
+from logrec.dataprep.model.word import Word, Underscore
 from logrec.dataprep.prepconfig import PrepParam, PrepConfig
 from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplitConfig
 from logrec.dataprep.to_repr import to_repr
 
+pl = placeholders
+
 tokens = [
     Number([1, DecimalPoint(), 1]),
     "*",
-    NonEngFullWord(FullWord.of("dinero")),
+    SplitContainer([NonEng(Word.from_("dinero"))]),
     StringLiteral([
         SplitContainer([
-            SubWord.of("A"),
-            NonEngSubWord(SubWord.of("Wirklich"))
+            Word.from_("A"),
+            NonEng(Word.from_("Wirklich"))
         ])
     ]),
     NewLine(),
     MultilineComment([
-        NonEngFullWord(FullWord.of('ц')),
+        SplitContainer([NonEng(Word.from_('ц'))]),
         SplitContainer([
-            NonEngSubWord(SubWord.of("blanco")),
-            SubWord.of("_english")
+            NonEng(Word.from_("blanco")),
+            Underscore(),
+            Word.from_("english")
         ])
     ]),
     NewLine(), Tab(),
     OneLineComment([
         SplitContainer([
-            NonEngSubWord(SubWord.of("DIESELBE")),
-            SubWord.of("8")
+            NonEng(Word.from_("DIESELBE")),
+            Word.from_("8")
         ])
     ])
 ]
@@ -49,7 +51,6 @@ class TeprTest(unittest.TestCase):
                 PrepParam.EN_ONLY: 1,
                 PrepParam.COM_STR: 0,
                 PrepParam.SPLIT: 0,
-                PrepParam.SPLIT_REPR: 0,
                 PrepParam.TABS_NEWLINES: 1,
                 PrepParam.MARK_LOGS: 1
             })
@@ -60,7 +61,6 @@ class TeprTest(unittest.TestCase):
             PrepParam.EN_ONLY: 0,
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 0,
-            PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 1,
             PrepParam.MARK_LOGS: 1
         })
@@ -73,7 +73,7 @@ class TeprTest(unittest.TestCase):
             'dinero',
             '"', 'AWirklich', '"',
             '/*', 'ц', 'blanco_english', '*/',
-            '//', "DIESELBE8", placeholders['olc_end']
+            '//', "DIESELBE8", pl['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -81,41 +81,11 @@ class TeprTest(unittest.TestCase):
     ############################################################################################
     ############################################################################################
 
-    def test_to_repr_1(self):
-        prep_config = PrepConfig({
-            PrepParam.EN_ONLY: 1,
-            PrepParam.COM_STR: 0,
-            PrepParam.SPLIT: 1,
-            PrepParam.SPLIT_REPR: 0,
-            PrepParam.TABS_NEWLINES: 1,
-            PrepParam.MARK_LOGS: 1
-        })
-
-        actual = to_repr(prep_config, tokens, NgramSplitConfig())
-
-        expected = [
-            '1.1',
-            "*",
-            placeholders['non_eng'],
-            '"', placeholders['capital'], 'a', placeholders["camel_case_separator"], placeholders['non_eng'], '"',
-            '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'english',
-            '*/',
-            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8",
-            placeholders['olc_end']
-        ]
-
-        self.assertEqual(expected, actual)
-
-    #
-    #     ############################################################################################
-    #     ############################################################################################
-    #
     def test_to_repr_1_nosep(self):
         prep_config = PrepConfig({
             PrepParam.EN_ONLY: 1,
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 1,
-            PrepParam.SPLIT_REPR: 1,
             PrepParam.TABS_NEWLINES: 1,
             PrepParam.MARK_LOGS: 1
         })
@@ -125,48 +95,13 @@ class TeprTest(unittest.TestCase):
         expected = [
             '1.1',
             "*",
-            placeholders['non_eng'],
-            '"', placeholders["camel_case_separator"], placeholders['capital'], 'a',
-            placeholders["camel_case_separator"], placeholders['non_eng'], placeholders['split_words_end'], '"',
-            '/*', placeholders['non_eng'], placeholders["camel_case_separator"], placeholders['non_eng'],
-            placeholders["underscore_separator"], 'english', placeholders['split_words_end'], '*/',
-            '//', placeholders["camel_case_separator"], placeholders['capitals'], placeholders['non_eng'],
-            placeholders["camel_case_separator"], '8', placeholders['split_words_end'], placeholders['olc_end']
-        ]
-
-        self.assertEqual(expected, actual)
-
-    ############################################################################################
-    ########################k####################################################################
-
-    def test_to_repr_2(self):
-        prep_config = PrepConfig({
-            PrepParam.EN_ONLY: 1,
-            PrepParam.COM_STR: 0,
-            PrepParam.SPLIT: 2,
-            PrepParam.SPLIT_REPR: 0,
-            PrepParam.TABS_NEWLINES: 1,
-            PrepParam.MARK_LOGS: 1
-        })
-
-        ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS,
-                                                sc_splittings={})
-
-        actual = to_repr(prep_config, tokens, ngramSplittingConfig)
-
-        expected = [
-            '1',
-            placeholders["same_case_separator"],
-            '.',
-            placeholders["same_case_separator"],
-            '1',
-            "*",
-            placeholders['non_eng'],
-            '"', placeholders['capital'], 'a', placeholders["camel_case_separator"], placeholders['non_eng'], '"',
-            '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'english',
-            '*/',
-            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8",
-            placeholders['olc_end']
+            pl['non_eng'],
+            '"', pl['word_start'], pl['capitals'], 'a',
+            pl["capital"], pl['non_eng'], pl['word_end'], '"',
+            '/*', pl['non_eng'], pl['word_start'], pl['non_eng'],
+            '_', 'english', pl['word_end'], '*/',
+            '//', pl['word_start'], pl['capitals'], pl['non_eng'],
+            '8', pl['word_end'], pl['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -179,7 +114,6 @@ class TeprTest(unittest.TestCase):
             PrepParam.EN_ONLY: 1,
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 2,
-            PrepParam.SPLIT_REPR: 1,
             PrepParam.TABS_NEWLINES: 1,
             PrepParam.MARK_LOGS: 1
         })
@@ -189,19 +123,19 @@ class TeprTest(unittest.TestCase):
         actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
-            placeholders["camel_case_separator"],
+            pl["word_start"],
             '1',
             '.',
             '1',
-            placeholders['split_words_end'],
+            pl['word_end'],
             "*",
-            placeholders['non_eng'],
-            '"', placeholders["camel_case_separator"], placeholders['capital'], 'a',
-            placeholders["camel_case_separator"], placeholders['non_eng'], placeholders['split_words_end'], '"',
-            '/*', placeholders['non_eng'], placeholders["camel_case_separator"], placeholders['non_eng'],
-            placeholders["underscore_separator"], 'english', placeholders['split_words_end'], '*/',
-            '//', placeholders["camel_case_separator"], placeholders['capitals'], placeholders['non_eng'],
-            placeholders["camel_case_separator"], "8", placeholders['split_words_end'], placeholders['olc_end']
+            pl['non_eng'],
+            '"', pl['word_start'], pl['capitals'], 'a',
+            pl["capital"], pl['non_eng'], pl['word_end'], '"',
+            '/*', pl['non_eng'], pl['word_start'], pl['non_eng'],
+            '_', 'english', pl['word_end'], '*/',
+            '//', pl["word_start"], pl['capitals'], pl['non_eng'],
+            "8", pl['word_end'], pl['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -211,10 +145,9 @@ class TeprTest(unittest.TestCase):
 
     def test_to_repr_with_enonlycontents(self):
         prep_config = PrepConfig({
-            PrepParam.EN_ONLY: 1,
+            PrepParam.EN_ONLY: 2,
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 3,
-            PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 1,
             PrepParam.MARK_LOGS: 1
         })
@@ -225,34 +158,35 @@ class TeprTest(unittest.TestCase):
         tokens = [
             Number([1, DecimalPoint(), 1]),
             "*",
-            NonEngFullWord(FullWord.of("dinero")),
+            SplitContainer([NonEng(Word.from_("dinero"))]),
             StringLiteral([
-                NonEngSubWord(SubWord.of("ich")),
-                NonEngSubWord(SubWord.of("weiss")),
-                NonEngSubWord(SubWord.of("nicht")),
-                NonEngSubWord(SubWord.of("was")),
-                NonEngSubWord(SubWord.of("soll")),
-                NonEngSubWord(SubWord.of("es")),
-                NonEngSubWord(SubWord.of("bedeuten")),
-                NonEngSubWord(SubWord.of("dass")),
-                NonEngSubWord(SubWord.of("ich")),
-                NonEngSubWord(SubWord.of("so")),
-                NonEngSubWord(SubWord.of("traurig")),
-                NonEngSubWord(SubWord.of("bin")),
+                NonEng(Word.from_("ich")),
+                NonEng(Word.from_("weiss")),
+                NonEng(Word.from_("nicht")),
+                NonEng(Word.from_("was")),
+                NonEng(Word.from_("soll")),
+                NonEng(Word.from_("es")),
+                NonEng(Word.from_("bedeuten")),
+                NonEng(Word.from_("dass")),
+                NonEng(Word.from_("ich")),
+                NonEng(Word.from_("so")),
+                NonEng(Word.from_("traurig")),
+                NonEng(Word.from_("bin")),
             ]),
             NewLine(),
             MultilineComment([
-                NonEngFullWord(FullWord.of('ц')),
+                SplitContainer([NonEng(Word.from_('ц'))]),
                 SplitContainer([
-                    NonEngSubWord(SubWord.of("blanco")),
-                    SubWord.of("_english")
+                    NonEng(Word.from_("blanco")),
+                    Underscore(),
+                    Word.from_("english")
                 ])
             ]),
             NewLine(), Tab(),
             OneLineComment([
                 SplitContainer([
-                    NonEngSubWord(SubWord.of("DIESELBE")),
-                    SubWord.of("8")
+                    NonEng(Word.from_("DIESELBE")),
+                    Word.from_("8")
                 ])
             ])
         ]
@@ -260,18 +194,90 @@ class TeprTest(unittest.TestCase):
         actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
+            pl['word_start'],
             '1',
-            placeholders["same_case_separator"],
             '.',
-            placeholders["same_case_separator"],
             '1',
+            pl['word_end'],
             "*",
-            placeholders['non_eng'],
-            '"', placeholders["non_eng_contents"], '"',
-            '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'english',
+            pl['non_eng'],
+            '"', pl["non_eng_content"], '"',
+            '/*', pl['non_eng'],
+            pl['word_start'], pl['non_eng'], '_',
+            'english', pl['word_end'],
             '*/',
-            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8",
-            placeholders['olc_end']
+            '//', pl['word_start'], pl['capitals'], pl['non_eng'], "8", pl['word_end'],
+            pl['olc_end']
+        ]
+
+        self.assertEqual(expected, actual)
+
+    def test_to_repr_with_enonlycontents1(self):
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 1,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT: 3,
+            PrepParam.TABS_NEWLINES: 1,
+            PrepParam.MARK_LOGS: 1
+        })
+
+        ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
+                                                sc_splittings={})
+
+        tokens = [
+            Number([1, DecimalPoint(), 1]),
+            "*",
+            SplitContainer([NonEng(Word.from_("dinero"))]),
+            StringLiteral([
+                NonEng(Word.from_("ich")),
+                NonEng(Word.from_("weiss")),
+                NonEng(Word.from_("nicht")),
+                NonEng(Word.from_("was")),
+                NonEng(Word.from_("soll")),
+                NonEng(Word.from_("es")),
+                NonEng(Word.from_("bedeuten")),
+                NonEng(Word.from_("dass")),
+                NonEng(Word.from_("ich")),
+                NonEng(Word.from_("so")),
+                NonEng(Word.from_("traurig")),
+                NonEng(Word.from_("bin")),
+            ]),
+            NewLine(),
+            MultilineComment([
+                SplitContainer([NonEng(Word.from_('ц'))]),
+                SplitContainer([
+                    NonEng(Word.from_("blanco")),
+                    Underscore(),
+                    Word.from_("english")
+                ])
+            ]),
+            NewLine(), Tab(),
+            OneLineComment([
+                SplitContainer([
+                    NonEng(Word.from_("DIESELBE")),
+                    Word.from_("8")
+                ])
+            ])
+        ]
+
+        actual = to_repr(prep_config, tokens, ngramSplittingConfig)
+
+        expected = [
+            pl['word_start'],
+            '1',
+            '.',
+            '1',
+            pl['word_end'],
+            "*",
+            pl['non_eng'],
+            '"', pl["non_eng"], pl["non_eng"], pl["non_eng"], pl["non_eng"], pl["non_eng"], pl["non_eng"],
+            pl["non_eng"], pl["non_eng"], pl["non_eng"], pl["non_eng"], pl["non_eng"], pl["non_eng"], '"',
+            '/*', pl['non_eng'],
+            pl['word_start'], pl['non_eng'], '_',
+            'english', pl['word_end'],
+            '*/',
+            '//', pl['word_start'], pl['capitals'], pl['non_eng'], "8", pl['word_end'],
+            pl['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -284,7 +290,6 @@ class TeprTest(unittest.TestCase):
             PrepParam.EN_ONLY: 1,
             PrepParam.SPLIT: 3,
             PrepParam.COM_STR: 0,
-            PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 1,
             PrepParam.MARK_LOGS: 1
         })
@@ -297,18 +302,17 @@ class TeprTest(unittest.TestCase):
         actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
+            pl['word_start'],
             '1',
-            placeholders["same_case_separator"],
             '.',
-            placeholders["same_case_separator"],
             '1',
+            pl['word_end'],
             "*",
-            placeholders['non_eng'],
-            '"', placeholders['capital'], 'a', placeholders["camel_case_separator"], placeholders['non_eng'], '"',
-            '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'engl',
-            placeholders["same_case_separator"], 'ish', '*/',
-            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8",
-            placeholders['olc_end']
+            pl['non_eng'],
+            '"', pl['word_start'], pl['capitals'], 'a', pl['capital'], pl['non_eng'], pl['word_end'], '"',
+            '/*', pl['non_eng'], pl['word_start'], pl['non_eng'], '_', 'engl', 'ish', pl['word_end'], '*/',
+            '//', pl['word_start'], pl['capitals'], pl['non_eng'], "8", pl['word_end'],
+            pl['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -321,7 +325,6 @@ class TeprTest(unittest.TestCase):
             PrepParam.EN_ONLY: 0,
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 3,
-            PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 1,
             PrepParam.MARK_LOGS: 1
         })
@@ -335,18 +338,16 @@ class TeprTest(unittest.TestCase):
         actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
+            pl['word_start'],
             '1',
-            placeholders["same_case_separator"],
             '.',
-            placeholders["same_case_separator"],
             '1',
+            pl['word_end'],
             "*",
             'dinero',
-            '"', placeholders['capital'], 'a', placeholders["camel_case_separator"], 'wirklich', '"',
-            '/*', 'ц', 'blanco', placeholders["underscore_separator"], 'engl', placeholders["same_case_separator"],
-            'ish', '*/',
-            '//', placeholders['capitals'], 'die', placeholders["same_case_separator"], 'selbe',
-            placeholders["camel_case_separator"], "8", placeholders['olc_end']
+            '"', pl['word_start'], pl['capitals'], 'a', pl['capital'], 'wirklich', pl['word_end'], '"',
+            '/*', 'ц', pl['word_start'], 'blanco', '_', 'engl', 'ish', pl['word_end'], '*/',
+            '//', pl['word_start'], pl['capitals'], 'die', 'selbe', "8", pl['word_end'], pl['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -360,7 +361,6 @@ class TeprTest(unittest.TestCase):
             PrepParam.EN_ONLY: 1,
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 2,
-            PrepParam.SPLIT_REPR: 1,
             PrepParam.TABS_NEWLINES: 0,
             PrepParam.MARK_LOGS: 1
         })
@@ -371,21 +371,21 @@ class TeprTest(unittest.TestCase):
         actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
-            placeholders["camel_case_separator"],
+            pl['word_start'],
             '1',
             '.',
             '1',
-            placeholders['split_words_end'],
+            pl['word_end'],
             "*",
-            placeholders['non_eng'],
-            '"', placeholders["camel_case_separator"], placeholders['capital'], 'a',
-            placeholders["camel_case_separator"], placeholders['non_eng'], placeholders['split_words_end'], '"',
+            pl['non_eng'],
+            '"', pl["word_start"], pl['capitals'], 'a',
+            pl["capital"], pl['non_eng'], pl['word_end'], '"',
             '\n',
-            '/*', placeholders['non_eng'], placeholders["camel_case_separator"], placeholders['non_eng'],
-            placeholders["underscore_separator"], 'english', placeholders['split_words_end'], '*/',
+            '/*', pl['non_eng'], pl["word_start"], pl['non_eng'],
+            "_", 'english', pl['word_end'], '*/',
             '\n', '\t',
-            '//', placeholders["camel_case_separator"], placeholders['capitals'], placeholders['non_eng'],
-            placeholders["camel_case_separator"], "8", placeholders['split_words_end'], placeholders['olc_end']
+            '//', pl["word_start"], pl['capitals'], pl['non_eng'],
+            "8", pl['word_end'], pl['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -399,7 +399,6 @@ class TeprTest(unittest.TestCase):
             PrepParam.EN_ONLY: 1,
             PrepParam.COM_STR: 2,
             PrepParam.SPLIT: 3,
-            PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 1,
             PrepParam.MARK_LOGS: 1
         })
@@ -412,16 +411,16 @@ class TeprTest(unittest.TestCase):
         actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
+            pl['word_start'],
             '1',
-            placeholders["same_case_separator"],
             '.',
-            placeholders["same_case_separator"],
             '1',
+            pl['word_end'],
             "*",
-            placeholders['non_eng'],
-            placeholders["string_literal"],
-            placeholders["comment"],
-            placeholders["comment"]
+            pl['non_eng'],
+            pl["string_literal"],
+            pl["comment"],
+            pl["comment"]
         ]
 
         self.assertEqual(expected, actual)
@@ -435,8 +434,7 @@ class TeprTest(unittest.TestCase):
             PrepParam.EN_ONLY: 1,
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 3,
-            PrepParam.SPLIT_REPR: 0,
-            PrepParam.TABS_NEWLINES: True,
+            PrepParam.TABS_NEWLINES: 1,
             PrepParam.MARK_LOGS: 1
         })
 
@@ -448,18 +446,17 @@ class TeprTest(unittest.TestCase):
         actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
+            pl['word_start'],
             '1',
-            placeholders["same_case_separator"],
             '.',
-            placeholders["same_case_separator"],
             '1',
+            pl['word_end'],
             "*",
-            placeholders['non_eng'],
-            '"', placeholders['capital'], 'a', placeholders["camel_case_separator"], placeholders['non_eng'], '"',
-            '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'engl',
-            placeholders["same_case_separator"], 'ish', '*/',
-            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8",
-            placeholders['olc_end']
+            pl['non_eng'],
+            '"', pl['word_start'], pl['capitals'], 'a', pl["capital"], pl['non_eng'], pl['word_end'], '"',
+            '/*', pl['non_eng'], pl['word_start'], pl['non_eng'], '_', 'engl', 'ish', pl['word_end'], '*/',
+            '//', pl['word_start'], pl['capitals'], pl['non_eng'], "8", pl['word_end'],
+            pl['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -473,7 +470,6 @@ class TeprTest(unittest.TestCase):
             PrepParam.EN_ONLY: 1,
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 4,
-            PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 1,
             PrepParam.MARK_LOGS: 1
         })
@@ -484,19 +480,18 @@ class TeprTest(unittest.TestCase):
         actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
         expected = [
+            pl['word_start'],
             '1',
-            placeholders["same_case_separator"], '.', placeholders["same_case_separator"],
+            '.',
             '1',
+            pl['word_end'],
             "*",
-            placeholders['non_eng'],
-            '"', placeholders['capital'], 'a', placeholders["camel_case_separator"], placeholders['non_eng'], '"',
-            '/*', placeholders['non_eng'], placeholders['non_eng'], placeholders["underscore_separator"], 'e',
-            placeholders["same_case_separator"], 'n', placeholders["same_case_separator"], 'g',
-            placeholders["same_case_separator"], 'l',
-            placeholders["same_case_separator"], 'i', placeholders["same_case_separator"], 's',
-            placeholders["same_case_separator"], 'h', '*/',
-            '//', placeholders['capitals'], placeholders['non_eng'], placeholders["camel_case_separator"], "8",
-            placeholders['olc_end']
+            pl['non_eng'],
+            '"', pl['word_start'], pl['capitals'], 'a', pl["capital"], pl['non_eng'], pl['word_end'], '"',
+            '/*', pl['non_eng'], pl['word_start'], pl['non_eng'], '_', 'e', 'n', 'g', 'l', 'i', 's', 'h',
+            pl['word_end'], '*/',
+            '//', pl['word_start'], pl['capitals'], pl['non_eng'], "8", pl['word_end'],
+            pl['olc_end']
         ]
 
         self.assertEqual(expected, actual)
@@ -506,7 +501,6 @@ class TeprTest(unittest.TestCase):
             PrepParam.EN_ONLY: 1,
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 1,
-            PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 0,
             PrepParam.MARK_LOGS: 1
         })
@@ -514,13 +508,15 @@ class TeprTest(unittest.TestCase):
         ngramSplittingConfig = NgramSplitConfig()
 
         tokens = [LoggableBlock(
-            [LogStatement(FullWord.of('LOGGER'), FullWord.of('Info'), INFO, [StringLiteral([FullWord.of("Hi")])])])]
+            [LogStatement(SplitContainer.from_single_token('LOGGER'),
+                          SplitContainer.from_single_token('Info'), INFO,
+                          [StringLiteral([SplitContainer.from_single_token("Hi")])])])]
 
         actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
-        expected = [placeholders['loggable_block'], placeholders['log_statement'], '`info', '`Cs', 'logger', '.', '`C',
-                    'info', '(', '"', '`C', 'hi',
-                    '"', ')', ';', 'L`', placeholders['loggable_block_end']]
+        expected = [pl['loggable_block'], pl['log_statement'], pl['info'], pl['capitals'], 'logger', '.',
+                    pl['capital'], 'info', '(', '"', pl['capital'], 'hi',
+                    '"', ')', ';', pl['log_statement_end'], pl['loggable_block_end']]
 
         self.assertEqual(expected, actual)
 
@@ -529,18 +525,19 @@ class TeprTest(unittest.TestCase):
             PrepParam.EN_ONLY: 1,
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 1,
-            PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 0,
             PrepParam.MARK_LOGS: 0
         })
 
         ngramSplittingConfig = NgramSplitConfig()
 
-        tokens = [LogStatement(FullWord.of('LOGGER'), FullWord.of('Info'), INFO, [StringLiteral([FullWord.of("Hi")])])]
+        tokens = [LogStatement(SplitContainer.from_single_token('LOGGER'),
+                               SplitContainer.from_single_token('Info'), INFO,
+                               [StringLiteral([SplitContainer.from_single_token("Hi")])])]
 
         actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
-        expected = ['`Cs', 'logger', '.', '`C', 'info', '(', '"', '`C', 'hi',
+        expected = [pl['capitals'], 'logger', '.', pl['capital'], 'info', '(', '"', pl['capital'], 'hi',
                     '"', ')', ';']
 
         self.assertEqual(expected, actual)
@@ -555,7 +552,6 @@ class TeprTest(unittest.TestCase):
             PrepParam.EN_ONLY: 0,
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 4,
-            PrepParam.SPLIT_REPR: 0,
             PrepParam.TABS_NEWLINES: 0,
             PrepParam.MARK_LOGS: 1
         })
@@ -563,11 +559,11 @@ class TeprTest(unittest.TestCase):
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.BPE,
                                                 merges_cache={'while': ['while']})
 
-        tokens = [FullWord.of("While")]
+        tokens = [SplitContainer.from_single_token("While")]
 
         actual = to_repr(prep_config, tokens, ngramSplittingConfig)
 
-        expected = [placeholders['capital'], "while"]
+        expected = [pl['capital'], "while", ]
 
         self.assertEqual(expected, actual)
 

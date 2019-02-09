@@ -1,140 +1,110 @@
 import unittest
 
+from logrec.dataprep.model.noneng import NonEng
 from logrec.dataprep.preprocessors.preprocessor_list import pp_params
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.general import from_string
 from logrec.dataprep.model.containers import SplitContainer, StringLiteral
 from logrec.dataprep.model.logging import LogStatement, INFO
-from logrec.dataprep.model.noneng import NonEngSubWord, NonEngFullWord
 from logrec.dataprep.model.numeric import Number, DecimalPoint, E
 from logrec.dataprep.model.placeholders import placeholders
-from logrec.dataprep.model.word import FullWord, SubWord, Capitalization, WordStart
+from logrec.dataprep.model.word import Word, Underscore
 from logrec.dataprep.prepconfig import PrepConfig
 from logrec.dataprep.split.ngram import NgramSplitConfig, NgramSplittingType
 from logrec.dataprep.to_repr import to_repr
 
 test_cases = {
     "create": (
-        [FullWord.of("create")],
+        [SplitContainer.from_single_token("create")],
         ["create"],
-        ["create"]
     ),
     "Vector": (
-        [FullWord.of("Vector")],
+        [SplitContainer.from_single_token("Vector")],
         [placeholders["capital"], "vector"],
-        [placeholders["capital"], "vector"]
     ),
     "players": (
-        [FullWord.of("players")],
-        ['play', placeholders["same_case_separator"], "er", placeholders["same_case_separator"], "s"],
-        [placeholders["camel_case_separator"], 'play', 'er', 's', placeholders["split_words_end"]]
+        [SplitContainer.from_single_token("players")],
+        [placeholders["word_start"], 'play', 'er', 's', placeholders["word_end"]]
     ),
     "0.345e+4": (
         [Number(["0", DecimalPoint(), "3", "4", "5", E(), "+", "4"])],
-        ["0.", placeholders["same_case_separator"], "3", placeholders["same_case_separator"], "4",
-         placeholders["same_case_separator"], "5", placeholders["same_case_separator"], "e+",
-         placeholders["same_case_separator"], "4"],
-        [placeholders["camel_case_separator"], "0.", "3", "4", "5", "e+", "4", placeholders["split_words_end"]]
+        [placeholders["word_start"], "0.", "3", "4", "5", "e+", "4", placeholders["word_end"]]
     ),
     "bestPlayers": (
-        [SplitContainer([SubWord.of("best"), SubWord.of("Players")])],
-        ["best", placeholders["camel_case_separator"], 'play', placeholders["same_case_separator"], "er",
-         placeholders["same_case_separator"], "s"],
-        [placeholders["camel_case_separator"], "best", placeholders["camel_case_separator"], 'play', "er", "s",
-         placeholders["split_words_end"]]
+        [SplitContainer([Word.from_("best"), Word.from_("Players")])],
+        [placeholders["word_start"], "best", placeholders["capital"], 'play', "er", "s", placeholders["word_end"]]
     ),
     "test_BestPlayers": (
-        [SplitContainer([SubWord.of("test"), SubWord.of("_Best"), SubWord.of("Players")])],
-        ["test", placeholders["underscore_separator"], placeholders["capital"], "best",
-         placeholders["camel_case_separator"], 'play', placeholders["same_case_separator"], "er",
-         placeholders["same_case_separator"], "s"],
-        [placeholders["camel_case_separator"], "test", placeholders["underscore_separator"], placeholders["capital"],
-         "best", placeholders["camel_case_separator"], 'play', "er", "s", placeholders["split_words_end"]]
+        [SplitContainer([Word.from_("test"), Underscore(), Word.from_("Best"), Word.from_("Players")])],
+        [placeholders["word_start"], "test", '_', placeholders["capital"],
+         "best", placeholders["capital"], 'play', "er", "s", placeholders["word_end"]]
     ),
     "test_BestPlayers_modified": (
         [SplitContainer(
-            [SubWord.of("test"), SubWord.of("_Best"), SubWord.of("Players"), SubWord.of("_modified")]
+            [Word.from_("test"), Underscore(), Word.from_("Best"), Word.from_("Players"), Underscore(),
+             Word.from_("modified")]
         )],
-        ["test", placeholders["underscore_separator"], placeholders["capital"], "best",
-         placeholders["camel_case_separator"], 'play', placeholders["same_case_separator"], "er",
-         placeholders["same_case_separator"], "s", placeholders["underscore_separator"],
-         "mod", placeholders["same_case_separator"], "if", placeholders["same_case_separator"], "ied"],
-        [placeholders["camel_case_separator"], "test", placeholders["underscore_separator"], placeholders["capital"],
-         "best", placeholders["camel_case_separator"], 'play', "er", "s", placeholders["underscore_separator"], "mod",
+        [placeholders["word_start"], "test", '_', placeholders["capital"],
+         "best", placeholders["capital"], 'play', "er", "s", '_', "mod",
          "if", "ied",
-         placeholders["split_words_end"]]
+         placeholders["word_end"]]
     ),
     "N_PLAYERS_NUM": (
-        [SplitContainer([SubWord.of("N"), SubWord.of("_PLAYERS"), SubWord.of("_NUM")])],
-        [placeholders["capital"], "n", placeholders["underscore_separator"], placeholders["capitals"], "play",
-         placeholders["same_case_separator"], "er", placeholders["same_case_separator"], "s",
-         placeholders["underscore_separator"], placeholders["capitals"], "num"],
-        [placeholders["camel_case_separator"], placeholders["capital"], "n", placeholders["underscore_separator"],
-         placeholders["capitals"], "play", "er", "s", placeholders["underscore_separator"], placeholders["capitals"],
-         "num", placeholders["split_words_end"]]
+        [SplitContainer([Word.from_("N"), Underscore(), Word.from_("PLAYERS"), Underscore(), Word.from_("NUM")])],
+        [placeholders["word_start"], placeholders["capitals"], "n", '_',
+         placeholders["capitals"], "play", "er", "s", '_', placeholders["capitals"],
+         "num", placeholders["word_end"]]
     ),
     "test_очень": (
-        [SplitContainer([SubWord.of("test"), NonEngSubWord(SubWord.of("_очень"))])],
-        ["test", placeholders["underscore_separator"], placeholders['non_eng']],
-        [placeholders["camel_case_separator"], "test", placeholders["underscore_separator"], placeholders['non_eng'],
-         placeholders["split_words_end"]]
+        [SplitContainer([Word.from_("test"), Underscore(), NonEng(Word.from_("очень"))])],
+        [placeholders["word_start"], "test", '_', placeholders['non_eng'], placeholders["word_end"]]
     ),
     "очень_test": (
-        [SplitContainer([NonEngSubWord(SubWord("очень", Capitalization.NONE, WordStart())), SubWord.of("_test")])],
-        [placeholders['non_eng'], placeholders["underscore_separator"], "test"],
-        [placeholders["camel_case_separator"], placeholders['non_eng'], placeholders["underscore_separator"], "test",
-         placeholders["split_words_end"]]
+        [SplitContainer([NonEng(Word.from_("очень")), Underscore(), Word.from_("test")])],
+        [placeholders["word_start"], placeholders['non_eng'], '_', "test",
+         placeholders["word_end"]]
     ),
     "testWчень": (
-        [SplitContainer([SubWord.of("test"), NonEngSubWord(SubWord.of("Wчень"))])],
-        ["test", placeholders["camel_case_separator"], placeholders['non_eng']],
-        [placeholders["camel_case_separator"], "test", placeholders["camel_case_separator"], placeholders['non_eng'],
-         placeholders["split_words_end"]]
+        [SplitContainer([Word.from_("test"), NonEng(Word.from_("Wчень"))])],
+        [placeholders["word_start"], "test", placeholders['capital'], placeholders['non_eng'], placeholders["word_end"]]
     ),
     "сегодня": (
-        [NonEngFullWord(FullWord.of("сегодня"))],
-        [placeholders['non_eng']],
+        [SplitContainer([(NonEng(Word.from_("сегодня")))])],
         [placeholders['non_eng']]
     ),
     "_сегодня": (
-        [NonEngFullWord(FullWord.of("_сегодня"))],
-        [placeholders['underscore_separator'], placeholders['non_eng']],
-        [placeholders['underscore_separator'], placeholders['non_eng']]
+        [SplitContainer([Underscore(), (NonEng(Word.from_("сегодня")))])],
+        [placeholders['word_start'], '_', placeholders['non_eng'], placeholders['word_end']]
     ),
     "_Сегодня": (
-        [NonEngFullWord(FullWord.of("_Сегодня"))],
-        [placeholders['underscore_separator'], placeholders['capital'], placeholders['non_eng']],
-        [placeholders['underscore_separator'], placeholders['capital'], placeholders['non_eng']]
+        [SplitContainer([Underscore(), (NonEng(Word.from_("Сегодня")))])],
+        [placeholders['word_start'], '_', placeholders['capital'], placeholders['non_eng'], placeholders['word_end']]
     ),
     "Сегодня": (
-        [NonEngFullWord(FullWord.of("Сегодня"))],
-        [placeholders['capital'], placeholders['non_eng']],
+        [SplitContainer([(NonEng(Word.from_("Сегодня")))])],
         [placeholders['capital'], placeholders['non_eng']]
     ),
     '"сегодня"': (
-        [StringLiteral([NonEngFullWord(FullWord.of("сегодня"))])],
-        ['"', placeholders['non_eng'], '"'],
+        [StringLiteral([SplitContainer([(NonEng(Word.from_("сегодня")))])])],
         ['"', placeholders['non_eng'], '"']
     ),
     'logger.info("Установлена licht4bild пользователем" + user.getNick()) ;': (
-        [LogStatement(FullWord.of('logger'), FullWord.of('info'), INFO,
+        [LogStatement(SplitContainer.from_single_token('logger'), SplitContainer.from_single_token('info'), INFO,
                       [StringLiteral([
-                          NonEngFullWord(FullWord.of('Установлена')),
+                          SplitContainer([NonEng(Word.from_('Установлена'))]),
                           SplitContainer([
-                              NonEngSubWord(SubWord('licht', Capitalization.NONE, WordStart())),
-                              SubWord.of('4'),
-                              NonEngSubWord(SubWord.of('bild'))
+                              NonEng(Word.from_('licht')),
+                              Word.from_('4'),
+                              NonEng(Word.from_('bild'))
                           ]),
-                          NonEngFullWord(FullWord.of('пользователем'))
-                      ]), '+', FullWord.of('user'), '.',
+                          SplitContainer([NonEng(Word.from_('пользователем'))])
+                      ]), '+', SplitContainer.from_single_token('user'), '.',
                           SplitContainer([
-                              SubWord.of('get'),
-                              SubWord.of('Nick')
+                              Word.from_('get'),
+                              Word.from_('Nick')
                           ]), '(', ')'])],
-        ['`L', '`info', 'logger', '.', 'info', '(', '"', '`C', '`E', '`E', '`c', '4', '`c', '`E', '`E', '"',
-         '+', 'user', '.', 'get', '`c', 'ni', '`s', 'ck', '(', ')', ')', ';', 'L`'],
-        ['`L', '`info', 'logger', '.', 'info', '(', '"', '`C', '`E', '`c', '`E', '`c', '4', '`c', '`E', 'w`', '`E', '"',
-         '+', 'user', '.', '`c', 'get', '`c', 'ni', 'ck', 'w`', '(', ')', ')', ';', 'L`']
+        ['`L', '`info', 'logger', '.', 'info', '(', '"', '`C', '`E', '`w', '`E', '4', '`E', 'w`', '`E', '"',
+         '+', 'user', '.', '`w', 'get', '`C', 'ni', 'ck', 'w`', '(', ')', ')', ';', 'L`']
     )
 }
 
@@ -165,13 +135,9 @@ class SubwordSeparation(unittest.TestCase):
 
             self.assertEqual(output_tuple[0], parsed)
 
-            repred = to_repr(PrepConfig.from_encoded_string('104011'), parsed, ngram_split_config)
+            repred = to_repr(PrepConfig.from_encoded_string('10411'), parsed, ngram_split_config)
 
             self.assertEqual(output_tuple[1], repred)
-
-            repred2 = to_repr(PrepConfig.from_encoded_string('104111'), parsed, ngram_split_config)
-
-            self.assertEqual(output_tuple[2], repred2)
 
 
 if __name__ == '__main__':

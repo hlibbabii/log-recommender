@@ -1,7 +1,7 @@
 import unittest
 
 from logrec.dataprep.model.containers import StringLiteral, SplitContainer
-from logrec.dataprep.model.word import SubWord, ParseableToken
+from logrec.dataprep.model.word import ParseableToken, Underscore, Word
 from logrec.dataprep.preprocessors.split import simple_split
 
 
@@ -11,13 +11,16 @@ class SplitTest(unittest.TestCase):
         token = [StringLiteral([":", ParseableToken("_test_my123GmyClass_")])]
         actual = simple_split(token, {})
 
-        expected = [StringLiteral([":", SplitContainer([SubWord.of("_test"),
-                                                        SubWord.of("_my"),
-                                                        SubWord.of("123"),
-                                                        SubWord.of("Gmy"),
-                                                        SubWord.of("Class"),
-                                                        SubWord.of("_"),
-                                                        ])])]
+        expected = [StringLiteral([":", SplitContainer([
+            Underscore(),
+            Word.from_("test"),
+            Underscore(),
+            Word.from_("my"),
+            Word.from_("123"),
+            Word.from_("Gmy"),
+            Word.from_("Class"),
+            Underscore()
+        ])])]
         self.assertEqual(actual, expected)
 
 

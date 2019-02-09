@@ -1,14 +1,13 @@
 import unittest
 
+from logrec.dataprep.model.noneng import NonEng
+from logrec.dataprep.model.word import Word, Underscore
 from logrec.dataprep.preprocessors.preprocessor_list import pp_params
 from logrec.dataprep.preprocessors.core import apply_preprocessors
 from logrec.dataprep.preprocessors.general import from_file
 from logrec.dataprep.model.chars import NewLine, Tab, Backslash, Quote
-from logrec.dataprep.model.containers import OneLineComment, SplitContainer, StringLiteral, \
-    MultilineComment
-from logrec.dataprep.model.noneng import NonEngSubWord
+from logrec.dataprep.model.containers import OneLineComment, SplitContainer, StringLiteral, MultilineComment
 from logrec.dataprep.model.numeric import HexStart, Number, DecimalPoint, L, F, E, D
-from logrec.dataprep.model.word import FullWord, SubWord
 
 text2 = '''
 _my_favoRite_ints_
@@ -30,10 +29,12 @@ class ApplyPreprocessorsTest(unittest.TestCase):
 long[] lovely_longs = {0x34a35EL,     0x88bc96fl           , -0x34L};
 '''
         expected_result = [NewLine(),
-                           FullWord.of('long'),
+                           SplitContainer.from_single_token('long'),
                            '[',
                            ']',
-                           SplitContainer([SubWord.of('lovely'), SubWord.of('_longs')]),
+                           SplitContainer([Word.from_('lovely'),
+                                           Underscore(),
+                                           Word.from_('longs')]),
                            '=',
                            '{',
                            Number([HexStart(), '3', '4', 'a', '3', '5', 'E', L()]),
@@ -55,12 +56,18 @@ long[] lovely_longs = {0x34a35EL,     0x88bc96fl           , -0x34L};
 int[] _my_favoRite_ints_ = {0x12, 0x1fE, 441, -81, -0xfFf};
 '''
         expected_result = [NewLine(),
-                           FullWord.of('int'),
+                           SplitContainer.from_single_token('int'),
                            '[',
                            ']',
                            SplitContainer(
-                               [SubWord.of('my'), NonEngSubWord(SubWord.of('_favo')),
-                                SubWord.of('Rite'), SubWord.of('_ints'), SubWord.of("_")]
+                               [Underscore(),
+                                Word.from_('my'),
+                                Underscore(),
+                                NonEng(Word.from_('favo')),
+                                Word.from_('Rite'),
+                                Underscore(),
+                                Word.from_('ints'),
+                                Underscore()]
                            ),
                            '=',
                            '{',
@@ -84,10 +91,10 @@ int[] _my_favoRite_ints_ = {0x12, 0x1fE, 441, -81, -0xfFf};
 float[] floats = {-0.43E4f, .58F, 0.d, -9.63e+2D, 0.E-8};
 '''
         expected_result = [NewLine(),
-                           FullWord.of('float'),
+                           SplitContainer.from_single_token('float'),
                            '[',
                            ']',
-                           FullWord.of('floats'),
+                           SplitContainer.from_single_token('floats'),
                            '=',
                            '{',
                            Number(['-', '0', DecimalPoint(), '4', '3', E(), '4', F()]),
@@ -110,14 +117,14 @@ float[] floats = {-0.43E4f, .58F, 0.d, -9.63e+2D, 0.E-8};
 BigAWESOMEString[] a2y = "abc".doSplit("\\"");
 '''
         expected_result = [NewLine(), SplitContainer(
-            [SubWord.of('Big'), SubWord.of('AWESOME'), SubWord.of('String')]),
+            [Word.from_('Big'), Word.from_('AWESOME'), Word.from_('String')]),
                            '[',
                            ']',
-                           SplitContainer([SubWord.of('a'), SubWord.of('2'), SubWord.of('y')]),
+                           SplitContainer([Word.from_('a'), Word.from_('2'), Word.from_('y')]),
                            '=',
-                           StringLiteral([FullWord.of('abc')]),
+                           StringLiteral([SplitContainer.from_single_token('abc')]),
                            '.',
-                           SplitContainer([SubWord.of('do'), SubWord.of('Split')]),
+                           SplitContainer([Word.from_('do'), Word.from_('Split')]),
                            '(',
                            StringLiteral([Backslash(), Quote()]),
                            ')',
@@ -130,13 +137,20 @@ BigAWESOMEString[] a2y = "abc".doSplit("\\"");
         text = '''
 // this code won't compile but the preprocessing still has to be done corrrectly
 '''
-        expected_result = [NewLine(), OneLineComment([FullWord.of('this'), FullWord.of('code'),
-                                                      FullWord.of('won'), "'", FullWord.of('t'),
-                                                      FullWord.of('compile'), FullWord.of('but'),
-                                                      FullWord.of('the'), FullWord.of('preprocessing'),
-                                                      FullWord.of('still'), FullWord.of('has'),
-                                                      FullWord.of('to'), FullWord.of('be'),
-                                                      FullWord.of('done'), FullWord.of('corrrectly')]),
+        expected_result = [NewLine(), OneLineComment([SplitContainer.from_single_token('this'),
+                                                      SplitContainer.from_single_token('code'),
+                                                      SplitContainer.from_single_token('won'), "'",
+                                                      SplitContainer.from_single_token('t'),
+                                                      SplitContainer.from_single_token('compile'),
+                                                      SplitContainer.from_single_token('but'),
+                                                      SplitContainer.from_single_token('the'),
+                                                      SplitContainer.from_single_token('preprocessing'),
+                                                      SplitContainer.from_single_token('still'),
+                                                      SplitContainer.from_single_token('has'),
+                                                      SplitContainer.from_single_token('to'),
+                                                      SplitContainer.from_single_token('be'),
+                                                      SplitContainer.from_single_token('done'),
+                                                      SplitContainer.from_single_token('corrrectly')]),
                            NewLine(), NewLine()]
 
         self.__test_apply_preprocessors(text, expected_result)
@@ -174,8 +188,8 @@ $
 '''
 
         expected_result = [NewLine(),
-                           SplitContainer([SubWord.of('9'), SubWord.of('a')]),
-                           SplitContainer([SubWord.of('abc'), SubWord.of('1')]),
+                           SplitContainer([Word.from_('9'), Word.from_('a')]),
+                           SplitContainer([Word.from_('abc'), Word.from_('1')]),
                            NewLine(),
                            '~',
                            Number(['-', HexStart(), 'F', 'F', 'F', 'F', 'F', L()]),
@@ -291,16 +305,17 @@ _operations
 '''
 
         expected_result = [NewLine(),
-                           MultilineComment([FullWord.of('multi'), '-', FullWord.of('line'),
+                           MultilineComment([SplitContainer.from_single_token('multi'), '-',
+                                             SplitContainer.from_single_token('line'),
                                              SplitContainer([
-                                                 SubWord.of('My'),
-                                                 SubWord.of('Comment'),
-                                                 SubWord.of('_')
+                                                 Word.from_('My'),
+                                                 Word.from_('Comment'),
+                                                 Underscore()
                                              ]),
                                              NewLine()]),
                            '/',
                            NewLine(),
-                           FullWord.of('_operations'),
+                           SplitContainer([Underscore(), Word.from_('operations')]),
                            NewLine(),
                            NewLine()]
 
@@ -312,11 +327,14 @@ MyClass Class CONSTANT VAR_WITH_UNDERSCORES
 '''
 
         expected_result = [NewLine(),
-                           SplitContainer([SubWord.of("My"), SubWord.of("Class")]),
-                           FullWord.of("Class"), FullWord.of("CONSTANT"),
-                           SplitContainer([SubWord.of("VAR"),
-                                           SubWord.of("_WITH"),
-                                           SubWord.of("_UNDERSCORES")]),
+                           SplitContainer([Word.from_("My"), Word.from_("Class")]),
+                           SplitContainer.from_single_token("Class"),
+                           SplitContainer.from_single_token("CONSTANT"),
+                           SplitContainer([Word.from_("VAR"),
+                                           Underscore(),
+                                           Word.from_("WITH"),
+                                           Underscore(),
+                                           Word.from_("UNDERSCORES")]),
                            NewLine(), NewLine()]
 
         self.__test_apply_preprocessors(text, expected_result)

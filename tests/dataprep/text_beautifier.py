@@ -3,30 +3,13 @@ import unittest
 from logrec.dataprep.text_beautifier import beautify_text
 
 text_boundaries = '''
-<pad> <pad> <pad> public `c `C ar ti fact `c request `c builder w` `c ar ti fact w` ( final `C string `c co or d in ate s w` ) { `c set `c ar ti fact w` ( new `c `C default `c ar ti fact w` ( `c co or d in ate s w` ) ) ; return this ; } public `c `C ar ti fact `c request `c builder w` `c ar ti fact w` ( final `C string `c group `c id w` , final `C string `c ar ti fact `c id w` , final `C string version , final `C string `c exten sion w` , final `C string `c class i fier w` ) { `c set `c ar ti fact w` ( new `c `C default `c ar ti fact w` ( `c group `c id w` , `c ar ti fact `c id w` , `c class i fier w` , `c exten sion w` , version ) ) ; return this ; } public `c `C ar ti fact `c request `c builder w` `c ar ti fact w` ( final `C string `c group `c id w` , final `C string `c ar ti fact `c id w` , final `C string version , final `C string `c exten sion w` ) { `c set `c ar ti fact w` ( new `c `C default `c ar ti fact w` ( `c group `c id w` , `c ar ti fact `c id w` , `c exten sion w` , version ) ) ; return this ; } public `c `C ar ti fact `c request `c builder w` `c ar ti fact w` ( final `C string `c group `c id w` , final `C string `c ar ti fact `c id w` , final `C string version ) { return `c ar ti fact w` ( `c group `c id w` , `c ar ti fact `c id w` , version , " `c j ar w` " ) ; } public `c `C ar ti fact `c request `c builder w` `c re pos it ory w` ( final `c `C remo te `c re pos it ory w` . . . `c re pos it ori es w` ) { for ( `c `C remo te `c re pos it ory w` `c re pos it ory w` : `c re pos it ori es w` ) { `c add `c re pos it ory w` ( `c re pos it ory w` ) ; } return this ; } } ``
-/* * `C copyright ( c ) `c 200 9 w` - `c 20 11 w` `c `C son at y pe w` , `C inc . * `C all `c right s w` `c re ser ved w` . `C this program and the `c ac comp any ing w` `c mat er i als w` * are `c ma de w` `c avai lable w` under the terms of the `C eclipse `C public `C license `c v `c 1 w` . 0 * and `C apache `C license `c v `c 2 w` . 0 which `c ac comp an i es w` this `c distribu tion w` . * `C the `C eclipse `C public `C license is `c avai lable w` at * http : // www . eclipse . org / legal / `c ep l w` - `c v `c 10 w` . html * `C the `C apache `C license `c v `c 2 w` . 0 is `c avai lable w` at * http : // www . apache . org / licenses / `Cs license - 2 . 0 . html * `C you may `c e le ct w` to `c re dist ribute w` this code under either of `c the se w` licenses . */ package org . `c son at y pe w` . `c s is u w` . `c m av en w` . `c b rid ge w` . `c sup port w` ; import java . util . `c `C array `c list w` ; import java . util . `C collection ; import org . apache . `c m av en w` . model . `c `C re pos it ory w` ; import org . `c son at y pe w` . `c a e ther w` . `c re pos it ory w` . `c `C remo te `c re pos it ory w` ; import org . `c son at y pe w` . `c a e ther w` . `c re pos it ory w` . `c `C re pos it ory `c po lic y w` ; /* * * `c `Cs to do w`
+<pad> <pad> <pad> public `w `C ar ti fact `C request `C builder w` `w ar ti fact w` ( final `C string `w group `C id w` , final `C string `w ar ti fact `C id w` , final `C string version , final `C string `w exten sion w` , final `C string `w class i fier w` ) { `w set `C ar ti fact w` ( new `w `C default `C ar ti fact w` ( `w group `C id w` , `w ar ti fact `C id w` , `w class i fier w` , `w exten sion w` , version ) ) ; return this ; } } ``
+/* * `C copyright ( c ) `w 200 9 w` - `w 20 11 w` `w `C son at y pe w` , `C inc . * `C all `w right s w` `w re ser ved w` . `C this program and the `w ac comp any ing w` `w mat er i als w` * are `w ma de w` `w avai lable w` under the terms of the `C eclipse `C public `C license `w v 1 w` . 0 * and `C apache `C license `w v 2 w` . 0 which `w ac comp an i es w` this `w distribu tion w` . * `C the `C eclipse `C public `C license is `w avai lable w` at * http : // www . eclipse . org / legal / `w ep l w` - `w v 10 w` . html * `C the `C apache `C license `w v 2 w` . 0 is `w avai lable w` at * http : // www . apache . org / licenses / `Cs license - 2 . 0 . html * `C you may `w e le ct w` to `w re dist ribute w` this code under either of `w the se w` licenses . */ package org . `w son at y pe w` . `w s is u w` . `w m av en w` . `w b rid ge w` . `w sup port w` ; import java . util . `w `C array `C list w` ; import java . util . `C collection ; import org . apache . `w m av en w` . model . `w `C re pos it ory w` ; import org . `w son at y pe w` . `w a e ther w` . `w re pos it ory w` . `w `C remo te `C re pos it ory w` ; import org . `w son at y pe w` . `w a e ther w` . `w re pos it ory w` . `w `C re pos it ory `C po lic y w` ; /* * * `w `Cs to do w`
 '''
 
 text_boundaries_expected = '''
-3x<pad> public ArtifactRequestBuilder artifact ( final String coordinates ){
-setArtifact ( new DefaultArtifact ( coordinates ) );
-return this;
-}
-public ArtifactRequestBuilder artifact ( final String groupId , final String artifactId , final String version , final String extension , final String classifier ){
+3x<pad> public ArtifactRequestBuilder artifact ( final String groupId , final String artifactId , final String version , final String extension , final String classifier ){
 setArtifact ( new DefaultArtifact ( groupId , artifactId , classifier , extension , version ) );
-return this;
-}
-public ArtifactRequestBuilder artifact ( final String groupId , final String artifactId , final String version , final String extension ){
-setArtifact ( new DefaultArtifact ( groupId , artifactId , extension , version ) );
-return this;
-}
-public ArtifactRequestBuilder artifact ( final String groupId , final String artifactId , final String version ){
-return artifact ( groupId , artifactId , version , " jar " );
-}
-public ArtifactRequestBuilder repository ( final RemoteRepository...repositories ){
-for ( RemoteRepository repository : repositories ){
-addRepository ( repository );
-}
 return this;
 }
 }
@@ -49,7 +32,7 @@ import org.sonatype.aether.repository.RepositoryPolicy;
 
 class UtilTest(unittest.TestCase):
     def test_beautify_1(self):
-        text_boundaries1 = '`c `C ar ti fact `c req uest `c build er `c cl ass w`'
+        text_boundaries1 = '`w `C ar ti fact `C req uest `C build er `C cl ass w`'
 
         actual = beautify_text(text_boundaries1)
 
@@ -58,7 +41,7 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_beautify_2(self):
-        text_boundaries1 = '`c `Cs to do w`'
+        text_boundaries1 = '`w `Cs to do w`'
 
         actual = beautify_text(text_boundaries1)
 
@@ -67,7 +50,7 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_beautify_3(self):
-        text_boundaries1 = '`c TO DO w`'
+        text_boundaries1 = '`w TO DO w`'
 
         actual = beautify_text(text_boundaries1)
 

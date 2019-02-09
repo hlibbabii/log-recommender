@@ -4,13 +4,6 @@ from typing import List, Optional, Tuple
 from logrec.dataprep.model.placeholders import placeholders
 
 logger = logging.getLogger(__name__)
-subword_separators_boundaries = [
-    placeholders['camel_case_separator'],
-    placeholders['underscore_separator']
-]
-
-subword_separators_separators \
-    = [placeholders['same_case_separator']] + subword_separators_boundaries
 
 capitals = [placeholders['capital'], placeholders['capitals']]
 
@@ -72,12 +65,12 @@ class FullWordIterator(object):
                     index_from += 1
                     self.current_index += 1
                     continue
-                elif current_target_word in subword_separators_boundaries:
+                elif current_target_word == placeholders['word_start']:
                     word_in_progress = True
                 elif current_target_word in capitals:
                     after_full_word_capital = True
-                elif current_target_word == placeholders['split_words_end']:
-                    message = f"Split end separator without split start at {self.targets}, position {self.current_index}"
+                elif current_target_word == placeholders['word_end']:
+                    message = f"Word end separator without word start at {self.targets}, position {self.current_index}"
                     if self.exit_on_error:
                         raise AssertionError(message)
                     else:
@@ -87,7 +80,7 @@ class FullWordIterator(object):
                 else:
                     index_to = self.current_index + 1
             else:
-                if current_target_word == placeholders['split_words_end']:
+                if current_target_word == placeholders['word_end']:
                     index_to = self.current_index + 1
                     word_in_progress = False
             self.current_index += 1

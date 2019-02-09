@@ -7,13 +7,13 @@ from logrec.dataprep.model.placeholders import placeholders
 
 text_field = Field()
 text_field.build_vocab([[
-    placeholders['camel_case_separator'],
-    placeholders['split_words_end'],
+    placeholders['word_start'],
+    placeholders['word_end'],
     placeholders['capital'],
     placeholders['capitals'],
     '}',
     'a',
-    placeholders['underscore_separator'],
+    '_',
     placeholders['log_statement'],
     placeholders['info'],
     placeholders['log_statement_end']
@@ -30,16 +30,15 @@ class FullwordIteratorTest(unittest.TestCase):
                      placeholders['log_statement'],
                      placeholders['info'],
                      placeholders['log_statement_end'],
-                     placeholders['camel_case_separator'],
+                     placeholders['word_start'],
                      placeholders['capital'],
                      'a',
-                     placeholders['camel_case_separator'],
                      'a',
-                     placeholders['split_words_end'],
+                     placeholders['word_end'],
                      '}',
                      placeholders['capitals']]
 
-        full_word_indexes = [(0, 1), (1, 2), (5, 11), (11, 12)]
+        full_word_indexes = [(0, 1), (1, 2), (5, 10), (10, 11)]
 
         expected = [(input_str[range[0]: range[1]], range) for range in full_word_indexes]
 
@@ -48,16 +47,16 @@ class FullwordIteratorTest(unittest.TestCase):
         actual = iter_to_int_list(it)
         self.assertEqual(expected, actual)
 
-        it.add_data(['a', placeholders['underscore_separator']])
+        it.add_data(['a', placeholders['word_start'], '_'])
         actual = iter_to_int_list(it)
         self.assertEqual(
             [([placeholders['capitals'], 'a'], (0, 2))], actual
         )
 
-        it.add_data([placeholders['split_words_end']])
+        it.add_data(['_', placeholders['word_end']])
         actual = iter_to_int_list(it)
         self.assertEqual(
-            [([placeholders['underscore_separator'], placeholders['split_words_end']], (0, 2))], actual
+            [([placeholders['word_start'], '_', '_', placeholders['word_end']], (0, 4))], actual
         )
 
     def test_empty(self):

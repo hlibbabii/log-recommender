@@ -2,69 +2,96 @@ import unittest
 
 from logrec.dataprep.preprocessors import loggable
 from logrec.dataprep.model.chars import NewLine
-from logrec.dataprep.model.containers import MultilineComment, StringLiteral
+from logrec.dataprep.model.containers import MultilineComment, StringLiteral, SplitContainer
 from logrec.dataprep.model.logging import LoggableBlock
-from logrec.dataprep.model.word import FullWord
 
 
 class MarkLogTest(unittest.TestCase):
     def test_nested_data_class(self):
         input = ['{', '}',
-                 MultilineComment([FullWord.of("class")]),
-                 FullWord.of('import'), FullWord.of("a"),
+                 MultilineComment([SplitContainer.from_single_token("class")]),
+                 SplitContainer.from_single_token('import'),
+                 SplitContainer.from_single_token("a"),
                  NewLine(),
-                 FullWord.of('class'), FullWord.of('A'), '{',
-                 FullWord.of('void'), FullWord.of('print1'), '(', ')', '{',
-                 FullWord.of('if'), '(', FullWord.of('True'), ')', '{', '}',
+                 SplitContainer.from_single_token('class'),
+                 SplitContainer.from_single_token('A'), '{',
+                 SplitContainer.from_single_token('void'),
+                 SplitContainer.from_single_token('print1'), '(', ')', '{',
+                 SplitContainer.from_single_token('if'), '(',
+                 SplitContainer.from_single_token('True'), ')', '{', '}',
             '}',
-                 FullWord.of('static'), FullWord.of('private'),
-                 FullWord.of('class'), FullWord.of('B'), FullWord.of('extends'), FullWord.of('D'), '{',
-                 FullWord.of('private'), FullWord.of('String'), FullWord.of('b'), ';',
-                 FullWord.of('B'), '(', ')', '{', '}',
-                 FullWord.of('static'), '{', FullWord.of('c'), '=', StringLiteral([FullWord('class')]), '.',
-                 FullWord.of('class'), '}',
+                 SplitContainer.from_single_token('static'),
+                 SplitContainer.from_single_token('private'),
+                 SplitContainer.from_single_token('class'),
+                 SplitContainer.from_single_token('B'),
+                 SplitContainer.from_single_token('extends'),
+                 SplitContainer.from_single_token('D'), '{',
+                 SplitContainer.from_single_token('private'),
+                 SplitContainer.from_single_token('String'),
+                 SplitContainer.from_single_token('b'), ';',
+                 SplitContainer.from_single_token('B'), '(', ')', '{', '}',
+                 SplitContainer.from_single_token('static'), '{',
+                 SplitContainer.from_single_token('c'), '=',
+                 StringLiteral([SplitContainer.from_single_token('class')]), '.',
+                 SplitContainer.from_single_token('class'), '}',
             '}',
-                 FullWord.of('void'), FullWord.of('print'), '(', ')', '{',
-                 FullWord.of('if'), '(', FullWord.of('True'), ')', '{', '}',
+                 SplitContainer.from_single_token('void'),
+                 SplitContainer.from_single_token('print'), '(', ')', '{',
+                 SplitContainer.from_single_token('if'), '(',
+                 SplitContainer.from_single_token('True'), ')', '{', '}',
             '}',
-                 FullWord.of('int'), FullWord.of('a'), ';',
+                 SplitContainer.from_single_token('int'),
+                 SplitContainer.from_single_token('a'), ';',
             '}',
                  ]
 
         actual = loggable.mark(input, None)
 
         expected = ['{', '}',
-                    MultilineComment([FullWord.of("class")]),
-                    FullWord.of('import'), FullWord.of("a"),
+                    MultilineComment([SplitContainer.from_single_token("class")]),
+                    SplitContainer.from_single_token('import'), SplitContainer.from_single_token("a"),
                     NewLine(),
-                    FullWord.of('class'), FullWord.of('A'), '{',
-                    FullWord.of('void'), FullWord.of('print1'), '(', ')', LoggableBlock(['{',
-                                                                                 FullWord.of('if'), '(',
-                                                                                 FullWord.of('True'), ')', '{', '}',
+                    SplitContainer.from_single_token('class'), SplitContainer.from_single_token('A'), '{',
+                    SplitContainer.from_single_token('void'), SplitContainer.from_single_token('print1'), '(', ')',
+                    LoggableBlock(['{',
+                                   SplitContainer.from_single_token('if'), '(',
+                                   SplitContainer.from_single_token('True'), ')', '{', '}',
                                                                                  '}']),
-                    FullWord.of('static'), FullWord.of('private'),
-                    FullWord.of('class'), FullWord.of('B'), FullWord.of('extends'), FullWord.of('D'), '{',
-                    FullWord.of('private'), FullWord.of('String'), FullWord.of('b'), ';',
-                    FullWord.of('B'), '(', ')', LoggableBlock(['{', '}']),
-                    FullWord.of('static'),
+                    SplitContainer.from_single_token('static'),
+                    SplitContainer.from_single_token('private'),
+                    SplitContainer.from_single_token('class'),
+                    SplitContainer.from_single_token('B'),
+                    SplitContainer.from_single_token('extends'),
+                    SplitContainer.from_single_token('D'), '{',
+                    SplitContainer.from_single_token('private'),
+                    SplitContainer.from_single_token('String'),
+                    SplitContainer.from_single_token('b'), ';',
+                    SplitContainer.from_single_token('B'), '(', ')', LoggableBlock(['{', '}']),
+                    SplitContainer.from_single_token('static'),
                     LoggableBlock(
-                ['{', FullWord.of('c'), '=', StringLiteral([FullWord('class')]), '.', FullWord.of('class'), '}']),
+                        ['{', SplitContainer.from_single_token('c'), '=',
+                         StringLiteral([SplitContainer.from_single_token('class')]), '.',
+                         SplitContainer.from_single_token('class'), '}']),
                     '}',
-                    FullWord.of('void'), FullWord.of('print'), '(', ')',
-                    LoggableBlock(['{', FullWord.of('if'), '(', FullWord.of('True'), ')', '{', '}', '}']),
-                    FullWord.of('int'), FullWord.of('a'), ';',
+                    SplitContainer.from_single_token('void'), SplitContainer.from_single_token('print'), '(', ')',
+                    LoggableBlock(
+                        ['{', SplitContainer.from_single_token('if'), '(', SplitContainer.from_single_token('True'),
+                         ')', '{', '}', '}']),
+                    SplitContainer.from_single_token('int'), SplitContainer.from_single_token('a'), ';',
                     '}'
                     ]
 
         self.assertEqual(expected, actual)
 
     def test_class_closing_bracket(self):
-        input = [FullWord.of('class'), '}']
+        input = [SplitContainer.from_single_token('class'), '}']
 
         actual = loggable.mark(input, None)
 
     def test_class_class(self):
-        input = [FullWord.of('class'), FullWord.of('A'), FullWord.of('class')]
+        input = [SplitContainer.from_single_token('class'),
+                 SplitContainer.from_single_token('A'),
+                 SplitContainer.from_single_token('class')]
 
         actual = loggable.mark(input, None)
 

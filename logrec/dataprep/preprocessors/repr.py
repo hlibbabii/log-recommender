@@ -1,19 +1,18 @@
 import logging
 
-from logrec.dataprep.split.ngram import NgramSplitConfig, SplitRepr
+from logrec.dataprep.split.ngram import NgramSplitConfig
 
 logger = logging.getLogger(__name__)
 
 
 class ReprConfig(object):
-    def __init__(self, types_to_be_repr, ngram_split_config, split_repr):
+    def __init__(self, types_to_be_repr, ngram_split_config):
         self.types_to_be_repr = types_to_be_repr
         self.ngram_split_config = ngram_split_config
-        self.split_repr = split_repr
 
     @classmethod
     def empty(cls):
-        return cls([], NgramSplitConfig(), SplitRepr.BONDERIES)
+        return cls([], NgramSplitConfig())
 
 
 def to_repr_list(token_list, repr_config):

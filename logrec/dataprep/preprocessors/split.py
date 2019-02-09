@@ -1,11 +1,11 @@
 import logging
-import re
+import regex
 ############   Multitoken list level    ###############3
 import time
 
 from logrec.dataprep import util
 from logrec.dataprep.model.containers import ProcessableTokenContainer, SplitContainer
-from logrec.dataprep.model.word import FullWord, SubWord, ParseableToken
+from logrec.dataprep.model.word import ParseableToken, Word, Underscore
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +33,10 @@ def simple_split(token_list, context):
 def simple_split_token(token):
     if isinstance(token, ParseableToken):
         parts = [m[0] for m in
-                 re.finditer('(_+$)|(_*(?:[0-9]+|[^A-Z0-9_]+|[A-Z][^A-Z0-9_]+|(?:[A-Z]+(?![^A-Z0-9_]))))', str(token))]
-        if len(parts) > 1:
-            processable_tokens = [SubWord.of(p) for p in parts]
-            return SplitContainer(processable_tokens)
-        else:
-            return FullWord.of(parts[0])
+                 regex.finditer('(_|[0-9]+|[[:upper:]]?[[:lower:]]+|[[:upper:]]+(?![[:lower:]]))', str(token))]
+        # if len("".join(parts)) ==
+        processable_tokens = [Word.from_(p) if p != '_' else Underscore() for p in parts]
+        return SplitContainer(processable_tokens)
     elif isinstance(token, ProcessableTokenContainer):
         return type(token)([simple_split_token(subtoken) for subtoken in token.get_subtokens()])
     else:

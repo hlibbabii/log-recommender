@@ -47,7 +47,7 @@ The pluggin supports developers by helping with log decisions.
 [IntelliJ plugin building](https://github.com/hlibbabii/log-recommender-intellij-plugin) in more details.
 
 # Supporting activities
-- [log-recommender-cli](https://github.com/hlibbabii/log-recommender-cli): a command line tool for managing datasets 
+- [log-recommender-cli](https://github.com/hlibbabii/log-recommender-cli): a command line tool for managing datasets
 and their parsing, preprocessing etc.
 
 # Implementation details

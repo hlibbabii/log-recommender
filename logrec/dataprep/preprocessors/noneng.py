@@ -4,8 +4,8 @@ from logrec.dataprep import path_to_eng_dicts, path_to_non_eng_dicts
 from logrec.dataprep.lang.langchecker import LanguageChecker
 from logrec.dataprep.model.containers import ProcessableTokenContainer
 from logrec.dataprep.model.logging import LogStatement
-from logrec.dataprep.model.noneng import NonEngFullWord, NonEngSubWord
-from logrec.dataprep.model.word import FullWord, SubWord
+from logrec.dataprep.model.noneng import NonEng
+from logrec.dataprep.model.word import Word
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +19,8 @@ def mark(token_list, context):
 
 # TODO merge this with similar function in split.py
 def apply_operation_to_token(token, func):
-    if isinstance(token, SubWord):
-        return func(token, NonEngSubWord)
-    elif isinstance(token, FullWord):
-        return func(token, NonEngFullWord)
+    if isinstance(token, Word):
+        return func(token, NonEng)
     elif isinstance(token, ProcessableTokenContainer):
         parts = []
         for subtoken in token.get_subtokens():

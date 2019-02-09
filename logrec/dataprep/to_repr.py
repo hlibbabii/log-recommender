@@ -14,7 +14,7 @@ from logrec.dataprep import base_project_dir, METADATA_DIR, BPE_DIR, PARSED_DIR
 from logrec.dataprep.preprocessors.general import to_token_list
 from logrec.dataprep.prepconfig import PrepParam, get_types_to_be_repr, PrepConfig
 from logrec.dataprep.preprocessors.repr import to_repr_list, ReprConfig
-from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplitConfig, SplitRepr
+from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplitConfig
 from logrec.dataprep.util import read_dict_from_2_columns
 from logrec.properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
 
@@ -56,9 +56,8 @@ class FinalReprWriter(ReprWriter):
 
 def to_repr(prep_config: PrepConfig, token_list: List, n_gramm_splitting_config: Optional[NgramSplitConfig] = None):
     types_to_be_repr = get_types_to_be_repr(prep_config)
-    split_repr = SplitRepr.BONDERIES if prep_config.get_param_value(PrepParam.SPLIT_REPR) else SplitRepr.BETWEEN_WORDS
     splitting_config = n_gramm_splitting_config or global_n_gramm_splitting_config
-    repr_list = to_repr_list(token_list, ReprConfig(types_to_be_repr, splitting_config, split_repr))
+    repr_list = to_repr_list(token_list, ReprConfig(types_to_be_repr, splitting_config))
     return repr_list
 
 

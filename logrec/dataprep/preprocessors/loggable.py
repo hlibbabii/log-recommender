@@ -1,8 +1,9 @@
 import logging
 from typing import List
 
+from logrec.dataprep.model.containers import SplitContainer
 from logrec.dataprep.model.logging import LoggableBlock
-from logrec.dataprep.model.word import FullWord
+from logrec.dataprep.model.word import Word
 from logrec.dataprep.prepconfig import PrepConfig
 from logrec.dataprep.split.ngram import NgramSplitConfig
 from logrec.dataprep.to_repr import to_repr
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def to_repr_l(lst):
-    return to_repr(PrepConfig.from_encoded_string('000101'), lst,
+    return to_repr(PrepConfig.from_encoded_string('00001'), lst,
                    NgramSplitConfig())
 
 class State(object):
@@ -104,9 +105,9 @@ class NonLoggable(State):
 
 
 def is_class_like_declaration(token, new_tokens):
-    if not token in [FullWord.of('class'),
-                     FullWord.of('enum'),
-                     FullWord.of('interface')]:
+    if not token in [SplitContainer([Word.from_('class')]),
+                     SplitContainer([Word.from_('enum')]),
+                     SplitContainer([Word.from_('interface')])]:
         return False
 
     if new_tokens:

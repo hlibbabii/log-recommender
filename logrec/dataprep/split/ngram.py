@@ -1,13 +1,7 @@
 from enum import Enum, auto
 
-from logrec.dataprep.model.placeholders import placeholders
 from logrec.dataprep.split.bpe_encode import encode_word
-from logrec.dataprep.util import insert_separators
 
-
-class SplitRepr(Enum):
-    BETWEEN_WORDS = auto()
-    BONDERIES = auto()
 
 
 class NgramSplittingType(Enum):
@@ -83,15 +77,10 @@ splitting_type_to_func_map = {
 }
 
 
-def do_ngram_splitting(canonic_form, ngram_split_config):
-    return splitting_type_to_func_map[ngram_split_config.splitting_type](canonic_form, ngram_split_config)
-
-
-def insert_borders(subwords, split_repr):
-    if split_repr == SplitRepr.BONDERIES:
-        return subwords
-    elif split_repr == SplitRepr.BETWEEN_WORDS:
-        return insert_separators(subwords, placeholders['same_case_separator'])
+def do_ngram_splitting(token, ngram_split_config):
+    if ngram_split_config.splitting_type and ngram_split_config.splitting_type != NgramSplittingType.ONLY_NUMBERS:
+        subwords = splitting_type_to_func_map[ngram_split_config.splitting_type](token, ngram_split_config)
     else:
-        raise AssertionError(f"Unknown split repr: {split_repr}")
+        subwords = [token]
 
+    return subwords

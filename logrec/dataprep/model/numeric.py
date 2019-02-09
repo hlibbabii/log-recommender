@@ -1,6 +1,6 @@
 from logrec.dataprep.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.repr import ReprConfig
-from logrec.dataprep.split.ngram import SplitRepr, NgramSplittingType, do_ngram_splitting, insert_borders
+from logrec.dataprep.split.ngram import NgramSplittingType, do_ngram_splitting
 
 
 class Number(object):
@@ -29,12 +29,11 @@ class Number(object):
             subwords = do_ngram_splitting(self.non_preprocessed_repr(repr_config), repr_config.ngram_split_config)
         else:
             subwords = [self.non_preprocessed_repr(repr_config)]
-        subwords_with_separators = insert_borders(subwords, repr_config.split_repr)
 
-        if repr_config.split_repr == SplitRepr.BONDERIES and len(subwords) > 1:
-            return [placeholders['camel_case_separator']] + subwords_with_separators + [placeholders['split_words_end']]
+        if len(subwords) > 1:
+            return [placeholders['word_start']] + subwords + [placeholders['word_end']]
         else:
-            return subwords_with_separators
+            return subwords
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.parts_of_number == other.parts_of_number

@@ -1,12 +1,10 @@
 import unittest
 
-from logrec.dataprep.model.chars import OneLineCommentStart, NewLine, MultilineCommentEnd, \
-    MultilineCommentStart
+from logrec.dataprep.model.chars import OneLineCommentStart, NewLine, MultilineCommentEnd, MultilineCommentStart
 # TODO write explanations with normal strings
-from logrec.dataprep.model.containers import SplitContainer, StringLiteral, OneLineComment, \
-    MultilineComment
-from logrec.dataprep.model.noneng import NonEng, NonEngSubWord, NonEngFullWord
-from logrec.dataprep.model.word import Word, FullWord, SubWord, Capitalization, WordStart
+from logrec.dataprep.model.containers import SplitContainer, StringLiteral, OneLineComment, MultilineComment
+from logrec.dataprep.model.noneng import NonEng
+from logrec.dataprep.model.word import Word, Underscore
 from logrec.dataprep.preprocessors.noneng import mark
 
 
@@ -15,14 +13,14 @@ class NonengTest(unittest.TestCase):
         '''
         All words are english. Nothing changed
         '''
-        tokens = [StringLiteral([OneLineCommentStart(), SplitContainer([SubWord.of("test"),
-                                                                        SubWord.of("my"),
-                                                                        SubWord.of("class")]
+        tokens = [StringLiteral([OneLineCommentStart(), SplitContainer([Word.from_("test"),
+                                                                        Word.from_("my"),
+                                                                        Word.from_("class")]
                                                                        )]),
                   NewLine(),
-                  OneLineComment([MultilineCommentEnd(), FullWord.of("lifeisgood")]),
+                  OneLineComment([MultilineCommentEnd(), SplitContainer.from_single_token("lifeisgood")]),
                   NewLine(),
-                  StringLiteral([MultilineCommentStart(), FullWord.of("!")]),
+                  StringLiteral([MultilineCommentStart(), SplitContainer.from_single_token("!")]),
                   NewLine(),
                   MultilineComment([NewLine()]),
                   NewLine()
@@ -36,21 +34,22 @@ class NonengTest(unittest.TestCase):
         tokens = [
             StringLiteral([
                 SplitContainer([
-                    SubWord.of("A"),
-                    SubWord.of("Wirklich")
+                    Word.from_("A"),
+                    Word.from_("Wirklich")
                 ])
             ]),
             MultilineComment([
-                FullWord.of('ц'),
+                SplitContainer.from_single_token('ц'),
                 SplitContainer([
-                    SubWord.of("blanco"),
-                    SubWord.of("_english")
+                    Word.from_("blanco"),
+                    Underscore(),
+                    Word.from_("english")
                 ])
             ]),
             OneLineComment([
                 SplitContainer([
-                    SubWord.of("DIESELBE"),
-                    SubWord.of("8")
+                    Word.from_("DIESELBE"),
+                    Word.from_("8")
                 ])
             ])
         ]
@@ -60,18 +59,19 @@ class NonengTest(unittest.TestCase):
         expected = [
             StringLiteral([
                 SplitContainer([
-                    SubWord.of("A"),
-                    NonEngSubWord(SubWord.of("Wirklich"))
+                    Word.from_("A"),
+                    NonEng(Word.from_("Wirklich"))
                 ])
             ]),
             MultilineComment([
-                NonEngFullWord(FullWord.of('ц')),
+                SplitContainer([NonEng(Word.from_('ц'))]),
                 SplitContainer([
                     # we have to call constructor manually here,
                     # case split container cannot set wordStart prefix
                     # when the first subword is wrapped in NonEng
-                    NonEngSubWord(SubWord("blanco", Capitalization.NONE, WordStart())),
-                    SubWord.of("_english")
+                    NonEng(Word.from_("blanco")),
+                    Underscore(),
+                    Word.from_("english")
                 ])
             ]),
             OneLineComment([
@@ -79,8 +79,8 @@ class NonengTest(unittest.TestCase):
                     # we have to call constructor manually here,
                     # case split container cannot set wordStart prefix
                     # when the first subword is wrapped in NonEng
-                    NonEngSubWord(SubWord("dieselbe", Capitalization.ALL, WordStart())),
-                    SubWord.of("8")
+                    NonEng(Word.from_("DIESELBE")),
+                    Word.from_("8")
                 ])
             ])
         ]
