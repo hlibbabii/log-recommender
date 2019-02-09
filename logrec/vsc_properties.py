@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -12,8 +13,12 @@ logger.info(f'Base project dir is {base_project_dir}')
 
 REWRITE_PARSED_FILE = False
 
-DEFAULT_RAW_DATASETS_DIR = os.path.join(base_dir, 'raw_datasets', 'devanbu', 'data')
-DEFAULT_PARSED_DATASETS_DIR = os.path.join(base_project_dir, 'nn-data', 'new_framework')
+with open(os.path.join(base_dir, 'VERSION'), 'r') as f:
+    version = f.readline().rstrip('\n')
+    major_version = re.fullmatch('([0-9]*)\..*', version)
+
+DEFAULT_RAW_DATASETS_DIR = os.path.join(base_dir, 'raw_datasets', 'allamanis')
+DEFAULT_PARSED_DATASETS_DIR = os.path.join(base_dir, 'prep_datasets', f'v{major_version}')
 
 DEFAULT_DATASET = 'en_100_percent'
 DEFAULT_BPE_N_MERGES = '5000'
