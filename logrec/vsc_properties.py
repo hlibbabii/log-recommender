@@ -15,7 +15,7 @@ REWRITE_PARSED_FILE = False
 
 with open(os.path.join(base_project_dir, 'VERSION'), 'r') as f:
     version = f.readline().rstrip('\n')
-    major_version = re.fullmatch('([0-9]*)\..*', version)
+    major_version = re.fullmatch('([0-9]*)\..*', version).group(1)
 
 DEFAULT_RAW_DATASETS_DIR = os.path.join(base_dir, 'raw_datasets', 'allamanis')
 DEFAULT_PARSED_DATASETS_DIR = os.path.join(base_dir, 'prep_datasets', f'v{major_version}')
