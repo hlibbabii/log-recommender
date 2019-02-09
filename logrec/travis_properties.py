@@ -1,10 +1,14 @@
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 
 base_dir = os.path.join(os.environ['HOME'], 'build')
 
 current_script_location = os.path.realpath(__file__)
 current_dir = os.path.dirname(current_script_location)
 base_project_dir = os.path.dirname(current_dir)
+logger.info(f'Base project dir is {base_project_dir}')
 
 REWRITE_PARSED_FILE = False
 

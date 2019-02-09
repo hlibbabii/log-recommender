@@ -8,7 +8,7 @@ base_dir = os.environ['HOME']
 current_script_location = os.path.realpath(__file__)
 current_dir = os.path.dirname(current_script_location)
 base_project_dir = os.path.dirname(current_dir)
-print(f'Base project dir is {base_project_dir}')
+logger.info(f'Base project dir is {base_project_dir}')
 
 REWRITE_PARSED_FILE = False
 
