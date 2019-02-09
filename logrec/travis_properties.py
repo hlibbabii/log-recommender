@@ -1,7 +1,10 @@
 import os
 
 base_dir = os.path.join(os.environ['HOME'], 'build')
-base_project_dir = os.path.join(base_dir, 'hlibbabii', 'log-recommender')
+
+current_script_location = os.path.realpath(__file__)
+current_dir = os.path.dirname(current_script_location)
+base_project_dir = os.path.dirname(current_dir)
 
 REWRITE_PARSED_FILE = False
 
