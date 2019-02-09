@@ -13,7 +13,7 @@ logger.info(f'Base project dir is {base_project_dir}')
 
 REWRITE_PARSED_FILE = False
 
-with open(os.path.join(base_dir, 'VERSION'), 'r') as f:
+with open(os.path.join(base_project_dir, 'VERSION'), 'r') as f:
     version = f.readline().rstrip('\n')
     major_version = re.fullmatch('([0-9]*)\..*', version)
 
