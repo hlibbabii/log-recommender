@@ -20,9 +20,9 @@ with open(os.path.join(base_project_dir, 'VERSION'), 'r') as f:
 DEFAULT_RAW_DATASETS_DIR = os.path.join(base_dir, 'raw_datasets', 'allamanis')
 DEFAULT_PARSED_DATASETS_DIR = os.path.join(base_dir, 'prep_datasets', f'v{major_version}')
 
-DEFAULT_DATASET = 'en_100_percent'
+DEFAULT_DATASET = 'nodup_en_only'
 DEFAULT_BPE_N_MERGES = '5000'
-DEFAULT_BPE_BASE_REPR = '101111'
+DEFAULT_BPE_BASE_REPR = '00100'
 
 DEFAULT_PARSE_PROJECTS_ARGS = []
 DEFAULT_PROJECT_LANGUAGE_CHECKER_ARGS = []
