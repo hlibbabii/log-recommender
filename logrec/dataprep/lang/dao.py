@@ -14,15 +14,15 @@ class DAO(object):
         self.created_projects = self.__get_created_projects()
 
     def save_row(self, row):
-        project = row[0]
+        project = row[1]
         if project not in self.created_projects:
             self.cur.execute(f"INSERT INTO {DAO.PROJECTS_TABLE} (PROJECT, PROCESSED) VALUES (%s, FALSE)", (project,))
             self.created_projects.append(project)
-        self.cur.execute(f'INSERT INTO {DAO.TABLE} (PROJECT, FILE, ' \
+        self.cur.execute(f'INSERT INTO {DAO.TABLE} (TRAIN_TEST_VALID, PROJECT, FILE, ' \
                          ' CODE_TOTAL, CODE_TOTAL_UQ, CODE_NON_ENG, CODE_NON_ENG_UQ, CODE_PERCENT, CODE_PERCENT_UQ,' \
                          ' CODE_STR_TOTAL, CODE_STR_TOTAL_UQ, CODE_STR_NON_ENG, CODE_STR_NON_ENG_UQ, CODE_STR_PERCENT, CODE_STR_PERCENT_UQ,' \
                          ' CODE_STR_COM_TOTAL, CODE_STR_COM_TOTAL_UQ, CODE_STR_COM_NON_ENG, CODE_STR_COM_NON_ENG_UQ, CODE_STR_COM_PERCENT, CODE_STR_COM_PERCENT_UQ, SAMPLE) ' \
-                         'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                         'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
                          row)
 
     def purge(self):
@@ -35,7 +35,7 @@ class DAO(object):
     def select_noneng_projects(self, code_percent, code_noneng, code_noneng_uq, code_str_percent, code_str_noneng,
                                code_str_noneng_uq):
         self.cur.execute(
-            f"select concat('test/', project,'/', file) as fullpath from {DAO.TABLE} where ((code_percent > {code_percent} and code_non_eng > {code_noneng} and code_non_eng_uq > {code_noneng_uq}) or (code_str_percent > {code_str_percent} and code_str_non_eng > {code_str_noneng} and code_str_non_eng_uq > {code_str_noneng_uq}))")
+            f"select concat(TRAIN_TEST_VALID', '/', PROJECT,'/', FILE) as fullpath from {DAO.TABLE} where ((code_percent > {code_percent} and code_non_eng > {code_noneng} and code_non_eng_uq > {code_noneng_uq}) or (code_str_percent > {code_str_percent} and code_str_non_eng > {code_str_noneng} and code_str_non_eng_uq > {code_str_noneng_uq}))")
         return list(map(lambda x: x[0], self.cur.fetchall()))
 
     def __get_processed_projects(self):
