@@ -5,6 +5,7 @@ CREATE TABLE PROJECTS (
 );
 
 CREATE TABLE LANGSTATS(
+   TRAIN_TEST_VALID               TEXT    NOT NULL,
    PROJECT                        TEXT    NOT NULL,
    FILE                           TEXT    NOT NULL,
 
