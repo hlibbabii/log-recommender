@@ -1,3 +1,5 @@
+from typing import List
+
 from logrec.dataprep.model.noneng import NonEng, NonEngContent
 from logrec.dataprep.model.placeholders import placeholders
 from logrec.dataprep.model.word import Word
@@ -38,10 +40,11 @@ class SplitContainer(ProcessableTokenContainer):
         return f'{self.__class__.__name__}{self.subtokens}'
 
     def non_preprocessed_repr(self, repr_config):
-        return "".join(map(lambda s: torepr(s, repr_config), self.subtokens))
+        # TODO refactor
+        return "".join(map(lambda s: torepr(s, repr_config)[0], self.subtokens))
         # return "".join(map(lambda s: s.non_preprocessed_repr(repr_config) if isinstance(s, NonEng) else str(s), self.subtokens))
 
-    def preprocessed_repr(self, repr_config):
+    def preprocessed_repr(self, repr_config) -> List[str]:
         res = []
         for subtoken in self.subtokens:
             r = torepr(subtoken, repr_config)
@@ -91,8 +94,8 @@ class OneLineComment(TextContainer):
         else:
             return ["//"] + torepr(self.subtokens, repr_config) + [placeholders['olc_end']]
 
-    def preprocessed_repr(self, repr_config):
-        return placeholders['comment']
+    def preprocessed_repr(self, repr_config) -> List[str]:
+        return [placeholders['comment']]
 
 
 class MultilineComment(TextContainer):
@@ -105,8 +108,8 @@ class MultilineComment(TextContainer):
         else:
             return ["/*"] + torepr(self.subtokens, repr_config) + ["*/"]
 
-    def preprocessed_repr(self, repr_config):
-        return placeholders['comment']
+    def preprocessed_repr(self, repr_config) -> List[str]:
+        return [placeholders['comment']]
 
 
 class StringLiteral(TextContainer):
@@ -119,5 +122,5 @@ class StringLiteral(TextContainer):
         else:
             return ["\""] + torepr(self.subtokens, repr_config) + ["\""]
 
-    def preprocessed_repr(self, repr_config):
-        return placeholders['string_literal']
+    def preprocessed_repr(self, repr_config) -> List[str]:
+        return [placeholders['string_literal']]

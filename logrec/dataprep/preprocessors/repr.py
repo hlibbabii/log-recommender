@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from logrec.dataprep.split.ngram import NgramSplitConfig
 
@@ -15,24 +16,25 @@ class ReprConfig(object):
         return cls([], NgramSplitConfig())
 
 
-def to_repr_list(token_list, repr_config):
+def to_repr_list(token_list, repr_config) -> List[str]:
     repr_res = []
     for token in token_list:
         repr_token = torepr(token, repr_config)
-        repr_res.extend(repr_token if isinstance(repr_token, list) else [repr_token])
+        repr_res.extend(repr_token)
     return repr_res
 
 
-def torepr(token, repr_config):
+def torepr(token, repr_config) -> List[str]:
     clazz = type(token)
     if clazz.__name__ == 'ParseableToken':
         raise AssertionError(f"Parseable token cannot be present in the final parsed model: {token}")
     if clazz == list:
         return to_repr_list(token, repr_config)
     if clazz == str:
-        return token
+        return [token]
 
     if clazz in repr_config.types_to_be_repr:
         return token.preprocessed_repr(repr_config)
     else:
-        return token.non_preprocessed_repr(repr_config)
+        non_prep = token.non_preprocessed_repr(repr_config)
+        return non_prep if isinstance(non_prep, list) else [non_prep]

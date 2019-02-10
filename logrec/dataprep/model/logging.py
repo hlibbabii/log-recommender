@@ -1,3 +1,5 @@
+from typing import List
+
 from logrec.dataprep.model.containers import ProcessableTokenContainer
 from logrec.dataprep.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.repr import torepr
@@ -30,10 +32,6 @@ WARN = LogLevel(3, placeholders['warn'])
 ERROR = LogLevel(4, placeholders['error'])
 FATAL = LogLevel(5, placeholders['fatal'])
 UNKNOWN = LogLevel(100, placeholders['unknown'])
-
-
-def listify(x):
-    return x if isinstance(x, list) else [x]
 
 
 def is_positive_level(level: str) -> bool:
@@ -95,16 +93,16 @@ class LogStatement(object):
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.__dict__ == other.__dict__
 
-    def __to_repr(self, repr_config):
-        return listify(torepr(self._object_name, repr_config)) + ['.'] + \
-               listify(torepr(self._method_name, repr_config)) + ['('] + \
-               listify(torepr(self._log_content.get_subtokens(), repr_config)) + [')'] + \
-               listify(torepr(self._tokens_before_final_semicolon, repr_config)) + [';']
+    def __to_repr(self, repr_config) -> List[str]:
+        return torepr(self._object_name, repr_config) + ['.'] + \
+               torepr(self._method_name, repr_config) + ['('] + \
+               torepr(self._log_content.get_subtokens(), repr_config) + [')'] + \
+               torepr(self._tokens_before_final_semicolon, repr_config) + [';']
 
-    def non_preprocessed_repr(self, repr_config):
+    def non_preprocessed_repr(self, repr_config) -> List[str]:
         return self.__to_repr(repr_config)
 
-    def preprocessed_repr(self, repr_config):
+    def preprocessed_repr(self, repr_config) -> List[str]:
         return [placeholders['log_statement'], str(self.level)] + \
                self.__to_repr(repr_config) + \
                [placeholders['log_statement_end']]
@@ -119,10 +117,10 @@ class LoggableBlock(ProcessableTokenContainer):
     def __init__(self, content):
         super().__init__(content)
 
-    def non_preprocessed_repr(self, repr_config):
+    def non_preprocessed_repr(self, repr_config) -> List[str]:
         return torepr(self.subtokens, repr_config)
 
-    def preprocessed_repr(self, repr_config):
+    def preprocessed_repr(self, repr_config) -> List[str]:
         return [placeholders['loggable_block']] + torepr(self.subtokens, repr_config) + [
             placeholders['loggable_block_end']]
 

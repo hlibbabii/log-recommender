@@ -1,3 +1,5 @@
+from typing import List
+
 from logrec.dataprep.preprocessors.repr import ReprConfig
 
 
@@ -16,7 +18,7 @@ class NewLine(SpecialChar):
     def non_preprocessed_repr(self, repr_config):
         return "\n"
 
-    def preprocessed_repr(self, repr_config):
+    def preprocessed_repr(self, repr_config) -> List[str]:
         return []
 
 
@@ -24,7 +26,7 @@ class Tab(SpecialChar):
     def non_preprocessed_repr(self, repr_config):
         return "\t"
 
-    def preprocessed_repr(self, repr_config):
+    def preprocessed_repr(self, repr_config) -> List[str]:
         return []
 
 
