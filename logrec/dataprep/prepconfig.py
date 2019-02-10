@@ -24,7 +24,7 @@ class PrepConfig(object):
     possible_param_values = {
         PrepParam.EN_ONLY: [0, 1, 2],
         PrepParam.COM_STR: [0, 1, 2],
-        PrepParam.SPLIT: [0, 1, 2, 3, 4, 5, 6, 9],
+        PrepParam.SPLIT: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
         PrepParam.TABS_NEWLINES: [0, 1],
         PrepParam.MARK_LOGS: [0, 1]
     }
@@ -39,10 +39,12 @@ class PrepConfig(object):
         PrepParam.SPLIT: {0: 'NO_splitting',
                           1: 'camel+underscore',
                           2: 'camel+underscore+numbers',
-                          3: 'TODO',
+                          3: 'camel+underscore+freqdict',
                           4: 'camel+underscore+bpe_5k',
                           5: 'camel+underscore+bpe_1k',
                           6: 'camel+underscore+bpe_10k',
+                          7: 'camel+underscore+bpe_20k',
+                          8: 'camel+underscore+bpe_0',
                           9: 'camel+underscore+bpe_custom'},
         PrepParam.TABS_NEWLINES: {0: 'tabs+newlines',
                                   1: 'NO_tabs+NO_newlines'},
@@ -121,9 +123,9 @@ en_only_to_types_to_be_repr = {
 
 def get_types_to_be_repr(prep_config: PrepConfig) -> List[Type]:
     res = []
-    if prep_config.get_param_value(PrepParam.SPLIT) in [1, 2, 3, 4, 5, 6, 9]:
+    if prep_config.get_param_value(PrepParam.SPLIT) in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
         res.extend([SplitContainer, Word])
-    if prep_config.get_param_value(PrepParam.SPLIT) in [2, 3, 4, 5, 6, 9]:
+    if prep_config.get_param_value(PrepParam.SPLIT) in [2, 3, 4, 5, 6, 7, 8, 9]:
         res.append(Number)
     res.extend(com_str_to_types_to_be_repr[prep_config.get_param_value(PrepParam.COM_STR)])
     res.extend(en_only_to_types_to_be_repr[prep_config.get_param_value(PrepParam.EN_ONLY)])

@@ -14,6 +14,7 @@ from logrec.dataprep import base_project_dir, METADATA_DIR, BPE_DIR, PARSED_DIR
 from logrec.dataprep.preprocessors.general import to_token_list
 from logrec.dataprep.prepconfig import PrepParam, get_types_to_be_repr, PrepConfig
 from logrec.dataprep.preprocessors.repr import to_repr_list, ReprConfig
+from logrec.dataprep.split.bpe_encode import read_merges
 from logrec.dataprep.split.ngram import NgramSplittingType, NgramSplitConfig
 from logrec.dataprep.util import read_dict_from_2_columns
 from logrec.properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_TO_REPR_ARGS
@@ -95,7 +96,7 @@ def init_splitting_config(dataset: str, prep_config: PrepConfig,
                           bpe_base_repr: Optional[str], bpe_n_merges: Optional[int], splitting_file: Optional[str]):
     global global_n_gramm_splitting_config
     global_n_gramm_splitting_config = NgramSplitConfig()
-    if prep_config.get_param_value(PrepParam.SPLIT) in [4, 5, 6, 9]:
+    if prep_config.get_param_value(PrepParam.SPLIT) in [4, 5, 6, 7, 8, 9]:
         if not bpe_base_repr:
             raise ValueError("--bpe-base-repr")
 
@@ -103,7 +104,7 @@ def init_splitting_config(dataset: str, prep_config: PrepConfig,
             if not bpe_n_merges:
                 raise ValueError("--bpe-n-merges must be specified for repr **9**")
         else:
-            bpe_n_merges_dict = {4: 5000, 5: 1000, 6: 10000}
+            bpe_n_merges_dict = {4: 5000, 5: 1000, 6: 10000, 7: 20000, 8: 0}
             bpe_n_merges = bpe_n_merges_dict[prep_config.get_param_value(PrepParam.SPLIT)]
 
         if bpe_base_repr.find("/") == -1:
@@ -117,13 +118,8 @@ def init_splitting_config(dataset: str, prep_config: PrepConfig,
         bpe_merges_file = os.path.join(path_to_merges_dir, 'merges.txt')
         bpe_merges_cache = os.path.join(path_to_merges_dir, 'merges_cache.txt')
 
-        merges_cache = read_dict_from_2_columns(bpe_merges_cache, val_type=list)
-        merges = []
-        with open(bpe_merges_file, 'r') as f:
-            for line in f:
-                merges.append(line.rstrip('\n').split(' '))
-        global_n_gramm_splitting_config.merges_cache = merges_cache
-        global_n_gramm_splitting_config.merges = merges
+        global_n_gramm_splitting_config.merges_cache = read_dict_from_2_columns(bpe_merges_cache, val_type=list)
+        global_n_gramm_splitting_config.merges = read_merges(bpe_merges_file)
         global_n_gramm_splitting_config.set_splitting_type(NgramSplittingType.BPE)
     elif prep_config.get_param_value(PrepParam.SPLIT) == 3:
         if not splitting_file:
