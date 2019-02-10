@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import gzip
 import pickle
 import re
 from functools import partial
@@ -12,6 +13,7 @@ from logrec.dataprep.lang.langchecker import LanguageChecker
 from logrec.dataprep.preprocessors.general import to_token_list
 from logrec.dataprep.prepconfig import PrepConfig
 from logrec.dataprep.to_repr import to_repr
+from logrec.dataprep.split.ngram import NgramSplitConfig
 
 logger = logging.getLogger(__name__)
 
@@ -29,18 +31,18 @@ def calc_stats(lang_checker, path_to_dir_with_preprocessed_projects, file):
     project_name = get_project_name(file)
     filenames_file = f'.{project_name}.{parse_projects.FILENAMES_EXTENSION}'
     file_stats = []
-    with open(os.path.join(path_to_dir_with_preprocessed_projects, file), 'rb') as f, \
+    with gzip.GzipFile(os.path.join(path_to_dir_with_preprocessed_projects, file), 'rb') as f, \
             open(os.path.join(path_to_dir_with_preprocessed_projects, filenames_file), 'r') as fn:
         _ = pickle.load(f)  # preprocessing param dict
         while True:
             try:
                 token_list = pickle.load(f)
 
-                repr1 = to_token_list(to_repr(PrepConfig.from_encoded_string('022011'), token_list)).split()
+                repr1 = to_token_list(to_repr(PrepConfig.from_encoded_string('02110'), token_list, NgramSplitConfig())).split(' ')
                 only_code_stats = lang_checker.calc_lang_stats(repr1)
-                repr2 = to_token_list(to_repr(PrepConfig.from_encoded_string('012011'), token_list)).split()
+                repr2 = to_token_list(to_repr(PrepConfig.from_encoded_string('01110'), token_list, NgramSplitConfig())).split(' ')
                 code_str_stats = lang_checker.calc_lang_stats(repr2)
-                repr3 = to_token_list(to_repr(PrepConfig.from_encoded_string('002011'), token_list)).split()
+                repr3 = to_token_list(to_repr(PrepConfig.from_encoded_string('00110'), token_list, NgramSplitConfig())).split(' ')
                 code_str_com_stats = lang_checker.calc_lang_stats(repr3, include_sample=True)
 
                 filename = fn.readline()[:-1]
