@@ -58,7 +58,7 @@ class Word(object):
             raise AssertionError(f"Unknown value: {self.capitalization}")
         return res
 
-    def preprocessed_repr(self, repr_config: ReprConfig):
+    def preprocessed_repr(self, repr_config: ReprConfig) -> List[str]:
         subwords = do_ngram_splitting(self.canonic_form, repr_config.ngram_split_config)
 
         return self.__with_capitalization(subwords)

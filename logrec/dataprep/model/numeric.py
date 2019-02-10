@@ -1,3 +1,5 @@
+from typing import List
+
 from logrec.dataprep.model.placeholders import placeholders
 from logrec.dataprep.preprocessors.repr import ReprConfig
 from logrec.dataprep.split.ngram import NgramSplittingType, do_ngram_splitting
@@ -18,9 +20,10 @@ class Number(object):
     def non_preprocessed_repr(self, repr_config):
         return "".join([str(w) for w in self.parts_of_number])
 
-    def preprocessed_repr(self, repr_config):
+    def preprocessed_repr(self, repr_config) -> List[str]:
         if repr_config.ngram_split_config is None:
-            return self.non_preprocessed_repr(repr_config)
+            r = self.non_preprocessed_repr(repr_config)
+            return r if isinstance(r, list) else [r]
 
         if repr_config.ngram_split_config.splitting_type in [NgramSplittingType.ONLY_NUMBERS,
                                                              NgramSplittingType.NUMBERS_AND_CUSTOM]:
