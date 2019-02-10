@@ -32,6 +32,10 @@ FATAL = LogLevel(5, placeholders['fatal'])
 UNKNOWN = LogLevel(100, placeholders['unknown'])
 
 
+def listify(x):
+    return x if isinstance(x, list) else [x]
+
+
 def is_positive_level(level: str) -> bool:
     if level == placeholders['unknown']:
         raise ValueError('Unknown level not supported here')
@@ -92,10 +96,10 @@ class LogStatement(object):
         return self.__class__ == other.__class__ and self.__dict__ == other.__dict__
 
     def __to_repr(self, repr_config):
-        return torepr(self._object_name, repr_config) + ['.'] + \
-               torepr(self._method_name, repr_config) + ['('] + \
-               torepr(self._log_content.get_subtokens(), repr_config) + [')'] + \
-               torepr(self._tokens_before_final_semicolon, repr_config) + [';']
+        return listify(torepr(self._object_name, repr_config)) + ['.'] + \
+               listify(torepr(self._method_name, repr_config)) + ['('] + \
+               listify(torepr(self._log_content.get_subtokens(), repr_config)) + [')'] + \
+               listify(torepr(self._tokens_before_final_semicolon, repr_config)) + [';']
 
     def non_preprocessed_repr(self, repr_config):
         return self.__to_repr(repr_config)
@@ -121,3 +125,4 @@ class LoggableBlock(ProcessableTokenContainer):
     def preprocessed_repr(self, repr_config):
         return [placeholders['loggable_block']] + torepr(self.subtokens, repr_config) + [
             placeholders['loggable_block_end']]
+
