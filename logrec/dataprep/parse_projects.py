@@ -21,10 +21,18 @@ EXTENSION = "parsed"
 FILENAMES_EXTENSION = "filenames"
 
 
+def read_file_with_encoding(file_path, encoding):
+    with open(file_path, 'r', encoding=encoding) as f:
+        return [line for line in f], file_path
+
+
 def read_file_contents(file_path):
-    with open(file_path, 'r') as f:
+    try:
+        return read_file_with_encoding(file_path, 'utf-8')
+    except UnicodeDecodeError:
+        logger.warning(f"Encoding is not utf-8, trying ISO-8859-1")
         try:
-            return [line for line in f], file_path
+            return read_file_with_encoding(file_path, 'ISO-8859-1')
         except UnicodeDecodeError:
             logger.error(f"Unicode decode error in file: {file_path}")
 
@@ -112,3 +120,4 @@ if __name__ == '__main__':
     args = args[0]
 
     run(args.dataset)
+
