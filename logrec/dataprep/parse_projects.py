@@ -69,9 +69,14 @@ def preprocess_and_write(params):
             filename=os.path.relpath(file_path, start=dir_with_files_to_preprocess)
             filenames.append(filename)
 
+
     with open(os.path.join(full_dest_dir, f'.{project}.{FILENAMES_EXTENSION}'), "w") as f:
         for filename in filenames:
-            f.write(f"{filename}\n")
+            try:
+                f.write(f"{filename}\n")
+            except UnicodeEncodeError:
+                f.write("<bad encoding>\n")
+                logger.warning("Filename has bad encoding")
 
     # remove .part to show that all raw files in this project have been preprocessed
     os.rename(f'{path_to_preprocessed_file}.part', path_to_preprocessed_file)
@@ -120,4 +125,3 @@ if __name__ == '__main__':
     args = args[0]
 
     run(args.dataset)
-
