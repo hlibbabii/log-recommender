@@ -77,6 +77,10 @@ class PrepConfig(object):
             raise ValueError("Combination NO_SPL=0 and EN_ONLY=1 is not supported: "
                              "basic splitting needs to be dont done to check for non-English words.")
 
+        if params[PrepParam.EN_ONLY] == 2 and params[PrepParam.SPLIT] == 0:
+            raise ValueError("Combination NO_SPL=0 and EN_ONLY=2 is not supported: "
+                             "basic splitting needs to be dont done to check for non-English words.")
+
         if params[PrepParam.EN_ONLY] == 2 and params[PrepParam.COM_STR] == 2:
             raise ValueError("Combination EN_ONLY=2 and COM_STR=2 is obsolete: "
                              "Non-eng-content blocks can be present only in comment or string literal blocks, "
