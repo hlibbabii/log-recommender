@@ -567,6 +567,26 @@ class TeprTest(unittest.TestCase):
 
         self.assertEqual(expected, actual)
 
+    def test_merges_no_cache(self):
+        prep_config = PrepConfig({
+            PrepParam.EN_ONLY: 0,
+            PrepParam.COM_STR: 0,
+            PrepParam.SPLIT: 4,
+            PrepParam.TABS_NEWLINES: 0,
+            PrepParam.MARK_LOGS: 1
+        })
+
+        ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.BPE,
+                                                merges={('w', 'h'): 0}, merges_cache={})
+
+        tokens = [SplitContainer.from_single_token("While")]
+
+        actual = to_repr(prep_config, tokens, ngramSplittingConfig)
+
+        expected = [pl['word_start'], pl['capital'], "wh", "i", "l", "e", pl["word_end"]]
+
+        self.assertEqual(expected, actual)
+
 
 if __name__ == '__main__':
     unittest.main()
