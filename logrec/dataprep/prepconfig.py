@@ -39,7 +39,7 @@ class PrepConfig(object):
         PrepParam.SPLIT: {0: 'NO_splitting',
                           1: 'camel+underscore',
                           2: 'camel+underscore+numbers',
-                          3: 'camel+underscore+freqdict',
+                          3: 'camel+underscore+numbers+freqdict',
                           4: 'camel+underscore+bpe_5k',
                           5: 'camel+underscore+bpe_1k',
                           6: 'camel+underscore+bpe_10k',
