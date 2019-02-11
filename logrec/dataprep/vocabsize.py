@@ -40,7 +40,10 @@ class PartialVocab(object):
             raise TypeError(f'Vocab must be a Counter, but is {type(word_counts)}')
 
         self.merged_word_counts = word_counts
-        self.stats = [(1, len(self.merged_word_counts), self.merged_word_counts[placeholders['non_eng']])]
+        self.stats = [(1,
+                       len(self.merged_word_counts),
+                       self.merged_word_counts[placeholders['non_eng']],
+                       self.merged_word_counts[placeholders['non_eng_content']])]
         self.n_files = 1
         self.chunk = chunk
         self.id = self.__generate_id()
@@ -62,7 +65,10 @@ class PartialVocab(object):
         cur_vocab_size = len(self.merged_word_counts)
 
         self.n_files += partial_vocab.n_files
-        new_stats_entry = (self.n_files, cur_vocab_size, self.merged_word_counts[placeholders['non_eng']])
+        new_stats_entry = (self.n_files,
+                           cur_vocab_size,
+                           self.merged_word_counts[placeholders['non_eng']],
+                           self.merged_word_counts[placeholders['non_eng_content']])
         self.stats.extend(partial_vocab.stats + [new_stats_entry])
         return new_words
 
@@ -71,8 +77,8 @@ class PartialVocab(object):
         with open(path_to_stats_file, 'w') as f:
             vocabsize = int(stats[-1][1][0])
             f.write(f'{vocabsize}\n')
-            for percent, (v, n) in stats:
-                f.write(f"{percent} {v} {n}\n")
+            for percent, (v, n, nn) in stats:
+                f.write(f"{percent} {v} {n} {nn}\n")
 
     def write_vocab(self, path_to_vocab_file: str) -> None:
         sorted_vocab = sorted(self.merged_word_counts.items(), key=lambda x: x[1], reverse=True)
@@ -86,8 +92,8 @@ class PartialVocab(object):
     def __generate_stats(self):
         d = defaultdict(list)
         for entry in self.stats:
-            d[entry[0]].append((entry[1], entry[2]))
-        fin = {(float(k) / self.n_files): avg_ssum(v) for k, v in d.items()}
+            d[entry[0]].append(tuple(entry[1:]))
+        fin = {(float(k) / self.n_files): tuple([sum(elm) / len(elm) for elm in zip(*v)]) for k, v in d.items()}
         return sorted(fin.items())
 
 
@@ -179,14 +185,6 @@ class VocabMerger(multiprocessing.Process):
         finish_file_dumping(path_to_new_file)
 
         return first, new_words
-
-
-# TODO remove this ugliness!!
-def avg_ssum(nested_list):
-    sm = (0, 0)
-    for i, k in nested_list:
-        sm = (sm[0] + i, sm[1] + k)
-    return (sm[0] / float(len(nested_list)), sm[1] / float(len(nested_list)))
 
 
 def get_vocab(path_to_file: str) -> Counter:
