@@ -84,7 +84,7 @@ def log(full_word_preds, full_word_pred_values, full_word_targets, full_word_acc
     logger.info("============================")
 
 
-def custom_validate(cache: Cache, split_repr: int, text_field: Field, stepper, dl, metrics, epoch, seq_first,
+def custom_validate(cache: Cache, text_field: Field, stepper, dl, metrics, epoch, seq_first,
                     validate_skip):
     if cache:
         logger.info(f"Using neural cache with theta: {cache.theta}, lambdah: {cache.lambdah}, window: {cache.window}.")
@@ -98,10 +98,7 @@ def custom_validate(cache: Cache, split_repr: int, text_field: Field, stepper, d
     with no_grad_context():
         next_word_history = None
         pointer_history = None
-        if split_repr == 1:
-            full_word_iterator = FullWordIterator()
-        else:
-            raise NotImplementedError("Iterator for split repr 0 is not yet implemented!")
+        full_word_iterator = FullWordIterator()
         n_iter = len(dl)
         for i, (*x, targets) in enumerate(iter(dl)):
             logger.debug(f'Validation: {i}/{n_iter}')

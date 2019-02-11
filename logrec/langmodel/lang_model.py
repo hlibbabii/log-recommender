@@ -135,16 +135,15 @@ def find_and_plot_lr(rnn_learner: RNN_Learner, fs: FS):
     logger.info(f"Plot is saved to {fs.path_to_lr_plot}")
 
 
-def get_validation_function(cache: Cache, use_subword_aware_metrics, split_repr: int, text_field: Field):
+def get_validation_function(cache: Cache, use_subword_aware_metrics, text_field: Field):
     if not cache and not use_subword_aware_metrics:
         return validate
 
-    return partial(custom_validate, cache, split_repr, text_field)
+    return partial(custom_validate, cache, text_field)
 
 
 def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LMTraining, metric_list: List[str],
                          cache: Cache, use_subword_aware_metrics: bool):
-    split_repr = PrepConfig.from_encoded_string(fs.repr).get_param_value(PrepParam.NO_SEP)
     only_validation = False
     n = training.cycle.n
     if training.cycle.n == 0:
@@ -166,7 +165,7 @@ def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LMTraining,
                                        best_epoch_path=BEST_EPOCH_FILENAME,
                                        enc_path=ENCODER_NAME))
 
-    validation_function = get_validation_function(cache, use_subword_aware_metrics, split_repr, rnn_learner.text_field)
+    validation_function = get_validation_function(cache, use_subword_aware_metrics, rnn_learner.text_field)
     vals, ep_vals = rnn_learner.fit(lrs=training.lr, n_cycle=n, wds=training.wds,
                                     cycle_len=training.cycle.len, cycle_mult=training.cycle.mult,
                                     metrics=list(map(lambda x: getattr(metrics, x), metric_list)),
