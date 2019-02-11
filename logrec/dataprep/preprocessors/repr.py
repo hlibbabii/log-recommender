@@ -7,9 +7,10 @@ logger = logging.getLogger(__name__)
 
 
 class ReprConfig(object):
-    def __init__(self, types_to_be_repr, ngram_split_config):
+    def __init__(self, types_to_be_repr, ngram_split_config, dict_based_non_eng=True):
         self.types_to_be_repr = types_to_be_repr
         self.ngram_split_config = ngram_split_config
+        self.dict_based_non_eng = dict_based_non_eng
 
     @classmethod
     def empty(cls):

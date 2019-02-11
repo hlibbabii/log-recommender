@@ -62,7 +62,8 @@ def get_global_n_gramm_splitting_config():
 def to_repr(prep_config: PrepConfig, token_list: List, n_gramm_splitting_config: Optional[NgramSplitConfig] = None):
     types_to_be_repr = get_types_to_be_repr(prep_config)
     splitting_config = n_gramm_splitting_config or get_global_n_gramm_splitting_config()
-    repr_list = to_repr_list(token_list, ReprConfig(types_to_be_repr, splitting_config))
+    dict_based_non_eng = (prep_config.get_param_value(PrepParam.EN_ONLY) != 3)
+    repr_list = to_repr_list(token_list, ReprConfig(types_to_be_repr, splitting_config, dict_based_non_eng))
     return repr_list
 
 
