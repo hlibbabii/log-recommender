@@ -78,7 +78,7 @@ class PartialVocab(object):
             vocabsize = int(stats[-1][1][0])
             f.write(f'{vocabsize}\n')
             for percent, (v, n, nn) in stats:
-                f.write(f"{percent} {v} {n} {nn}\n")
+                f.write(f"{percent:.4f} {int(v)} {int(n)} {int(nn)}\n")
 
     def write_vocab(self, path_to_vocab_file: str) -> None:
         sorted_vocab = sorted(self.merged_word_counts.items(), key=lambda x: x[1], reverse=True)
