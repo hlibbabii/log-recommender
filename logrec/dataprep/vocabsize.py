@@ -29,7 +29,8 @@ VOCABSIZE_FILENAME = 'vocabsize'
 VOCAB_FILENAME = 'vocab'
 
 N_CHUNKS = 20
-BLOCKING_TIMEOUT_SECONDS = 5
+BLOCKING_TIMEOUT_SECONDS_SHORT = 5
+BLOCKING_TIMEOUT_SECONDS_LONG = 300
 
 
 class PartialVocab(object):
@@ -114,7 +115,7 @@ class VocabMerger(multiprocessing.Process):
         logger.info('Sleeping 5 seconds before all the merges have started...')
         time.sleep(5)
         while True:
-            chunk_assigned = self.chunk_queue.get(block=True, timeout=BLOCKING_TIMEOUT_SECONDS)
+            chunk_assigned = self.chunk_queue.get(block=True, timeout=BLOCKING_TIMEOUT_SECONDS_SHORT)
             if chunk_assigned == -1:
                 if not self.process_counter.compare_and_dec(1):
                     logger.debug(
@@ -127,8 +128,8 @@ class VocabMerger(multiprocessing.Process):
                     logger.info(f'[{self.id}] Vocab files are saved. Terminating the process...')
                     break
 
-            first = self.tasks[chunk_assigned].get(block=True, timeout=BLOCKING_TIMEOUT_SECONDS)
-            second = self.tasks[chunk_assigned].get(block=True, timeout=BLOCKING_TIMEOUT_SECONDS)
+            first = self.tasks[chunk_assigned].get(block=True, timeout=BLOCKING_TIMEOUT_SECONDS_LONG)
+            second = self.tasks[chunk_assigned].get(block=True, timeout=BLOCKING_TIMEOUT_SECONDS_LONG)
 
             start = time.time()
 
@@ -148,7 +149,8 @@ class VocabMerger(multiprocessing.Process):
 
     def __finish_merges(self):
         logger.info("===============     Finishing merges    ===============")
-        list_from_chunks = [queue.get(block=True, timeout=BLOCKING_TIMEOUT_SECONDS) for queue in self.tasks.values()]
+        list_from_chunks = [queue.get(block=True, timeout=BLOCKING_TIMEOUT_SECONDS_SHORT) for queue in
+                            self.tasks.values()]
 
         percents_in_one_chunk = 100 // len(list_from_chunks)
 
