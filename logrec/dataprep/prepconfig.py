@@ -18,6 +18,7 @@ class PrepParam(str, Enum):
     SPLIT: str = 'split'
     TABS_NEWLINES: str = 'tabsnewlines'
     MARK_LOGS: str = 'marklogs'
+    CAPS: str = 'caps'
 
 
 class PrepConfig(object):
@@ -26,7 +27,8 @@ class PrepConfig(object):
         PrepParam.COM_STR: [0, 1, 2],
         PrepParam.SPLIT: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
         PrepParam.TABS_NEWLINES: [0, 1],
-        PrepParam.MARK_LOGS: [0, 1]
+        PrepParam.MARK_LOGS: [0, 1],
+        PrepParam.CAPS: [0, 1]
     }
 
     human_readable_values = {
@@ -38,7 +40,7 @@ class PrepConfig(object):
                             1: 'strings+NO_comments',
                             2: 'NO_strings+NO_comments'},
         PrepParam.SPLIT: {0: 'NO_splitting',
-                          1: 'camel+underscore',
+                          1: 'camel+underscoreASCII: Single byte encoding only using the bottom 7 bits. (Unicode code points 0-127.) No accents etc. ... Usually when people say "ANSI" they mean "the default locale/codepage for my system" which is obtained via Encoding.Default, and is often Windows-1252 but can be other locales.',
                           2: 'camel+underscore+numbers',
                           3: 'camel+underscore+numbers+freqdict',
                           4: 'camel+underscore+bpe_5k',
@@ -50,7 +52,11 @@ class PrepConfig(object):
         PrepParam.TABS_NEWLINES: {0: 'tabs+newlines',
                                   1: 'NO_tabs+NO_newlines'},
         PrepParam.MARK_LOGS: {0: 'NO_log_marks',
-                              1: 'log_marks'}
+                              1: 'log_marks'},
+        PrepParam.CAPS: {
+            0: 'case_preserved',
+            1: 'lowercased'
+        }
     }
 
     @staticmethod
@@ -85,13 +91,17 @@ class PrepConfig(object):
                              "basic splitting needs to be dont done to check for non-English words.")
 
         if params[PrepParam.EN_ONLY] == 3 and params[PrepParam.SPLIT] == 0:
-            raise ValueError("Combination NO_SPL=0 and EN_ONLY=2 is not supported: "
+            raise ValueError("Combination NO_SPL=0 and EN_ONLY=3 is not supported: "
                              "basic splitting needs to be dont done to check for non-English words.")
 
         if params[PrepParam.EN_ONLY] == 2 and params[PrepParam.COM_STR] == 2:
             raise ValueError("Combination EN_ONLY=2 and COM_STR=2 is obsolete: "
                              "Non-eng-content blocks can be present only in comment or string literal blocks, "
                              "which are obfuscated")
+
+        if params[PrepParam.CAPS] == 1 and params[PrepParam.SPLIT] == 0:
+            raise ValueError("Combination NO_SPL=0 and CAPS=1 is not supported: "
+                             "basic splitting needs to be dont done to lowercase the subword.")
 
     def __init__(self, params: Dict[PrepParam, int]):
         PrepConfig.__check_invariants(params)

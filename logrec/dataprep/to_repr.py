@@ -63,7 +63,8 @@ def to_repr(prep_config: PrepConfig, token_list: List, n_gramm_splitting_config:
     types_to_be_repr = get_types_to_be_repr(prep_config)
     splitting_config = n_gramm_splitting_config or get_global_n_gramm_splitting_config()
     dict_based_non_eng = (prep_config.get_param_value(PrepParam.EN_ONLY) != 3)
-    repr_list = to_repr_list(token_list, ReprConfig(types_to_be_repr, splitting_config, dict_based_non_eng))
+    lowercase = (prep_config.get_param_value(PrepParam.CAPS) == 1)
+    repr_list = to_repr_list(token_list, ReprConfig(types_to_be_repr, splitting_config, dict_based_non_eng, lowercase))
     return repr_list
 
 
@@ -187,7 +188,7 @@ def run(dataset: str, preprocessing_params: str, bpe_base_repr: Optional[str],
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('dataset', action='store', help=f'path to the parsed dataset')
-    parser.add_argument('repr', action='store', help='preprocessing params line, \n Example: 10101')
+    parser.add_argument('repr', action='store', help='preprocessing params line, \n Example: 101011')
 
     parser.add_argument('--bpe-base-repr', action='store', help='TODO')
     parser.add_argument('--bpe-n-merges', action='store', type=int, help='TODO')

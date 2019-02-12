@@ -52,7 +52,8 @@ class TeprTest(unittest.TestCase):
                 PrepParam.COM_STR: 0,
                 PrepParam.SPLIT: 0,
                 PrepParam.TABS_NEWLINES: 1,
-                PrepParam.MARK_LOGS: 1
+                PrepParam.MARK_LOGS: 1,
+                PrepParam.CAPS: 1
             })
             to_repr(prep_config, [], NgramSplitConfig())
 
@@ -62,7 +63,8 @@ class TeprTest(unittest.TestCase):
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 0,
             PrepParam.TABS_NEWLINES: 1,
-            PrepParam.MARK_LOGS: 1
+            PrepParam.MARK_LOGS: 1,
+            PrepParam.CAPS: 0
         })
 
         actual = to_repr(prep_config, tokens, NgramSplitConfig())
@@ -87,7 +89,8 @@ class TeprTest(unittest.TestCase):
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 1,
             PrepParam.TABS_NEWLINES: 1,
-            PrepParam.MARK_LOGS: 1
+            PrepParam.MARK_LOGS: 1,
+            PrepParam.CAPS: 1
         })
 
         actual = to_repr(prep_config, tokens, NgramSplitConfig())
@@ -115,7 +118,8 @@ class TeprTest(unittest.TestCase):
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 2,
             PrepParam.TABS_NEWLINES: 1,
-            PrepParam.MARK_LOGS: 1
+            PrepParam.MARK_LOGS: 1,
+            PrepParam.CAPS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS)
@@ -149,7 +153,8 @@ class TeprTest(unittest.TestCase):
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 3,
             PrepParam.TABS_NEWLINES: 1,
-            PrepParam.MARK_LOGS: 1
+            PrepParam.MARK_LOGS: 1,
+            PrepParam.CAPS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -218,7 +223,8 @@ class TeprTest(unittest.TestCase):
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 3,
             PrepParam.TABS_NEWLINES: 1,
-            PrepParam.MARK_LOGS: 1
+            PrepParam.MARK_LOGS: 1,
+            PrepParam.CAPS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -291,7 +297,8 @@ class TeprTest(unittest.TestCase):
             PrepParam.SPLIT: 3,
             PrepParam.COM_STR: 0,
             PrepParam.TABS_NEWLINES: 1,
-            PrepParam.MARK_LOGS: 1
+            PrepParam.MARK_LOGS: 1,
+            PrepParam.CAPS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -326,7 +333,8 @@ class TeprTest(unittest.TestCase):
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 3,
             PrepParam.TABS_NEWLINES: 1,
-            PrepParam.MARK_LOGS: 1
+            PrepParam.MARK_LOGS: 1,
+            PrepParam.CAPS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -362,7 +370,8 @@ class TeprTest(unittest.TestCase):
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 2,
             PrepParam.TABS_NEWLINES: 0,
-            PrepParam.MARK_LOGS: 1
+            PrepParam.MARK_LOGS: 1,
+            PrepParam.CAPS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.ONLY_NUMBERS,
@@ -400,7 +409,8 @@ class TeprTest(unittest.TestCase):
             PrepParam.COM_STR: 2,
             PrepParam.SPLIT: 3,
             PrepParam.TABS_NEWLINES: 1,
-            PrepParam.MARK_LOGS: 1
+            PrepParam.MARK_LOGS: 1,
+            PrepParam.CAPS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -435,7 +445,8 @@ class TeprTest(unittest.TestCase):
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 3,
             PrepParam.TABS_NEWLINES: 1,
-            PrepParam.MARK_LOGS: 1
+            PrepParam.MARK_LOGS: 1,
+            PrepParam.CAPS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.NUMBERS_AND_CUSTOM,
@@ -471,7 +482,8 @@ class TeprTest(unittest.TestCase):
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 4,
             PrepParam.TABS_NEWLINES: 1,
-            PrepParam.MARK_LOGS: 1
+            PrepParam.MARK_LOGS: 1,
+            PrepParam.CAPS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.BPE,
@@ -502,7 +514,8 @@ class TeprTest(unittest.TestCase):
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 1,
             PrepParam.TABS_NEWLINES: 0,
-            PrepParam.MARK_LOGS: 1
+            PrepParam.MARK_LOGS: 1,
+            PrepParam.CAPS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig()
@@ -526,7 +539,8 @@ class TeprTest(unittest.TestCase):
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 1,
             PrepParam.TABS_NEWLINES: 0,
-            PrepParam.MARK_LOGS: 0
+            PrepParam.MARK_LOGS: 0,
+            PrepParam.CAPS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig()
@@ -553,7 +567,8 @@ class TeprTest(unittest.TestCase):
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 4,
             PrepParam.TABS_NEWLINES: 0,
-            PrepParam.MARK_LOGS: 1
+            PrepParam.MARK_LOGS: 1,
+            PrepParam.CAPS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.BPE,
@@ -573,7 +588,8 @@ class TeprTest(unittest.TestCase):
             PrepParam.COM_STR: 0,
             PrepParam.SPLIT: 4,
             PrepParam.TABS_NEWLINES: 0,
-            PrepParam.MARK_LOGS: 1
+            PrepParam.MARK_LOGS: 1,
+            PrepParam.CAPS: 1
         })
 
         ngramSplittingConfig = NgramSplitConfig(splitting_type=NgramSplittingType.BPE,

@@ -47,7 +47,7 @@ class Word(object):
     def __str__(self):
         return self.non_preprocessed_repr(ReprConfig.empty())
 
-    def __with_capitalization(self, subwords: List[str]) -> List[str]:
+    def __with_capitalization_prefixes(self, subwords: List[str]) -> List[str]:
         if self.capitalization == Capitalization.UNDEFINED or self.capitalization == Capitalization.NONE:
             res = subwords
         elif self.capitalization == Capitalization.FIRST_LETTER:
@@ -59,11 +59,14 @@ class Word(object):
         return res
 
     def preprocessed_repr(self, repr_config: ReprConfig) -> List[str]:
-        subwords = do_ngram_splitting(self.canonic_form, repr_config.ngram_split_config)
+        if repr_config.should_lowercase:
+            subwords = do_ngram_splitting(self.canonic_form, repr_config.ngram_split_config)
+            return self.__with_capitalization_prefixes(subwords)
+        else:
+            subwords = do_ngram_splitting(self.__with_preserved_case(), repr_config.ngram_split_config)
+            return subwords
 
-        return self.__with_capitalization(subwords)
-
-    def non_preprocessed_repr(self, repr_config):
+    def __with_preserved_case(self):
         if self.capitalization == Capitalization.UNDEFINED or self.capitalization == Capitalization.NONE:
             return self.canonic_form
         elif self.capitalization == Capitalization.FIRST_LETTER:
@@ -72,6 +75,9 @@ class Word(object):
             return self.canonic_form.upper()
         else:
             raise AssertionError(f"Unknown value: {self.capitalization}")
+
+    def non_preprocessed_repr(self, repr_config):
+        return self.__with_preserved_case()
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.canonic_form, self.capitalization})'
