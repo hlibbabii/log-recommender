@@ -88,7 +88,7 @@ class PreprocessTest(unittest.TestCase):
 
         actual = preprocess(token, '10411')
 
-        self.assertEqual([ws, '_', '40', '7', '_', caps, 'proxy', '_', caps, 'auth', '_', caps, 'required', we], actual)
+        self.assertEqual([ws, '_', '4', '07', '_', caps, 'proxy', '_', caps, 'auth', '_', caps, 'required', we], actual)
 
     def test11_10411(self):
         token = "HTTP_1_0_noConnectionHeaderTest"
