@@ -100,7 +100,7 @@ def init_splitting_config(dataset: str, prep_config: PrepConfig,
     global_n_gramm_splitting_config = NgramSplitConfig()
     if prep_config.get_param_value(PrepParam.SPLIT) in [4, 5, 6, 7, 8, 9]:
         if not bpe_base_repr:
-            raise ValueError("--bpe-base-repr")
+            bpe_base_repr = prep_config.get_base_bpe_prep_config()
 
         if prep_config.get_param_value(PrepParam.SPLIT) == 9:
             if not bpe_n_merges:
@@ -113,6 +113,8 @@ def init_splitting_config(dataset: str, prep_config: PrepConfig,
             bpe_base_dataset = dataset
         else:
             bpe_base_dataset, bpe_base_repr = bpe_base_repr.split("/")
+        logger.info(f'Using bpe base dataset: {bpe_base_dataset}')
+        logger.info(f'Using bpe base repr: {bpe_base_repr}')
         logger.info(f'Using bpe_n_merges: {bpe_n_merges}')
         path_to_merges_dir = os.path.join(DEFAULT_PARSED_DATASETS_DIR, bpe_base_dataset, METADATA_DIR, bpe_base_repr,
                                           BPE_DIR,

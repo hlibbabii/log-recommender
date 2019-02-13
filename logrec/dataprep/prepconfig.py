@@ -59,6 +59,14 @@ class PrepConfig(object):
         }
     }
 
+    base_bpe_mask = {
+        PrepParam.EN_ONLY: 0,
+        PrepParam.COM_STR: 0,
+        PrepParam.SPLIT: 1,
+        PrepParam.TABS_NEWLINES: 0,
+        PrepParam.MARK_LOGS: 0,
+    }
+
     @staticmethod
     def __check_param_number(n_passed_params: int):
         n_expected_params = len([i for i in PrepParam])
@@ -121,6 +129,11 @@ class PrepConfig(object):
     def assert_classification_config(cls, repr):
         if cls.from_encoded_string(repr).get_param_value(PrepParam.MARK_LOGS) == 0:
             raise ValueError(f'PrepConfig {repr} cannot be used for classification')
+
+    def get_base_bpe_prep_config(self):
+        res = PrepConfig.base_bpe_mask
+        res[PrepParam.CAPS] = self.params[PrepParam.CAPS]
+        return res
 
 
 com_str_to_types_to_be_repr = {
