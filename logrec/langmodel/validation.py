@@ -1,5 +1,6 @@
 import logging
 import math
+import random
 from typing import List
 
 import torch
@@ -20,7 +21,7 @@ def one_hot(idx, size):
 
 
 def cache_calc(softmax_output_flat: Variable, start_idx: int, next_word_history: Variable, pointer_history: Variable,
-               rnn_out: Variable, targets: Variable, cache: Cache) -> Variable:
+               rnn_out: Variable, targets: Variable, cache: Cache, text_field: Field) -> Variable:
     preds_with_cache = []
     for idx, vocab_loss in enumerate(softmax_output_flat):
         p = vocab_loss
@@ -32,33 +33,34 @@ def cache_calc(softmax_output_flat: Variable, start_idx: int, next_word_history:
             ptr_dist = (ptr_attn.expand_as(valid_next_word) * valid_next_word).sum(0).squeeze()
             p = cache.lambdah * ptr_dist + (1 - cache.lambdah) * vocab_loss
             index = targets[idx].data[0]
-            # logger.info(f"========================================")
-            # logger.info(f"Actual word: {text_field.vocab.itos[index]}")
-            # logger.info("Result:")
-            # vals, indices = torch.topk(p, 3)
-            # for c, i in zip(vals, indices):
-            #     logger.info(f"{text_field.vocab.itos[i.data[0]]} ({c.data[0]})")
-            # logger.info("From cache:")
-            # vals, indices = torch.topk(ptr_dist, 3)
-            # for c,i in zip(vals, indices):
-            #     logger.info(f"{text_field.vocab.itos[i.data[0]]} ({c.data[0]})")
-            # logger.info("From nn:")
-            # vals, indices = torch.topk(vocab_loss, 3)
-            # for c,i in zip(vals, indices):
-            #     logger.info(f"{text_field.vocab.itos[i.data[0]]} ({c.data[0]})")
+            if random.randint(1, 100) == 100:
+                logger.info(f"========================================")
+                logger.info(f"Actual word: {text_field.vocab.itos[index]}")
+                logger.info("Result:")
+                vals, indices = torch.topk(p, 3)
+                for c, i in zip(vals, indices):
+                    logger.info(f"{text_field.vocab.itos[i.data[0]]} ({c.data[0]})")
+                logger.info("From cache:")
+                vals, indices = torch.topk(ptr_dist, 3)
+                for c, i in zip(vals, indices):
+                    logger.info(f"{text_field.vocab.itos[i.data[0]]} ({c.data[0]})")
+                logger.info("From nn:")
+                vals, indices = torch.topk(vocab_loss, 3)
+                for c, i in zip(vals, indices):
+                    logger.info(f"{text_field.vocab.itos[i.data[0]]} ({c.data[0]})")
         ###
         preds_with_cache.append(p)
     return torch.stack(preds_with_cache)
 
 
-def calc_full_word_accuracy(subword_predictions: List[int], subword_targets: List[int]) -> float:
+def calc_full_word_accuracy_strict(subword_predictions: List[int], subword_targets: List[int]) -> float:
     for pred, target in zip(subword_predictions, subword_targets):
         if pred != target:
             return 0.0
     return 1.0
 
 
-def calc_full_word_accuracy2(subword_predictions: List[int], subword_targets: List[int]) -> float:
+def calc_full_word_accuracy(subword_predictions: List[int], subword_targets: List[int]) -> float:
     if len(subword_predictions) != len(subword_targets):
         raise ValueError(f'Lists should be of the same length: {subword_predictions}, {subword_targets}')
     sum = 0.0
@@ -75,10 +77,14 @@ def calc_full_word_loss(subword_probabilities: List[float]) -> float:
     return full_word_loss
 
 
-def log(full_word_preds, full_word_pred_values, full_word_targets, full_word_accuracy, full_word_loss, text_field):
+def log(full_word_preds, full_word_pred_values, full_word_targets, full_word_accuracy, full_word_accuracy_strict,
+        full_word_loss, text_field):
     logger.info(
         " ".join(map(lambda p, t: f'{text_field.vocab.itos[p]} ({t})', full_word_pred_values, full_word_targets)))
     logger.info(f'Full word acc: {full_word_accuracy:.3f}')
+    lss = list(map(lambda x: -math.log(x), full_word_preds))
+    logger.info(f'{full_word_loss:.3f}' + " " + str(list(map(lambda x: f'{x:.3f}', lss))) + f'= {sum(lss):.3f}')
+    logger.info(f'Full word acc strict: {full_word_accuracy_strict:.3f}')
     lss = list(map(lambda x: -math.log(x), full_word_preds))
     logger.info(f'{full_word_loss:.3f}' + " " + str(list(map(lambda x: f'{x:.3f}', lss))) + f'= {sum(lss):.3f}')
     logger.info("============================")
@@ -91,6 +97,7 @@ def custom_validate(cache: Cache, text_field: Field, stepper, dl, metrics, epoch
     bptts, res = [], []
     avg_batch_losses = []
     avg_batch_accuracies = []
+    avg_batch_accuracies_strict = []
     actual_probs, pred_vals = [], []
     ps = []
     seqs_in_batch_list = []
@@ -135,7 +142,9 @@ def custom_validate(cache: Cache, text_field: Field, stepper, dl, metrics, epoch
                                          pointer_history=pointer_history,
                                          rnn_out=rnn_out,
                                          targets=targets,
-                                         cache=cache)
+                                         cache=cache, text_field=text_field)
+
+                # hidden = repackage_hidden(hidden)
                 next_word_history = next_word_history[-cache.window:]
                 pointer_history = pointer_history[-cache.window:]
             else:
@@ -145,6 +154,7 @@ def custom_validate(cache: Cache, text_field: Field, stepper, dl, metrics, epoch
             predictions = predictions.data
             losses_in_batch = []
             accuracies_in_batch = []
+            accuracies_in_batch_strict = []
             this_batch_pred_vals = torch.max(predictions, dim=1)[1]
             this_batch_actual_probs = torch.gather(predictions, 1, targets.view(-1, 1))
             actual_probs.extend(this_batch_actual_probs)
@@ -157,27 +167,32 @@ def custom_validate(cache: Cache, text_field: Field, stepper, dl, metrics, epoch
 
                 full_word_loss = calc_full_word_loss(full_word_actual_probs)
                 full_word_targets_ints = [text_field.vocab.stoi[target] for target in full_word_targets]
-                full_word_accuracy = calc_full_word_accuracy2(full_word_pred_values, full_word_targets_ints)
+                full_word_accuracy = calc_full_word_accuracy(full_word_pred_values, full_word_targets_ints)
+                full_word_accuracy_strict = calc_full_word_accuracy_strict(full_word_pred_values,
+                                                                           full_word_targets_ints)
                 seqs_in_batch += 1
                 losses_in_batch.append(full_word_loss)
                 accuracies_in_batch.append(full_word_accuracy)
+                accuracies_in_batch_strict.append(full_word_accuracy_strict)
                 if seqs_in_batch == 1:
                     log(full_word_actual_probs, full_word_pred_values, full_word_targets, full_word_accuracy,
-                        full_word_loss, text_field)
+                        full_word_accuracy_strict, full_word_loss, text_field)
             chunks_left = full_word_iterator.get_chunks_left()
             actual_probs = actual_probs[-chunks_left:] if chunks_left > 0 else []
             pred_vals = pred_vals[-chunks_left:] if chunks_left > 0 else []
-
-            # hidden = repackage_hidden(hidden)
 
             if seqs_in_batch > 0:
                 avg_batch_loss = sum(losses_in_batch) / seqs_in_batch
                 avg_batch_losses.append(to_np(V(avg_batch_loss)))
 
                 avg_batch_accuracy = sum(accuracies_in_batch) / seqs_in_batch
+                avg_batch_accuracy_strict = sum(accuracies_in_batch_strict) / seqs_in_batch
                 avg_batch_accuracies.append(to_np(V(avg_batch_accuracy)))
+                avg_batch_accuracies_strict.append(to_np(V(avg_batch_accuracy_strict)))
 
                 seqs_in_batch_list.append(seqs_in_batch)
 
     return [np.average(avg_batch_losses, 0, weights=seqs_in_batch_list),
-            np.average(avg_batch_accuracies, 0, weights=seqs_in_batch_list)[0]]
+            np.average(avg_batch_accuracies, 0, weights=seqs_in_batch_list)[0],
+            np.average(avg_batch_accuracies_strict, 0, weights=seqs_in_batch_list)[0]
+            ]
