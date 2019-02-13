@@ -40,7 +40,7 @@ class PrepConfig(object):
                             1: 'strings+NO_comments',
                             2: 'NO_strings+NO_comments'},
         PrepParam.SPLIT: {0: 'NO_splitting',
-                          1: 'camel+underscoreASCII: Single byte encoding only using the bottom 7 bits. (Unicode code points 0-127.) No accents etc. ... Usually when people say "ANSI" they mean "the default locale/codepage for my system" which is obtained via Encoding.Default, and is often Windows-1252 but can be other locales.',
+                          1: 'camel+underscore',
                           2: 'camel+underscore+numbers',
                           3: 'camel+underscore+numbers+freqdict',
                           4: 'camel+underscore+bpe_5k',
