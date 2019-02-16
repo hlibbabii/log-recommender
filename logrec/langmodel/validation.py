@@ -60,6 +60,7 @@ def cache_calc(preds_softmax: Variable, start_idx: int, next_word_history: Varia
     """
     preds_with_cache = []
     for idx, vocab_loss in enumerate(preds_softmax):
+        logger.debug(f'Iteration {idx} in the batch')
         p = vocab_loss
         if start_idx + idx > cache.window:
             valid_next_word = next_word_history[
@@ -70,11 +71,14 @@ def cache_calc(preds_softmax: Variable, start_idx: int, next_word_history: Varia
                 valid_pointer_history.transpose(0, 1),  # bs x window x vocab_size
                 last_hidden_layer_activations[idx].unsqueeze(-1)  # bs x vocab_size x 1
             )  # bs x window x 1
-            ptr_attn = torch.nn.functional.softmax(cache.theta * logits, dim=1).transpose(0, 1)  # window x bs
+            ptr_attn = torch.nn.functional.softmax(cache.theta * logits, dim=1).transpose(0, 1)  # window x bs x 1
+            del logits
             ptr_dist = (ptr_attn.expand_as(valid_next_word) * valid_next_word).sum(0).squeeze()  # bs x vocab_size
+            del ptr_attn
             p = cache.lambdah * ptr_dist + (1 - cache.lambdah) * vocab_loss  # bs x vocab_size
 
             log_cache(targets, idx, p, ptr_dist, vocab_loss, text_field)
+            del ptr_dist
         ###
         preds_with_cache.append(p)
     return torch.stack(preds_with_cache)
@@ -172,6 +176,7 @@ def custom_validate(cache: Cache, text_field: Field, use_subword_aware_metrics: 
             vocab_size = flattened_preds.size(1)
 
             flattened_preds_softmax = torch.nn.functional.softmax(flattened_preds, dim=-1)
+            del flattened_preds
             if cache:
                 start_idx = len(next_word_history) if next_word_history is not None else 0
 
