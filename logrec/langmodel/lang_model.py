@@ -137,7 +137,7 @@ def find_and_plot_lr(rnn_learner: RNN_Learner, fs: FS):
 
 
 def get_validation_function(cache: Cache, use_subword_aware_metrics, text_field: Field):
-    if not cache and not use_subword_aware_metrics:
+    if cache.window == 0 and not use_subword_aware_metrics:
         return validate
 
     return partial(custom_validate, cache, text_field, use_subword_aware_metrics)
@@ -180,10 +180,6 @@ def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LMTraining,
         f.write(str(training_time_mins) + "\n")
         for _, vals in ep_vals.items():
             f.write(" ".join(map(lambda x: str(x), vals)) + "\n")
-
-
-def use_minibatches_for_validation(cache: Cache, subword_aware_metrics: bool):
-    return not cache and not subword_aware_metrics
 
 
 def run_on_device(config: Union[LMLRConfig, LMConfig],
