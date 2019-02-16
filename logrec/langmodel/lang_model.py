@@ -256,7 +256,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.device:
-        setup_memory_profiler(args.device)
+        setup_memory_profiler(str(args.device))
     run(args.find_lr, args.force_rerun, args.params_path, args.changed_params_path,
         args.device)
     print_prof_data()
