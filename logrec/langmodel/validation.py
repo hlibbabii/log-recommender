@@ -67,9 +67,9 @@ def cache_calc(preds_softmax: Variable, start_idx: int, next_word_history: Varia
                                     start_idx + idx - cache.window:start_idx + idx]  # window x bs x vocab_size
             logits = torch.matmul(
                 valid_pointer_history.transpose(0, 1),  # bs x window x vocab_size
-                last_hidden_layer_activations[idx].unsqueeze(-1)  # bs x vocab_loss x 1
+                last_hidden_layer_activations[idx].unsqueeze(-1)  # bs x vocab_size x 1
             )  # bs x window x 1
-            ptr_attn = torch.nn.functional.softmax(cache.theta * logits).transpose(0, 1)  # window x bs
+            ptr_attn = torch.nn.functional.softmax(cache.theta * logits, dim=1).transpose(0, 1)  # window x bs
             ptr_dist = (ptr_attn.expand_as(valid_next_word) * valid_next_word).sum(0).squeeze()  # bs x vocab_size
             p = cache.lambdah * ptr_dist + (1 - cache.lambdah) * vocab_loss  # bs x vocab_size
 
@@ -163,6 +163,8 @@ def custom_validate(cache: Cache, text_field: Field, use_subword_aware_metrics: 
         pointer_history = None
         n_iter = len(dl)
         for i, (*x, flattened_targets) in enumerate(iter(dl)):
+            if i % 1000 == 0:
+                logger.info(f'Iteration {i} out of {n_iter}')
             x = VV(x)
             flattened_targets = VV(flattened_targets)
 
