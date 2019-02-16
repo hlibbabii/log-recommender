@@ -18,6 +18,7 @@ if 'GPU_DEBUG' in os.environ:
 
 _last_tensor_sizes = set()
 
+import os
 
 def _trace_lines(frame, event, arg):
     if event != 'line':
@@ -30,8 +31,9 @@ def _trace_lines(frame, event, arg):
     filename = co.co_filename
     nvmlInit()
     mem_used = _get_gpu_mem_used()
-    where_str = f"{func_name} in {filename}:{line_no}"
-    logger.info(f"{where_str} --> {mem_used:<7.1f}Mb\n")
+
+    where_str = f"{func_name} in {os.path.basename(filename)}:{line_no}"
+    logger.info(f"{where_str} --> {mem_used:<7.1f}Mb")
     if PRINT_TENSOR_SIZES:
         _print_tensors(where_str)
 
@@ -69,9 +71,9 @@ def _print_tensors(where_str):
     new_tensor_sizes = {(x.type(), tuple(x.shape), x.dbg_alloc_where)
                         for x in _get_tensors()}
     for t, s, loc in new_tensor_sizes - _last_tensor_sizes:
-        logger.info(f'+ {loc:<50} {str(s):<20} {str(t):<10}\n')
+        logger.info(f'+ {loc:<50} {str(s):<20} {str(t):<10}')
     for t, s, loc in _last_tensor_sizes - new_tensor_sizes:
-        logger.info(f'- {loc:<50} {str(s):<20} {str(t):<10}\n')
+        logger.info(f'- {loc:<50} {str(s):<20} {str(t):<10}')
     _last_tensor_sizes = new_tensor_sizes
 
 
