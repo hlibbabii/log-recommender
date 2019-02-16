@@ -20,8 +20,7 @@ logger = logging.getLogger(__name__)
 def one_hot(idx, size):
     a = np.zeros((1, size), np.float32)  # TODO change to Byte
     a[0][idx] = 1
-    v = VV(torch.from_numpy(a))
-    return to_gpu(v)
+    return torch.from_numpy(a)
 
 
 @profile
@@ -195,7 +194,7 @@ def custom_validate(cache: Cache, text_field: Field, use_subword_aware_metrics: 
                 preds_softmax = flattened_preds_softmax.view(-1, batch_size, vocab_size)  # bptt x bs x vocab_size
                 predictions = cache_calc(preds_softmax=preds_softmax,
                                          start_idx=start_idx,
-                                         next_word_history=next_word_history,
+                                         next_word_history=VV(next_word_history),
                                          pointer_history=pointer_history,
                                          last_hidden_layer_activations=last_hidden_layer_activations,
                                          targets=targets,
