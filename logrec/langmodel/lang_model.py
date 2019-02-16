@@ -21,6 +21,7 @@ from logrec.misc import attach_dataset_aware_handlers_to_loggers
 from logrec.config.model import Data, Arch, LMTraining, LMTesting, LMLRConfig, LMConfig, Cache
 from logrec.util import gpu
 from logrec.util.gpu import print_gpu_info, get_current_device
+from logrec.util.profiler import print_prof_data
 from logrec.util.util import get_params_module
 
 matplotlib.use('Agg')
@@ -139,7 +140,7 @@ def get_validation_function(cache: Cache, use_subword_aware_metrics, text_field:
     if not cache and not use_subword_aware_metrics:
         return validate
 
-    return partial(custom_validate, cache, text_field)
+    return partial(custom_validate, cache, text_field, use_subword_aware_metrics)
 
 
 def train_and_save_model(rnn_learner: RNN_Learner, fs: FS, training: LMTraining, metric_list: List[str],
@@ -194,9 +195,6 @@ def run_on_device(config: Union[LMLRConfig, LMConfig],
 
     print_gpu_info()
 
-    if not use_minibatches_for_validation(config.cache, config.use_subword_aware_metrics):
-        logger.info("Not using minibatches for validation. Setting arch.validation_bs to 1.")
-        config.arch.validation_bs = 1
     learner, model_trained = get_best_available_model(fs, config.data, config.arch)
 
     fs.save_vocab_data(learner.text_field, config.data.percent, config.data.start_from)
@@ -254,3 +252,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     run(args.find_lr, args.force_rerun, args.params_path, args.changed_params_path,
         args.device)
+    print_prof_data()
