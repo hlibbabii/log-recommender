@@ -1,14 +1,17 @@
 import logging
 import math
 import random
-from typing import List
 
 import torch
 from torchtext.data import Field
 
+import fastai
 from fastai.core import to_np, V, Variable, np, no_grad_context, VV, to_gpu
+from fastai.metrics import mrr
 from logrec.config.model import Cache
 from logrec.dataprep.full_word_iterator import FullWordIterator
+from logrec.langmodel.metrics import subword_aware_accuracy, subword_aware_accuracy_strict
+from logrec.util.profiler import profile
 
 logger = logging.getLogger(__name__)
 
@@ -20,61 +23,61 @@ def one_hot(idx, size):
     return to_gpu(v)
 
 
-def cache_calc(softmax_output_flat: Variable, start_idx: int, next_word_history: Variable, pointer_history: Variable,
-               rnn_out: Variable, targets: Variable, cache: Cache, text_field: Field) -> Variable:
+@profile
+def log_cache(targets, idx, p, ptr_dist, vocab_loss, text_field):
+    index = targets[idx].data[0]
+    logger.info(f"========================================")
+    logger.info(f"Actual word: {text_field.vocab.itos[index]}")
+    logger.info("Result:")
+    vals, indices = torch.topk(p[0], 3)
+    for c, i in zip(vals, indices):
+        logger.info(f"{text_field.vocab.itos[i.data[0]]} ({c.data[0]})")
+    logger.info("From cache:")
+    vals, indices = torch.topk(ptr_dist[0], 3)
+    for c, i in zip(vals, indices):
+        logger.info(f"{text_field.vocab.itos[i.data[0]]} ({c.data[0]})")
+    logger.info("From nn:")
+    vals, indices = torch.topk(vocab_loss[0], 3)
+    for c, i in zip(vals, indices):
+        logger.info(f"{text_field.vocab.itos[i.data[0]]} ({c.data[0]})")
+
+
+@profile
+def cache_calc(preds_softmax: Variable, start_idx: int, next_word_history: Variable, pointer_history: Variable,
+               last_hidden_layer_activations: Variable, targets: Variable, cache: Cache, text_field: Field) -> Variable:
+    """
+
+    :param preds_softmax:  bs x vocab_size
+    :param start_idx:
+    :param next_word_history: at most window x bs x vocab_siz
+    :param pointer_history:
+    :param last_hidden_layer_activations:
+    :param targets:
+    :param cache:
+    :param text_field:
+    :return:
+    """
     preds_with_cache = []
-    for idx, vocab_loss in enumerate(softmax_output_flat):
+    for idx, vocab_loss in enumerate(preds_softmax):
         p = vocab_loss
         if start_idx + idx > cache.window:
-            valid_next_word = next_word_history[start_idx + idx - cache.window:start_idx + idx]
-            valid_pointer_history = pointer_history[start_idx + idx - cache.window:start_idx + idx]
-            logits = torch.mv(valid_pointer_history, rnn_out[idx])
-            ptr_attn = torch.nn.functional.softmax(cache.theta * logits).view(-1, 1)
-            ptr_dist = (ptr_attn.expand_as(valid_next_word) * valid_next_word).sum(0).squeeze()
-            p = cache.lambdah * ptr_dist + (1 - cache.lambdah) * vocab_loss
-            index = targets[idx].data[0]
+            valid_next_word = next_word_history[
+                              start_idx + idx - cache.window:start_idx + idx]  # window x bs x vocab_size
+            valid_pointer_history = pointer_history[
+                                    start_idx + idx - cache.window:start_idx + idx]  # window x bs x vocab_size
+            logits = torch.matmul(
+                valid_pointer_history.transpose(0, 1),  # bs x window x vocab_size
+                last_hidden_layer_activations[idx].unsqueeze(-1)  # bs x vocab_loss x 1
+            )  # bs x window x 1
+            ptr_attn = torch.nn.functional.softmax(cache.theta * logits).transpose(0, 1)  # window x bs
+            ptr_dist = (ptr_attn.expand_as(valid_next_word) * valid_next_word).sum(0).squeeze()  # bs x vocab_size
+            p = cache.lambdah * ptr_dist + (1 - cache.lambdah) * vocab_loss  # bs x vocab_size
+
             if random.randint(1, 100) == 100:
-                logger.info(f"========================================")
-                logger.info(f"Actual word: {text_field.vocab.itos[index]}")
-                logger.info("Result:")
-                vals, indices = torch.topk(p, 3)
-                for c, i in zip(vals, indices):
-                    logger.info(f"{text_field.vocab.itos[i.data[0]]} ({c.data[0]})")
-                logger.info("From cache:")
-                vals, indices = torch.topk(ptr_dist, 3)
-                for c, i in zip(vals, indices):
-                    logger.info(f"{text_field.vocab.itos[i.data[0]]} ({c.data[0]})")
-                logger.info("From nn:")
-                vals, indices = torch.topk(vocab_loss, 3)
-                for c, i in zip(vals, indices):
-                    logger.info(f"{text_field.vocab.itos[i.data[0]]} ({c.data[0]})")
+                log_cache(targets, idx, p, ptr_dist, vocab_loss, text_field)
         ###
         preds_with_cache.append(p)
     return torch.stack(preds_with_cache)
-
-
-def calc_full_word_accuracy_strict(subword_predictions: List[int], subword_targets: List[int]) -> float:
-    for pred, target in zip(subword_predictions, subword_targets):
-        if pred != target:
-            return 0.0
-    return 1.0
-
-
-def calc_full_word_accuracy(subword_predictions: List[int], subword_targets: List[int]) -> float:
-    if len(subword_predictions) != len(subword_targets):
-        raise ValueError(f'Lists should be of the same length: {subword_predictions}, {subword_targets}')
-    sum = 0.0
-    for pred, target in zip(subword_predictions, subword_targets):
-        sum += (1.0 if pred == target else 0.0)
-
-    return sum / len(subword_predictions)
-
-
-def calc_full_word_loss(subword_probabilities: List[float]) -> float:
-    full_word_loss = 0
-    for pp in subword_probabilities:
-        full_word_loss -= math.log(pp)
-    return full_word_loss
 
 
 def log(full_word_preds, full_word_pred_values, full_word_targets, full_word_accuracy, full_word_accuracy_strict,
@@ -90,109 +93,131 @@ def log(full_word_preds, full_word_pred_values, full_word_targets, full_word_acc
     logger.info("============================")
 
 
-def custom_validate(cache: Cache, text_field: Field, stepper, dl, metrics, epoch, seq_first,
-                    validate_skip):
+def iterate_to_create_tensors(full_word_iterators):
+    full_words_all_iterators = [
+        [(full_word_targets, full_word_index_range) for full_word_targets, full_word_index_range in iterator]
+        for iterator in full_word_iterators]
+    chunks_left = [iterator.get_chunks_left() for iterator in full_words_all_iterators]
+    max_n_full_words = max(lambda l: len(l), full_words_all_iterators)
+    if max_n_full_words == 0:
+        return None, 0, chunks_left
+
+    biggest_index = max(lambda l: l[-1][1][1], full_words_all_iterators)
+
+    ts = []
+    n_words = 0
+    for full_words in full_words_all_iterators:
+        t = torch.zeros((max_n_full_words, biggest_index))
+        for i, (full_word_targets, full_word_index_range) in enumerate(full_words):
+            t[i, full_word_index_range[0]:full_word_index_range[1]] = 1
+            n_words += 1
+        ts.append(t)
+    full_word_mask = torch.stack(ts)
+
+    return full_word_mask, n_words, chunks_left
+
+
+def calc_subword_aware_metrics():
+    # actual_probs.extend(this_batch_actual_probs)
+    # pred_vals.extend(this_batch_pred_vals)
+    #
+    # if not full_word_iterators:
+    #     full_word_iterators = [FullWordIterator() for i in range(batch_size)]
+    # for i in range(batch_size):
+    #     full_word_iterators[i].add_data([text_field.vocab.itos[target] for target in targets[:, i]])
+    # full_word_masks, n_words, chunks_left = iterate_to_create_tensors(full_word_iterators)
+    # if full_word_masks is None:
+    #     pass  # TODO
+    #
+    # full_word_loss = subword_aware_entropy_loss(actual_probs)
+    #
+    # full_word_targets_ints = [text_field.vocab.stoi[target] for target in full_word_targets]
+    # full_word_accuracy = subword_aware_accuracy(pred_vals, full_word_targets_ints)
+    # full_word_accuracy_strict = subword_aware_accuracy_strict(pred_vals,
+    #                                                           full_word_targets_ints)
+    #
+    # actual_probs = actual_probs[-chunks_left:] if chunks_left > 0 else []
+    # pred_vals = pred_vals[-chunks_left:] if chunks_left > 0 else []
+    return None
+
+
+@profile
+def custom_validate(cache: Cache, text_field: Field, use_subword_aware_metrics: bool, stepper, dl, metrics, epoch,
+                    seq_first, validate_skip):
+    if use_subword_aware_metrics:
+        raise ValueError("use_subword_aware_metrics=True is curreently not implemented")
     if cache:
         logger.info(f"Using neural cache with theta: {cache.theta}, lambdah: {cache.lambdah}, window: {cache.window}.")
-    bptts, res = [], []
+    else:
+        logger.info(f"Not using neural cache!")
+
     avg_batch_losses = []
     avg_batch_accuracies = []
     avg_batch_accuracies_strict = []
     actual_probs, pred_vals = [], []
-    ps = []
-    seqs_in_batch_list = []
+    n_words_list = []
     stepper.reset(False)
+    full_word_iterators = None
     with no_grad_context():
         next_word_history = None
         pointer_history = None
-        full_word_iterator = FullWordIterator()
         n_iter = len(dl)
-        for i, (*x, targets) in enumerate(iter(dl)):
-            logger.debug(f'Validation: {i}/{n_iter}')
-            # x - [Variable(x1,x2, ... xn)]
-            # y - Variable(x2...,xn, xn+1)
+        for i, (*x, flattened_targets) in enumerate(iter(dl)):
+            x = VV(x)
+            flattened_targets = VV(flattened_targets)
+
+            flattened_preds, all_layers_hidden_activations, _ = stepper.evaluate_with_cache(x, flattened_targets)
             batch_size = x[0].size(1)
-            if batch_size != 1:
-                raise ValueError("For now only batch size 1 is supported for validation with cache")
-            preds, raw_outputs, l = stepper.evaluate_with_cache(VV(x), VV(targets))
-            # preds [bptt x vocab size] Variable
-            # raw_outputs [Variables[bptt x batch size x layer size], ...] - list, size: number of layers
-            # l - cross entropy Variable [batch size]
-            # targets [bptt]
-            ntokens = preds.size(1)
-            rnn_out = raw_outputs[-1].squeeze(1)  # from last layer
-            output_flat = preds.view(-1, ntokens)
+            vocab_size = flattened_preds.size(1)
 
-            seqs_in_batch = 0
-            softmax_output_flat = torch.nn.functional.softmax(output_flat)
-            bptts.append(softmax_output_flat.size(0))
+            flattened_preds_softmax = torch.nn.functional.softmax(flattened_preds, dim=-1)
             if cache:
-                # Fill pointer history
                 start_idx = len(next_word_history) if next_word_history is not None else 0
-                next_word_history = torch.cat(
-                    [one_hot(t.data[0], ntokens) for t in targets]) if next_word_history is None else torch.cat(
-                    [next_word_history, torch.cat([one_hot(t.data[0], ntokens) for t in targets])])
-                # print(next_word_history)
-                pointer_history = Variable(rnn_out.data) if pointer_history is None else torch.cat(
-                    [pointer_history, Variable(rnn_out.data)], dim=0)
 
-                predictions = cache_calc(softmax_output_flat=softmax_output_flat,
+                targets = flattened_targets.view(-1, batch_size)  # bptt x bs
+                one_hot_encoded_targets = torch.stack(
+                    [torch.cat([one_hot(target.data[0], vocab_size) for target in i_target_in_batch], dim=0)
+                     for i_target_in_batch in targets])  # bptt x bs x vocab_size
+                next_word_history = one_hot_encoded_targets if next_word_history is None \
+                    else torch.cat([next_word_history, one_hot_encoded_targets])
+
+                last_hidden_layer_activations = all_layers_hidden_activations[-1]  # bptt x batch size x layer size
+                last_history_var = Variable(last_hidden_layer_activations.data)
+                pointer_history = last_history_var if pointer_history is None \
+                    else torch.cat([pointer_history, last_history_var], dim=0)
+
+                preds_softmax = flattened_preds_softmax.view(-1, batch_size, vocab_size)  # bptt x bs x vocab_size
+                predictions = cache_calc(preds_softmax=preds_softmax,
                                          start_idx=start_idx,
                                          next_word_history=next_word_history,
                                          pointer_history=pointer_history,
-                                         rnn_out=rnn_out,
+                                         last_hidden_layer_activations=last_hidden_layer_activations,
                                          targets=targets,
                                          cache=cache, text_field=text_field)
 
-                # hidden = repackage_hidden(hidden)
                 next_word_history = next_word_history[-cache.window:]
                 pointer_history = pointer_history[-cache.window:]
+                flattened_predictions = predictions.view(-1, vocab_size)
             else:
-                predictions = softmax_output_flat
+                flattened_predictions = flattened_preds_softmax
 
-            targets = targets.data
-            predictions = predictions.data
-            losses_in_batch = []
-            accuracies_in_batch = []
-            accuracies_in_batch_strict = []
-            this_batch_pred_vals = torch.max(predictions, dim=1)[1]
-            this_batch_actual_probs = torch.gather(predictions, 1, targets.view(-1, 1))
-            actual_probs.extend(this_batch_actual_probs)
-            pred_vals.extend(this_batch_pred_vals)
-            target_tokens = [text_field.vocab.itos[target] for target in targets]
-            full_word_iterator.add_data(target_tokens)
-            for full_word_targets, full_word_index_range in full_word_iterator:
-                full_word_actual_probs = actual_probs[full_word_index_range[0]: full_word_index_range[1]]
-                full_word_pred_values = pred_vals[full_word_index_range[0]: full_word_index_range[1]]
+            if use_subword_aware_metrics:
+                pred_vals = torch.max(flattened_predictions, dim=-1)[1]
+                actual_probs = torch.gather(flattened_predictions, -1, flattened_targets.view(-1, 1))
+                cross_entropy_loss, accuracy, accuracy_strict, n_words = calc_subword_aware_metrics(pred_vals,
+                                                                                                    actual_probs)
+            else:
+                n_words = flattened_targets.size(0)
+                cross_entropy_loss = -torch.log(actual_probs).sum() / n_words
+                accuracy = fastai.metrics.accuracy(flattened_predictions.data, flattened_targets)
+                accuracy_strict = mrr(flattened_predictions.data, flattened_targets)
 
-                full_word_loss = calc_full_word_loss(full_word_actual_probs)
-                full_word_targets_ints = [text_field.vocab.stoi[target] for target in full_word_targets]
-                full_word_accuracy = calc_full_word_accuracy(full_word_pred_values, full_word_targets_ints)
-                full_word_accuracy_strict = calc_full_word_accuracy_strict(full_word_pred_values,
-                                                                           full_word_targets_ints)
-                seqs_in_batch += 1
-                losses_in_batch.append(full_word_loss)
-                accuracies_in_batch.append(full_word_accuracy)
-                accuracies_in_batch_strict.append(full_word_accuracy_strict)
-                if seqs_in_batch == 1:
-                    log(full_word_actual_probs, full_word_pred_values, full_word_targets, full_word_accuracy,
-                        full_word_accuracy_strict, full_word_loss, text_field)
-            chunks_left = full_word_iterator.get_chunks_left()
-            actual_probs = actual_probs[-chunks_left:] if chunks_left > 0 else []
-            pred_vals = pred_vals[-chunks_left:] if chunks_left > 0 else []
+            avg_batch_losses.append(to_np(cross_entropy_loss))
+            avg_batch_accuracies.append(accuracy)
+            avg_batch_accuracies_strict.append(accuracy_strict)
+            n_words_list.append(n_words)
 
-            if seqs_in_batch > 0:
-                avg_batch_loss = sum(losses_in_batch) / seqs_in_batch
-                avg_batch_losses.append(to_np(V(avg_batch_loss)))
-
-                avg_batch_accuracy = sum(accuracies_in_batch) / seqs_in_batch
-                avg_batch_accuracy_strict = sum(accuracies_in_batch_strict) / seqs_in_batch
-                avg_batch_accuracies.append(to_np(V(avg_batch_accuracy)))
-                avg_batch_accuracies_strict.append(to_np(V(avg_batch_accuracy_strict)))
-
-                seqs_in_batch_list.append(seqs_in_batch)
-
-    return [np.average(avg_batch_losses, 0, weights=seqs_in_batch_list),
-            np.average(avg_batch_accuracies, 0, weights=seqs_in_batch_list)[0],
-            np.average(avg_batch_accuracies_strict, 0, weights=seqs_in_batch_list)[0]
-            ]
+        return [np.average(avg_batch_losses, 0, weights=n_words_list),
+                np.average(avg_batch_accuracies, 0, weights=n_words_list),
+                np.average(avg_batch_accuracies_strict, 0, weights=n_words_list)
+                ]
