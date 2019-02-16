@@ -61,7 +61,7 @@ def cache_calc(preds_softmax: Variable, start_idx: int, next_word_history: Varia
     for idx, vocab_loss in enumerate(preds_softmax):
         logger.debug(f'Iteration {idx} in the batch')
         p = vocab_loss
-        if start_idx + idx > cache.window:
+        if start_idx + idx >= cache.window:
             valid_next_word = next_word_history[
                               start_idx + idx - cache.window:start_idx + idx]  # window x bs x vocab_size
             valid_pointer_history = pointer_history[
