@@ -133,7 +133,7 @@ class PrepConfig(object):
     def get_base_bpe_prep_config(self):
         res = PrepConfig.base_bpe_mask
         res[PrepParam.CAPS] = self.params[PrepParam.CAPS]
-        return res
+        return str(PrepConfig(res))
 
 
 com_str_to_types_to_be_repr = {
