@@ -5,19 +5,15 @@ from logrec.cli import preprocess
 from logrec.dataprep.prepconfig import PrepParam, PrepConfig
 
 prep_configs = [
-    '00000',
-    '11111',
-    '00200',
-    '00400',
-    '00500',
-    '00600',
-    '10400',
-    '10500',
-    '10600'
+    '002000',
+    '304000',
+    '305000',
+    '306000',
+    '307000',
 ]
 
 path_to_file = os.path.join(base_project_dir, 'identifiers')
-path_to_file_out = os.path.join(base_project_dir, 'identifiers.csv')
+path_to_file_out = os.path.join(base_project_dir, 'identifiers2.csv')
 
 DELIMITER = ','
 
