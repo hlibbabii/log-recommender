@@ -74,8 +74,7 @@ def cache_calc(preds_softmax: Variable, start_idx: int, next_word_history: Varia
             ptr_dist = (ptr_attn.expand_as(valid_next_word) * valid_next_word).sum(0).squeeze()  # bs x vocab_size
             p = cache.lambdah * ptr_dist + (1 - cache.lambdah) * vocab_loss  # bs x vocab_size
 
-            if random.randint(1, 100) == 100:
-                log_cache(targets, idx, p, ptr_dist, vocab_loss, text_field)
+            log_cache(targets, idx, p, ptr_dist, vocab_loss, text_field)
         ###
         preds_with_cache.append(p)
     return torch.stack(preds_with_cache)

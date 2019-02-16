@@ -189,6 +189,7 @@ def run_on_device(config: Union[LMLRConfig, LMConfig],
 
     fs.create_path_to_model(config.data, config.training_config)
     attach_dataset_aware_handlers_to_loggers(fs.path_to_model, 'main.log')
+    attach_dataset_aware_handlers_to_loggers(fs.path_to_model, 'memory_usage.log', 'gpu_memory_profiler')
 
     print_gpu_info()
 
