@@ -2,6 +2,7 @@ import argparse
 import logging.config
 import multiprocessing
 import os
+import signal
 from multiprocessing import Queue
 from typing import List, Tuple, Dict
 
@@ -333,6 +334,8 @@ def run(full_src_dir, full_metadata_dir):
         merger.join()
         logger.info(f'Merger {merger.id} has joined ({i+1}/{len(mergers)})')
 
+    os.kill(os.getpid(), signal.SIGTERM)
+
 
 if __name__ == '__main__':
     from logrec.properties import DEFAULT_PARSED_DATASETS_DIR, DEFAULT_VOCABSIZE_ARGS
@@ -350,5 +353,3 @@ if __name__ == '__main__':
     full_metadata_dir = os.path.join(path_to_dataset, METADATA_DIR, args.repr)
 
     run(full_src_dir, full_metadata_dir)
-    logger.info("Terminating parent process ... ")
-    exit(0)
