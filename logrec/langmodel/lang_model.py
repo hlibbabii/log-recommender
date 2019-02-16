@@ -1,3 +1,4 @@
+import sys
 from argparse import ArgumentParser
 from time import time
 from typing import Union, Optional, List
@@ -238,14 +239,24 @@ def run(find_lr: bool, force_rerun: bool, params_path: Optional[str], changed_pa
         run_on_device(config, find_lr, force_rerun)
 
 
+def setup_memory_profiler(device_id):
+    os.environ['GPU_DEBUG'] = device_id
+    os.environ['TRACE_INTO'] = 'custom_validate cache_calc'
+    from logrec.util.gpu_memory_profiler import trace_calls
+    sys.settrace(trace_calls)
+
+
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--find-lr', action='store_const', const=True, default=False)
-    parser.add_argument('--force-rerun', action='store_const', const=True, default=False)
+    parser.add_argument('--force-rerun', action='store_const', const=True, default=True)
     parser.add_argument('--params-path', action='store', help='TODO')
     parser.add_argument('--changed-params-path', action='store', help='TODO')
     parser.add_argument('--device', action='store', type=int, help='TODO')
     args = parser.parse_args()
+
+    if args.device:
+        setup_memory_profiler(args.device)
     run(args.find_lr, args.force_rerun, args.params_path, args.changed_params_path,
         args.device)
     print_prof_data()
