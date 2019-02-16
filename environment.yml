@@ -1,6 +1,7 @@
 name: fastai
 channels:
 - conda-forge
+- fastai
 dependencies:
 - fastcluster
 - google-api-python-client
@@ -12,3 +13,4 @@ dependencies:
   - typing_inspect
   - cupy-cuda91
   - coverage
+  - nvidia-ml-py3

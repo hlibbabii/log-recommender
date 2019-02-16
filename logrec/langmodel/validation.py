@@ -16,10 +16,11 @@ from logrec.util.profiler import profile
 logger = logging.getLogger(__name__)
 
 
+@profile
 def one_hot(idx, size):
-    a = np.zeros((1, size), np.float32)
+    a = np.zeros((1, size), np.float32)  # TODO change to Byte
     a[0][idx] = 1
-    v = Variable(torch.from_numpy(a))
+    v = VV(torch.from_numpy(a))
     return to_gpu(v)
 
 
@@ -178,14 +179,14 @@ def custom_validate(cache: Cache, text_field: Field, use_subword_aware_metrics: 
                 targets = flattened_targets.view(-1, batch_size)  # bptt x bs
                 one_hot_encoded_targets = torch.stack(
                     [torch.cat([one_hot(target.data[0], vocab_size) for target in i_target_in_batch], dim=0)
-                     for i_target_in_batch in targets])  # bptt x bs x vocab_size
+                     for i_target_in_batch in targets])  # bptt x bs x vocab_size [290x32x5000x4=185MB]
                 next_word_history = one_hot_encoded_targets if next_word_history is None \
                     else torch.cat([next_word_history, one_hot_encoded_targets])
 
                 last_hidden_layer_activations = all_layers_hidden_activations[-1]  # bptt x batch size x layer size
-                last_history_var = Variable(last_hidden_layer_activations.data)
+                last_history_var = VV(last_hidden_layer_activations.data)
                 pointer_history = last_history_var if pointer_history is None \
-                    else torch.cat([pointer_history, last_history_var], dim=0)
+                    else torch.cat([pointer_history, last_history_var], dim=0)  # at most window x bs x layer_size
 
                 preds_softmax = flattened_preds_softmax.view(-1, batch_size, vocab_size)  # bptt x bs x vocab_size
                 predictions = cache_calc(preds_softmax=preds_softmax,
