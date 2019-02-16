@@ -26,7 +26,7 @@ show_test_dir_contents
 python logrec/dataprep/split/bpe.py test1 101111 10 --reset
 show_test_dir_contents
 
-python logrec/dataprep/to_repr.py --bpe-base-repr 101111 --bpe-n-merges 10 test1 10911
+python logrec/dataprep/to_repr.py --bpe-base-repr 101111 --bpe-n-merges 10 test1 109111
 show_test_dir_contents
 
 python logrec/dataprep/vocabsize.py test1 109111
