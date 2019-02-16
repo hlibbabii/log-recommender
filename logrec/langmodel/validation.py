@@ -163,8 +163,7 @@ def custom_validate(cache: Cache, text_field: Field, use_subword_aware_metrics: 
         pointer_history = None
         n_iter = len(dl)
         for i, (*x, flattened_targets) in enumerate(iter(dl)):
-            if i % 1000 == 0:
-                logger.info(f'Iteration {i} out of {n_iter}')
+            logger.info(f'Iteration {i} out of {n_iter}')
             x = VV(x)
             flattened_targets = VV(flattened_targets)
 
