@@ -201,9 +201,10 @@ def custom_validate(cache: Cache, text_field: Field, use_subword_aware_metrics: 
             else:
                 flattened_predictions = flattened_preds_softmax
 
+            actual_probs = torch.gather(flattened_predictions, -1, flattened_targets.view(-1, 1))
+
             if use_subword_aware_metrics:
                 pred_vals = torch.max(flattened_predictions, dim=-1)[1]
-                actual_probs = torch.gather(flattened_predictions, -1, flattened_targets.view(-1, 1))
                 cross_entropy_loss, accuracy, accuracy_strict, n_words = calc_subword_aware_metrics(pred_vals,
                                                                                                     actual_probs)
             else:
