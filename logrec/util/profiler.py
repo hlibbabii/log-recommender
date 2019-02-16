@@ -1,7 +1,9 @@
 # https://stackoverflow.com/questions/3620943/measuring-elapsed-time-with-the-time-module#answer-3620972
-
+import logging
 import time
 from functools import wraps
+
+logger = logging.getLogger(__name__)
 
 PROF_DATA = {}
 
@@ -29,8 +31,8 @@ def print_prof_data():
     for fname, data in PROF_DATA.items():
         max_time = max(data[1])
         avg_time = sum(data[1]) / len(data[1])
-        print("Function %s called %d times. " % (fname, data[0]))
-        print('Execution time max: %.3f, average: %.3f' % (max_time, avg_time))
+        logger.info("Function %s called %d times. " % (fname, data[0]))
+        logger.info('Execution time max: %.3f, average: %.3f' % (max_time, avg_time))
 
 
 def clear_prof_data():
