@@ -53,7 +53,7 @@ def calc_stats(lang_checker, path_to_dir_with_preprocessed_projects, train_test_
                     (train_test_valid, project_name, filename, *only_code_stats, *code_str_stats, *code_str_com_stats))
             except EOFError:
                 break
-    return file_stats if file_stats else [[project_name]]
+    return file_stats if file_stats else [[train_test_valid, project_name]]
 
 
 def parsed_files_generator(path_to_dir_with_preprocessed_projects, train_test_valid, percent, start_from, dao):
@@ -120,7 +120,7 @@ def run():
 
     params = (0.006, 2.01, 2.01, 0.019, 3.939599999999999, 2.01)
     non_eng_projects = dao.select_noneng_projects(*params)
-    noneng_projects_file = os.path.join(args.base_dataset_dir, 'noneng-projects.txt')
+    noneng_projects_file = os.path.join(args.base_dataset_dir, f'noneng-projects-{args.train_test_valid}.txt')
     logger.info(f"Writing non-english projects list to {noneng_projects_file}")
     with open(noneng_projects_file, 'w') as f:
         f.write(str(params) + '\n')
