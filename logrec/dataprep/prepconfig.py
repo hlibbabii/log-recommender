@@ -24,7 +24,7 @@ class PrepParam(str, Enum):
 class PrepConfig(object):
     possible_param_values = {
         PrepParam.EN_ONLY: [0, 1, 2, 3],
-        PrepParam.COM_STR: [0, 1, 2],
+        PrepParam.COM_STR: [0, 1, 2, 3],
         PrepParam.SPLIT: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
         PrepParam.TABS_NEWLINES: [0, 1],
         PrepParam.MARK_LOGS: [0, 1],
@@ -37,8 +37,9 @@ class PrepConfig(object):
                             2: 'en_only+en_only_content',
                             3: 'asci_only'},
         PrepParam.COM_STR: {0: 'strings+comments',
-                            1: 'strings+NO_comments',
-                            2: 'NO_strings+NO_comments'},
+                            1: 'NO_strings+comments',
+                            2: 'NO_strings+NO_comments',
+                            3: 'strings+NO_comments'},
         PrepParam.SPLIT: {0: 'NO_splitting',
                           1: 'camel+underscore',
                           2: 'camel+underscore+numbers',
@@ -140,6 +141,7 @@ com_str_to_types_to_be_repr = {
     0: [],
     1: [StringLiteral],
     2: [StringLiteral, OneLineComment, MultilineComment],
+    3: [OneLineComment, MultilineComment]
 }
 
 en_only_to_types_to_be_repr = {
