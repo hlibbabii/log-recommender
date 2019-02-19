@@ -32,6 +32,7 @@ def load_config(path_to_model: str) -> object:
 def find_most_similar_config(percent_prefix: str, path_to_dataset: str,
                              current_config: Union[LMTrainingConfig, ClassifierTrainingConfig]):
     config_diff_dict = defaultdict(list)
+    logger.debug(f"Finding the most similar config in {path_to_dataset}")
     dirpath, dirnames, _ = next(os.walk(path_to_dataset))
     for dirname in dirnames:
         if not dirname.startswith(percent_prefix):
