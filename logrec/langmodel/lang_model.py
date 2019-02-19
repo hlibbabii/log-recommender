@@ -104,7 +104,7 @@ def get_best_available_model(fs: FS, data: Data, arch: Arch):
         try:
             fs.load_base_model(rnn_learner)
         except FileNotFoundError:
-            logger.warning("Base model was not found. Training model from scratch")
+            raise FileNotFoundError("Base model was not found. Training model from scratch")
 
     return rnn_learner, model_loaded
 
@@ -255,8 +255,8 @@ if __name__ == '__main__':
     parser.add_argument('--device', action='store', type=int, help='TODO')
     args = parser.parse_args()
 
-    if args.device:
-        setup_memory_profiler(str(args.device))
+#    if args.device:
+#        setup_memory_profiler(str(args.device))
     run(args.find_lr, args.force_rerun, args.params_path, args.changed_params_path,
         args.device)
     print_prof_data()
