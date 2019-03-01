@@ -5,7 +5,7 @@ import re
 
 from torchtext import data
 
-from logrec.dataprep import TRAIN_DIR, TEST_DIR
+from logrec.dataprep import TRAIN_DIR, TEST_DIR, VALID_DIR
 from logrec.dataprep.util import read_list
 from logrec.infrastructure.fractions_manager import include_to_df
 from logrec.util.files import file_mapper, get_dir_and_file
@@ -118,7 +118,7 @@ class ContextsDataset(data.Dataset):
         super(ContextsDataset, self).__init__(examples, fields, **kwargs)
 
     @classmethod
-    def splits(cls, text_field, label_field, path, train=TRAIN_DIR, test=TEST_DIR, **kwargs):
+    def splits(cls, text_field, label_field, path, train=TRAIN_DIR, valid=VALID_DIR, **kwargs):
         """Create dataset objects for splits of the IMDB dataset.
 
         Arguments:
@@ -132,4 +132,4 @@ class ContextsDataset(data.Dataset):
         """
         return super(ContextsDataset, cls).splits(
             path=path, text_field=text_field, label_field=label_field,
-            train=train, validation=None, test=test, **kwargs)
+            train=train, validation=valid, test=None, **kwargs)
