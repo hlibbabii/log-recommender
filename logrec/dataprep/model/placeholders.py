@@ -42,16 +42,16 @@ separators_beautiful = {
     'word_end': '',
 }
 
-logging_placeholders = {
-    'log_statement': '`L',
-    'log_statement_end': 'L`',
-    'loggable_block': '`l',
-    'loggable_block_end': 'l`',
-    'trace': '`trace',
-    'debug': '`debug',
-    'info': '`info',
-    'warn': '`warn',
-    'error': '`error',
-    'fatal': '`fatal',
-    'unknown': '`unknown'
-}
+logging_placeholders = [
+    placeholders['log_statement'],
+    placeholders['log_statement_end'],
+    placeholders['loggable_block'],
+    placeholders['loggable_block_end'],
+    placeholders['trace'],
+    placeholders['debug'],
+    placeholders['info'],
+    placeholders['warn'],
+    placeholders['error'],
+    placeholders['fatal'],
+    placeholders['unknown'],
+]
