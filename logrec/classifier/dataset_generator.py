@@ -9,7 +9,7 @@ from typing import List, Tuple, Callable, Optional, Union
 
 from logrec.dataprep import REPR_DIR, TRAIN_DIR, TEST_DIR, VALID_DIR, CLASSIFICATION_DIR
 from logrec.dataprep.model.logging import is_positive_level
-from logrec.dataprep.model.placeholders import placeholders
+from logrec.dataprep.model.placeholders import placeholders, logging_placeholders
 from logrec.dataprep.prepconfig import PrepConfig
 from logrec.util.files import get_dir_and_file, file_mapper
 
@@ -29,7 +29,7 @@ def create_case(list_of_words: list, position_range: (int, int)) -> (list, list)
         current_position = step(position)
         context = []
         while can_iterate(current_position, end):
-            if list_of_words[current_position] in [placeholders['loggable_block'], placeholders['loggable_block_end']]:
+            if list_of_words[current_position] in logging_placeholders:
                 if can_iterate(end, last_possible_elm):
                     end = step(end)
             else:
