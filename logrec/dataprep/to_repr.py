@@ -3,12 +3,12 @@ import gzip
 import logging
 import os
 import pickle
-import time
 from abc import ABCMeta, abstractmethod
 from multiprocessing.pool import Pool
 from typing import Optional, List
 
 import jsons
+from tqdm import tqdm
 
 from logrec.dataprep import base_project_dir, METADATA_DIR, BPE_DIR, PARSED_DIR
 from logrec.dataprep.preprocessors.general import to_token_list
@@ -74,7 +74,7 @@ def preprocess_and_write(params):
         logger.error(f"File {src_file} does not exist")
         exit(2)
 
-    logger.info(f"Preprocessing parsed file {src_file}")
+    logger.debug(f"Preprocessing parsed file {src_file}")
     with gzip.GzipFile(src_file, 'rb') as i:
         preprocessing_param_dict = pickle.load(i)
         writer = FinalReprWriter(dest_file)
@@ -175,16 +175,10 @@ def run(dataset: str, preprocessing_params: str, bpe_base_repr: Optional[str],
                                os.path.join(full_dest_dir_with_sub_dir, file),
                                preprocessing_params))
     files_total = len(params)
-    current_file = 0
-    start_time = time.time()
     with Pool() as pool:
         it = pool.imap_unordered(preprocess_and_write, params)
-        for _ in it:
-            current_file += 1
-            logger.info(f"Processed {current_file} out of {files_total}")
-            time_elapsed = time.time() - start_time
-            logger.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
-                        f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
+        for _ in tqdm(it, total=files_total):
+            pass
 
 
 if __name__ == '__main__':

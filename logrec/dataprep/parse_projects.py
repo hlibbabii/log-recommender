@@ -7,6 +7,8 @@ import time
 from multiprocessing.pool import Pool
 from pathlib import Path
 
+from tqdm import tqdm
+
 from logrec.dataprep.preprocessors import apply_preprocessors
 from logrec.dataprep.preprocessors.general import from_file
 from logrec.dataprep.prepconfig import PrepParam
@@ -104,16 +106,10 @@ def run(dataset):
             (fs.path_to_raw_dataset, fs.path_to_parsed_dataset, train_test_valid, project, preprocessing_types_dict))
 
     files_total = len(params)
-    current_file = 0
-    start_time = time.time()
     with Pool() as pool:
         it = pool.imap_unordered(preprocess_and_write, params)
-        for _ in it:
-            current_file += 1
-            logger.info(f"Processed {current_file} out of {files_total} chunks")
-            time_elapsed = time.time() - start_time
-            logger.info(f"Time elapsed: {time_elapsed:.2f} s, estimated time until completion: "
-                        f"{time_elapsed / current_file * files_total - time_elapsed:.2f} s")
+        for _ in tqdm(it, total=files_total):
+            pass
 
 
 if __name__ == '__main__':
