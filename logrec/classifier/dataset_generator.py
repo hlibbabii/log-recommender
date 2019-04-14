@@ -244,11 +244,11 @@ def run(dataset: str, repr: str, classifier: str):
     os.makedirs(os.path.join(dest_dir, TEST_DIR), exist_ok=True)
     os.makedirs(os.path.join(dest_dir, VALID_DIR), exist_ok=True)
 
-    total_files = sum(file_mapper(full_src_dir, lambda f: 1, "parsed.repr"))
+    total_files = sum(file_mapper(full_src_dir, lambda f: 1, lambda fi: fi.endswith("parsed.repr")))
     count = 0
 
     cases_creator = get_cases_creator(classifier)
-    for lines, rel_path in file_mapper(full_src_dir, cases_creator, "parsed.repr"):
+    for lines, rel_path in file_mapper(full_src_dir, cases_creator, lambda fi: fi.endswith("parsed.repr")):
         count += 1
         logger.info(f"Processing {count} out of {total_files}")
         forward_path = os.path.join(dest_dir, re.sub("parsed\\.repr", ContextsDataset.FW_CONTEXTS_FILE_EXT, rel_path))

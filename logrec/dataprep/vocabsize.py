@@ -21,6 +21,7 @@ from logrec.dataprep.model.placeholders import placeholders
 from logrec.dataprep.parse_projects import read_file_contents
 from logrec.dataprep.to_repr import REPR_EXTENSION
 from logrec.dataprep.util import AtomicInteger, merge_dicts_
+from logrec.infrastructure import fractions_manager
 from logrec.util import io
 from logrec.util.files import file_mapper
 
@@ -111,7 +112,8 @@ class PartialVocab(object):
 
 class VocabMerger(multiprocessing.Process):
     def __init__(self, id: int, tasks: Dict[int, Queue], path_to_dump: str, process_counter: AtomicInteger,
-                 chunk_queue: Queue, merges_left_counter: AtomicInteger, max_vocab_threshold: int):
+                 chunk_queue: Queue, merges_left_counter: AtomicInteger, max_vocab_threshold: int,
+                 percent: float, start_from: float):
         multiprocessing.Process.__init__(self)
         self.id = id
         self.tasks = tasks
@@ -121,6 +123,8 @@ class VocabMerger(multiprocessing.Process):
         self.merges_left_counter = merges_left_counter
         self.total_merges = merges_left_counter.value
         self.max_vocab_threshold = max_vocab_threshold
+        self.percent = percent
+        self.start_from = start_from
 
 
     def run(self):
@@ -183,9 +187,11 @@ class VocabMerger(multiprocessing.Process):
             self._log_merge_results(new_words, len(first.merged_word_counts), time.time() - start)
 
         first.limit_max_vocab(self.max_vocab_threshold)
-        first.write_stats(os.path.join(full_metadata_dir, VOCABSIZE_FILENAME))
-        first.write_vocab(os.path.join(full_metadata_dir, VOCAB_FILENAME))
-        first.write_field(os.path.join(full_metadata_dir, TEXT_FIELD_FILE))
+        prefix = fractions_manager.get_percent_prefix(self.percent, self.start_from)
+        prefix = '' if prefix == '100_' else prefix
+        first.write_stats(os.path.join(full_metadata_dir, f'{prefix}{VOCABSIZE_FILENAME}'))
+        first.write_vocab(os.path.join(full_metadata_dir, f'{prefix}{VOCAB_FILENAME}'))
+        first.write_field(os.path.join(full_metadata_dir, f'{prefix}{TEXT_FIELD_FILE}'))
         shutil.rmtree(self.path_to_dump)
 
     def _log_merge_results(self, new_words: List[str], resulting_vocab_size: int, time: float):
@@ -290,7 +296,12 @@ def mapify_tasks(tasks: List[PartialVocab]) -> Tuple[Dict[int, Queue], Dict[int,
             task_lists_in_chunks.items()}, {k: len(v) for k, v in task_lists_in_chunks.items()}
 
 
-def run(full_src_dir: str, full_metadata_dir: str, max_vocab_threshold: int):
+def file_generator(full_src_dir, percent, start_from):
+    return file_mapper(full_src_dir,
+                       lambda l: l, lambda fi: fi.endswith(REPR_EXTENSION)
+                                               and fractions_manager.included_in_fraction(fi, percent, start_from))
+
+def run(full_src_dir: str, full_metadata_dir: str, max_vocab_threshold: int, percent: float, start_from: float):
     if not os.path.exists(full_src_dir):
         logger.error(f"Dir does not exist: {full_src_dir}")
         exit(3)
@@ -301,7 +312,7 @@ def run(full_src_dir: str, full_metadata_dir: str, max_vocab_threshold: int):
 
     logger.info(f"Reading files from: {os.path.abspath(full_src_dir)}")
 
-    all_files = [file for file in file_mapper(full_src_dir, lambda l: l, REPR_EXTENSION)]
+    all_files = [file for file in file_generator(full_src_dir, percent, start_from)]
     if not all_files:
         logger.warning("No preprocessed files found.")
         exit(4)
@@ -310,13 +321,13 @@ def run(full_src_dir: str, full_metadata_dir: str, max_vocab_threshold: int):
     dumps_valid_file = os.path.join(path_to_dump, 'ready')
 
     if os.path.exists(dumps_valid_file):
-        for file in file_mapper(path_to_dump, lambda l: l, PARTVOCAB_EXT):
+        for file in file_generator(full_src_dir, percent, start_from):
             if '_' in os.path.basename(file):  # not very robust solution for checking if creation of this backup file
                 # hasn't been terminated properly
                 finish_file_dumping(file)
 
         task_list = []
-        for file in file_mapper(path_to_dump, lambda l: l, PARTVOCAB_EXT):
+        for file in file_generator(full_src_dir, percent, start_from):
             part_vocab = pickle.load(open(file, 'rb'))
             if not isinstance(part_vocab, PartialVocab):
                 raise TypeError(f"Object {str(part_vocab)} must be VocabMerger version {part_vocab.VERSION}")
@@ -339,8 +350,9 @@ def run(full_src_dir: str, full_metadata_dir: str, max_vocab_threshold: int):
     logger.info(f'Merges need to be done: {merges_to_be_done}')
     process_counter = AtomicInteger(n_processes)
     merges_left_counter = AtomicInteger(merges_to_be_done)
-    mergers = [VocabMerger(i + 1, tasks_queues, path_to_dump, process_counter, chunk_queue, merges_left_counter, max_vocab_threshold) for
-               i in range(n_processes)]
+    mergers = [VocabMerger(i + 1, tasks_queues, path_to_dump, process_counter, chunk_queue,
+                           merges_left_counter, max_vocab_threshold, percent, start_from)
+               for i in range(n_processes)]
     for merger in mergers:
         merger.start()
 
@@ -353,6 +365,8 @@ if __name__ == '__main__':
     parser.add_argument('dataset', action='store', help=f'dataset name')
     parser.add_argument('repr', action='store', help=f'repr name')
     parser.add_argument('--max-vocab-threshold', action='store', type=int, default=sys.maxsize)
+    parser.add_argument('--percent', action='store', type=float, default=100.0)
+    parser.add_argument('--start-from', action='store', type=float, default=0.0)
 
     args = parser.parse_known_args(*DEFAULT_VOCABSIZE_ARGS)
     args = args[0]
@@ -361,4 +375,4 @@ if __name__ == '__main__':
     full_src_dir = os.path.join(path_to_dataset, REPR_DIR, args.repr, TRAIN_DIR)
     full_metadata_dir = os.path.join(path_to_dataset, METADATA_DIR, args.repr)
 
-    run(full_src_dir, full_metadata_dir, args.max_vocab_threshold)
+    run(full_src_dir, full_metadata_dir, args.max_vocab_threshold, args.percent, args.start_from)

@@ -136,7 +136,7 @@ def show_tests(path_to_test_set: str, model: SequentialRNN, text_field: Field,
     text = ""
     stop_showing_examples = False
     for c_filename_before, c_filename_after, l_filename in file_mapper(path_to_test_set, ContextsDataset._get_pair,
-                                                                       extension='label'):
+                                                                       lambda fi: fi.endswith('label')):
         if stop_showing_examples:
             break
         c_file_before = None

@@ -14,7 +14,7 @@ from logrec.dataprep.preprocessors.general import to_token_list
 from logrec.dataprep.prepconfig import PrepConfig
 from logrec.dataprep.to_repr import to_repr
 from logrec.dataprep.split.ngram import NgramSplitConfig
-from logrec.infrastructure.fractions_manager import include_to_df
+from logrec.infrastructure.fractions_manager import included_in_fraction
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ def parsed_files_generator(path_to_dir_with_preprocessed_projects, train_test_va
     for file in os.listdir(os.path.join(path_to_dir_with_preprocessed_projects, train_test_valid)):
         if file.startswith(".") or get_project_name(file) in dao.processed_projects_cache:
             continue
-        if include_to_df(file, percent, start_from):
+        if included_in_fraction(file, percent, start_from):
             yield file
 
 

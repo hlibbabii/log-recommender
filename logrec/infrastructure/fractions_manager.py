@@ -57,7 +57,7 @@ def get_chunk_from_filename(filename: str) -> int:
     return int(filename[:underscore_index])
 
 
-def include_to_df(filename: str, percent: float, start_from: float) -> bool:
+def included_in_fraction(filename: str, percent: float, start_from: float) -> bool:
     check_value_ranges(percent, start_from)
 
     basename = os.path.basename(filename)
@@ -67,9 +67,9 @@ def include_to_df(filename: str, percent: float, start_from: float) -> bool:
     return percent_to_chunk(start_from) <= chunk < percent_to_chunk(start_from + percent)
 
 
-def include_to_df_tester(percent: float, start_from: float) -> Callable:
+def included_in_fraction_tester(percent: float, start_from: float) -> Callable:
     def tmp(filename):
-        return 1 if include_to_df(filename, percent, start_from) else 0
+        return 1 if included_in_fraction(filename, percent, start_from) else 0
 
     return tmp
 
@@ -83,8 +83,8 @@ def reverse_line(line):
 def create_df_gen(dir: str, percent: float, start_from: float, backwards: bool) \
         -> Generator[pandas.DataFrame, None, None]:
     lines = []
-    files_total = sum(f for f in file_mapper(dir, include_to_df_tester(percent, start_from),
-                                             extension=None, ignore_prefix="_"))
+    files_total = sum(f for f in file_mapper(dir, included_in_fraction_tester(percent, start_from),
+                                             lambda fi: not fi.startswith("_")))
 
     DATAFRAME_LINES_THRESHOLD = 3000
     cur_file = 0
@@ -92,7 +92,7 @@ def create_df_gen(dir: str, percent: float, start_from: float, backwards: bool) 
     for root, dirs, files in os.walk(dir):
         for file in files:
             with open(os.path.join(root, file), 'r') as f:
-                if include_to_df(file, percent, start_from):
+                if included_in_fraction(file, percent, start_from):
                     cur_file += 1
                     logger.debug(f'Adding {os.path.join(root, file)} to dataframe [{cur_file} out of {files_total}]')
                     for line in f:

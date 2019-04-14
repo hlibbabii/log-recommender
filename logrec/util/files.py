@@ -1,4 +1,5 @@
 import os
+from typing import Callable
 
 
 def get_dir_and_file(path_to_file):
@@ -13,13 +14,13 @@ def get_two_levels_subdirs(dir):
             yield dir, subdir, subsubdir
 
 
-def file_mapper(dir, func, extension="java", ignore_prefix="."):
+def file_mapper(dir: str, func: Callable, predicate: Callable[[str], bool] = lambda: True):
     import os
     if not os.path.exists(dir):
         raise ValueError(f"Directory doesnt exist: {dir}")
     for root, dirs, files in os.walk(dir):
         for file in files:
-            if (extension is None or file.endswith(f".{extension}")) and not file.startswith(ignore_prefix):
+            if predicate(file):
                 ret = func(os.path.join(root, file))
                 if ret is not None:
                     yield ret

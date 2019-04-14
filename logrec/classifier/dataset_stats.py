@@ -39,7 +39,7 @@ def calc_logged_stats(path_to_label_file):
 def calc_stats(dest_dir, threshold):
     projects_to_ignore = []
     res_logged_stats = {}
-    for logged_stats, proj_name in file_mapper(dest_dir, calc_logged_stats, ContextsDataset.LABEL_FILE_EXT):
+    for logged_stats, proj_name in file_mapper(dest_dir, calc_logged_stats, lambda fi: fi.endswith(ContextsDataset.LABEL_FILE_EXT)):
         if float(logged_stats[WITH_LOGGING]) / (logged_stats[WITH_LOGGING] + logged_stats[NO_LOGGING]) <= (
                 threshold * 0.01):
             projects_to_ignore.append(proj_name)

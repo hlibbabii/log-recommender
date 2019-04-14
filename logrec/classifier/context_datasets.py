@@ -7,7 +7,7 @@ from torchtext import data
 
 from logrec.dataprep import TRAIN_DIR, TEST_DIR, VALID_DIR
 from logrec.dataprep.util import read_list
-from logrec.infrastructure.fractions_manager import include_to_df
+from logrec.infrastructure.fractions_manager import included_in_fraction
 from logrec.util.files import file_mapper, get_dir_and_file
 
 __author__ = 'hlib'
@@ -72,8 +72,8 @@ class ContextsDataset(data.Dataset):
         examples = []
 
         for c_filename_before, c_filename_after, l_filename in file_mapper(path, ContextsDataset._get_pair,
-                                                                           extension='label'):
-            if not include_to_df(os.path.basename(l_filename), data_params.percent, data_params.start_from):
+                                                                           lambda fi: fi.endswith('label')):
+            if not included_in_fraction(os.path.basename(l_filename), data_params.percent, data_params.start_from):
                 continue
 
             proj_name = re.sub(f"\.{ContextsDataset.LABEL_FILE_EXT}$", "", get_dir_and_file(l_filename))
