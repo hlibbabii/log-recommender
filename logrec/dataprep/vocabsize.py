@@ -2,6 +2,7 @@ import argparse
 import logging.config
 import multiprocessing
 import os
+import sys
 from multiprocessing import Queue
 from queue import Empty
 from typing import List, Tuple, Dict
@@ -81,6 +82,16 @@ class PartialVocab(object):
             for percent, (v, n, nn) in stats:
                 f.write(f"{percent:.4f} {int(v)} {int(n)} {int(nn)}\n")
 
+    def limit_max_vocab(self, vocab_size_threshold: int):
+        sorted_vocab = sorted(self.merged_word_counts.items(), key=lambda x: x[1], reverse=True)
+        if vocab_size_threshold > len(sorted_vocab):
+            return
+        min_freq_excluded = sorted_vocab[vocab_size_threshold][1]
+        adjusted_threshold = vocab_size_threshold - 1
+        while adjusted_threshold >= 0 and sorted_vocab[adjusted_threshold][1] == min_freq_excluded:
+            adjusted_threshold -= 1
+        self.merged_word_counts = {k: v for (k, v) in sorted_vocab[:adjusted_threshold + 1]}
+
     def write_vocab(self, path_to_vocab_file: str) -> None:
         sorted_vocab = sorted(self.merged_word_counts.items(), key=lambda x: x[1], reverse=True)
         io.dump_dict_into_2_columns(sorted_vocab, path_to_vocab_file)
@@ -100,7 +111,7 @@ class PartialVocab(object):
 
 class VocabMerger(multiprocessing.Process):
     def __init__(self, id: int, tasks: Dict[int, Queue], path_to_dump: str, process_counter: AtomicInteger,
-                 chunk_queue: Queue, merges_left_counter: AtomicInteger):
+                 chunk_queue: Queue, merges_left_counter: AtomicInteger, max_vocab_threshold: int):
         multiprocessing.Process.__init__(self)
         self.id = id
         self.tasks = tasks
@@ -109,6 +120,8 @@ class VocabMerger(multiprocessing.Process):
         self.chunk_queue = chunk_queue
         self.merges_left_counter = merges_left_counter
         self.total_merges = merges_left_counter.value
+        self.max_vocab_threshold = max_vocab_threshold
+
 
     def run(self):
         while True:
@@ -169,6 +182,7 @@ class VocabMerger(multiprocessing.Process):
 
             self._log_merge_results(new_words, len(first.merged_word_counts), time.time() - start)
 
+        first.limit_max_vocab(self.max_vocab_threshold)
         first.write_stats(os.path.join(full_metadata_dir, VOCABSIZE_FILENAME))
         first.write_vocab(os.path.join(full_metadata_dir, VOCAB_FILENAME))
         first.write_field(os.path.join(full_metadata_dir, TEXT_FIELD_FILE))
@@ -276,7 +290,7 @@ def mapify_tasks(tasks: List[PartialVocab]) -> Tuple[Dict[int, Queue], Dict[int,
             task_lists_in_chunks.items()}, {k: len(v) for k, v in task_lists_in_chunks.items()}
 
 
-def run(full_src_dir, full_metadata_dir):
+def run(full_src_dir: str, full_metadata_dir: str, max_vocab_threshold: int):
     if not os.path.exists(full_src_dir):
         logger.error(f"Dir does not exist: {full_src_dir}")
         exit(3)
@@ -325,7 +339,7 @@ def run(full_src_dir, full_metadata_dir):
     logger.info(f'Merges need to be done: {merges_to_be_done}')
     process_counter = AtomicInteger(n_processes)
     merges_left_counter = AtomicInteger(merges_to_be_done)
-    mergers = [VocabMerger(i + 1, tasks_queues, path_to_dump, process_counter, chunk_queue, merges_left_counter) for
+    mergers = [VocabMerger(i + 1, tasks_queues, path_to_dump, process_counter, chunk_queue, merges_left_counter, max_vocab_threshold) for
                i in range(n_processes)]
     for merger in mergers:
         merger.start()
@@ -338,6 +352,7 @@ if __name__ == '__main__':
     parser.add_argument('--base-from', action='store', default=DEFAULT_PARSED_DATASETS_DIR)
     parser.add_argument('dataset', action='store', help=f'dataset name')
     parser.add_argument('repr', action='store', help=f'repr name')
+    parser.add_argument('--max-vocab-threshold', action='store', type=int, default=sys.maxsize)
 
     args = parser.parse_known_args(*DEFAULT_VOCABSIZE_ARGS)
     args = args[0]
@@ -346,4 +361,4 @@ if __name__ == '__main__':
     full_src_dir = os.path.join(path_to_dataset, REPR_DIR, args.repr, TRAIN_DIR)
     full_metadata_dir = os.path.join(path_to_dataset, METADATA_DIR, args.repr)
 
-    run(full_src_dir, full_metadata_dir)
+    run(full_src_dir, full_metadata_dir, args.max_vocab_threshold)
