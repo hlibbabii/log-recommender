@@ -1,5 +1,4 @@
 import multiprocessing
-import threading
 from typing import Dict, Tuple, List
 
 
@@ -56,7 +55,7 @@ class Singleton(type):
 
 class AtomicInteger(object):
     def __init__(self, v=0):
-        self._lock = threading.Lock()
+        self._lock = multiprocessing.Lock()
         self._queue = multiprocessing.Queue()
         for i in range(v):
             self._queue.put(1)
