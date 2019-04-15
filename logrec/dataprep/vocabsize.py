@@ -113,7 +113,7 @@ class PartialVocab(object):
 class VocabMerger(multiprocessing.Process):
     def __init__(self, id: int, tasks: Dict[int, Queue], path_to_dump: str, process_counter: AtomicInteger,
                  chunk_queue: Queue, merges_left_counter: AtomicInteger, max_vocab_threshold: int,
-                 percent: float, start_from: float):
+                 prefix: str):
         multiprocessing.Process.__init__(self)
         self.id = id
         self.tasks = tasks
@@ -123,8 +123,7 @@ class VocabMerger(multiprocessing.Process):
         self.merges_left_counter = merges_left_counter
         self.total_merges = merges_left_counter.value
         self.max_vocab_threshold = max_vocab_threshold
-        self.percent = percent
-        self.start_from = start_from
+        self.prefix = prefix
 
 
     def run(self):
@@ -187,11 +186,10 @@ class VocabMerger(multiprocessing.Process):
             self._log_merge_results(new_words, len(first.merged_word_counts), time.time() - start)
 
         first.limit_max_vocab(self.max_vocab_threshold)
-        prefix = fractions_manager.get_percent_prefix(self.percent, self.start_from)
-        prefix = '' if prefix == '100_' else prefix
-        first.write_stats(os.path.join(full_metadata_dir, f'{prefix}{VOCABSIZE_FILENAME}'))
-        first.write_vocab(os.path.join(full_metadata_dir, f'{prefix}{VOCAB_FILENAME}'))
-        first.write_field(os.path.join(full_metadata_dir, f'{prefix}{TEXT_FIELD_FILE}'))
+
+        first.write_stats(os.path.join(full_metadata_dir, f'{self.prefix}{VOCABSIZE_FILENAME}'))
+        first.write_vocab(os.path.join(full_metadata_dir, f'{self.prefix}{VOCAB_FILENAME}'))
+        first.write_field(os.path.join(full_metadata_dir, f'{self.prefix}{TEXT_FIELD_FILE}'))
         shutil.rmtree(self.path_to_dump)
 
     def _log_merge_results(self, new_words: List[str], resulting_vocab_size: int, time: float):
@@ -302,12 +300,15 @@ def file_generator(full_src_dir, percent, start_from):
                                                and fractions_manager.included_in_fraction(fi, percent, start_from))
 
 def run(full_src_dir: str, full_metadata_dir: str, max_vocab_threshold: int, percent: float, start_from: float):
+    prefix = fractions_manager.get_percent_prefix(percent, start_from)
+    prefix = '' if prefix == '100_' else prefix
+
     if not os.path.exists(full_src_dir):
         logger.error(f"Dir does not exist: {full_src_dir}")
         exit(3)
 
-    if os.path.exists(os.path.join(full_metadata_dir, 'vocabsize')):
-        logger.warning(f"File already exists: {os.path.join(full_metadata_dir, 'vocabsize')}. Doing nothing.")
+    if os.path.exists(os.path.join(full_metadata_dir, f'{prefix}{VOCABSIZE_FILENAME}')):
+        logger.warning(f"File already exists: {os.path.join(full_metadata_dir, f'{prefix}{VOCABSIZE_FILENAME}')}. Doing nothing.")
         exit(0)
 
     logger.info(f"Reading files from: {os.path.abspath(full_src_dir)}")
@@ -351,7 +352,7 @@ def run(full_src_dir: str, full_metadata_dir: str, max_vocab_threshold: int, per
     process_counter = AtomicInteger(n_processes)
     merges_left_counter = AtomicInteger(merges_to_be_done)
     mergers = [VocabMerger(i + 1, tasks_queues, path_to_dump, process_counter, chunk_queue,
-                           merges_left_counter, max_vocab_threshold, percent, start_from)
+                           merges_left_counter, max_vocab_threshold, prefix)
                for i in range(n_processes)]
     for merger in mergers:
         merger.start()
