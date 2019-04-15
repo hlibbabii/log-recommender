@@ -35,5 +35,5 @@ class PriorityCounter(object):
             priority, count, pair = heappop(self.pq)
             if pair is not PriorityCounter.REMOVED:
                 del self.entry_finder[pair]
-                return pair
+                return pair, -priority
         raise KeyError('pop from an empty priority queue')
