@@ -30,7 +30,7 @@ def merge_vocab(pair, v_in, pairs):
     concat_pair_with_space = ' '.join(pair)
     concat_pair_with_space_escaped = re.escape(concat_pair_with_space)
     concat_pair = ''.join(pair)
-    reg = re.compile('(\S+ |^)(' + concat_pair_with_space_escaped + ')($| \S+)')
+    reg = re.compile('(|^|\S+ )(' + concat_pair_with_space_escaped + ')( \S+|$)')
     for word in v_in:
         word_occurences = v_in[word]
         match = reg.search(word)
