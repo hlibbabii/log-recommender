@@ -33,8 +33,8 @@ def read_merges(merges_file):
     merges = {}
     with open(merges_file, 'r') as f:
         for idx, line in enumerate(f):
-            line = line[:-1] if line[-1] == '\n' else line
-            merges[tuple(line.split(" "))] = idx
+            line = line.rstrip('\n')
+            merges[tuple(line.split(" ")[:2])] = idx
     return merges
 
 

@@ -95,35 +95,40 @@ def preprocess_and_write(params):
 
 
 def init_splitting_config(dataset: str, prep_config: PrepConfig,
-                          bpe_base_repr: Optional[str], bpe_n_merges: Optional[int], splitting_file: Optional[str]):
+                          bpe_base_repr: Optional[str], bpe_n_merges: Optional[int], splitting_file: Optional[str], merges_file):
     global global_n_gramm_splitting_config
     global_n_gramm_splitting_config = NgramSplitConfig()
     if prep_config.get_param_value(PrepParam.SPLIT) in [4, 5, 6, 7, 8, 9]:
-        if not bpe_base_repr:
-            bpe_base_repr = prep_config.get_base_bpe_prep_config()
-
-        if prep_config.get_param_value(PrepParam.SPLIT) == 9:
-            if not bpe_n_merges:
-                raise ValueError("--bpe-n-merges must be specified for repr **9**")
+        if merges_file:
+            logger.info(f'Using bpe merges file: {merges_file}')
+            global_n_gramm_splitting_config.merges_cache = []
+            global_n_gramm_splitting_config.merges = read_merges(merges_file)
         else:
-            bpe_n_merges_dict = {4: 5000, 5: 1000, 6: 10000, 7: 20000, 8: 0}
-            bpe_n_merges = bpe_n_merges_dict[prep_config.get_param_value(PrepParam.SPLIT)]
+            if not bpe_base_repr:
+                bpe_base_repr = prep_config.get_base_bpe_prep_config()
 
-        if bpe_base_repr.find("/") == -1:
-            bpe_base_dataset = dataset
-        else:
-            bpe_base_dataset, bpe_base_repr = bpe_base_repr.split("/")
-        logger.info(f'Using bpe base dataset: {bpe_base_dataset}')
-        logger.info(f'Using bpe base repr: {bpe_base_repr}')
-        logger.info(f'Using bpe_n_merges: {bpe_n_merges}')
-        path_to_merges_dir = os.path.join(DEFAULT_PARSED_DATASETS_DIR, bpe_base_dataset, METADATA_DIR, bpe_base_repr,
-                                          BPE_DIR,
-                                          str(bpe_n_merges))
-        bpe_merges_file = os.path.join(path_to_merges_dir, 'merges.txt')
-        bpe_merges_cache = os.path.join(path_to_merges_dir, 'merges_cache.txt')
+            if prep_config.get_param_value(PrepParam.SPLIT) == 9:
+                if not bpe_n_merges:
+                    raise ValueError("--bpe-n-merges must be specified for repr **9**")
+            else:
+                bpe_n_merges_dict = {4: 5000, 5: 1000, 6: 10000, 7: 20000, 8: 0}
+                bpe_n_merges = bpe_n_merges_dict[prep_config.get_param_value(PrepParam.SPLIT)]
 
-        global_n_gramm_splitting_config.merges_cache = read_dict_from_2_columns(bpe_merges_cache, val_type=list)
-        global_n_gramm_splitting_config.merges = read_merges(bpe_merges_file)
+            if bpe_base_repr.find("/") == -1:
+                bpe_base_dataset = dataset
+            else:
+                bpe_base_dataset, bpe_base_repr = bpe_base_repr.split("/")
+            logger.info(f'Using bpe base dataset: {bpe_base_dataset}')
+            logger.info(f'Using bpe base repr: {bpe_base_repr}')
+            logger.info(f'Using bpe_n_merges: {bpe_n_merges}')
+            path_to_merges_dir = os.path.join(DEFAULT_PARSED_DATASETS_DIR, bpe_base_dataset, METADATA_DIR, bpe_base_repr,
+                                              BPE_DIR,
+                                              str(bpe_n_merges))
+            bpe_merges_file = os.path.join(path_to_merges_dir, 'merges.txt')
+            bpe_merges_cache = os.path.join(path_to_merges_dir, 'merges_cache.txt')
+
+            global_n_gramm_splitting_config.merges_cache = read_dict_from_2_columns(bpe_merges_cache, val_type=list)
+            global_n_gramm_splitting_config.merges = read_merges(bpe_merges_file)
         global_n_gramm_splitting_config.set_splitting_type(NgramSplittingType.BPE)
     elif prep_config.get_param_value(PrepParam.SPLIT) == 3:
         if not splitting_file:
@@ -137,7 +142,7 @@ def init_splitting_config(dataset: str, prep_config: PrepConfig,
 
 
 def run(dataset: str, preprocessing_params: str, bpe_base_repr: Optional[str],
-        bpe_n_merges: Optional[int], splitting_file: Optional[str]):
+        bpe_n_merges: Optional[int], splitting_file: Optional[str], merges_file):
     path_to_dataset = os.path.join(DEFAULT_PARSED_DATASETS_DIR, args.dataset)
     full_src_dir = os.path.join(path_to_dataset, PARSED_DIR)
 
@@ -147,7 +152,7 @@ def run(dataset: str, preprocessing_params: str, bpe_base_repr: Optional[str],
     logger.info(f"Reading parsed files from: {os.path.abspath(full_src_dir)}")
 
     preprocessing_params = PrepConfig.from_encoded_string(preprocessing_params)
-    init_splitting_config(dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, splitting_file)
+    init_splitting_config(dataset, preprocessing_params, bpe_base_repr, bpe_n_merges, splitting_file, merges_file)
 
     repr = str(preprocessing_params)
 
@@ -185,6 +190,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('dataset', action='store', help=f'path to the parsed dataset')
     parser.add_argument('repr', action='store', help='preprocessing params line, \n Example: 101011')
+    parser.add_argument('--merges-file', action='store')
 
     parser.add_argument('--bpe-base-repr', action='store', help='TODO')
     parser.add_argument('--bpe-n-merges', action='store', type=int, help='TODO')
@@ -194,4 +200,4 @@ if __name__ == '__main__':
     args = parser.parse_known_args(*DEFAULT_TO_REPR_ARGS)
     args = args[0]
 
-    run(args.dataset, args.repr, args.bpe_base_repr, args.bpe_n_merges, args.splitting_file)
+    run(args.dataset, args.repr, args.bpe_base_repr, args.bpe_n_merges, args.splitting_file, args.merges_file)
