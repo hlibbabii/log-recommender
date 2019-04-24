@@ -156,7 +156,7 @@ def run(dataset: str, preprocessing_params: str, bpe_base_repr: Optional[str],
 
     repr = str(preprocessing_params)
 
-    full_dest_dir = os.path.join(path_to_dataset, REPR_EXTENSION, repr)
+    full_dest_dir = os.path.join(path_to_dataset, REPR_EXTENSION, repr + os.path.basename(merges_file))
     full_metadata_dir = os.path.join(path_to_dataset, METADATA_DIR, repr)
     logger.info(f"Writing preprocessed files to {os.path.abspath(full_dest_dir)}")
     if not os.path.exists(full_dest_dir):
