@@ -105,6 +105,7 @@ def init_splitting_config(dataset: str, prep_config: PrepConfig,
             global_n_gramm_splitting_config.merges = read_merges(merges_file)
             if bpe_n_merges:
                 global_n_gramm_splitting_config.merges = global_n_gramm_splitting_config.merges[:bpe_n_merges]
+                logger.info(f'Using first {bpe_n_merges} merges.')
         else:
             if not bpe_base_repr:
                 bpe_base_repr = prep_config.get_base_bpe_prep_config()
