@@ -103,6 +103,8 @@ def init_splitting_config(dataset: str, prep_config: PrepConfig,
             logger.info(f'Using bpe merges file: {merges_file}')
             global_n_gramm_splitting_config.merges_cache = []
             global_n_gramm_splitting_config.merges = read_merges(merges_file)
+            if bpe_n_merges:
+                global_n_gramm_splitting_config.merges = global_n_gramm_splitting_config.merges[:bpe_n_merges]
         else:
             if not bpe_base_repr:
                 bpe_base_repr = prep_config.get_base_bpe_prep_config()
@@ -156,7 +158,7 @@ def run(dataset: str, preprocessing_params: str, bpe_base_repr: Optional[str],
 
     repr = str(preprocessing_params)
 
-    full_dest_dir = os.path.join(path_to_dataset, REPR_EXTENSION, repr + os.path.basename(merges_file))
+    full_dest_dir = os.path.join(path_to_dataset, REPR_EXTENSION, f'{repr}_{bpe_n_merges if bpe_n_merges else ""}_{os.path.basename(merges_file)}')
     full_metadata_dir = os.path.join(path_to_dataset, METADATA_DIR, repr)
     logger.info(f"Writing preprocessed files to {os.path.abspath(full_dest_dir)}")
     if not os.path.exists(full_dest_dir):
