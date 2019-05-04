@@ -322,13 +322,13 @@ def run(full_src_dir: str, full_metadata_dir: str, max_vocab_threshold: int, per
     dumps_valid_file = os.path.join(path_to_dump, 'ready')
 
     if os.path.exists(dumps_valid_file):
-        for file in file_generator(full_src_dir, percent, start_from):
+        for file in file_generator(path_to_dump, percent, start_from):
             if '_' in os.path.basename(file):  # not very robust solution for checking if creation of this backup file
                 # hasn't been terminated properly
                 finish_file_dumping(file)
 
         task_list = []
-        for file in file_generator(full_src_dir, percent, start_from):
+        for file in file_generator(path_to_dump, percent, start_from):
             part_vocab = pickle.load(open(file, 'rb'))
             if not isinstance(part_vocab, PartialVocab):
                 raise TypeError(f"Object {str(part_vocab)} must be VocabMerger version {part_vocab.VERSION}")
