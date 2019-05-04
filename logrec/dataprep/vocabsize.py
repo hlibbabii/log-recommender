@@ -294,9 +294,9 @@ def mapify_tasks(tasks: List[PartialVocab]) -> Tuple[Dict[int, Queue], Dict[int,
             task_lists_in_chunks.items()}, {k: len(v) for k, v in task_lists_in_chunks.items()}
 
 
-def file_generator(full_src_dir, percent, start_from):
+def file_generator(full_src_dir, extension, percent, start_from):
     return file_mapper(full_src_dir,
-                       lambda l: l, lambda fi: fi.endswith(REPR_EXTENSION)
+                       lambda l: l, lambda fi: fi.endswith(extension)
                                                and fractions_manager.included_in_fraction(fi, percent, start_from))
 
 def run(full_src_dir: str, full_metadata_dir: str, max_vocab_threshold: int, percent: float, start_from: float):
@@ -313,7 +313,7 @@ def run(full_src_dir: str, full_metadata_dir: str, max_vocab_threshold: int, per
 
     logger.info(f"Reading files from: {os.path.abspath(full_src_dir)}")
 
-    all_files = [file for file in file_generator(full_src_dir, percent, start_from)]
+    all_files = [file for file in file_generator(full_src_dir, REPR_EXTENSION, percent, start_from)]
     if not all_files:
         logger.warning("No preprocessed files found.")
         exit(4)
@@ -322,13 +322,13 @@ def run(full_src_dir: str, full_metadata_dir: str, max_vocab_threshold: int, per
     dumps_valid_file = os.path.join(path_to_dump, 'ready')
 
     if os.path.exists(dumps_valid_file):
-        for file in file_generator(path_to_dump, percent, start_from):
+        for file in file_generator(path_to_dump, PARTVOCAB_EXT, percent, start_from):
             if '_' in os.path.basename(file):  # not very robust solution for checking if creation of this backup file
                 # hasn't been terminated properly
                 finish_file_dumping(file)
 
         task_list = []
-        for file in file_generator(path_to_dump, percent, start_from):
+        for file in file_generator(path_to_dump, PARTVOCAB_EXT, percent, start_from):
             part_vocab = pickle.load(open(file, 'rb'))
             if not isinstance(part_vocab, PartialVocab):
                 raise TypeError(f"Object {str(part_vocab)} must be VocabMerger version {part_vocab.VERSION}")
