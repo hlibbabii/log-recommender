@@ -1,6 +1,7 @@
 import argparse
 import logging
 import sys
+from typing import Optional, Tuple, Dict
 
 logger = logging.getLogger(__name__)
 
@@ -29,10 +30,12 @@ def encode(words, merges):
     return new_letters_list
 
 
-def read_merges(merges_file):
+def read_merges(merges_file: str, n_merges: Optional[int]=None) -> Dict[Tuple[str, str], int]:
     merges = {}
     with open(merges_file, 'r') as f:
         for idx, line in enumerate(f):
+            if idx >= n_merges:
+                break
             line = line.rstrip('\n')
             merges[tuple(line.split(" ")[:2])] = idx
     return merges
