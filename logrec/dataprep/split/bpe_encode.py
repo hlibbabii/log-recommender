@@ -34,7 +34,7 @@ def read_merges(merges_file: str, n_merges: Optional[int]=None) -> Dict[Tuple[st
     merges = {}
     with open(merges_file, 'r') as f:
         for idx, line in enumerate(f):
-            if idx >= n_merges:
+            if n_merges and idx >= n_merges:
                 break
             line = line.rstrip('\n')
             merges[tuple(line.split(" ")[:2])] = idx
