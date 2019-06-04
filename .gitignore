@@ -9,6 +9,7 @@ logs.csv
 interesting_context_words.csv
 **/logs*.csv
 *.pkl
+!VOCAB.pkl
 *.dat
 dendrogram.txt
 marked_up_contexts.html
@@ -18,11 +19,6 @@ classes.csv
 /project_stats.csv
 /client_secret.json
 /generated_stats/
-!/nn-data/no_replaced_identifier/TEXT.pkl
-!/nn-data/no_replaced_identifier_split/TEXT.pkl
-!/nn-data/replaced_some_identifiers_00001/TEXT.pkl
-!/nn-data/replaced_some_identifiers_0005/TEXT.pkl
-
 local_properties.py
 /.coverage
 /cc-test-reporter
