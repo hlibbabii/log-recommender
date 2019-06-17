@@ -1,3 +1,5 @@
+## This repository has migrated to [https://github.com/giganticode](https://github.com/giganticode) organization and is no longer supported.
+
 # log-recommender
 
 [![Build Status](https://travis-ci.org/hlibbabii/log-recommender.svg?branch=master)](https://travis-ci.org/hlibbabii/log-recommender)
