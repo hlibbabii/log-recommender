@@ -1,0 +1,429 @@
+5.31578019949106      7.6783491770426435    package com.pubnub.api.managers;
+0.0                   0.0
+2.189212523008648     4.6216708819071455    import com.pubnub.api.PubNub;
+1.9092493815855547    3.2310374149909387    import com.pubnub.api.builder.dto.PresenceOperation;
+1.2851466699080034    2.1748635952289286    import com.pubnub.api.builder.dto.StateOperation;
+1.1240760413083164    1.902282531444843     import com.pubnub.api.builder.dto.SubscribeOperation;
+1.0994199189272793    1.8605567858769343    import com.pubnub.api.builder.dto.UnsubscribeOperation;
+1.7597657203674317    3.199574037031694     import com.pubnub.api.callbacks.PNCallback;
+1.4717417444501604    2.809688784859397     import com.pubnub.api.callbacks.ReconnectionCallback;
+0.9495867490768433    1.7265213619578967    import com.pubnub.api.callbacks.SubscribeCallback;
+2.151412592993842     2.978878974914551     import com.pubnub.api.endpoints.presence.Heartbeat;
+1.7303291426764593    2.3958403513981748    import com.pubnub.api.endpoints.presence.Leave;
+1.5861992381867909    2.562321846301739     import com.pubnub.api.endpoints.pubsub.Subscribe;
+2.263156235218048     4.937795422293923     import com.pubnub.api.enums.PNHeartbeatNotificationOptions;
+1.5865136710080234    3.173027342016047     import com.pubnub.api.enums.PNStatusCategory;
+1.856401876969771     3.141603176410382     import com.pubnub.api.models.consumer.PNStatus;
+1.788487521084872     3.026671189528245     import com.pubnub.api.models.server.SubscribeEnvelope;
+1.2447227781469172    2.106453932248629     import com.pubnub.api.models.server.SubscribeMessage;
+1.6902409250086003    3.3804818500172007    import com.pubnub.api.workers.SubscribeMessageWorker;
+2.464595980114407     4.929191960228814     import lombok.extern.slf4j.Slf4j;
+0.0                   0.0
+0.40121511618296307   0.6877973420279366    import java.util.ArrayList;
+0.13412737846374512   0.1532884325299944    import java.util.List;
+0.2907404899597168    0.3322748456682478    import java.util.Map;
+0.9976049661636353    1.140119961329869     import java.util.Timer;
+0.34908580780029297   0.5984328133719308    import java.util.TimerTask;
+0.3642041087150574    0.6474739710489908    import java.util.concurrent.LinkedBlockingQueue;
+0.0                   0.0
+2.0887656893048967    7.310679912567139     @Slf4j
+1.615231196085612     3.634270191192627     public class SubscriptionManager {
+0.0                   0.0
+1.7663513071396773    3.753496527671814         private static final int HEARTBEAT_INTERVAL_MULTIPLIER = 1000;
+0.0                   0.0
+2.927879878452846     10.247579574584961        private PubNub pubnub;
+2.148239023545209     9.130015850067139         private TelemetryManager telemetryManager;
+2.5931313832600913    5.834545612335205         private Subscribe subscribeCall;
+2.8525745603773327    6.418292760848999         private Heartbeat heartbeatCall;
+0.0                   0.0
+1.1550263114597485    3.795086451939174         private LinkedBlockingQueue<SubscribeMessage> messageQueue;
+0.0                   0.0
+1.7436359405517579    6.538634777069092         private DuplicationManager duplicationManager;
+0.0                   0.0
+9.188739140828451     9.188739140828451         /**
+5.609166126251221     7.790508508682251          * Store the latest timetoken to subscribe with, null by default to get the latest timetoken.
+5.16731333732605      5.16731333732605           */
+3.57593697309494      7.15187394618988          private Long timetoken;
+2.65347957611084      5.837655067443848         private Long storedTimetoken; // when changing the channel mix, store the timetoken for a later date.
+0.0                   0.0
+8.422758261362711     8.422758261362711         /**
+5.124264969545252     8.711250448226929          * Keep track of Region to support PSV2 specification.
+4.237713813781738     4.237713813781738          */
+4.523952007293701     5.6549400091171265        private String region;
+0.0                   0.0
+6.963693141937256     6.963693141937256         /**
+5.342157704489572     6.2325173219045            * Timer for heartbeat operations.
+3.148221492767334     3.148221492767334          */
+4.616891956329345     5.771114945411682         private Timer timer;
+0.0                   0.0
+2.027794361114502     6.590331673622131         private StateManager subscriptionState;
+0.7676353454589844    2.494814872741699         private ListenerManager listenerManager;
+0.9563071250915527    3.5861517190933228        private ReconnectionManager reconnectionManager;
+1.9402285183177275    8.245971202850342         private RetrofitManager retrofitManager;
+0.0                   0.0
+1.7512807846069336    3.9403817653656006        private Thread consumerThread;
+0.0                   0.0
+8.688955624898275     8.688955624898275         /**
+4.96493789424067      6.717268915737376          * lever to indicate if an announcement to the user about the subscription should be made.
+4.897838711738586     6.02810918367826           * the announcement happens only after the channel mix has been changed.
+5.153167009353638     5.153167009353638          */
+4.3569792834195225    11.981693029403687        private boolean subscriptionStatusAnnounced;
+0.0                   0.0
+2.511733055114746     11.44233947330051         public SubscriptionManager(PubNub pubnubInstance, RetrofitManager retrofitManagerInstance,
+2.357586208979289     8.840948283672333                                    TelemetryManager telemetry) {
+1.9048955142498016    5.079721371332805             this.pubnub = pubnubInstance;
+1.5433049499988556    4.115479866663615             this.telemetryManager = telemetry;
+0.0                   0.0
+2.976465335259071     6.449008226394653             this.subscriptionStatusAnnounced = false;
+0.9697030457583341    1.9394060915166682            this.messageQueue = new LinkedBlockingQueue<>();
+1.2556171417236328    2.5112342834472656            this.subscriptionState = new StateManager();
+0.0                   0.0
+1.5425077438354493    3.213557799657186             this.listenerManager = new ListenerManager(this.pubnub);
+1.4694236119588215    3.3062031269073486            this.reconnectionManager = new ReconnectionManager(this.pubnub);
+2.568565607070923     8.561885356903076             this.retrofitManager = retrofitManagerInstance;
+1.5660937990461077    3.4258301854133606            this.duplicationManager = new DuplicationManager(this.pubnub.getConfiguration());
+0.0                   0.0
+4.439317833293568     6.976070880889893             this.timetoken = 0L;
+2.261559009552002     4.146191517512004             this.storedTimetoken = null;
+0.0                   0.0
+1.359261003033868     3.5835062807256524            this.reconnectionManager.setReconnectionListener(new ReconnectionCallback() {
+0.40781211853027344   0.6117181777954102                @Override
+0.6801603490656073    1.2469606399536133                public void onReconnection() {
+3.275881767272949     3.275881767272949                     reconnect();
+2.414477239955555     6.639812409877777                     PNStatus pnStatus = PNStatus.builder()
+2.95811767578125      2.95811767578125                              .error(false)
+2.6247792641321817    6.299470233917236                             .affectedChannels(subscriptionState.prepareChannelList(true))
+2.0182100534439087    5.650988149642944                             .affectedChannelGroups(subscriptionState.prepareChannelGroupList(true))
+2.517162951556119     7.911083562033517                             .category(PNStatusCategory.PNReconnectedCategory)
+0.5566329956054688    0.5566329956054688                            .build();
+0.0                   0.0
+2.766619162126021     7.608202695846558                     subscriptionStatusAnnounced = true;
+2.015662352244059     4.3192764690944125                    listenerManager.announce(pnStatus);
+0.6520423889160156    0.6520423889160156                }
+0.0                   0.0
+0.24528948465983072   0.3679342269897461                @Override
+2.56952828168869      6.852075417836507                 public void onMaxReconnectionExhaustion() {
+1.5425679250196977    4.242061793804169                     PNStatus pnStatus = PNStatus.builder()
+2.9288328170776365    2.9288328170776365                            .error(false)
+2.651439628601074     9.469427245003837                             .category(PNStatusCategory.PNReconnectionAttemptsExhausted)
+2.436917543411255     5.8486021041870115                            .affectedChannels(subscriptionState.prepareChannelList(true))
+2.023066350391933     5.664585781097412                             .affectedChannelGroups(subscriptionState.prepareChannelGroupList(true))
+0.44333438873291015   0.44333438873291015                           .build();
+1.726198927561442     3.6989977019173756                    listenerManager.announce(pnStatus);
+0.0                   0.0
+3.01277494430542      3.01277494430542                      disconnect();
+0.0                   0.0
+0.21102046966552734   0.21102046966552734               }
+0.44045225779215497   0.44045225779215497           });
+0.0                   0.0
+2.1753798607856996    4.495785045623779             if (this.pubnub.getConfiguration().isStartSubscriberThread()) {
+1.712519145011902     4.281297862529755                 consumerThread = new Thread(new SubscribeMessageWorker(
+2.2110764404823042    5.343434731165568                         this.pubnub, listenerManager, messageQueue, duplicationManager));
+1.1685815652211506    2.3371631304423013                consumerThread.setName("Subscription Manager Consumer Thread");
+0.26836624145507815   0.4472770690917969                consumerThread.start();
+0.6320381164550781    0.6320381164550781            }
+1.604933738708496     1.604933738708496         }
+0.0                   0.0
+1.3833930632647347    2.939710259437561         public void addListener(SubscribeCallback listener) {
+0.5714473724365234    1.2245300837925501            listenerManager.addListener(listener);
+0.24655914306640625   0.24655914306640625       }
+0.0                   0.0
+0.5960585930768181    1.2666245102882385        public void removeListener(SubscribeCallback listener) {
+0.10145765940348307   0.21740927015032088           listenerManager.removeListener(listener);
+0.10729598999023438   0.10729598999023438       }
+0.0                   0.0
+0.0                   0.0
+2.4596890040806363    2.4596890040806363        public synchronized void reconnect() {
+2.131441275278727     4.262882550557454             this.startSubscribeLoop();
+2.02994175752004      4.05988351504008              this.registerHeartbeatTimer();
+0.9358205795288086    0.9358205795288086        }
+0.0                   0.0
+1.1753668103899275    1.1753668103899275        public synchronized void disconnect() {
+1.7867642879486083    4.466910719871521             stopHeartbeatTimer();
+1.3024003028869628    3.2560007572174072            stopSubscribeLoop();
+0.4131021499633789    0.4131021499633789        }
+0.0                   0.0
+0.0                   0.0
+2.9063615798950195    4.359542369842529         @Deprecated
+0.5837737492152623    0.5837737492152623        public synchronized void stop() {
+1.3444941838582356    1.3444941838582356            this.disconnect();
+1.542696475982666     2.5711607933044434            consumerThread.interrupt();
+0.8584871292114258    0.8584871292114258        }
+0.0                   0.0
+1.670620844914363     2.4131189982096353        public synchronized void destroy(boolean forceDestroy) {
+1.4608972072601318    1.4608972072601318            this.disconnect();
+3.232990390376041     5.584256128831343             if (forceDestroy && consumerThread != null) {
+0.9385277271270752    1.5642128785451253                consumerThread.interrupt();
+0.63751220703125      0.63751220703125              }
+0.7766942977905273    0.7766942977905273        }
+0.0                   0.0
+1.950767199198405     5.2020458645290795        public synchronized void adaptStateBuilder(StateOperation stateOperation) {
+1.310276798580004     3.3484851519266763            this.subscriptionState.adaptStateBuilder(stateOperation);
+3.495595932006836     3.495595932006836             reconnect();
+0.29998779296875      0.29998779296875          }
+0.0                   0.0
+1.452992836634318     3.8746475643581815        public synchronized void adaptSubscribeBuilder(SubscribeOperation subscribeOperation) {
+1.1240362499071204    2.8725370830959744            this.subscriptionState.adaptSubscribeBuilder(subscribeOperation);
+5.480467796325684     5.480467796325684             // the channel mix changed, on the successful subscribe, there is going to be announcement.
+2.4882805897639346    5.391274611155192             this.subscriptionStatusAnnounced = false;
+0.0                   0.0
+2.0458921544692097    4.34752082824707              this.duplicationManager.clearHistory();
+0.0                   0.0
+2.7597212337312245    4.829512159029643             if (subscribeOperation.getTimetoken() != null) {
+1.2908888296647505    2.8399554252624513                this.timetoken = subscribeOperation.getTimetoken();
+0.6813268661499023    0.6813268661499023            }
+0.0                   0.0
+4.136597633361816     4.136597633361816             // if the timetoken is not at starting position, reset the timetoken to get a connected event
+1.8089218139648438    1.8089218139648438            // and store the old timetoken to be reused later during subscribe.
+4.521750743572529     6.531417740715875             if (timetoken != 0L) {
+2.310822010040283     6.93246603012085                  storedTimetoken = timetoken;
+0.8303499221801758    0.8303499221801758            }
+3.1452171537611218    5.661390876770019             timetoken = 0L;
+0.0                   0.0
+3.2822327613830566    3.2822327613830566            reconnect();
+1.3930435180664062    1.3930435180664062        }
+0.0                   0.0
+2.0505473717399267    5.895323693752289         public void adaptPresenceBuilder(PresenceOperation presenceOperation) {
+1.653408962747325     4.225378460354275             this.subscriptionState.adaptPresenceBuilder(presenceOperation);
+0.0                   0.0
+2.4674453832665266    5.037700990835826             if (!this.pubnub.getConfiguration().isSupressLeaveEvents() && !presenceOperation.isConnected()) {
+3.282587273915609     7.575201401343713                 new Leave(pubnub, this.telemetryManager, this.retrofitManager)
+1.457514500617981     3.238921112484402                         .channels(presenceOperation.getChannels()).channelGroups(presenceOperation.getChannelGroups())
+2.2490937008577236    3.4758720831437544                        .async(new PNCallback<Boolean>() {
+0.9658594131469727    1.448789119720459                             @Override
+1.5573151452200753    2.973056186329235                             public void onResponse(Boolean result, PNStatus status) {
+2.732926542108709     4.294598851885114                                 listenerManager.announce(status);
+0.3706827163696289    0.3706827163696289                            }
+0.1481180191040039    0.1481180191040039                        });
+0.546544075012207     0.546544075012207             }
+0.0                   0.0
+2.8978789806365968    7.244697451591492             registerHeartbeatTimer();
+0.8424930572509766    0.8424930572509766        }
+0.0                   0.0
+2.182268977165222     5.819383939107259         public synchronized void adaptUnsubscribeBuilder(UnsubscribeOperation unsubscribeOperation) {
+1.7752372285594111    4.53671736187405              this.subscriptionState.adaptUnsubscribeBuilder(unsubscribeOperation);
+0.0                   0.0
+2.7199175908015323    5.893154780069987             this.subscriptionStatusAnnounced = false;
+0.0                   0.0
+2.27887301011519      4.700175583362579             if (!this.pubnub.getConfiguration().isSupressLeaveEvents()) {
+3.0536561171213785    7.046898731818566                 new Leave(pubnub, this.telemetryManager, this.retrofitManager)
+1.7729558229446412    3.939901828765869                         .channels(unsubscribeOperation.getChannels()).channelGroups(unsubscribeOperation.getChannelGroups())
+1.8024725072524126    2.7856393293900923                        .async(new PNCallback<Boolean>() {
+0.8117621739705404    1.2176432609558105                            @Override
+1.390709332057408     2.654990543018688                             public void onResponse(Boolean result, PNStatus status) {
+2.5477394624189897    4.0035905838012695                                listenerManager.announce(status);
+0.29283714294433594   0.29283714294433594                           }
+0.12083689371744792   0.12083689371744792                       });
+0.5317592620849609    0.5317592620849609            }
+0.0                   0.0
+0.0                   0.0
+4.014898300170898     4.014898300170898             // if we unsubscribed from all the channels, reset the timetoken back to zero and remove the region.
+1.0942997179533307    1.8901540582830256            if (this.subscriptionState.isEmpty()) {
+3.820676326751709     3.820676326751709                 region = null;
+3.437129338582357     7.733541011810303                 storedTimetoken = null;
+4.219059785207112     7.594307613372803                 timetoken = 0L;
+0.6851218541463217    0.6851218541463217            } else {
+2.0591432253519693    6.177429676055908                 storedTimetoken = timetoken;
+3.216603491041395     5.7898862838745115                timetoken = 0L;
+0.5849075317382812    0.5849075317382812            }
+0.0                   0.0
+3.1648378372192383    3.1648378372192383            reconnect();
+1.3531780242919922    1.3531780242919922        }
+0.0                   0.0
+2.100742816925049     4.201485633850098         private void registerHeartbeatTimer() {
+2.6594696044921875    2.6594696044921875            // make sure only one timer is running at a time.
+2.371596622467041     5.9289915561676025            stopHeartbeatTimer();
+0.0                   0.0
+2.4567785263061523    2.4567785263061523            // if the interval is 0 or less, do not start the timer
+2.2597460110982257    4.237023770809174             if (pubnub.getConfiguration().getHeartbeatInterval() <= 0) {
+1.8066596984863281    1.8066596984863281                return;
+0.046441078186035156  0.046441078186035156          }
+0.0                   0.0
+1.6930173635482788    1.9348769869123186            timer = new Timer();
+0.5358345849173409    0.8335204654269748            timer.schedule(new TimerTask() {
+0.23517990112304688   0.3527698516845703                @Override
+0.011097431182861328  0.011097431182861328              public void run() {
+2.8796049118041993    7.199012279510498                     performHeartbeatLoop();
+0.6709222793579102    0.6709222793579102                }
+1.8749687671661377    4.411691216861501             }, 0, pubnub.getConfiguration().getHeartbeatInterval() * HEARTBEAT_INTERVAL_MULTIPLIER);
+0.0                   0.0
+1.2306737899780273    1.2306737899780273        }
+0.0                   0.0
+1.365390380223592     2.730780760447184         private void stopHeartbeatTimer() {
+3.149736762046814     3.149736762046814             if (timer != null) {
+0.6082426706949869    0.6082426706949869                timer.cancel();
+0.7683792114257812    0.7683792114257812                timer = null;
+0.5032081604003906    0.5032081604003906            }
+0.7117424011230469    0.7117424011230469        }
+0.0                   0.0
+1.58021080493927      3.16042160987854          private void startSubscribeLoop() {
+2.7485733032226562    2.7485733032226562            // this function can be called from different points, make sure any old loop is closed
+1.462174415588379     3.6554360389709473            stopSubscribeLoop();
+0.0                   0.0
+2.153017167122133     4.449568812052409             List<String> combinedChannels = this.subscriptionState.prepareChannelList(true);
+1.6707876205444336    3.898504447937012             List<String> combinedChannelGroups = this.subscriptionState.prepareChannelGroupList(true);
+1.8060484076991226    3.7249748408794403            Map<String, Object> stateStorage = this.subscriptionState.createStatePayload();
+0.0                   0.0
+2.368779182434082     2.368779182434082             // do not start the subscribe loop if we have no channels to subscribe to.
+1.6157920220318962    3.4335580468177795            if (combinedChannels.isEmpty() && combinedChannelGroups.isEmpty()) {
+1.5780949592590332    1.5780949592590332                return;
+0.07097434997558594   0.07097434997558594           }
+0.0                   0.0
+3.519670944947463     8.319222233512185             subscribeCall = new Subscribe(pubnub, this.retrofitManager)
+1.9342827796936035    4.642278671264648                     .channels(combinedChannels).channelGroups(combinedChannelGroups)
+3.965925484895706     6.3454807758331295                    .timetoken(timetoken).region(region)
+1.7819813912914646    4.249340240771954                     .filterExpression(pubnub.getConfiguration().getFilterExpression())
+2.5061084747314455    4.176847457885742                     .state(stateStorage);
+0.0                   0.0
+2.3774047631483812    5.151043653488159             subscribeCall.async(new PNCallback<SubscribeEnvelope>() {
+0.3252143859863281    0.4878215789794922                @Override
+1.7637770366668701    4.008584174242887                 public void onResponse(SubscribeEnvelope result, PNStatus status) {
+0.7796827096205491    1.1262083583407931                    if (status.isError()) {
+2.3964018896222115    5.477490033422198                         if (status.getCategory() == PNStatusCategory.PNTimeoutCategory) {
+2.346049499511719     5.865123748779297                             startSubscribeLoop();
+0.9249944686889648    0.9249944686889648                            return;
+0.016065597534179688  0.016065597534179688                      }
+0.0                   0.0
+3.030681610107422     3.030681610107422                         disconnect();
+2.575702277096835     4.047532149723598                         listenerManager.announce(status);
+0.0                   0.0
+2.360789691700655     5.7333463941301614                        if (status.getCategory() == PNStatusCategory.PNUnexpectedDisconnectCategory) {
+2.4300451278686523    2.4300451278686523                            // stop all announcements and ask the reconnection manager to start polling for connection
+1.7751121520996094    1.7751121520996094                            // restoration..
+2.2328686714172363    5.582171678543091                             reconnectionManager.startPolling();
+0.6816310882568359    0.6816310882568359                        }
+0.0                   0.0
+2.168384075164795     2.168384075164795                         return;
+0.0287933349609375    0.0287933349609375                    }
+0.0                   0.0
+2.422187144939716     5.248072147369385                     if (!subscriptionStatusAnnounced) {
+1.766563285480846     5.552056040082659                         PNStatus pnStatus = createPublicStatus(status)
+2.4986069543021068    7.49582086290632                                  .category(PNStatusCategory.PNConnectedCategory)
+3.4039628982543944    3.4039628982543944                                .error(false)
+0.7209548950195312    0.7209548950195312                                .build();
+2.506046425212513     6.891627669334412                         subscriptionStatusAnnounced = true;
+1.9763049761454263    4.234939234597342                         listenerManager.announce(pnStatus);
+0.5589771270751953    0.5589771270751953                    }
+0.0                   0.0
+2.0736332535743713    6.380410010998066                     Integer requestMessageCountThreshold = pubnub.getConfiguration().getRequestMessageCountThreshold();
+2.108702364422026     4.025704513896596                     if (requestMessageCountThreshold != null && requestMessageCountThreshold <= result.getMessages().size()) {
+1.9983168081803755    6.28042425428118                          PNStatus pnStatus = createPublicStatus(status)
+2.5960621303982205    10.013382502964564                                .category(PNStatusCategory.PNRequestMessageCountExceededCategory)
+3.275711917877197     3.275711917877197                                 .error(false)
+0.48017139434814454   0.48017139434814454                               .build();
+0.0                   0.0
+2.0554042498270673    4.404437678200858                         listenerManager.announce(pnStatus);
+0.7045812606811523    0.7045812606811523                    }
+0.0                   0.0
+2.0648345708847047    2.5810432136058807                    if (result.getMessages().size() != 0) {
+0.9168067185775094    1.9169595024802468                        messageQueue.addAll(result.getMessages());
+0.5976419448852539    0.5976419448852539                    }
+0.0                   0.0
+4.406917865459736     7.16124153137207                      if (storedTimetoken != null) {
+3.04020094871521      9.12060284614563                          timetoken = storedTimetoken;
+1.724723709954156     3.8806283473968506                        storedTimetoken = null;
+0.8295402526855469    0.8295402526855469                    } else {
+1.3057501912117004    2.611500382423401                         timetoken = result.getMetadata().getTimetoken();
+0.5965433120727539    0.5965433120727539                    }
+0.0                   0.0
+1.322030234336853     2.203383723894755                     region = result.getMetadata().getRegion();
+2.694597053527832     6.73649263381958                      startSubscribeLoop();
+0.7167730331420898    0.7167730331420898                }
+0.9268817901611328    0.9268817901611328            });
+0.0                   0.0
+0.8904352188110352    0.8904352188110352        }
+0.0                   0.0
+1.4500725666681926    2.9001451333363852        private void stopSubscribeLoop() {
+2.941985249519348     4.412977874279022             if (subscribeCall != null) {
+1.7914152145385742    4.17996883392334                  subscribeCall.silentCancel();
+0.7112040519714355    1.422408103942871                 subscribeCall = null;
+0.5053977966308594    0.5053977966308594            }
+0.8175716400146484    0.8175716400146484        }
+0.0                   0.0
+2.031609137852987     4.063218275705974         private void performHeartbeatLoop() {
+2.664139668146769     3.996209502220154             if (heartbeatCall != null) {
+2.053644691194807     4.791837612787883                 heartbeatCall.silentCancel();
+1.3905303478240967    2.7810606956481934                heartbeatCall = null;
+0.5018501281738281    0.5018501281738281            }
+0.0                   0.0
+2.055478342117802     4.247988573710123             List<String> presenceChannels = this.subscriptionState.prepareChannelList(false);
+1.5391780580793109    3.5914154688517255            List<String> presenceChannelGroups = this.subscriptionState.prepareChannelGroupList(false);
+0.0                   0.0
+1.8486848599982983    4.067106691996257             List<String> heartbeatChannels = this.subscriptionState.prepareHeartbeatChannelList(false);
+1.6310470684154614    4.0232494354248045            List<String> heartbeatChannelGroups = this.subscriptionState.prepareHeartbeatChannelGroupList(false);
+0.0                   0.0
+0.0                   0.0
+3.2545642852783203    3.2545642852783203            // do not start the loop if we do not have any presence channels or channel groups enabled.
+0.6195266405741374    1.32755708694458              if (presenceChannels.isEmpty()
+1.9368887789109175    4.703872748783657                     && presenceChannelGroups.isEmpty()
+2.381260871887207     5.10270186832973                      && heartbeatChannels.isEmpty()
+1.697956787912469     3.584575441148546                     && heartbeatChannelGroups.isEmpty()) {
+1.4785914421081543    1.4785914421081543                return;
+0.04839897155761719   0.04839897155761719           }
+0.0                   0.0
+0.9224133491516113    1.4190974602332482            List<String> channels = new ArrayList<>();
+0.6176073392232259    1.3234442983354842            channels.addAll(presenceChannels);
+0.8701904932657878    1.8646939141409737            channels.addAll(heartbeatChannels);
+0.0                   0.0
+0.9734574556350708    1.497626854823186             List<String> groups = new ArrayList<>();
+0.5738742491778206    1.3936946051461356            groups.addAll(presenceChannelGroups);
+0.7380552852855009    1.7924199785505022            groups.addAll(heartbeatChannelGroups);
+0.0                   0.0
+3.475529776679145     8.341271464029948             heartbeatCall = new Heartbeat(pubnub, this.telemetryManager, this.retrofitManager)
+4.033051204681397     4.033051204681397                     .channels(channels)
+1.5602036952972411    2.600339492162069                     .channelGroups(groups);
+0.0                   0.0
+2.18501615524292      4.0058629512786865            heartbeatCall.async(new PNCallback<Boolean>() {
+0.27046998341878253   0.40570497512817383               @Override
+1.4647785822550456    2.7963954752141778                public void onResponse(Boolean result, PNStatus status) {
+3.9969022414263558    22.649112701416016                    PNHeartbeatNotificationOptions heartbeatVerbosity =
+1.7897716668935924    4.65340633392334                              pubnub.getConfiguration().getHeartbeatNotificationOptions();
+0.0                   0.0
+1.1485082186185396    1.658956315782335                     if (status.isError()) {
+3.6624313852061396    10.529490232467651                        if (heartbeatVerbosity == PNHeartbeatNotificationOptions.ALL
+4.046201133728028     10.115502834320068                                || heartbeatVerbosity == PNHeartbeatNotificationOptions.FAILURES) {
+2.7056570053100586    4.2517467226300925                            listenerManager.announce(status);
+0.5048065185546875    0.5048065185546875                        }
+0.0                   0.0
+4.687056541442871     4.687056541442871                         // stop the heartbeating logic since an error happened.
+2.7860700607299806    6.965175151824951                         stopHeartbeatTimer();
+0.0                   0.0
+0.760090192159017     0.760090192159017                     } else {
+3.303688144683838     8.259220361709595                         if (heartbeatVerbosity == PNHeartbeatNotificationOptions.ALL) {
+2.112472490830855     3.3195996284484863                            listenerManager.announce(status);
+0.39925384521484375   0.39925384521484375                       }
+0.6825551986694336    0.6825551986694336                    }
+0.39454078674316406   0.39454078674316406               }
+0.2143557866414388    0.2143557866414388            });
+0.0                   0.0
+0.8712120056152344    0.8712120056152344        }
+0.0                   0.0
+1.591454373465644     2.864617872238159         public synchronized List<String> getSubscribedChannels() {
+2.2599885993533664    5.0849743485450745            return subscriptionState.prepareChannelList(false);
+0.006276130676269531  0.006276130676269531      }
+0.0                   0.0
+1.0542478799819945    2.108495759963989         public synchronized List<String> getSubscribedChannelGroups() {
+1.5367399215698243    3.8418498039245605            return subscriptionState.prepareChannelGroupList(false);
+0.00344085693359375   0.00344085693359375       }
+0.0                   0.0
+1.692014304074374     2.6588796206883023        public synchronized void unsubscribeAll() {
+3.186890893512302     8.194862297603063             adaptUnsubscribeBuilder(UnsubscribeOperation.builder()
+1.763781767625075     4.585832595825195                     .channelGroups(subscriptionState.prepareChannelGroupList(false))
+1.892760419845581     3.785520839691162                     .channels(subscriptionState.prepareChannelList(false))
+0.4806559880574544    0.4806559880574544                    .build());
+0.36643123626708984   0.36643123626708984       }
+0.0                   0.0
+1.9572618974221718    7.241869020462036         private PNStatus.PNStatusBuilder createPublicStatus(PNStatus privateStatus) {
+1.5319175286726519    2.808515469233195             return PNStatus.builder()
+0.6003991002621858    1.534353256225586                     .statusCode(privateStatus.getStatusCode())
+0.9507662317027217    2.429735925462511                     .authKey(privateStatus.getAuthKey())
+1.1456628126256607    2.1640297571818032                    .operation(privateStatus.getOperation())
+1.3984835251517918    3.573902342054579                     .affectedChannels(privateStatus.getAffectedChannels())
+1.311673358634666     3.9350200759039984                    .affectedChannelGroups(privateStatus.getAffectedChannelGroups())
+1.1070237367049507    2.8290606604682074                    .clientRequest(privateStatus.getClientRequest())
+1.1035634209127987    2.0845086839463978                    .origin(privateStatus.getOrigin())
+1.265315055847168     3.036756134033203                     .tlsEnabled(privateStatus.isTlsEnabled());
+0.056285858154296875  0.056285858154296875      }
+0.0                   0.0
+2.554327964782715     2.554327964782715     }
+5.996634750366211     13.227870772866641    this line is extremely wrong ASDFszf sf szf sf  dzxmgnjskzg.nfdmxgb,jdxzfndsz,hxgjndsz.,f++++++=======/ ///// wadadf

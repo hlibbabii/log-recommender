@@ -1,0 +1,239 @@
+diff --git a/langmodels/inference/__init__.py b/langmodels/inference/__init__.py
+old mode 100644
+new mode 100755
+diff --git a/langmodels/inference/entropies.py b/langmodels/inference/entropies.py
+old mode 100644
+new mode 100755
+index 077fa58..aae4c0e
+--- a/langmodels/inference/entropies.py
++++ b/langmodels/inference/entropies.py
+@@ -1,8 +1,10 @@
+ import argparse
+ import logging
++import os
++import random
+ 
+ import dataprep
+-from typing import List, Tuple, Callable, Union
++from typing import List, Tuple, Callable, Union, Dict
+ 
+ from langmodels.inference.model import TrainedModel
+ from langmodels.profiling import TimeMeasurer
+@@ -11,28 +13,109 @@ logger = logging.getLogger(__name__)
+ 
+ time_measurer = TimeMeasurer()
+ 
++MAX_BATCH_SIZE = 20
++
++
++def get_max_batch_size():
++    return MAX_BATCH_SIZE
++
++
++def file_fitter(sizes: List[int], n: int) -> Tuple[List[List[int]], List[List[int]]]:
++    if n <= 0:
++        raise ValueError("N must be > 0")
++
++    random.shuffle(sizes)
++    layout = [[] for _ in range(n)]
++    boundaries = [[0] for _ in range(n)]
++    for idx, size in enumerate(sizes):
++        layout[idx % n].append(idx)
++        boundaries[idx % n].append(boundaries[idx % n][-1] + size)
++    return layout, boundaries
++
++
++def repackage(lines_list: List[List[str]], layout:List[List[int]]):
++    new_list = []
++    for column in layout:
++        list_column = []
++        for idx in column:
++            list_column.extend(lines_list[idx])
++        new_list.append(list_column)
++    return new_list
++
++
++def make_batches_equal(repackage_lines: List[List[str]]):
++    max_batch_size = max(map(lambda l: len(l), repackage_lines))
++    for lines in repackage_lines:
++        n_lines_to_add = max_batch_size - len(lines)
++        for _ in range(n_lines_to_add):
++            lines.append('\n')
++    return repackage_lines
++
++
++def get_list_of_line_lists_from_dir(dir: str) -> Tuple[List[List[str]], List[str]]:
++    files_full_paths = [os.path.join(root, file) for root, dirs, files in os.walk(dir) for file in files]
++    lines_list = []
++    file_list = []
++    for file in files_full_paths:
++        with open(file, 'r') as f:
++            lines = [line for line in f]
++        lines_list.append(lines)
++        file_list.append(file)
++    return lines_list, file_list
++
++
++def get_lines(path: str) -> Tuple[List[List[str]], List[List[str]], List[List[int]]]:
++    if os.path.isfile(path):
++        with open(path, 'r') as f:
++            lines_list, file_list = [[line for line in f]], [path]
++    else:
++        lines_list, file_list = get_list_of_line_lists_from_dir(path)
++    batch_size = min(get_max_batch_size(), len(lines_list))
++    layout, boundaries = file_fitter(list(map(lambda l: len(lines_list), lines_list)), batch_size)
++    repackaged_files = repackage(list(map(lambda f: [f], file_list)), layout)
++    repackaged_lines = repackage(lines_list, layout)
++    return [list(e) for e in zip(*make_batches_equal(repackaged_lines))], repackaged_files, boundaries
++
++
++def unpackage_entropies(line_entropies_columns: List[List[str]],
++                        files: List[List[str]],
++                        boundaries: List[List[int]]) -> Dict[str, List[float]]:
++    res = {}
++    for column, files_in_column, boundaries_in_column in zip(line_entropies_columns, files, boundaries):
++        for idx, file in enumerate(files_in_column):
++            res[file] = column[boundaries_in_column[idx]: boundaries_in_column[idx+1]]
++    return res
++
+ 
+ def get_entopy_for_each_line(trained_model: TrainedModel,
+-                             file: str,
++                             path: str,
+                              entropy_aggregator: Callable[[List[float], List[int]], Union[float, List[float]]],
+-                             verbose: bool = False) -> List[float]:
++                             verbose: bool = False) -> Dict[str, float]:
+     prep_lines_and_entropies: List[Tuple[List[str], List[float], float]] = []
+-    with open(file, 'r') as f:
+-        for line in f:
+-            time_measurer.tick("Preprocessing")
++    lines_list, files, boundaries = get_lines(path)
++    trained_model.set_batch_size(len(files))
++    for lines in lines_list:
++        time_measurer.tick("Preprocessing")
++        metadata_list = []
++        prep_lines = []
++        for line in lines:
+             prep_line, metadata = dataprep.bpe(line, trained_model.get_bpe_codes_id(), extension="java", **trained_model.get_prep_params(), return_metadata=True)
+-            time_measurer.tock("Preprocessing")
+-            time_measurer.tick("Inference")
+-            entropies = trained_model.get_entropies_for_next(prep_line)
+-            time_measurer.tock("Inference")
+-            line_entropy = entropy_aggregator(entropies, metadata.word_boundaries)
++            prep_lines.append(prep_line)
++            metadata_list.append(metadata)
++        time_measurer.tock("Preprocessing")
++        time_measurer.tick("Inference")
++        entropies_batch = trained_model.get_entropies_for_next(prep_lines)
++        time_measurer.tock("Inference")
++        for entropies, m in zip(entropies_batch, metadata_list):
++            line_entropy = entropy_aggregator(entropies, m.word_boundaries)
+             prep_lines_and_entropies.append((prep_line, entropies, line_entropy))
+         if verbose:
+             for prep_line, entropies, line_entropy in prep_lines_and_entropies:
+                 print(f'{[(prep_token, token_entropy) for prep_token, token_entropy in zip(prep_line, entropies)]}')
+                 print(line_entropy)
+                 print("=============")
+-    return list(zip(*prep_lines_and_entropies))[2]
++    line_entropies_columns = list(zip(*prep_lines_and_entropies))[2]
++    return unpackage_entropies(line_entropies_columns, files, boundaries)
+ 
+ 
+ def subword_average(subword_entropies: List[float], word_boundaries: List[int]) -> float:
+@@ -73,10 +156,26 @@ def parse_entropy_aggregator_value(entropy_aggregator_name: str) -> Callable[[Li
+         raise ValueError(f"Unknown value for entropy aggregator: {entropy_aggregator_name}")
+ 
+ 
++def write_entropies_to_disk(entropies: Dict[str, List[float]], output_path: str):
++    if list(entropies.keys()) == ['']:
++        with open(output_path, 'w') as f:
++            for entropy in entropies['']:
++                f.write(f'{entropy}\n')
++    else:
++        for file, entropies in entropies:
++            full_path = os.path.join(output_path, file)
++            with open(full_path, 'w') as f:
++                if not os.path.exists(full_path):
++                    for entropy in entropies:
++                        f.write(f'{entropy}\n')
++
++    print(f'Entropies are written to {args.output_path}')
++
++
+ if __name__ == '__main__':
+     parser = argparse.ArgumentParser()
+-    parser.add_argument('file', action='store', help=f'Path to file for which entropies are to be calculated.')
+-    parser.add_argument('-o', '--output-path', action='store', help='Path to file to which entropies are to be written.')
++    parser.add_argument('path', action='store', help=f'Path to file or dir for which entropies are to be calculated.')
++    parser.add_argument('-o', '--output-path', action='store', help='Path to file or dir to which entropies are to be written.')
+     parser.add_argument('-e', '--entropy-aggregator', action='store', default='full-token-average',
+                         help='Fuction to calculate entropy for the whole line from subtoken entropies. Possible values:\n'
+                              '\'subtoken-average\' (default): average over all subtokens\' entropies \n'
+@@ -92,12 +191,9 @@ if __name__ == '__main__':
+     model = TrainedModel.get_default_model(force_use_cpu=args.cpu)
+     time_measurer.tock('Model loading')
+     entropy_aggregator = parse_entropy_aggregator_value(args.entropy_aggregator)
+-    entropies = get_entopy_for_each_line(model, args.file, entropy_aggregator, verbose)
++    entropies = get_entopy_for_each_line(model, args.path, entropy_aggregator, verbose)
+     if args.output_path:
+-        with open(args.output_path, 'w') as f:
+-            for entropy in entropies:
+-                f.write(f'{entropy}\n')
+-        print(f'Entropies are written to {args.output_path}')
++        write_entropies_to_disk(entropies, args.output_path)
+ 
+     if verbose:
+         totals = time_measurer.totals()
+diff --git a/langmodels/inference/model.py b/langmodels/inference/model.py
+old mode 100644
+new mode 100755
+index 74aa78d..679d5f1
+--- a/langmodels/inference/model.py
++++ b/langmodels/inference/model.py
+@@ -47,9 +47,9 @@ class TrainedModel(object):
+     def __init__(self, path: str, force_use_cpu: bool = False):
+         self.force_use_cpu = force_use_cpu
+         self.model = self._load_model(path)
+-        self._to_test_mode()
+         self.legacy_vocab = self._load_vocab(path)
+-        self.last_predicted_tokens = self.legacy_vocab.numericalize([self.STARTING_TOKENS], get_device(force_use_cpu))
++
++        self._to_test_mode()
+ 
+     def _load_model(self, path: str) -> SequentialRNN:
+         path_to_model = os.path.join(path, WEIGHTS_FILE)
+@@ -79,8 +79,6 @@ class TrainedModel(object):
+         return pickle.load(open(path_to_vocab, 'rb'))
+ 
+     def _to_test_mode(self):
+-        # Set batch size to 1
+-        self.model[0].bs = 1
+         # Turn off dropout
+         self.model.eval()
+         # Reset hidden state
+@@ -112,12 +110,17 @@ class TrainedModel(object):
+             yield self.legacy_vocab.vocab.itos[n[0]]
+             self.last_predicted_tokens = n[0].unsqueeze(0)
+ 
+-    def get_entropies_for_next(self, input: List[str]) -> List[float]:
+-        numericalized_input = self.legacy_vocab.numericalize([input], get_device(self.force_use_cpu))
+-        losses: List[float] = []
+-        for token, num_token in zip(input, numericalized_input):
++    def get_entropies_for_next(self, input: List[List[str]]) -> List[float]:
++        numericalized_input = self.legacy_vocab.numericalize(input, get_device(self.force_use_cpu))
++        losses: List[List[float]] = []
++        for token, num_token in zip(zip(*input), numericalized_input):
+             res, *_ = self.model(self.last_predicted_tokens)
+-            loss = F.cross_entropy(res[-1], num_token).item()
+-            self.last_predicted_tokens = num_token.unsqueeze(0)
+-            losses.append(loss)
+-        return losses
++            loss = F.cross_entropy(res.transpose(0,1)[-1], num_token, reduction='none')
++            self.last_predicted_tokens = num_token.unsqueeze(1)
++            losses.append(loss.tolist())
++        return list(zip(*losses)) if losses else []
++
++    def set_batch_size(self, bs):
++        self.model[0].bs = bs
++        self.last_predicted_tokens = self.legacy_vocab.numericalize([self.STARTING_TOKENS],
++                                                                    get_device(self.force_use_cpu)).expand(bs, -1)
