@@ -1,0 +1,192 @@
+import csv
+import os
+from collections import defaultdict, Counter
+from typing import List, Optional, Dict, Tuple
+
+from scipy.stats.stats import pearsonr
+
+from logrec.dataprep.split import bpe_encode
+from logrec.dataprep.util import read_dict_from_2_columns, dump_list, dump_dict_into_2_columns
+from logrec.util.io import read_list, dump_list
+
+
+def convert_to_vectors(merges1: List[List[str]], merges2: List[List[str]]):
+    d = defaultdict(lambda:[0,0])
+    for merge in merges1:
+        d[(merge[0], merge[1])][0] = int(merge[2])
+    for merge in merges2:
+        d[(merge[0], merge[1])][1] = int(merge[2])
+    return zip(*[(v[0], v[1]) for v in d.values()])
+
+
+def pearson(merges1: List[List[str]], merges2: List[List[str]]):
+    vector1, vector2 = convert_to_vectors(merges1, merges2)
+    p = pearsonr(vector1, vector2)
+    return p[0]
+
+
+def calc_pearsons_matrix(merges_list: List[List[List[str]]], path_to_save: Optional[str] = None) -> List[List[float]]:
+    res = []
+    for merges1 in merges_list:
+        row = []
+        for merges2 in merges_list:
+            row.append(pearson(merges1, merges2))
+        res.append(row)
+
+    if path_to_save:
+        output_matrix_to_csv(res, path_to_save)
+    return res
+
+
+def calc_cooccurences_matrix(merges_list1: List[List[List[str]]], merges_list2: List[List[List[str]]], path_to_save: Optional[str] = None):
+    res = []
+    for merges1 in merges_list1:
+        row = []
+        for merges2 in merges_list2:
+            cooccs = count_occurences_across_lists([merges1, merges2])
+            merges_total = min(len(merges1), len(merges2))
+            n_merges_present_in_both_lists = sum([1 for c in cooccs.values() if c == 2])
+            row.append(float(n_merges_present_in_both_lists) / merges_total)
+        res.append(row)
+
+    if path_to_save:
+        output_matrix_to_csv(res, path_to_save)
+    return res
+
+
+def count_occurences_across_lists(merges_list: List[List[List[str]]]) -> Counter:
+    c = Counter()
+    for merges in merges_list:
+        c.update(list(map(lambda s: " ".join(s[:2]), merges)))
+    return c
+
+
+def output_matrix_to_csv(matrix, path_to_csv):
+    with open(path_to_csv, 'w') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        writer.writerow([str(i) for i in range(len(matrix[0]))] + ['case-spl'])
+        for row in matrix:
+            writer.writerow(row)
+
+
+def calc_cross_occurences(merges_list, path_to_save: Optional[str] = None) -> Counter:
+    occ_accross_lists = count_occurences_across_lists(merges_list)
+    if path_to_save:
+        dump_list(
+            list(map(lambda t: f'{t[0]} {t[1]}', sorted(occ_accross_lists.items(), key=lambda s: s[1], reverse=True))),
+            path_to_save)
+    return occ_accross_lists
+
+
+def calc_cross_occurences_summary(occ_accross_lists: Counter, path_to_save: Optional[str] = None) -> Dict[int, float]:
+    summary = defaultdict(int)
+    for k, v in occ_accross_lists.items():
+        summary[v] += v
+
+    total_merges_across_fractions = sum(summary.values())
+
+    summary_for_1_list = {}
+    for k, v in summary.items():
+        summary_for_1_list[k] = float(v) / total_merges_across_fractions
+
+    if path_to_save:
+        dump_list(list(map(lambda t: f'{t[0]} {t[1]}', sorted(summary_for_1_list.items(), key=lambda s: s[0], reverse=True))),
+                  path_to_save)
+    return summary_for_1_list
+
+
+def split_vocab_using_merges(vocab_file: str, merges_file: str, n_merges: int, output_file: str):
+    vocab = read_dict_from_2_columns(vocab_file)
+    merges = bpe_encode.read_merges(merges_file, n_merges)
+    result = {}
+    for word, freq in vocab.items():
+        encoded_word = bpe_encode.encode_word(word, merges)
+        result[" ".join(encoded_word)] = freq
+    dump_dict_into_2_columns(result, output_file)
+
+
+def calc_merges_difference_comparison_matrix(path_to_metadata: str, fraction: str, n_merges: int, output: Optional[bool] =True):
+    int_fraction = int(fraction)
+    for i in range(100 // int_fraction):
+        for j in range(100 // int_fraction):
+            print(f'{fraction}:{n_merges}:{i}:{j}')
+            chunk_vocab = f'{i*int_fraction}'
+            chunk_merges = f'{j*int_fraction}'
+            vocab_file = os.path.join(path_to_metadata, f'{fraction}_{chunk_vocab}_vocab')
+            merges_file = os.path.join(path_to_metadata, f'{fraction}_{chunk_merges}_bpe', '100000', 'merges.txt')
+            output_file = os.path.join(path_to_metadata, f'{fraction}_{chunk_vocab}_{chunk_merges}_{n_merges}_reassambled')
+            if not os.path.exists(output_file):
+                split_vocab_using_merges(vocab_file, merges_file, n_merges, output_file if output else None)
+
+def get_merge_similiarity_rate(vocab1: Tuple[str, int], vocab2: Tuple[str, int]) -> float:
+    total = 0
+    different = 0
+    for (word1, freq1), (word2, freq2) in zip(vocab1, vocab2):
+        if freq1 != freq2:
+            raise AssertionError(f"Not matching dict entries: {word1}: {freq1} and {word2}: {freq2}")
+
+        if word1 == word2:
+            total += freq1
+        elif "".join(word1.split(" ")) == "".join(word2.split(" ")):
+            different += freq1
+            total += freq1
+        else:
+            raise AssertionError(f"Not matching dict entries: {word1}: {freq1} and {word2}: {freq2}")
+
+    return 1.0 - float(different) / total
+
+
+def calc_merges_difference_comparison_matrix2(path_to_metadata: str, fraction: str, n_merges: int, output_file: Optional[str] =None):
+    result = []
+    int_fraction = int(fraction)
+    for i in range(100 // int_fraction):
+        chunk_vocab = f'{i * int_fraction}'
+        reassambled_file_original = os.path.join(path_to_metadata,
+                                        f'{fraction}_{chunk_vocab}_{chunk_vocab}_{n_merges}_reassambled')
+        original_vocab = read_dict_from_2_columns(reassambled_file_original, read_to_dict=False)
+        row = []
+        for j in range(100 // int_fraction):
+            chunk_merges = f'{j*int_fraction}'
+            reassambled_file = os.path.join(path_to_metadata, f'{fraction}_{chunk_vocab}_{chunk_merges}_{n_merges}_reassambled')
+            vocab = read_dict_from_2_columns(reassambled_file, read_to_dict=False)
+            row.append(get_merge_similiarity_rate(original_vocab, vocab))
+        non_bpe_vocab = read_dict_from_2_columns(os.path.join(path_to_metadata, f'{fraction}_{chunk_vocab}_vocab'), read_to_dict=False)
+        row.append(get_merge_similiarity_rate(original_vocab, non_bpe_vocab))
+        result.append(row)
+    if output_file:
+        output_matrix_to_csv(result, output_file)
+    return result
+
+
+if __name__ == '__main__':
+    PATH_TO_METADATA = '/home/lv71161/hlibbabii/prep_datasets/v2/nodup_en_only/metadata/001000/'
+    PATH_TO_BPE_CODES_FOLDER = '/home/lv71161/hlibbabii/log-recommender-dataprep/bpe-codes/case'
+
+    full_merges_list_10 = [read_list(os.path.join(PATH_TO_BPE_CODES_FOLDER, f'10_{chunk}.txt')) for chunk in range(10)]
+    full_merges_list_20 = [read_list(os.path.join(PATH_TO_BPE_CODES_FOLDER, f'20_{chunk}.txt')) for chunk in range(5)]
+
+    for fraction, full_merges_list in [('20', full_merges_list_20)]:
+#        full_merges_list.append(read_list(os.path.join(PATH_TO_BPE_CODES_FOLDER, f'100_0.txt')))
+        possible_n_merges = [1000, 5000, 10000, 20000, 50000, 100000]
+        for i in range(len(possible_n_merges)):
+            n_merges = possible_n_merges[i]
+#            merges_list = list(map(lambda lst: lst[:n_merges], full_merges_list))
+#
+#            pearsons_matrix = calc_pearsons_matrix(merges_list, os.path.join(PATH_TO_BPE_CODES_FOLDER, f'pearsons_{fraction}_{n_merges}.csv'))
+#
+#            calc_cooccurences_matrix(merges_list, merges_list,
+#                                                   os.path.join(PATH_TO_BPE_CODES_FOLDER, f'cooccurence_matrix_{fraction}_{n_merges}.csv'))
+#
+#            if i < len(possible_n_merges) -1:
+#                n_merges_bigger = possible_n_merges[i+1]
+#                merges_list_bigger = list(map(lambda lst: lst[:n_merges_bigger], full_merges_list))
+#
+#                calc_cooccurences_matrix(merges_list, merges_list_bigger,
+#                                         os.path.join(PATH_TO_BPE_CODES_FOLDER, f'cooccurence_matrix_{fraction}_{n_merges}_{n_merges_bigger}.csv'))
+#
+#            occ_accross_lists = calc_cross_occurences(merges_list[:-1], os.path.join(PATH_TO_BPE_CODES_FOLDER, f'cross_occurences_{fraction}_{n_merges}.txt'))
+#
+#            calc_cross_occurences_summary(occ_accross_lists, os.path.join(PATH_TO_BPE_CODES_FOLDER, f'cross_occurences_summary_{fraction}_{n_merges}.txt'))
+#
+            calc_merges_difference_comparison_matrix(PATH_TO_METADATA, fraction, n_merges)
+            calc_merges_difference_comparison_matrix2(PATH_TO_METADATA, fraction, n_merges, os.path.join(PATH_TO_BPE_CODES_FOLDER, f'merge_difference_matrix_{fraction}_{n_merges}.csv'))
