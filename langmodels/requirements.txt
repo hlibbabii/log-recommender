@@ -47,5 +47,5 @@ torchtext==0.2.3
 torchvision==0.3.0
 tqdm==4.32.1
 typing==3.6.6
-urllib3==1.25.3
+urllib3==1.26.5
 wasabi==0.2.2
